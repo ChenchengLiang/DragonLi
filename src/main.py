@@ -2,7 +2,8 @@
 from Parser import Parser, EqParser, EqReader
 
 def main():
-    parser_type = EqParser
+    parser_type = EqParser()
+
     file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/1.eq"
 
 
