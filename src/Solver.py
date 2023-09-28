@@ -1,27 +1,42 @@
+from typing import Dict, List, Set
+from DataTypes import Variable, Terminal, Term
+
 
 class Solver:
-    def __init__(self, variables, terminals, left_terms, right_terms):
-        self.variables = variables
-        self.terminals = terminals
-        self.left_terms = left_terms
-        self.right_terms = right_terms
+    def __init__(self):
+        pass
 
-    def solve(self):
-        assignments = {}
+    def solve(self, string_equation: Dict) -> bool:
+        variables: Set[Variable] = string_equation["variables"]
+        terminals: Set[Terminal] = string_equation["terminals"]
+        left_terms: List[Term] = string_equation["left_terms"]
+        right_terms: List[Term] = string_equation["right_terms"]
+        assignments = []
 
-        for lt, rt in zip(self.left_terms, self.right_terms):
-            if lt == rt:
-                continue
-            elif lt in self.variables:
-                if lt in assignments and assignments[lt] != rt:
-                    return False, {}
-                assignments[lt] = rt
-            elif rt in self.variables:
-                if rt in assignments and assignments[rt] != lt:
-                    return False, {}
-                assignments[rt] = lt
-            else:
-                return False, {}
+        if len(left_terms) != len(right_terms): # If the number of terms on the left and right sides are not equal, then the equation is unsat
+            return False, {}
+        else:
+            for lt, rt in zip(left_terms, right_terms):
+                l=lt.value
+                r=rt.value
+                if type(l) == Terminal and type(r)==Terminal:
+                    if l != r:
+                        return False, {}
+                    else:
+                        continue
+                elif type(l) == Variable and type(r)==Terminal:
+                    if l in assignments:
+                        if assignments[l] != r:
+                            return False, {}
+
+                elif type(lt.value) == Terminal and type(rt.value)==Variable:
+                    pass
+
+                elif type(lt.value) == Variable and type(rt.value)==Variable:
+                    pass
+                
+
+
+
 
         return True, assignments
-
