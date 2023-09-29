@@ -3,12 +3,14 @@ from typing import Dict, List
 
 
 def print_results(satisfiability: bool, assignment: Assignment, parsed_content):
-    print("-" * 10)
+    print("-" * 10, "Problem", "-" * 10)
     original_equation,string_terminals, string_variables = assemble_parsed_content(parsed_content)
     solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
     print("Variables:", string_variables)
     print("Terminals:", string_terminals)
     print("Equation:", original_equation)
+
+    print("-" * 10, "Solution", "-" * 10)
     if satisfiability == True:
         print("SAT")
         assignment.pretty_print()

@@ -74,6 +74,8 @@ class EqReader(AbstractFileReader):
         variables_str = lines[0].strip().split("{")[1].split("}")[0]
         terminals_str = lines[1].strip().split("{")[1].split("}")[0]
         equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
+        #todo: read the ground truth
+
         content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str": equation_str}
         return content
 
