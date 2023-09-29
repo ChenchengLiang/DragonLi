@@ -1,2 +1,2 @@
 
-max_variable_length=3
+max_variable_length=2

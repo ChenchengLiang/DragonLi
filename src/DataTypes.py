@@ -1,5 +1,5 @@
-
 from typing import Union, List
+
 
 class Variable:
     def __init__(self, value: str):
@@ -16,6 +16,7 @@ class Variable:
             return False
         return self.value == other.value
 
+
 class Terminal:
     def __init__(self, value: str):
         self.value = value
@@ -31,6 +32,7 @@ class Terminal:
             return False
         return self.value == other.value
 
+
 class Term:
     def __init__(self, value: Union[Variable, Terminal]):
         self.value = value
@@ -45,6 +47,7 @@ class Term:
         if not isinstance(other, Variable):
             return False
         return self.value == other.value
+
 
 class Assignment:
     def __init__(self):
@@ -65,4 +68,7 @@ class Assignment:
         """Returns the assigned List[Terminal] for a variable."""
         return self.assignments[variable]
 
-
+    def pretty_print(self):
+        print("Assignment:")
+        for key, value in self.assignments.items():
+            print(key.value, "=", " ".join([v.value for v in value]))

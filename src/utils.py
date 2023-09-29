@@ -7,7 +7,7 @@ def print_results(satisfiability: bool, assignment: Assignment, parsed_content):
     print("Equation:", assemble_parsed_content(parsed_content))
     if satisfiability == True:
         print("SAT")
-        print("assignment:", assignment.assignments)
+        assignment.pretty_print()
         string_equation = assemble_parsed_content(parsed_content, assignment)
         print(string_equation)
     else:
@@ -22,7 +22,9 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
             if assignment.is_empty():
                 left_str.append(t.value.value)
             else:
-                left_str.append(assignment.get_assignment(t.value).value)
+                terminal_list = assignment.get_assignment(t.value)
+                for tt in terminal_list:
+                    left_str.append(tt.value)
         else:
             left_str.append(t.value.value)
     for t in parsed_content["right_terms"]:
@@ -30,7 +32,9 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
             if assignment.is_empty():
                 right_str.append(t.value.value)
             else:
-                right_str.append(assignment.get_assignment(t.value).value)
+                terminal_list = assignment.get_assignment(t.value)
+                for tt in terminal_list:
+                    right_str.append(tt.value)
         else:
             right_str.append(t.value.value)
     string_equation = "".join(left_str) + "=" + "".join(right_str)
