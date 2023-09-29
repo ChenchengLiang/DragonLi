@@ -6,8 +6,8 @@ def print_results(satisfiability: bool, assignment: Assignment, parsed_content):
     print("-" * 10)
     original_equation,string_terminals, string_variables = assemble_parsed_content(parsed_content)
     solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
-    print("Terminals:", string_terminals)
     print("Variables:", string_variables)
+    print("Terminals:", string_terminals)
     print("Equation:", original_equation)
     if satisfiability == True:
         print("SAT")
@@ -48,3 +48,13 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
 
 
     return string_equation, string_terminals, string_variables
+
+
+def remove_duplicates(lst):
+    seen = set()
+    result = []
+    for item in lst:
+        if item not in seen:
+            seen.add(item)
+            result.append(item)
+    return result

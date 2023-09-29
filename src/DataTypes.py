@@ -71,4 +71,4 @@ class Assignment:
     def pretty_print(self):
         print("Assignment:")
         for key, value in self.assignments.items():
-            print(key.value, "=", " ".join([v.value for v in value]))
+            print(key.value, "=", "".join([v.value for v in value]))

@@ -39,10 +39,11 @@ class Solver:
             assignment_dicts.append(assignment_dict)
 
         # Display the list of assignment dictionaries
-        print("-" * 10)
-        print("Assignment Dictionaries:", len(assignment_dicts))
-        for assignment_dict in assignment_dicts:
-            print(assignment_dict.assignments)
+        # print("-" * 10)
+        # print("Assignment Dictionaries:", len(assignment_dicts))
+        # for assignment_dict in assignment_dicts:
+        #     print(assignment_dict.assignments)
+
 
         # Check each assignment dictionary to see if it satisfies the equation
         for assignment_dict in assignment_dicts:
@@ -56,8 +57,8 @@ class Solver:
         right_side = self.extract_values_from_terms(right_terms, assignments)
 
         # todo: this need to be improved
-        left_str = "".join(left_side)
-        right_str = "".join(right_side)
+        left_str = "".join(left_side).replace("<EMPTY>", "")
+        right_str = "".join(right_side).replace("<EMPTY>", "")
         if left_str == right_str:
             return True
         else:
