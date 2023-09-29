@@ -4,12 +4,16 @@ from typing import Dict, List
 
 def print_results(satisfiability: bool, assignment: Assignment, parsed_content):
     print("-" * 10)
-    print("Equation:", assemble_parsed_content(parsed_content))
+    original_equation,string_terminals, string_variables = assemble_parsed_content(parsed_content)
+    solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
+    print("Terminals:", string_terminals)
+    print("Variables:", string_variables)
+    print("Equation:", original_equation)
     if satisfiability == True:
         print("SAT")
         assignment.pretty_print()
-        string_equation = assemble_parsed_content(parsed_content, assignment)
-        print(string_equation)
+        print(solved_string_equation)
+
     else:
         print("UNSAT")
 
@@ -39,4 +43,8 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
             right_str.append(t.value.value)
     string_equation = "".join(left_str) + "=" + "".join(right_str)
 
-    return string_equation
+    string_terminals = "".join([t.value for t in parsed_content["terminals"] ])
+    string_variables = "".join([t.value for t in parsed_content["variables"] ])
+
+
+    return string_equation, string_terminals, string_variables
