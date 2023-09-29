@@ -1,6 +1,7 @@
 
 from Parser import Parser, EqParser, EqReader
-
+from Solver import Solver
+from utils import print_results
 def main():
     parser_type = EqParser()
     file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/1.eq"
@@ -13,6 +14,13 @@ def main():
     parser = Parser(parser_type)
     parsed_content=parser.parse(file_path)
     print("parsed_content:",parsed_content)
+
+    solver= Solver()
+    satisfiability,assignment=solver.solve(parsed_content)
+
+    print_results(satisfiability,assignment,parsed_content)
+
+
 
 
 
