@@ -11,6 +11,10 @@ class AbstractAlgorithm(ABC):
         self.left_terms = left_terms
         self.right_terms = right_terms
 
+    @abstractmethod
+    def run(self):
+        pass
+    
     def check_equation(self, left_terms: List[Term], right_terms: List[Term], assignments: Assignment) -> bool:
         left_side = self.extract_values_from_terms(left_terms, assignments)
         right_side = self.extract_values_from_terms(right_terms, assignments)
@@ -34,28 +38,35 @@ class AbstractAlgorithm(ABC):
                 value_list.append(t.value.value)
         return value_list
 
-    @abstractmethod
+
+
+class ElimilateVariables(AbstractAlgorithm):
+    def __init__(self, terminals, variables, left_terms, right_terms):
+        super().__init__(terminals, variables, left_terms, right_terms)
+
     def run(self):
-        pass
+        #todo: implement this
+        return False, Assignment()
+
 
 class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
     def __init__(self, terminals, variables, left_terms, right_terms, max_variable_length):
         super().__init__(terminals, variables, left_terms, right_terms)
         self.max_variable_length = max_variable_length
 
-    def generate_combinations(self, terminals: List[str], max_length: int) -> Generator[Tuple[str, ...], None, None]:
+    def generate_possible_terminal_combinations(self, terminals: List[str], max_length: int) -> Generator[Tuple[str, ...], None, None]:
         for length in range(1, max_length + 1):
             for p in product(terminals, repeat=length):
                 yield p
 
     def generate_assignments(self, variables, terminals, max_variable_length):
-        possible_terminals = self.generate_combinations(terminals, max_variable_length)
+        possible_terminals = self.generate_possible_terminal_combinations(terminals, max_variable_length)
 
         # Generate all possible combinations of assignments
         assignments_generator = product(possible_terminals, repeat=len(variables))
 
         for assignment in assignments_generator:
-            assignment_dict = Assignment()  #
+            assignment_dict = Assignment()
             for var, term in zip(variables, assignment):
                 assignment_dict.set_assignment(var, list(term))
             yield assignment_dict
@@ -76,7 +87,7 @@ class EnumerateAssignments(AbstractAlgorithm):
         super().__init__(terminals, variables, left_terms, right_terms)
         self.max_variable_length = max_variable_length
 
-    def generate_combinations(self, terminals: List[Terminal], max_length: int) -> List[Tuple[Terminal]]:
+    def generate_possible_terminal_combinations(self, terminals: List[Terminal], max_length: int) -> List[Tuple[Terminal]]:
         combinations = []
         for length in range(1, max_length + 1):
             for p in product(terminals, repeat=length):
@@ -84,7 +95,7 @@ class EnumerateAssignments(AbstractAlgorithm):
         return combinations
 
     def run(self):
-        possible_terminals = self.generate_combinations(self.terminals, self.max_variable_length)
+        possible_terminals = self.generate_possible_terminal_combinations(self.terminals, self.max_variable_length)
         print("possible_terminals", len(possible_terminals))
         print(possible_terminals)
         # Generate all possible combinations of assignments
