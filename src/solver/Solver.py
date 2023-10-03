@@ -1,31 +1,17 @@
-from typing import Dict, List, Set, Tuple,Generator
+import time
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from typing import Callable, Any, Tuple
+from typing import Dict, List, Set
+
+from Algorithms import AbstractAlgorithm
+from Constants import max_variable_length, algorithm_timeout
 from DataTypes import Variable, Terminal, Term, Assignment
-from itertools import product
-from Constants import max_variable_length
-from Algorithms import AbstractAlgorithm, EnumerateAssignments,EnumerateAssignmentsUsingGenerator
-import functools
+
 
 class Solver:
-    def __init__(self,algorithm:AbstractAlgorithm):
-        self.algorithm=algorithm
+    def __init__(self, algorithm: AbstractAlgorithm):
+        self.algorithm = algorithm
         pass
-
-    def generate_combinations(self, terminals: List[str], max_length: int) -> Generator[Tuple[str, ...], None, None]:
-        for length in range(1, max_length + 1):
-            for p in product(terminals, repeat=length):
-                yield p
-
-    def generate_assignments(self, variables, terminals, max_variable_length):
-        possible_terminals = self.generate_combinations(terminals, max_variable_length)
-
-        # Generate all possible combinations of assignments
-        assignments_generator = product(possible_terminals, repeat=len(variables))
-
-        for assignment in assignments_generator:
-            assignment_dict = Assignment()  #
-            for var, term in zip(variables, assignment):
-                assignment_dict.set_assignment(var, list(term))
-            yield assignment_dict
 
     def solve(self, string_equation: Dict) -> (bool, Assignment):
         variables: Set[Variable] = string_equation["variables"]
@@ -33,8 +19,24 @@ class Solver:
         left_terms: List[Term] = string_equation["left_terms"]
         right_terms: List[Term] = string_equation["right_terms"]
 
-        return self.algorithm(terminals, variables, left_terms, right_terms, max_variable_length).run()
+        print("-"*10, "Solving equation", "-"*10)
+        _algorithm = self.algorithm(terminals, variables, left_terms, right_terms, max_variable_length)
+        result, running_time = self.count_time(_algorithm.run, algorithm_timeout)
 
+        return result, running_time
 
+    def count_time(self, func: Callable[..., Any], timeout=algorithm_timeout, *args, **kwargs) -> Tuple[float, Any]:
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(func, *args, **kwargs)  # Submit the function to the executor
 
+            start_time = time.time()
+            try:
+                # Wait for the function to complete, or for the timeout to expire
+                result = future.result(timeout=timeout)
+            except TimeoutError:
+                future.cancel()  # Cancel the function if it times out
+                end_time = time.time()
+                return None, end_time - start_time  # Return the elapsed time and None if the function times out
 
+            end_time = time.time()
+        return result, end_time - start_time  # Return the elapsed time and the result if the function completes

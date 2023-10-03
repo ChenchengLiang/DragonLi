@@ -28,13 +28,13 @@ class Terminal:
         return hash(self.value)
 
     def __eq__(self, other):
-        if not isinstance(other, Variable):
+        if not isinstance(other, Terminal):
             return False
         return self.value == other.value
 
 
 class Term:
-    def __init__(self, value: Union[Variable, Terminal]):
+    def __init__(self, value: Union[Variable, Terminal, List['Term']]):
         self.value = value
 
     def __repr__(self):
@@ -44,7 +44,7 @@ class Term:
         return hash(self.value)
 
     def __eq__(self, other):
-        if not isinstance(other, Variable):
+        if not isinstance(other, Term):
             return False
         return self.value == other.value
 

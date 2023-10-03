@@ -12,20 +12,18 @@ def main():
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_1.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_2.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_3.eq"
-    file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_4.eq"
-
-    reader = EqReader()
-    content = reader.read(file_path)
-    print("content:", content)
+    #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_4.eq"
+    file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_58.eq"
 
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
     solver = Solver(algorithm=EnumerateAssignmentsUsingGenerator)
-    satisfiability, assignment = solver.solve(parsed_content)
+    #solver = Solver(algorithm=EnumerateAssignments)
+    result, running_time = solver.solve(parsed_content)
 
-    print_results(satisfiability, assignment, parsed_content)
+    print_results(result,running_time, parsed_content)
 
 
 if __name__ == '__main__':

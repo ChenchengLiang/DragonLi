@@ -1,23 +1,32 @@
 from DataTypes import Variable, Terminal, Term, Assignment
-from typing import Dict, List
+from typing import Dict, List,Union
 
 
-def print_results(satisfiability: bool, assignment: Assignment, parsed_content):
+def print_results(result:Union[bool, Assignment,None], running_time:float, parsed_content:Dict):
     print("-" * 10, "Problem", "-" * 10)
     original_equation,string_terminals, string_variables = assemble_parsed_content(parsed_content)
-    solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
     print("Variables:", string_variables)
     print("Terminals:", string_terminals)
     print("Equation:", original_equation)
 
     print("-" * 10, "Solution", "-" * 10)
-    if satisfiability == True:
-        print("SAT")
-        assignment.pretty_print()
-        print(solved_string_equation)
 
+    if result is None:
+        print("TIMEOUT")
+    elif result == "max_variable_length_exceeded":
+        print("MAX VARIABLE LENGTH EXCEEDED")
     else:
-        print("UNSAT")
+        (satisfiability, assignment) = result
+        solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
+
+        if satisfiability == True:
+            print("SAT")
+            assignment.pretty_print()
+            print(solved_string_equation)
+
+    print(f'Algorithm runtime in seconds: {running_time}')
+
+
 
 
 def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assignment()):
@@ -45,8 +54,8 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
             right_str.append(t.value.value)
     string_equation = "".join(left_str) + "=" + "".join(right_str)
 
-    string_terminals = "".join([t.value for t in parsed_content["terminals"] ])
-    string_variables = "".join([t.value for t in parsed_content["variables"] ])
+    string_terminals = ",".join([t.value for t in parsed_content["terminals"] ])
+    string_variables = ",".join([t.value for t in parsed_content["variables"] ])
 
 
     return string_equation, string_terminals, string_variables

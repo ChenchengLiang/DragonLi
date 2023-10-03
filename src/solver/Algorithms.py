@@ -14,7 +14,7 @@ class AbstractAlgorithm(ABC):
     @abstractmethod
     def run(self):
         pass
-    
+
     def check_equation(self, left_terms: List[Term], right_terms: List[Term], assignments: Assignment) -> bool:
         left_side = self.extract_values_from_terms(left_terms, assignments)
         right_side = self.extract_values_from_terms(right_terms, assignments)
@@ -79,7 +79,8 @@ class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
             if self.check_equation(self.left_terms, self.right_terms, assignment):
                 return True, assignment
 
-        return False, Assignment()
+        return "max_variable_length_exceeded"
+        #return False, Assignment()
 
 
 class EnumerateAssignments(AbstractAlgorithm):
@@ -121,4 +122,5 @@ class EnumerateAssignments(AbstractAlgorithm):
             if self.check_equation(self.left_terms, self.right_terms, assignment):
                 return True, assignment
 
-        return False, Assignment()
+        return "max_variable_length_exceeded"
+        #return False, Assignment()
