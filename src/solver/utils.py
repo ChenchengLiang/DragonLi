@@ -24,6 +24,9 @@ def print_results(result:Union[bool, Assignment,None], running_time:float, parse
             assignment.pretty_print()
             print(solved_string_equation)
 
+        if satisfiability == False:
+            print("UNSAT")
+
     print(f'Algorithm runtime in seconds: {running_time}')
 
 

@@ -2,14 +2,15 @@ from abc import ABC, abstractmethod
 from itertools import product
 from DataTypes import Assignment, Term, Terminal, Variable
 from typing import List, Dict, Tuple, Generator
+from collections import deque
 
 
 class AbstractAlgorithm(ABC):
-    def __init__(self, terminals, variables, left_terms, right_terms):
+    def __init__(self, terminals:List[Terminal], variables:List[Variable], left_terms:List[Term], right_terms:List[Term]):
         self.terminals = terminals
         self.variables = variables
-        self.left_terms = left_terms
-        self.right_terms = right_terms
+        self.left_terms = left_terms.copy()
+        self.right_terms = right_terms.copy()
 
     @abstractmethod
     def run(self):
@@ -41,18 +42,31 @@ class AbstractAlgorithm(ABC):
 
 
 class ElimilateVariables(AbstractAlgorithm):
-    def __init__(self, terminals, variables, left_terms, right_terms):
+    def __init__(self, terminals:List[Terminal], variables:List[Variable], left_terms:List[Term], right_terms:List[Term],parameters:Dict):
         super().__init__(terminals, variables, left_terms, right_terms)
 
     def run(self):
         #todo: implement this
+        left_term_queue=deque(self.left_terms)
+        right_term_queue=deque(self.right_terms)
+
+        # 1. when both sides are not empty
+
+        # 2. when one side is empty (left)
+
+        # 3. when one side is empty (right)
+
+        # 4. when both sides are empty
+
+
+
         return False, Assignment()
 
 
 class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
-    def __init__(self, terminals, variables, left_terms, right_terms, max_variable_length):
+    def __init__(self, terminals, variables, left_terms, right_terms, parameters:Dict):
         super().__init__(terminals, variables, left_terms, right_terms)
-        self.max_variable_length = max_variable_length
+        self.max_variable_length = parameters["max_variable_length"]
 
     def generate_possible_terminal_combinations(self, terminals: List[str], max_length: int) -> Generator[Tuple[str, ...], None, None]:
         for length in range(1, max_length + 1):
@@ -84,9 +98,9 @@ class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
 
 
 class EnumerateAssignments(AbstractAlgorithm):
-    def __init__(self, terminals, variables, left_terms, right_terms, max_variable_length):
+    def __init__(self, terminals, variables, left_terms, right_terms, parameters):
         super().__init__(terminals, variables, left_terms, right_terms)
-        self.max_variable_length = max_variable_length
+        self.max_variable_length = parameters["max_variable_length"]
 
     def generate_possible_terminal_combinations(self, terminals: List[Terminal], max_length: int) -> List[Tuple[Terminal]]:
         combinations = []

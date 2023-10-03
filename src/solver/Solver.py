@@ -9,9 +9,10 @@ from DataTypes import Variable, Terminal, Term, Assignment
 
 
 class Solver:
-    def __init__(self, algorithm: AbstractAlgorithm):
+    def __init__(self, algorithm: AbstractAlgorithm, **kwargs):
         self.algorithm = algorithm
-        pass
+        self.kwargs=kwargs
+
 
     def solve(self, string_equation: Dict) -> (bool, Assignment):
         variables: Set[Variable] = string_equation["variables"]
@@ -20,7 +21,7 @@ class Solver:
         right_terms: List[Term] = string_equation["right_terms"]
 
         print("-"*10, "Solving equation", "-"*10)
-        _algorithm = self.algorithm(terminals, variables, left_terms, right_terms, max_variable_length)
+        _algorithm = self.algorithm(terminals, variables, left_terms, right_terms, self.kwargs)
         result, running_time = self.count_time(_algorithm.run, algorithm_timeout)
 
         return result, running_time
