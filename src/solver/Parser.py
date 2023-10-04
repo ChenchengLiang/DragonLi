@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
-from DataTypes import Variable, Terminal, Term
-from Constants import empty_terminal
-from utils import remove_duplicates
+from .DataTypes import Variable, Terminal, Term
+from .Constants import empty_terminal
+from .utils import remove_duplicates
 
 
 class AbstractParser(ABC):

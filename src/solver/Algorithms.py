@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from itertools import product
-from DataTypes import Assignment, Term, Terminal, Variable
+from .DataTypes import Assignment, Term, Terminal, Variable
 from typing import List, Dict, Tuple, Generator
 from collections import deque
 
@@ -41,20 +41,65 @@ class AbstractAlgorithm(ABC):
 
 
 
-class ElimilateVariables(AbstractAlgorithm):
+class ElimilateVariablesLeftTerm(AbstractAlgorithm):
     def __init__(self, terminals:List[Terminal], variables:List[Variable], left_terms:List[Term], right_terms:List[Term],parameters:Dict):
         super().__init__(terminals, variables, left_terms, right_terms)
+        self.assignment = Assignment()
 
     def run(self):
         #todo: implement this
         left_term_queue=deque(self.left_terms)
         right_term_queue=deque(self.right_terms)
 
+        while left_term_queue:
+            first_left_term=left_term_queue[0]
+
+            if type(first_left_term.value) == Variable:
+                pass # search middle equal term
+            elif type(first_left_term.value) == Terminal:
+                if len(right_term_queue)!=0:
+                    first_right_term=right_term_queue[0]
+                    if type(first_right_term.value) == Variable:
+                        self.swap_side(first_left_term, first_right_term)
+                        pass # search middle equal term
+                    elif type(first_right_term.value) == Terminal:
+                        if first_left_term.value==first_right_term.value:
+                            left_term_queue.popleft()
+                            right_term_queue.popleft()
+                        else:
+                            return False, Assignment()
+                else:
+                    return False, Assignment()
+
+    def swap_side(self, left_term, right_term):
+        x=left_term.copy()
+        y=right_term.copy()
+        left_term=y
+        right_term=x
+
+class ElimilateVariables(AbstractAlgorithm):
+    def __init__(self, terminals:List[Terminal], variables:List[Variable], left_terms:List[Term], right_terms:List[Term],parameters:Dict):
+        super().__init__(terminals, variables, left_terms, right_terms)
+        self.assignment = Assignment()
+
+    def run(self):
+        #todo: implement this
+        left_term_queue=deque(self.left_terms)
+        right_term_queue=deque(self.right_terms)
+
+
+
         # 1. when both sides are not empty
+        if len(left_term_queue)!=0 and len(right_term_queue)!=0:
+            return self.handle_two_terms(left_term_queue, right_term_queue)
+
 
         # 2. when one side is empty (left)
-
+        if right_term_queue:
+            pass
         # 3. when one side is empty (right)
+        if left_term_queue:
+            pass
 
         # 4. when both sides are empty
 
@@ -62,6 +107,28 @@ class ElimilateVariables(AbstractAlgorithm):
 
         return False, Assignment()
 
+    def handle_two_terms(self,left_term_queue, right_term_queue):
+        left_term = left_term_queue.popleft()
+        right_term = right_term_queue.popleft()
+        if type(left_term.value) == Variable and type(right_term.value) == Variable:
+            if left_term.value == right_term.value:
+                pass
+            else:
+                pass
+            return False, Assignment()
+        elif type(left_term.value) == Variable and type(right_term.value) == Terminal:
+            left_term_queue.appendleft(left_term)
+            right_term_queue.appendleft(right_term)
+            return False, Assignment()
+        elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
+            return False, Assignment()
+        else:  # type(left_term.value) == Terminal and type(right_term.value) == Terminal:
+            if left_term.value == right_term.value:
+                pass
+            else:
+                return False, Assignment()
+    def simplify(self, left_term_queue, right_term_queue):
+        pass
 
 class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
     def __init__(self, terminals, variables, left_terms, right_terms, parameters:Dict):

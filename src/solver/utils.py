@@ -1,4 +1,4 @@
-from DataTypes import Variable, Terminal, Term, Assignment
+from .DataTypes import Variable, Terminal, Term, Assignment
 from typing import Dict, List,Union
 
 
@@ -12,20 +12,20 @@ def print_results(result:Union[bool, Assignment,None], running_time:float, parse
     print("-" * 10, "Solution", "-" * 10)
 
     if result is None:
-        print("TIMEOUT")
+        print("result: INTERNAL TIMEOUT")
     elif result == "max_variable_length_exceeded":
-        print("MAX VARIABLE LENGTH EXCEEDED")
+        print("result: MAX VARIABLE LENGTH EXCEEDED")
     else:
         (satisfiability, assignment) = result
         solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
 
         if satisfiability == True:
-            print("SAT")
+            print("result: SAT")
             assignment.pretty_print()
             print(solved_string_equation)
 
         if satisfiability == False:
-            print("UNSAT")
+            print("result: UNSAT")
 
     print(f'Algorithm runtime in seconds: {running_time}')
 

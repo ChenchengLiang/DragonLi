@@ -1,6 +1,7 @@
 .idea/*
 Woorpje_benchmarks/*
-/process_benchmarks/temp_shell/*
+src/process_benchmarks/temp_shell/*
+src/process_benchmarks/summary/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

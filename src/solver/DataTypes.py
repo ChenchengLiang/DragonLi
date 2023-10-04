@@ -4,7 +4,7 @@ from typing import Union, List
 class Variable:
     def __init__(self, value: str):
         self.value = value
-
+        self.assignment: List[Terminal] = None
     def __repr__(self):
         return f"Variable({self.value})"
 
@@ -15,6 +15,7 @@ class Variable:
         if not isinstance(other, Variable):
             return False
         return self.value == other.value
+
 
 
 class Terminal:
