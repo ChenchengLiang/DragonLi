@@ -3,7 +3,8 @@ from itertools import product
 from .DataTypes import Assignment, Term, Terminal, Variable
 from typing import List, Dict, Tuple, Generator
 from collections import deque
-from .utils import flatten_list,assemble_parsed_content
+from .utils import flatten_list, assemble_parsed_content, remove_duplicates
+from .Constants import empty_terminal
 
 
 class AbstractAlgorithm(ABC):
@@ -52,8 +53,9 @@ class ElimilateVariables(AbstractAlgorithm):
     def run(self):
         left_term_queue = deque(self.left_terms)
         right_term_queue = deque(self.right_terms)
+        loop_count = 0
 
-        while left_term_queue:  # while one side is not empty
+        while len(left_term_queue) != 0 and len(right_term_queue) != 0:  # while two sides are not empty
             first_left_term = left_term_queue[0]  # unwrap first left hand term
             if type(first_left_term.value) == Variable:
                 first_right_term = right_term_queue[0]  # unwrap first right hand term
@@ -62,91 +64,171 @@ class ElimilateVariables(AbstractAlgorithm):
                     self.split_equation_two_variables(left_term_queue, right_term_queue)
 
                 elif type(first_right_term.value) == Terminal:  # example: V1 T2 T3 ... = a T5 T6 ...
-                    pass  # split equation
+                    # split equation
+                    self.split_equation_one_variable(left_term_queue, right_term_queue)
             elif type(first_left_term.value) == Terminal:
                 first_right_term = right_term_queue[0]  # unwrap first right hand term
                 if type(first_right_term.value) == Variable:  # example: a T2 T3 ... = V4 T5 T6 ...
-                    pass  # split equation
+                    # split equation
+                    self.split_equation_one_variable(right_term_queue, left_term_queue)
                 elif type(first_right_term.value) == Terminal:  # example: a T2 T3 ... = a|b T5 T6 ...
                     if first_left_term.value == first_right_term.value:  # example: a T2 T3 ... = a T5 T6 ..., dischard both terms
                         left_term_queue.popleft()
                         right_term_queue.popleft()
                     else:  # example: a T2 T3 ... = b T5 T6 ..., UNSAT
                         return False, Assignment()
+            loop_count += 1
+            print("loop_count: ", loop_count)
+            print("length", len(left_term_queue), len(right_term_queue))
 
-    def split_equation_two_variables(self, left_term: deque, right_term: deque):
-        self.left_variable_larger_than_right_variable(left_term, right_term)
+        if len(left_term_queue) == 0 and len(right_term_queue) == 0:
+            return True, Assignment()
+        if len(left_term_queue) == 0 and len(right_term_queue) != 0:
+            self.left_terms_empty(left_term_queue, right_term_queue)
+        if len(left_term_queue) != 0 and len(right_term_queue) == 0:
+            self.right_terms_empty(left_term_queue, right_term_queue)
 
-    def split_equation_one_variable(self):
-        pass
+    def split_equation_two_variables(self, left_terms: deque, right_terms: deque):
+        print("split_equation_two_variables")
+        # self.left_variable_larger_than_right_variable(left_terms, right_terms)
+        # self.left_variable_smaller_than_right_variable(left_terms, right_terms)
+        self.left_variable_equal_right_variable(left_terms, right_terms)
+
+    def split_equation_one_variable(self, left_terms: deque, right_terms: deque):
+        print("split_equation_one_variable")
+        # self.left_variable_empty(left_term, right_term)
+        self.left_variable_not_empty(left_terms, right_terms)
 
     def left_variable_larger_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
+        print("branch: left_variable > or < right_variable")
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+
         left_term = left_term_queue.popleft()
         right_term = right_term_queue.popleft()
 
-
         # split variables
-        split_term = Term(Variable(left_term.value.value + "_SPLIT"))
-        new_term = [right_term, split_term]
-
-        # replace left_term with new_term
-        self.replace_a_term(new_term, left_term_queue)
-        self.replace_a_term(new_term, right_term_queue)
+        fresh_variable_term = Term(Variable(left_term.value.value + "_NEW"))
+        new_variable_term = [right_term, fresh_variable_term]
 
         # construct new equation
-        left_term_queue.appendleft(split_term)
+        left_term_queue.appendleft(fresh_variable_term)
+        # replace left_term with new_term
+        self.replace_a_term(left_term, new_variable_term, left_term_queue)
+        self.replace_a_term(left_term, new_variable_term, right_term_queue)
 
-        #flatten euqation
-        left_term_queue = flatten_list(left_term_queue)
-        right_term_queue = flatten_list(right_term_queue)
+        # flatten euqation
+        left_term_list = flatten_list(left_term_queue)
+        right_term_list = flatten_list(right_term_queue)
 
         # update variable list
-        self.variables.append(split_term.value)
-        self.update_variable_list(left_term_queue+left_term_queue)
+        self.update_variable_list(left_term_list + right_term_list)
+        # self.variables.append(split_term.value)
         # if right_term.value not in [v for v in left_term_queue+left_term_queue]:
         #     self.variables.remove(right_term.value)
         # if left_term.value not in [v for v in left_term_queue+left_term_queue]:
         #     self.variables.remove(left_term.value)
 
+        left_term_queue.clear()
+        right_term_queue.clear()
+        left_term_queue.extend(left_term_list)
+        right_term_queue.extend(right_term_list)
+
         self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
-        left_term_queue = deque(left_term_queue)
-        right_term_queue = deque(left_term_queue)
+    def left_variable_smaller_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
+        self.left_variable_larger_than_right_variable(right_term_queue, left_term_queue)
 
-    def left_variable_smaller_than_right_variable(self):
-        pass
+    def left_variable_equal_right_variable(self, left_term_queue, right_term_queue):
+        print("branch: left_variable = right_variable")
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        left_term = left_term_queue.popleft()
+        right_term = right_term_queue.popleft()
+        if left_term.value == right_term.value:
+            pass
+        elif left_term.value != right_term.value:
+            # replace left_term variable with right_term variable
+            self.replace_a_term(left_term, right_term, left_term_queue)
+            self.replace_a_term(left_term, right_term, right_term_queue)
 
-    def left_variable_equal_right_variable(self):
-        pass
+        self.update_variable_list(left_term_queue + right_term_queue)
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
-    def left_variable_empty(self):
-        pass
+    def left_variable_empty(self, left_term_queue: deque, right_term_queue: deque):
+        print("branch: left_variable_empty")
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        left_term = left_term_queue.popleft()
 
-    def left_variable_not_empty(self):
-        pass
+        self.replace_a_term(left_term, Term(empty_terminal), left_term_queue)
+        self.replace_a_term(left_term, Term(empty_terminal), right_term_queue)
 
-    def replace_a_term(self, new_term:Term, term_queue: deque):
-        for t in term_queue:
-            if t == new_term:
-                t.value = new_term
-                break
+        self.update_variable_list(left_term_queue + right_term_queue)
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
-    def update_variable_list(self,term_list):
-        self.variables=[]
+    def left_variable_not_empty(self, left_term_queue: deque, right_term_queue: deque):
+        print("branch: left_variable_not_empty")
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+
+        left_term = left_term_queue.popleft()
+        right_term = right_term_queue.popleft()
+
+        # split variables
+        fresh_variable_term = Term(Variable(left_term.value.value + "_NEW"))
+        new_variable_term = [right_term, fresh_variable_term]
+
+        # construct new equation
+        left_term_queue.appendleft(fresh_variable_term)
+        # replace old variables
+        self.replace_a_term(left_term, new_variable_term, left_term_queue)
+        self.replace_a_term(left_term, new_variable_term, right_term_queue)
+
+        # flatten euqation
+        left_term_list = flatten_list(left_term_queue)
+        right_term_list = flatten_list(right_term_queue)
+
+        # update variable list
+        self.update_variable_list(left_term_list + right_term_list)
+
+        left_term_queue.clear()
+        right_term_queue.clear()
+        left_term_queue.extend(left_term_list)
+        right_term_queue.extend(right_term_list)
+
+        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+
+
+    def left_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
+        right_term_queue_contains_terminal = any(isinstance(item.value, Terminal) for item in right_term_queue)
+        if right_term_queue_contains_terminal==True:
+            pass #close branch
+        else:
+            #assign all variables in right_term_queue to empty
+            for x in self.assignment.variables:
+                self.assignment.assign(x, Term(empty_terminal))
+            return True, self.assignment
+
+    def right_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
+        self.left_terms_empty(right_term_queue, left_term_queue)
+
+    def replace_a_term(self, old_term: Term, new_term: Term, term_queue: deque):
+        for i, t in enumerate(term_queue):
+            if t.value == old_term.value:
+                term_queue[i] = new_term
+
+    def update_variable_list(self, term_list):
+        self.variables = []
         for t in term_list:
             if type(t.value) == Variable:
                 self.variables.append(t.value)
+        self.variables = remove_duplicates(self.variables)
 
-
-
-
-    def pretty_print_current_equation(self,left_terms: List[Term], right_terms: List[Term]):
-        content_dict={"left_terms":left_terms,"right_terms":right_terms,"terminals":self.terminals,"variables":self.variables}
-        string_equation, string_terminals, string_variables=assemble_parsed_content(content_dict)
-        print("string_terminals:",string_terminals)
-        print("string_variables:",string_variables)
-        print("string_equation:",string_equation)
-        print("-"*10)
+    def pretty_print_current_equation(self, left_terms: List[Term], right_terms: List[Term]):
+        content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
+                        "variables": self.variables}
+        string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
+        # print("string_terminals:",string_terminals)
+        print("string_variables:", string_variables)
+        print("string_equation:", string_equation)
+        print("-" * 10)
 
 
 class ElimilateVariablesLeftTerm(AbstractAlgorithm):
