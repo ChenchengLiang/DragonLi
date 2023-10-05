@@ -1,12 +1,13 @@
-from Parser import Parser, EqParser, EqReader
-from Solver import Solver
-from utils import print_results
-from Algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator,ElimilateVariables
-from Constants import max_variable_length, algorithm_timeout
-
+import sys
+sys.path.append("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs")
+from src.solver.Parser import Parser, EqParser, EqReader
+from src.solver.Solver import Solver
+from src.solver.utils import print_results
+from src.solver.Algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator,ElimilateVariables
+from src.solver.Constants import max_variable_length, algorithm_timeout
 def main():
     # example path
-    file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/1.eq"
+    file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/test.eq"
     # Woorpje_benchmarks path
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_1.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_2.eq"

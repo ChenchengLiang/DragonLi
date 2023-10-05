@@ -32,7 +32,7 @@ def create_a_shell_file(file_path, parameter_list=""):
     return shell_file_path
 
 
-def run_a_shell_file(shell_file_path):
+def run_a_shell_file(shell_file_path:str):
     print("-" * 10)
     print("run " + shell_file_path)
     run_shell_command = ["sh", shell_file_path]
@@ -49,7 +49,7 @@ def run_a_shell_file(shell_file_path):
     return result, used_time
 
 
-def process_solver_output(solver_output):
+def process_solver_output(solver_output:str):
     result = "UNKNOWN"
     lines = solver_output.split('\n')
     for line in lines:

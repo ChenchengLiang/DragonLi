@@ -72,3 +72,12 @@ def remove_duplicates(lst):
             seen.add(item)
             result.append(item)
     return result
+
+def flatten_list(nested_list):
+    flattened = []
+    for item in nested_list:
+        if isinstance(item, list):
+            flattened.extend(flatten_list(item))
+        else:
+            flattened.append(item)
+    return flattened

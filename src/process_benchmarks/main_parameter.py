@@ -21,7 +21,6 @@ def main(args):
 
     #solver = Solver(algorithm=ElimilateVariables)
     solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
-    #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)
     result, running_time = solver.solve(parsed_content)
 
 

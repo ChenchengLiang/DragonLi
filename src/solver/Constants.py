@@ -1,9 +1,9 @@
 from .DataTypes import Terminal
 
-max_variable_length = 5
+max_variable_length = 100
 empty_terminal = Terminal("<EMPTY>")
-algorithm_timeout = 5
-shell_timeout = 5
+algorithm_timeout = 20
+shell_timeout = 20
 
 '''
 Syntax:
@@ -12,8 +12,8 @@ Formula : Equation | Formula ∧ Formula
 
 Equation : List[Term] = List[Term]
 Term : Variable | Terminal | List[Term]
-Variable : List[Terminal]
-Terminal : c | <EMPTY>
+Variable : v
+Terminal : c 
 
 c:str \in letters alphabet
 
