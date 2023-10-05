@@ -4,7 +4,8 @@ from .DataTypes import Assignment, Term, Terminal, Variable
 from typing import List, Dict, Tuple, Generator
 from collections import deque
 from .utils import flatten_list, assemble_parsed_content, remove_duplicates
-from .Constants import empty_terminal
+from .Constants import empty_terminal, branch_closed
+import random
 
 
 class AbstractAlgorithm(ABC):
@@ -51,6 +52,18 @@ class ElimilateVariables(AbstractAlgorithm):
         self.parameters = parameters
 
     def run(self):
+
+        #todo # example: a T2 T3 ... = b T5 T6 ..., UNSAT before encounter any variable
+
+        result = branch_closed
+        while True:
+            result, assignment = self.run_one_path()
+            print("run one path:", result)
+            if result == True or result == False:
+                return result, assignment
+
+    def run_one_path(self):
+        # create local variables
         left_term_queue = deque(self.left_terms)
         right_term_queue = deque(self.right_terms)
         loop_count = 0
@@ -76,7 +89,8 @@ class ElimilateVariables(AbstractAlgorithm):
                         left_term_queue.popleft()
                         right_term_queue.popleft()
                     else:  # example: a T2 T3 ... = b T5 T6 ..., UNSAT
-                        return False, Assignment()
+                        return branch_closed, self.assignment
+
             loop_count += 1
             print("loop_count: ", loop_count)
             print("length", len(left_term_queue), len(right_term_queue))
@@ -90,14 +104,32 @@ class ElimilateVariables(AbstractAlgorithm):
 
     def split_equation_two_variables(self, left_terms: deque, right_terms: deque):
         print("split_equation_two_variables")
+
+        strategies = [self.left_variable_larger_than_right_variable, self.left_variable_smaller_than_right_variable,
+                      self.left_variable_equal_right_variable]
+        # Define the probabilities of selecting each strategy
+        probabilities = [0.4, 0.3, 0.3]  # Adjust these probabilities as needed
+
+        # Use random.choices() to select a function with specified probabilities
+        selected_strategy = random.choices(strategies, probabilities)[0]
+        selected_strategy(left_terms, right_terms)
+
         # self.left_variable_larger_than_right_variable(left_terms, right_terms)
         # self.left_variable_smaller_than_right_variable(left_terms, right_terms)
-        self.left_variable_equal_right_variable(left_terms, right_terms)
+        # self.left_variable_equal_right_variable(left_terms, right_terms)
 
     def split_equation_one_variable(self, left_terms: deque, right_terms: deque):
         print("split_equation_one_variable")
+        strategies = [self.left_variable_empty, self.left_variable_not_empty]
+        # Define the probabilities of selecting each strategy
+        probabilities = [0.5, 0.5]  # Adjust these probabilities as needed
+
+        # Use random.choices() to select a function with specified probabilities
+        selected_strategy = random.choices(strategies, probabilities)[0]
+        selected_strategy(left_terms, right_terms)
+
         # self.left_variable_empty(left_term, right_term)
-        self.left_variable_not_empty(left_terms, right_terms)
+        # self.left_variable_not_empty(left_terms, right_terms)
 
     def left_variable_larger_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
         print("branch: left_variable > or < right_variable")
@@ -195,13 +227,13 @@ class ElimilateVariables(AbstractAlgorithm):
 
         self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
-
     def left_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
         right_term_queue_contains_terminal = any(isinstance(item.value, Terminal) for item in right_term_queue)
-        if right_term_queue_contains_terminal==True:
-            pass #close branch
+        print("debug",right_term_queue_contains_terminal)
+        if right_term_queue_contains_terminal == True:
+            return branch_closed, self.assignment
         else:
-            #assign all variables in right_term_queue to empty
+            # assign all variables in right_term_queue to empty
             for x in self.assignment.variables:
                 self.assignment.assign(x, Term(empty_terminal))
             return True, self.assignment
@@ -229,44 +261,6 @@ class ElimilateVariables(AbstractAlgorithm):
         print("string_variables:", string_variables)
         print("string_equation:", string_equation)
         print("-" * 10)
-
-
-class ElimilateVariablesLeftTerm(AbstractAlgorithm):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
-                 right_terms: List[Term], parameters: Dict):
-        super().__init__(terminals, variables, left_terms, right_terms)
-        self.assignment = Assignment()
-
-    def run(self):
-        # todo: implement this
-        left_term_queue = deque(self.left_terms)
-        right_term_queue = deque(self.right_terms)
-
-        while left_term_queue:
-            first_left_term = left_term_queue[0]
-
-            if type(first_left_term.value) == Variable:
-                pass  # search middle equal term
-            elif type(first_left_term.value) == Terminal:
-                if len(right_term_queue) != 0:
-                    first_right_term = right_term_queue[0]
-                    if type(first_right_term.value) == Variable:
-                        self.swap_side(first_left_term, first_right_term)
-                        pass  # search middle equal term
-                    elif type(first_right_term.value) == Terminal:
-                        if first_left_term.value == first_right_term.value:
-                            left_term_queue.popleft()
-                            right_term_queue.popleft()
-                        else:
-                            return False, Assignment()
-                else:
-                    return False, Assignment()
-
-    def swap_side(self, left_term, right_term):
-        x = left_term.copy()
-        y = right_term.copy()
-        left_term = y
-        right_term = x
 
 
 class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
