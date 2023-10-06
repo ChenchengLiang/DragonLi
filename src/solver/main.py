@@ -7,12 +7,12 @@ from src.solver.Algorithms import EnumerateAssignments, EnumerateAssignmentsUsin
 from src.solver.Constants import max_variable_length, algorithm_timeout
 def main():
     # example path
-    file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/test.eq"
+    #file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/test.eq"
     # Woorpje_benchmarks path
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_1.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_2.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_3.eq"
-    #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_4.eq"
+    file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_4.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_58.eq"
 
 
@@ -25,10 +25,9 @@ def main():
     solver = Solver(algorithm=ElimilateVariables)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)
-    result, running_time = solver.solve(parsed_content)
+    result_dict = solver.solve(parsed_content)
 
-
-    print_results(result,running_time, parsed_content)
+    print_results(result_dict)
 
 
 if __name__ == '__main__':

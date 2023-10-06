@@ -2,22 +2,24 @@ from .DataTypes import Variable, Terminal, Term, Assignment
 from typing import Dict, List,Union
 
 
-def print_results(result:Union[bool, Assignment,None], running_time:float, parsed_content:Dict):
+def print_results(result:Dict):
     print("-" * 10, "Problem", "-" * 10)
-    original_equation,string_terminals, string_variables = assemble_parsed_content(parsed_content)
+    original_equation,string_terminals, string_variables = assemble_parsed_content(result)
     print("Variables:", string_variables)
     print("Terminals:", string_terminals)
     print("Equation:", original_equation)
 
     print("-" * 10, "Solution", "-" * 10)
 
-    if result is None:
+    satisfiability = result["result"]
+    assignment = result["assignment"]
+
+    if satisfiability is None:
         print("result: INTERNAL TIMEOUT")
-    elif result == "max_variable_length_exceeded":
+    elif satisfiability == "max_variable_length_exceeded":
         print("result: MAX VARIABLE LENGTH EXCEEDED")
     else:
-        (satisfiability, assignment) = result
-        solved_string_equation, _, _ = assemble_parsed_content(parsed_content, assignment)
+        solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
 
         if satisfiability == True:
             print("result: SAT")
@@ -27,7 +29,7 @@ def print_results(result:Union[bool, Assignment,None], running_time:float, parse
         if satisfiability == False:
             print("result: UNSAT")
 
-    print(f'Algorithm runtime in seconds: {running_time}')
+    print(f'Algorithm runtime in seconds: {result["running_time"]}')
 
 
 
