@@ -13,7 +13,7 @@ def main():
     example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
     track_01="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje"
 
-    run_on_one_track(track_01)
+    run_on_one_track(example_track)
 
 
 def run_on_one_track(benchmark_folder:str):

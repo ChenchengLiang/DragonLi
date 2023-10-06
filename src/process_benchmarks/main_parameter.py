@@ -18,13 +18,13 @@ def main(args):
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-
     solver = Solver(algorithm=ElimilateVariables)
-    #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
-    result, running_time = solver.solve(parsed_content)
+    # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
+    result_dict = solver.solve(parsed_content)
+
+    print_results(result_dict)
 
 
-    print_results(result,running_time, parsed_content)
 
 
 if __name__ == '__main__':

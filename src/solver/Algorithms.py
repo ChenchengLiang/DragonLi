@@ -53,14 +53,13 @@ class ElimilateVariables(AbstractAlgorithm):
 
     def run(self):
 
-        #todo # example: a T2 T3 ... = b T5 T6 ..., UNSAT before encounter any variable
-
         path_count=0
         while True:
+            print("-"*10, "path ",path_count," start", "-"*10)
             result, assignment, left_term_queue, right_term_queue = self.run_one_path()
             print("path result:", result)
+            print("-"*10, "path ",path_count," end", "-"*10)
             path_count += 1
-            print("path count:", path_count)
 
             if result == True or result == False:
                 return {"result":result, "assignment":assignment,"left_terms":left_term_queue, "right_terms":right_term_queue,
