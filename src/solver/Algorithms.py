@@ -4,9 +4,8 @@ from .DataTypes import Assignment, Term, Terminal, Variable
 from typing import List, Dict, Tuple, Generator
 from collections import deque
 from .utils import flatten_list, assemble_parsed_content, remove_duplicates
-from .Constants import empty_terminal, branch_closed
+from .Constants import EMPTY_TERMINAL, BRANCH_CLOSED,MAX_PATH,MAX_PATH_REACHED
 import random
-
 
 class AbstractAlgorithm(ABC):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
@@ -53,22 +52,31 @@ class ElimilateVariables(AbstractAlgorithm):
 
     def run(self):
 
-        path_count=0
+        result,_,preprocessed_local_left_terms,preprocessed_local_right_terms=self.preprocess_equation()
+        self.pretty_print_current_equation(preprocessed_local_left_terms, preprocessed_local_right_terms)
+
+
+        path_count = 0
         while True:
-            print("-"*10, "path ",path_count," start", "-"*10)
-            result, assignment, left_term_queue, right_term_queue = self.run_one_path()
+            print("-" * 10, "path ", path_count, " start", "-" * 10)
+            result, assignment, left_term_queue, right_term_queue = self.run_one_path(preprocessed_local_left_terms,preprocessed_local_right_terms)
             print("path result:", result)
-            print("-"*10, "path ",path_count," end", "-"*10)
+            print("-" * 10, "path ", path_count, " end", "-" * 10)
             path_count += 1
 
             if result == True or result == False:
-                return {"result":result, "assignment":assignment,"left_terms":left_term_queue, "right_terms":right_term_queue,
-                        "variables":self.variables, "terminals":self.terminals}
+                return {"result": result, "assignment": assignment, "left_terms": left_term_queue,
+                        "right_terms": right_term_queue,
+                        "variables": self.variables, "terminals": self.terminals}
 
-    def run_one_path(self):
+            if path_count>MAX_PATH:
+                return {"result": MAX_PATH_REACHED, "assignment": assignment, "left_terms": left_term_queue,
+                        "right_terms": right_term_queue,
+                        "variables": self.variables, "terminals": self.terminals}
+    def run_one_path(self,preprocessed_local_left_terms,preprocessed_local_right_terms):
         # create local variables
-        left_term_queue = deque(self.left_terms)
-        right_term_queue = deque(self.right_terms)
+        left_term_queue = deque(preprocessed_local_left_terms)
+        right_term_queue = deque(preprocessed_local_right_terms)
         path_depth = 0
 
         while len(left_term_queue) != 0 and len(right_term_queue) != 0:  # while two sides are not empty
@@ -89,24 +97,24 @@ class ElimilateVariables(AbstractAlgorithm):
                     self.split_equation_one_variable(right_term_queue, left_term_queue)
                 elif type(first_right_term.value) == Terminal:  # example: a T2 T3 ... = a|b T5 T6 ...
                     if first_left_term.value == first_right_term.value:  # example: a T2 T3 ... = a T5 T6 ..., dischard both terms
-                        l_term=left_term_queue.popleft()
-                        r_term=right_term_queue.popleft()
+                        l_term = left_term_queue.popleft()
+                        r_term = right_term_queue.popleft()
                         print("discard", l_term, "from both side")
                     else:  # example: a T2 T3 ... = b T5 T6 ..., UNSAT
-                        return branch_closed, self.assignment, left_term_queue, right_term_queue
+                        return BRANCH_CLOSED, self.assignment, left_term_queue, right_term_queue
 
             path_depth += 1
             print("path_depth: ", path_depth)
-            #print("length", len(left_term_queue), len(right_term_queue))
+            # print("length", len(left_term_queue), len(right_term_queue))
 
         if len(left_term_queue) == 0 and len(right_term_queue) == 0:
             return True, Assignment(), left_term_queue, right_term_queue
         if len(left_term_queue) == 0 and len(right_term_queue) != 0:
-            result, _ =self.left_terms_empty(left_term_queue, right_term_queue)
+            result, _ = self.left_terms_empty(left_term_queue, right_term_queue)
             return result, self.assignment, left_term_queue, right_term_queue
         if len(left_term_queue) != 0 and len(right_term_queue) == 0:
-            result,_ = self.right_terms_empty(left_term_queue, right_term_queue)
-            return result,self.assignment, left_term_queue, right_term_queue
+            result, _ = self.right_terms_empty(left_term_queue, right_term_queue)
+            return result, self.assignment, left_term_queue, right_term_queue
 
     def split_equation_two_variables(self, left_terms: deque, right_terms: deque):
         print("split_equation_two_variables")
@@ -159,7 +167,7 @@ class ElimilateVariables(AbstractAlgorithm):
         right_term_list = flatten_list(right_term_queue)
 
         # update variable list
-        self.update_variable_list(left_term_list + right_term_list)
+        self.update_variable_list(left_term_list, right_term_list)
         # self.variables.append(split_term.value)
         # if right_term.value not in [v for v in left_term_queue+left_term_queue]:
         #     self.variables.remove(right_term.value)
@@ -188,7 +196,7 @@ class ElimilateVariables(AbstractAlgorithm):
             self.replace_a_term(left_term, right_term, left_term_queue)
             self.replace_a_term(left_term, right_term, right_term_queue)
 
-        self.update_variable_list(left_term_queue + right_term_queue)
+        self.update_variable_list(left_term_queue, right_term_queue)
         self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
     def left_variable_empty(self, left_term_queue: deque, right_term_queue: deque):
@@ -196,10 +204,10 @@ class ElimilateVariables(AbstractAlgorithm):
         self.pretty_print_current_equation(left_term_queue, right_term_queue)
         left_term = left_term_queue.popleft()
 
-        self.replace_a_term(left_term, Term(empty_terminal), left_term_queue)
-        self.replace_a_term(left_term, Term(empty_terminal), right_term_queue)
+        self.replace_a_term(left_term, Term(EMPTY_TERMINAL), left_term_queue)
+        self.replace_a_term(left_term, Term(EMPTY_TERMINAL), right_term_queue)
 
-        self.update_variable_list(left_term_queue + right_term_queue)
+        self.update_variable_list(left_term_queue, right_term_queue)
         self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
     def left_variable_not_empty(self, left_term_queue: deque, right_term_queue: deque):
@@ -224,7 +232,7 @@ class ElimilateVariables(AbstractAlgorithm):
         right_term_list = flatten_list(right_term_queue)
 
         # update variable list
-        self.update_variable_list(left_term_list + right_term_list)
+        self.update_variable_list(left_term_list, right_term_list)
 
         left_term_queue.clear()
         right_term_queue.clear()
@@ -236,27 +244,62 @@ class ElimilateVariables(AbstractAlgorithm):
     def left_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
         right_term_queue_contains_terminal = any(isinstance(item.value, Terminal) for item in right_term_queue)
         if right_term_queue_contains_terminal == True:
-            return branch_closed, self.assignment
+            return BRANCH_CLOSED, self.assignment
         else:
             # assign all variables in right_term_queue to empty
             for x in self.variables:
-                self.assignment.set_assignment(x, [empty_terminal])
+                self.assignment.set_assignment(x, [EMPTY_TERMINAL])
             return True, self.assignment
 
     def right_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
         return self.left_terms_empty(right_term_queue, left_term_queue)
+
+    def preprocess_equation(self):
+
+        # local variables
+        local_left_term_queue = deque(self.left_terms)
+        local_right_term_queue = deque(self.right_terms)
+
+        print("-" * 10, "pre-process", "-" * 10)
+        self.pretty_print_current_equation(local_left_term_queue,local_right_term_queue)
+
+        if len(self.variables) == 0:  # if no variable
+            return self.check_equation(local_left_term_queue,
+                                       local_right_term_queue), self.assignment, local_left_term_queue, local_right_term_queue
+
+        # example: a T2 T3 ... = a T5 T6 ..., discard both terms if there are the same terminals
+        while len(local_left_term_queue) != 0 and len(local_right_term_queue) != 0:
+            left_term = local_left_term_queue[0]
+            right_term = local_right_term_queue[0]
+            if type(left_term.value) == Terminal and type(right_term.value) == Terminal:
+                if left_term.value == right_term.value:
+                    local_left_term_queue.popleft()
+                    local_right_term_queue.popleft()
+                else:
+                    return False, self.assignment, local_left_term_queue, local_right_term_queue
+            else:
+                return None, self.assignment, local_left_term_queue, local_right_term_queue
+
+        return None, self.assignment, local_left_term_queue, local_right_term_queue
 
     def replace_a_term(self, old_term: Term, new_term: Term, term_queue: deque):
         for i, t in enumerate(term_queue):
             if t.value == old_term.value:
                 term_queue[i] = new_term
 
-    def update_variable_list(self, term_list):
+    def update_variable_list(self, left_term_list: List[Term], right_term_list: List[Term]):
         self.variables = []
-        for t in term_list:
+        for t in left_term_list + right_term_list:
             if type(t.value) == Variable:
                 self.variables.append(t.value)
         self.variables = remove_duplicates(self.variables)
+
+        if len(self.variables) == 0:
+            satisfiability = self.check_equation(left_term_list, right_term_list)
+            if satisfiability == True:
+                return True, self.assignment, left_term_list, right_term_list
+            else:
+                return BRANCH_CLOSED, self.assignment, left_term_list, right_term_list
 
     def pretty_print_current_equation(self, left_terms: List[Term], right_terms: List[Term]):
         content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
@@ -297,11 +340,13 @@ class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
         # Check each assignment dictionary to see if it satisfies the equation
         for assignment in assignment_generator:
             if self.check_equation(self.left_terms, self.right_terms, assignment):
-                return {"result":True, "assignment":assignment,"left_terms":self.left_terms,"right_terms":self.right_terms,
-                        "variables":self.variables, "terminals":self.terminals}
+                return {"result": True, "assignment": assignment, "left_terms": self.left_terms,
+                        "right_terms": self.right_terms,
+                        "variables": self.variables, "terminals": self.terminals}
 
-        return {"result":"max_variable_length_exceeded", "assignment":assignment,
-                "left_terms":self.left_terms,"right_terms":self.right_terms,"variables":self.variables, "terminals":self.terminals}
+        return {"result": "max_variable_length_exceeded", "assignment": assignment,
+                "left_terms": self.left_terms, "right_terms": self.right_terms, "variables": self.variables,
+                "terminals": self.terminals}
 
 
 class EnumerateAssignments(AbstractAlgorithm):
@@ -342,9 +387,10 @@ class EnumerateAssignments(AbstractAlgorithm):
         # Check each assignment dictionary to see if it satisfies the equation
         for assignment in assignment_dicts:
             if self.check_equation(self.left_terms, self.right_terms, assignment):
-                return {"result":True, "assignment":assignment,"left_terms":self.left_terms,"right_terms":self.right_terms,
-                        "variables":self.variables, "terminals":self.terminals}
+                return {"result": True, "assignment": assignment, "left_terms": self.left_terms,
+                        "right_terms": self.right_terms,
+                        "variables": self.variables, "terminals": self.terminals}
 
-        return {"result":"max_variable_length_exceeded", "assignment":assignment,
-                "left_terms":self.left_terms,"right_terms":self.right_terms,"variables":self.variables, "terminals":self.terminals}
-
+        return {"result": "max_variable_length_exceeded", "assignment": assignment,
+                "left_terms": self.left_terms, "right_terms": self.right_terms, "variables": self.variables,
+                "terminals": self.terminals}

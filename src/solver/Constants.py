@@ -1,10 +1,12 @@
 from .DataTypes import Terminal
 
 max_variable_length = 8
-empty_terminal = Terminal("\"\"")
+EMPTY_TERMINAL = Terminal("\"\"")
 algorithm_timeout = 20
 shell_timeout = 20
-branch_closed="BRANCH_CLOSED"
+BRANCH_CLOSED= "BRANCH_CLOSED"
+MAX_PATH=3
+MAX_PATH_REACHED="MAX_PATH_REACHED"
 
 '''
 Syntax:

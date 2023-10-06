@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
 from .DataTypes import Variable, Terminal, Term
-from .Constants import empty_terminal
+from .Constants import EMPTY_TERMINAL
 from .utils import remove_duplicates
 
 
@@ -30,7 +30,7 @@ class EqParser(AbstractParser):
         self.variable_str = content["variables_str"]
         self.terminal_str = content["terminals_str"]
         self.variables = remove_duplicates([Variable(v) for v in content["variables_str"]])
-        self.terminals = remove_duplicates([empty_terminal] + [Terminal(t) for t in content["terminals_str"]])
+        self.terminals = remove_duplicates([EMPTY_TERMINAL] + [Terminal(t) for t in content["terminals_str"]])
 
         left_str, right_str = content["equation_str"].split('=')
 

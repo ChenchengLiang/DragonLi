@@ -14,20 +14,17 @@ def print_results(result:Dict):
     satisfiability = result["result"]
     assignment = result["assignment"]
 
-    if satisfiability is None:
-        print("result: INTERNAL TIMEOUT")
-    elif satisfiability == "max_variable_length_exceeded":
-        print("result: MAX VARIABLE LENGTH EXCEEDED")
+
+    solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
+
+    if satisfiability == True:
+        print("result: SAT")
+        assignment.pretty_print()
+        print(solved_string_equation)
+    elif satisfiability == False:
+        print("result: UNSAT")
     else:
-        solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
-
-        if satisfiability == True:
-            print("result: SAT")
-            assignment.pretty_print()
-            print(solved_string_equation)
-
-        if satisfiability == False:
-            print("result: UNSAT")
+        print("result:", satisfiability)
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 
@@ -57,7 +54,7 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
                     right_str.append(tt.value)
         else:
             right_str.append(t.value.value)
-    string_equation = "".join(left_str) + "=" + "".join(right_str)
+    string_equation = "".join(left_str) + " = " + "".join(right_str)
 
     string_terminals = ",".join([t.value for t in parsed_content["terminals"] ])
     string_variables = ",".join([t.value for t in parsed_content["variables"] ])
