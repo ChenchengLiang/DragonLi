@@ -4,11 +4,11 @@ max_variable_length = 8
 EMPTY_TERMINAL = Terminal("\"\"")
 algorithm_timeout = 20
 shell_timeout = 20
-BRANCH_CLOSED= "BRANCH_CLOSED"
-MAX_PATH=3
-MAX_PATH_REACHED="MAX_PATH_REACHED"
+BRANCH_CLOSED = "BRANCH_CLOSED"
+MAX_PATH = 1000000
+MAX_PATH_REACHED = "MAX_PATH_REACHED"
 
-brach_name_map={}
+brach_name_map = {}
 
 '''
 Syntax:

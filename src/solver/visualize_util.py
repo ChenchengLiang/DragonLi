@@ -1,13 +1,8 @@
-
-
-
-
-
-
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def visualize_path(nodes,edges):
+
+def visualize_path(nodes, edges):
     '''
     inputs:
         nodes = ["1", "2", "3"]
