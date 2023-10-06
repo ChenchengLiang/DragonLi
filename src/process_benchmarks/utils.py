@@ -9,7 +9,7 @@ def run_on_one_benchmark(file_path):
     shell_file_path = create_a_shell_file(file_path)
 
     # run the shell file
-    result, used_time = run_a_shell_file(shell_file_path,file_path)
+    result, used_time = run_a_shell_file(shell_file_path, file_path)
 
     # delete the shell file
     if os.path.exists(shell_file_path):
@@ -32,7 +32,7 @@ def create_a_shell_file(file_path, parameter_list=""):
     return shell_file_path
 
 
-def run_a_shell_file(shell_file_path:str,problem_file_path:str):
+def run_a_shell_file(shell_file_path: str, problem_file_path: str):
     print("-" * 10)
     print("run " + shell_file_path)
     run_shell_command = ["sh", shell_file_path]
@@ -44,22 +44,22 @@ def run_a_shell_file(shell_file_path:str,problem_file_path:str):
     end = time.time()
     used_time = end - start
     # print("Output from script:", completed_process.stdout)
-    result = process_solver_output(completed_process.stdout,problem_file_path)
+    result = process_solver_output(completed_process.stdout, problem_file_path)
     print("Finished", "use time: ", used_time)
     return result, used_time
 
 
-def process_solver_output(solver_output:str,problem_file_path:str):
+def process_solver_output(solver_output: str, problem_file_path: str):
     result = "UNKNOWN"
     lines = solver_output.split('\n')
     for line in lines:
         if "result:" in line:
             result = line.split("result:")[1].strip(" ")
-        #print(line)
+        # print(line)
 
-    #write to log file
+    # write to log file
     if result == "SAT" or result == "UNSAT":
-        log_file=problem_file_path+".log"
+        log_file = problem_file_path + ".log"
         if os.path.exists(log_file):
             os.remove(log_file)
         with open(log_file, 'w') as file:

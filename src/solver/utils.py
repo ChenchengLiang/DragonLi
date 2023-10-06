@@ -1,10 +1,10 @@
 from .DataTypes import Variable, Terminal, Term, Assignment
-from typing import Dict, List,Union
+from typing import Dict, List, Union
 
 
-def print_results(result:Dict):
+def print_results(result: Dict):
     print("-" * 10, "Problem", "-" * 10)
-    original_equation,string_terminals, string_variables = assemble_parsed_content(result)
+    original_equation, string_terminals, string_variables = assemble_parsed_content(result)
     print("Variables:", string_variables)
     print("Terminals:", string_terminals)
     print("Equation:", original_equation)
@@ -13,7 +13,6 @@ def print_results(result:Dict):
 
     satisfiability = result["result"]
     assignment = result["assignment"]
-
 
     solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
 
@@ -27,8 +26,6 @@ def print_results(result:Dict):
         print("result:", satisfiability)
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
-
-
 
 
 def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment()):
@@ -56,9 +53,8 @@ def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment())
             right_str.append(t.value.value)
     string_equation = "".join(left_str) + " = " + "".join(right_str)
 
-    string_terminals = ",".join([t.value for t in result["terminals"] ])
-    string_variables = ",".join([t.value for t in result["variables"] ])
-
+    string_terminals = ",".join([t.value for t in result["terminals"]])
+    string_variables = ",".join([t.value for t in result["variables"]])
 
     return string_equation, string_terminals, string_variables
 
@@ -71,6 +67,7 @@ def remove_duplicates(lst):
             seen.add(item)
             result.append(item)
     return result
+
 
 def flatten_list(nested_list):
     flattened = []
