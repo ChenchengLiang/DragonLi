@@ -14,7 +14,8 @@ def main():
     example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
     track_01="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje"
 
-    benchmark_dict={"example_track":example_track,
+    benchmark_dict={
+                    #"example_track":example_track,
                     "track_01":track_01
                     }
     for benchmark_name,benchmark_folder in benchmark_dict.items():

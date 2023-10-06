@@ -5,6 +5,7 @@ from typing import List, Dict, Tuple, Generator
 from collections import deque
 from .utils import flatten_list, assemble_parsed_content, remove_duplicates
 from .Constants import EMPTY_TERMINAL, BRANCH_CLOSED,MAX_PATH,MAX_PATH_REACHED
+from .visualize_util import visualize_path
 import random
 
 class AbstractAlgorithm(ABC):
@@ -19,9 +20,12 @@ class AbstractAlgorithm(ABC):
     def run(self):
         pass
 
-    def check_equation(self, left_terms: List[Term], right_terms: List[Term], assignments: Assignment) -> bool:
-        left_side = self.extract_values_from_terms(left_terms, assignments)
-        right_side = self.extract_values_from_terms(right_terms, assignments)
+    def visualize(self):
+        pass
+
+    def check_equation(self, left_terms: List[Term], right_terms: List[Term], assignment: Assignment=Assignment()) -> bool:
+        left_side = self.extract_values_from_terms(left_terms, assignment)
+        right_side = self.extract_values_from_terms(right_terms, assignment)
 
         # todo: this need to be improved
         left_str = "".join(left_side).replace("<EMPTY>", "")
@@ -49,13 +53,15 @@ class ElimilateVariables(AbstractAlgorithm):
         super().__init__(terminals, variables, left_terms, right_terms)
         self.assignment = Assignment()
         self.parameters = parameters
+        self.nodes=[]
+        self.edges=[]
 
     def run(self):
-
+        #pre-process
         result,_,preprocessed_local_left_terms,preprocessed_local_right_terms=self.preprocess_equation()
         self.pretty_print_current_equation(preprocessed_local_left_terms, preprocessed_local_right_terms)
 
-
+        # explore path start
         path_count = 0
         while True:
             print("-" * 10, "path ", path_count, " start", "-" * 10)
@@ -107,8 +113,10 @@ class ElimilateVariables(AbstractAlgorithm):
             print("path_depth: ", path_depth)
             # print("length", len(left_term_queue), len(right_term_queue))
 
+        # one side empty
         if len(left_term_queue) == 0 and len(right_term_queue) == 0:
             return True, Assignment(), left_term_queue, right_term_queue
+        # two side empty
         if len(left_term_queue) == 0 and len(right_term_queue) != 0:
             result, _ = self.left_terms_empty(left_term_queue, right_term_queue)
             return result, self.assignment, left_term_queue, right_term_queue
@@ -147,7 +155,8 @@ class ElimilateVariables(AbstractAlgorithm):
 
     def left_variable_larger_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
         print("branch: left_variable > or < right_variable")
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        before_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        self.nodes.append(before_process_string_equation)
 
         left_term = left_term_queue.popleft()
         right_term = right_term_queue.popleft()
@@ -179,14 +188,17 @@ class ElimilateVariables(AbstractAlgorithm):
         left_term_queue.extend(left_term_list)
         right_term_queue.extend(right_term_list)
 
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        after_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        self.nodes.append(after_process_string_equation)
+        self.edges.append((before_process_string_equation,after_process_string_equation,{"label":"V1 != V2"}))
+
 
     def left_variable_smaller_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
         self.left_variable_larger_than_right_variable(right_term_queue, left_term_queue)
 
     def left_variable_equal_right_variable(self, left_term_queue, right_term_queue):
         print("branch: left_variable = right_variable")
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        before_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
         left_term = left_term_queue.popleft()
         right_term = right_term_queue.popleft()
         if left_term.value == right_term.value:
@@ -197,22 +209,27 @@ class ElimilateVariables(AbstractAlgorithm):
             self.replace_a_term(left_term, right_term, right_term_queue)
 
         self.update_variable_list(left_term_queue, right_term_queue)
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        after_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        self.edges.append(
+            (before_process_string_equation, after_process_string_equation, {"label": "V1 == V2"}))
+
 
     def left_variable_empty(self, left_term_queue: deque, right_term_queue: deque):
         print("branch: left_variable_empty")
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        before_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
         left_term = left_term_queue.popleft()
 
         self.replace_a_term(left_term, Term(EMPTY_TERMINAL), left_term_queue)
         self.replace_a_term(left_term, Term(EMPTY_TERMINAL), right_term_queue)
 
         self.update_variable_list(left_term_queue, right_term_queue)
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        after_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        self.edges.append(
+            (before_process_string_equation, after_process_string_equation, {"label": "V1 == \"\""}))
 
     def left_variable_not_empty(self, left_term_queue: deque, right_term_queue: deque):
         print("branch: left_variable_not_empty")
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        before_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
 
         left_term = left_term_queue.popleft()
         right_term = right_term_queue.popleft()
@@ -239,7 +256,9 @@ class ElimilateVariables(AbstractAlgorithm):
         left_term_queue.extend(left_term_list)
         right_term_queue.extend(right_term_list)
 
-        self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        after_process_string_equation,_,_=self.pretty_print_current_equation(left_term_queue, right_term_queue)
+        self.edges.append(
+            (before_process_string_equation, after_process_string_equation, {"label": "V1 != \"\""}))
 
     def left_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
         right_term_queue_contains_terminal = any(isinstance(item.value, Terminal) for item in right_term_queue)
@@ -309,7 +328,10 @@ class ElimilateVariables(AbstractAlgorithm):
         print("string_variables:", string_variables)
         print("string_equation:", string_equation)
         print("-" * 10)
+        return string_equation, string_terminals, string_variables
 
+    def visualize(self):
+        visualize_path(self.nodes,self.edges)
 
 class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
     def __init__(self, terminals, variables, left_terms, right_terms, parameters: Dict):

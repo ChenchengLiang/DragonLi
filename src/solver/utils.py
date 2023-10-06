@@ -31,10 +31,10 @@ def print_results(result:Dict):
 
 
 
-def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assignment()):
+def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment()):
     left_str = []
     right_str = []
-    for t in parsed_content["left_terms"]:
+    for t in result["left_terms"]:
         if type(t.value) == Variable:
             if assignment.is_empty():
                 left_str.append(t.value.value)
@@ -44,7 +44,7 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
                     left_str.append(tt.value)
         else:
             left_str.append(t.value.value)
-    for t in parsed_content["right_terms"]:
+    for t in result["right_terms"]:
         if type(t.value) == Variable:
             if assignment.is_empty():
                 right_str.append(t.value.value)
@@ -56,8 +56,8 @@ def assemble_parsed_content(parsed_content: Dict, assignment: Assignment = Assig
             right_str.append(t.value.value)
     string_equation = "".join(left_str) + " = " + "".join(right_str)
 
-    string_terminals = ",".join([t.value for t in parsed_content["terminals"] ])
-    string_variables = ",".join([t.value for t in parsed_content["variables"] ])
+    string_terminals = ",".join([t.value for t in result["terminals"] ])
+    string_variables = ",".join([t.value for t in result["variables"] ])
 
 
     return string_equation, string_terminals, string_variables

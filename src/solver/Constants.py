@@ -8,6 +8,8 @@ BRANCH_CLOSED= "BRANCH_CLOSED"
 MAX_PATH=3
 MAX_PATH_REACHED="MAX_PATH_REACHED"
 
+brach_name_map={}
+
 '''
 Syntax:
 Formula : Equation | Formula ∧ Formula

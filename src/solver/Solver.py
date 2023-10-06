@@ -14,7 +14,7 @@ class Solver:
         self.kwargs=kwargs
 
 
-    def solve(self, parsed_equation: Dict) -> (bool, Assignment):
+    def solve(self, parsed_equation: Dict,visualize=False) -> (bool, Assignment):
         variables: List[Variable] = parsed_equation["variables"]
         terminals: List[Terminal] = parsed_equation["terminals"]
         left_terms: List[Term] = parsed_equation["left_terms"]
@@ -24,7 +24,10 @@ class Solver:
         self._algorithm = self._algorithm(terminals, variables, left_terms, right_terms, self.kwargs)
         result_dict, running_time = self.count_time(self._algorithm.run, algorithm_timeout)
         result_dict["running_time"] = running_time
+        if visualize==True:
+            self._algorithm.visualize()
         return result_dict
+
 
     def count_time(self, func: Callable[..., Any], timeout=algorithm_timeout, *args, **kwargs) -> Tuple[float, Any]:
         with ThreadPoolExecutor() as executor:
