@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from itertools import product
 from .DataTypes import Assignment, Term, Terminal, Variable
-from typing import List, Dict, Tuple, Generator
+from typing import List, Dict, Tuple, Generator, Deque, Union
 from collections import deque
 from .utils import flatten_list, assemble_parsed_content, remove_duplicates
 from .Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
@@ -55,8 +55,10 @@ class ElimilateVariables(AbstractAlgorithm):
         super().__init__(terminals, variables, left_terms, right_terms)
         self.assignment = Assignment()
         self.parameters = parameters
-        self.nodes = []
-        self.edges = []
+        self.nodes: List[str] = []
+        self.edges: List[Tuple[str, str, Dict]] = []
+        self.final_nodes: List[str] = []
+        self.final_edges: List[Tuple[str, str, Dict]] = []
 
     def run(self):
         # pre-process
@@ -91,27 +93,38 @@ class ElimilateVariables(AbstractAlgorithm):
 
         while len(left_term_queue) != 0 and len(right_term_queue) != 0:  # while two sides are not empty
             first_left_term = left_term_queue[0]  # unwrap first left hand term
-            if type(first_left_term.value) == Variable:
-                first_right_term = right_term_queue[0]  # unwrap first right hand term
-                if type(first_right_term.value) == Variable:  # example: V1 T2 T3 ... = V4 T5 T6 ...
-                    # split equation
-                    self.split_equation_two_variables(left_term_queue, right_term_queue)
+            first_right_term = right_term_queue[0]  # unwrap first right hand term
 
-                elif type(first_right_term.value) == Terminal:  # example: V1 T2 T3 ... = a T5 T6 ...
-                    # split equation
-                    self.split_equation_one_variable(left_term_queue, right_term_queue)
-            elif type(first_left_term.value) == Terminal:
-                first_right_term = right_term_queue[0]  # unwrap first right hand term
-                if type(first_right_term.value) == Variable:  # example: a T2 T3 ... = V4 T5 T6 ...
-                    # split equation
-                    self.split_equation_one_variable(right_term_queue, left_term_queue)
-                elif type(first_right_term.value) == Terminal:  # example: a T2 T3 ... = a|b T5 T6 ...
-                    if first_left_term.value == first_right_term.value:  # example: a T2 T3 ... = a T5 T6 ..., dischard both terms
-                        l_term = left_term_queue.popleft()
-                        r_term = right_term_queue.popleft()
-                        print("discard", l_term, "from both side")
-                    else:  # example: a T2 T3 ... = b T5 T6 ..., UNSAT
-                        return BRANCH_CLOSED, self.assignment, left_term_queue, right_term_queue
+            if first_left_term.value == first_right_term.value:  # example: V1 T2 T3 ... = V1 T5 T6 ... and # example: a T2 T3 ... = a T5 T6 ...
+                before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue,
+                                                                                          right_term_queue)
+                self.nodes.append(before_process_string_equation)
+
+                # remove first term from both sides
+                left_term_queue.popleft()
+                right_term_queue.popleft()
+
+                self.update_variable_list(left_term_queue, right_term_queue)
+                after_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue,
+                                                                                         right_term_queue)
+                self.edges.append(
+                    (before_process_string_equation, after_process_string_equation, {"label": "T1 == T2"}))
+            else: # first_left_term.value != first_right_term.value
+                if type(first_left_term.value) == Variable:
+                    # first_right_term = right_term_queue[0]  # unwrap first right hand term
+                    if type(first_right_term.value) == Variable:  # example: V1 T2 T3 ... = V4 T5 T6 ...
+                        # split equation
+                        self.split_equation_two_variables(left_term_queue, right_term_queue)
+                    elif type(first_right_term.value) == Terminal:  # example: V1 T2 T3 ... = a T5 T6 ...
+                        # split equation
+                        self.split_equation_one_variable(left_term_queue, right_term_queue)
+                elif type(first_left_term.value) == Terminal:
+                    # first_right_term = right_term_queue[0]  # unwrap first right hand term
+                    if type(first_right_term.value) == Variable:  # example: a T2 T3 ... = V4 T5 T6 ...
+                        # split equation
+                        self.split_equation_one_variable(right_term_queue, left_term_queue)
+                    elif type(first_right_term.value) == Terminal:  # example: a T2 T3 ... = b T5 T6 ...
+                        return BRANCH_CLOSED, self.assignment, left_term_queue, right_term_queue #todo check if this can be replaced to return False (UNSAT)
 
             path_depth += 1
             print("path_depth: ", path_depth)
@@ -157,7 +170,7 @@ class ElimilateVariables(AbstractAlgorithm):
         # self.left_variable_empty(left_term, right_term)
         # self.left_variable_not_empty(left_terms, right_terms)
 
-    def left_variable_larger_than_right_variable(self, left_term_queue: deque, right_term_queue: deque):
+    def left_variable_larger_than_right_variable(self, left_term_queue: Deque[Term], right_term_queue: Deque[Term]):
         print("branch: left_variable > or < right_variable")
         before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
         self.nodes.append(before_process_string_equation)
@@ -204,19 +217,17 @@ class ElimilateVariables(AbstractAlgorithm):
         before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
         left_term = left_term_queue.popleft()
         right_term = right_term_queue.popleft()
-        if left_term.value == right_term.value:
-            pass
-        elif left_term.value != right_term.value:
-            # replace left_term variable with right_term variable
-            self.replace_a_term(left_term, right_term, left_term_queue)
-            self.replace_a_term(left_term, right_term, right_term_queue)
+
+        # replace left_term variable with right_term variable
+        self.replace_a_term(left_term, right_term, left_term_queue)
+        self.replace_a_term(left_term, right_term, right_term_queue)
 
         self.update_variable_list(left_term_queue, right_term_queue)
         after_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
         self.edges.append(
             (before_process_string_equation, after_process_string_equation, {"label": "V1 == V2"}))
 
-    def left_variable_empty(self, left_term_queue: deque, right_term_queue: deque):
+    def left_variable_empty(self, left_term_queue: Deque[Term], right_term_queue: Deque[Term]):
         print("branch: left_variable_empty")
         before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
         left_term = left_term_queue.popleft()
@@ -233,7 +244,7 @@ class ElimilateVariables(AbstractAlgorithm):
 
     def left_variable_not_empty(self, left_term_queue: deque, right_term_queue: deque):
         '''
-        replace X with Terminal X_NEW
+        replace X with "Terminal X_NEW"
         '''
         print("branch: left_variable_not_empty")
         before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
@@ -267,7 +278,7 @@ class ElimilateVariables(AbstractAlgorithm):
         self.edges.append(
             (before_process_string_equation, after_process_string_equation, {"label": "V1 != \"\""}))
 
-    def left_terms_empty(self, left_term_queue: deque, right_term_queue: deque):
+    def left_terms_empty(self, left_term_queue: Deque[Term], right_term_queue: Deque[Term]):
         right_term_queue_contains_terminal = any(isinstance(item.value, Terminal) for item in right_term_queue)
         if right_term_queue_contains_terminal == True:
             return BRANCH_CLOSED, self.assignment
@@ -293,22 +304,28 @@ class ElimilateVariables(AbstractAlgorithm):
             return self.check_equation(local_left_term_queue,
                                        local_right_term_queue), self.assignment, local_left_term_queue, local_right_term_queue
 
-        # example: a T2 T3 ... = a T5 T6 ..., discard both terms if there are the same terminals
+        #  discard both terms if there are the same Terms
         while len(local_left_term_queue) != 0 and len(local_right_term_queue) != 0:
             left_term = local_left_term_queue[0]
             right_term = local_right_term_queue[0]
-            if type(left_term.value) == Terminal and type(right_term.value) == Terminal:
+            if type(left_term.value) == Terminal and type(right_term.value) == Terminal:#example: a T2 T3 ... = a T5 T6 ...
                 if left_term.value == right_term.value:
                     local_left_term_queue.popleft()
                     local_right_term_queue.popleft()
                 else:
                     return False, self.assignment, local_left_term_queue, local_right_term_queue
+            elif type(left_term.value) == Variable and type(right_term.value) == Variable: #example: V1 T2 T3 ... = V1 T5 T6 ...
+                if left_term.value == right_term.value:
+                    local_left_term_queue.popleft()
+                    local_right_term_queue.popleft()
+                else:
+                    return None, self.assignment, local_left_term_queue, local_right_term_queue
             else:
                 return None, self.assignment, local_left_term_queue, local_right_term_queue
 
         return None, self.assignment, local_left_term_queue, local_right_term_queue
 
-    def replace_a_term(self, old_term: Term, new_term: Term, term_queue: deque):
+    def replace_a_term(self, old_term: Term, new_term: Term, term_queue: Deque[Term]):
         for i, t in enumerate(term_queue):
             if t.value == old_term.value:
                 term_queue[i] = new_term
@@ -318,7 +335,9 @@ class ElimilateVariables(AbstractAlgorithm):
         term_queue.clear()
         term_queue.extend(local_term_queue)
 
-    def update_variable_list(self, left_term_list: List[Term], right_term_list: List[Term]):
+    def update_variable_list(self, left_term_list: Union[List[Term],Deque[Term]], right_term_list: Union[List[Term],Deque[Term]]):
+        left_term_list=list(left_term_list)
+        right_term_list=list(right_term_list)
         self.variables = []
         for t in left_term_list + right_term_list:
             if type(t.value) == Variable:
@@ -332,7 +351,13 @@ class ElimilateVariables(AbstractAlgorithm):
             else:
                 return BRANCH_CLOSED, self.assignment, left_term_list, right_term_list
 
-    def pretty_print_current_equation(self, left_terms: List[Term], right_terms: List[Term]):
+    def log_split(self, left_term_queue: Deque[Term], right_term_queue: Deque[Term]):
+        print("branch: left_variable_not_empty")
+        before_process_string_equation, _, _ = self.pretty_print_current_equation(left_term_queue, right_term_queue)
+
+
+    def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
+                                      right_terms: Union[List[Term], Deque[Term]]):
         content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
                         "variables": self.variables}
         string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
@@ -391,10 +416,10 @@ class EnumerateAssignments(AbstractAlgorithm):
 
     def generate_possible_terminal_combinations(self, terminals: List[Terminal], max_length: int) -> List[
         Tuple[Terminal]]:
-        combinations = []
+        combinations:List[Tuple[Terminal]] = []
         for length in range(1, max_length + 1):
             for p in product(terminals, repeat=length):
-                combinations.append(p)
+                combinations.append(p)  # type: ignore
         return combinations
 
     def run(self):

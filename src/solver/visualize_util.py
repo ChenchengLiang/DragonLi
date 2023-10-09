@@ -1,7 +1,6 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-
 def visualize_path(nodes, edges):
     '''
     inputs:

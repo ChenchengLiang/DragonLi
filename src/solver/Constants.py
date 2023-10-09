@@ -1,14 +1,14 @@
 from .DataTypes import Terminal
+from typing import Dict, List, Set
+max_variable_length:int = 8
+EMPTY_TERMINAL:Terminal = Terminal("\"\"")
+algorithm_timeout:int = 30
+shell_timeout:int = 30
+BRANCH_CLOSED:str = "BRANCH_CLOSED"
+MAX_PATH:int = 10000000
+MAX_PATH_REACHED:str = "MAX_PATH_REACHED"
 
-max_variable_length = 8
-EMPTY_TERMINAL = Terminal("\"\"")
-algorithm_timeout = 20
-shell_timeout = 20
-BRANCH_CLOSED = "BRANCH_CLOSED"
-MAX_PATH = 1000000
-MAX_PATH_REACHED = "MAX_PATH_REACHED"
-
-brach_name_map = {}
+branch_name_map:Dict = {"BRANCH_CLOSED": "Branch closed"}
 
 '''
 Syntax:

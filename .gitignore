@@ -1,5 +1,6 @@
 .idea/*
 Woorpje_benchmarks/*
+other_solvers/*
 src/process_benchmarks/temp_shell/*
 src/process_benchmarks/summary/*
 src/solver/block_code_test.py
