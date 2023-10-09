@@ -3,7 +3,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from typing import Callable, Any, Tuple
 from typing import Dict, List, Set
 
-from .Algorithms import AbstractAlgorithm
+from src.solver.algorithms import AbstractAlgorithm
 from .Constants import max_variable_length, algorithm_timeout
 from .DataTypes import Variable, Terminal, Term, Assignment
 

@@ -1,64 +1,12 @@
-from abc import ABC, abstractmethod
-from itertools import product
-from .DataTypes import Assignment, Term, Terminal, Variable
-from typing import List, Dict, Tuple, Generator, Deque, Union, Callable
-from collections import deque
-from .utils import flatten_list, assemble_parsed_content, remove_duplicates
-from .Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
-from .visualize_util import visualize_path
 import random
+from collections import deque
+from typing import List, Dict, Tuple, Deque, Union, Callable
 
-
-class AbstractAlgorithm(ABC):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
-                 right_terms: List[Term]):
-        self.terminals = terminals
-        self.variables = variables
-        self.left_terms = left_terms.copy()
-        self.right_terms = right_terms.copy()
-
-    @abstractmethod
-    def run(self):
-        pass
-
-    def visualize(self):
-        pass
-
-    def check_equation(self, left_terms: List[Term], right_terms: List[Term],
-                       assignment: Assignment = Assignment()) -> bool:
-        left_side = self.extract_values_from_terms(left_terms, assignment)
-        right_side = self.extract_values_from_terms(right_terms, assignment)
-
-        # todo: this need to be improved
-        left_str = "".join(left_side).replace("<EMPTY>", "")
-        right_str = "".join(right_side).replace("<EMPTY>", "")
-        if left_str == right_str:
-            return True
-        else:
-            return False
-
-    def extract_values_from_terms(self, term_list, assignments):
-        value_list = []
-        for t in term_list:
-            if type(t.value) == Variable:
-                terminal_list = assignments.get_assignment(t.value)
-                for tt in terminal_list:
-                    value_list.append(tt.value)
-            else:  # type(t.value) == Terminal
-                value_list.append(t.value.value)
-        return value_list
-
-
-
-class ElimilateVariablesRecursive(AbstractAlgorithm):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
-                 right_terms: List[Term], parameters: Dict):
-        super().__init__(terminals, variables, left_terms, right_terms)
-        self.assignment = Assignment()
-        self.parameters = parameters
-
-    def run(self):
-        pass
+from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable
+from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
+from src.solver.visualize_util import visualize_path
+from .abstract_algorithm import AbstractAlgorithm
 
 
 class ElimilateVariables(AbstractAlgorithm):
@@ -382,87 +330,3 @@ class ElimilateVariables(AbstractAlgorithm):
     def visualize(self):
         visualize_path(self.nodes, self.edges)
 
-
-class EnumerateAssignmentsUsingGenerator(AbstractAlgorithm):
-    def __init__(self, terminals, variables, left_terms, right_terms, parameters: Dict):
-        super().__init__(terminals, variables, left_terms, right_terms)
-        self.max_variable_length = parameters["max_variable_length"]
-
-    def generate_possible_terminal_combinations(self, terminals: List[str], max_length: int) -> Generator[
-        Tuple[str, ...], None, None]:
-        for length in range(1, max_length + 1):
-            for p in product(terminals, repeat=length):
-                yield p
-
-    def generate_assignments(self, variables, terminals, max_variable_length):
-        possible_terminals = self.generate_possible_terminal_combinations(terminals, max_variable_length)
-
-        # Generate all possible combinations of assignments
-        assignments_generator = product(possible_terminals, repeat=len(variables))
-
-        for assignment in assignments_generator:
-            assignment_dict = Assignment()
-            for var, term in zip(variables, assignment):
-                assignment_dict.set_assignment(var, list(term))
-            yield assignment_dict
-
-    def run(self):
-        assignment_generator = self.generate_assignments(self.variables, self.terminals, self.max_variable_length)
-
-        # Check each assignment dictionary to see if it satisfies the equation
-        for assignment in assignment_generator:
-            if self.check_equation(self.left_terms, self.right_terms, assignment):
-                return {"result": True, "assignment": assignment, "left_terms": self.left_terms,
-                        "right_terms": self.right_terms,
-                        "variables": self.variables, "terminals": self.terminals}
-
-        return {"result": "max_variable_length_exceeded", "assignment": assignment,
-                "left_terms": self.left_terms, "right_terms": self.right_terms, "variables": self.variables,
-                "terminals": self.terminals}
-
-
-class EnumerateAssignments(AbstractAlgorithm):
-    def __init__(self, terminals, variables, left_terms, right_terms, parameters):
-        super().__init__(terminals, variables, left_terms, right_terms)
-        self.max_variable_length = parameters["max_variable_length"]
-
-    def generate_possible_terminal_combinations(self, terminals: List[Terminal], max_length: int) -> List[
-        Tuple[Terminal]]:
-        combinations: List[Tuple[Terminal]] = []
-        for length in range(1, max_length + 1):
-            for p in product(terminals, repeat=length):
-                combinations.append(p)  # type: ignore
-        return combinations
-
-    def run(self):
-        possible_terminals = self.generate_possible_terminal_combinations(self.terminals, self.max_variable_length)
-        print("possible_terminals", len(possible_terminals))
-        print(possible_terminals)
-        # Generate all possible combinations of assignments
-        assignments_list = list(product(possible_terminals, repeat=len(self.variables)))
-        print("assignments_list:", len(assignments_list))
-
-        # Create a list of dictionaries to represent each assignment
-        assignment_dicts = []
-        for assignment in assignments_list:
-            assignment_dict = Assignment()
-            for var, term in zip(self.variables, assignment):
-                assignment_dict.set_assignment(var, list(term))
-            assignment_dicts.append(assignment_dict)
-
-        # Display the list of assignment dictionaries
-        print("-" * 10)
-        print("Assignment Dictionaries:", len(assignment_dicts))
-        for assignment_dict in assignment_dicts:
-            print(assignment_dict.assignments)
-
-        # Check each assignment dictionary to see if it satisfies the equation
-        for assignment in assignment_dicts:
-            if self.check_equation(self.left_terms, self.right_terms, assignment):
-                return {"result": True, "assignment": assignment, "left_terms": self.left_terms,
-                        "right_terms": self.right_terms,
-                        "variables": self.variables, "terminals": self.terminals}
-
-        return {"result": "max_variable_length_exceeded", "assignment": assignment,
-                "left_terms": self.left_terms, "right_terms": self.right_terms, "variables": self.variables,
-                "terminals": self.terminals}
