@@ -3,27 +3,30 @@ from typing import Dict, List, Union
 
 
 def print_results(result: Dict):
-    print("-" * 10, "Problem", "-" * 10)
-    original_equation, string_terminals, string_variables = assemble_parsed_content(result)
-    print("Variables:", string_variables)
-    print("Terminals:", string_terminals)
-    print("Equation:", original_equation)
-
-    print("-" * 10, "Solution", "-" * 10)
-
-    satisfiability = result["result"]
-    assignment = result["assignment"]
-
-    solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
-
-    if satisfiability == True:
-        print("result: SAT")
-        assignment.pretty_print()
-        print(solved_string_equation)
-    elif satisfiability == False:
-        print("result: UNSAT")
+    if result["result"] == None:
+        print("result: INTERNAL_TIMEOUT")
     else:
-        print("result:", satisfiability)
+        print("-" * 10, "Problem", "-" * 10)
+        original_equation, string_terminals, string_variables = assemble_parsed_content(result)
+        print("Variables:", string_variables)
+        print("Terminals:", string_terminals)
+        print("Equation:", original_equation)
+
+        print("-" * 10, "Solution", "-" * 10)
+
+        satisfiability = result["result"]
+        assignment = result["assignment"]
+
+        solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
+
+        if satisfiability == True:
+            print("result: SAT")
+            assignment.pretty_print()
+            print(solved_string_equation)
+        elif satisfiability == False:
+            print("result: UNSAT")
+        else:
+            print("result:", satisfiability)
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 
