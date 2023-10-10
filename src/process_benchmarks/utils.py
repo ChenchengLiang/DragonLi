@@ -60,6 +60,7 @@ def process_solver_output(solver_output: str, problem_file_path: str,solver):
             if "result:" in line:
                 result = line.split("result:")[1].strip(" ")
             # print(line)
+
     elif solver == "woorpje":
         if "Found a solution" in solver_output:
             result = "SAT"
@@ -67,7 +68,12 @@ def process_solver_output(solver_output: str, problem_file_path: str,solver):
             result = "UNSAT"
 
     elif solver == "z3":
-        print("solver_output",solver_output)
+        lines = solver_output.split('\n')
+        if lines[0] == "sat":
+            result = "SAT"
+        elif lines[0] == "unsat":
+            result = "UNSAT"
+
 
 
 

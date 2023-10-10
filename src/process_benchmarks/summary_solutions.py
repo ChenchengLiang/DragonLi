@@ -5,9 +5,10 @@ import os
 def main():
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
 
-    summary_file_dict={"this":"this_track_03_summary.csv","woorpje":"woorpje_track_03_summary.csv"}
+    track="track_02"
+    summary_file_dict={"this":"this_"+track+"_summary.csv","woorpje":"woorpje_"+track+"_summary.csv"}
 
-    summary_one_track(summary_folder,summary_file_dict,"track_03")
+    summary_one_track(summary_folder,summary_file_dict,track)
 
 
 

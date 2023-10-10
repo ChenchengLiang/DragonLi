@@ -18,10 +18,9 @@ solver_command_map={"z3":"z3",
 '''
 Syntax:
 Formula : Equation | Formula ∧ Formula
------------------------------------------------
 
 Equation : List[Term] = List[Term]
-Term : Variable | Terminal | List[Term]
+Term : Variable | Terminal 
 Variable : v
 Terminal : c 
 
