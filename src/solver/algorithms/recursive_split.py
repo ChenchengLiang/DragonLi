@@ -22,6 +22,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         result_dict = {"result": satisfiability, "assignment": self.assignment, "left_terms": self.left_terms,
                        "right_terms": self.right_terms,
                        "variables": self.variables, "terminals": self.terminals}
+        print("result_dict",result_dict)
         return result_dict
 
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
@@ -69,6 +70,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     return "SAT", branch_1_variables
                 else:
                     branch_list=branch_list[1:] #branch_1 closed
+
 
                 l, r, v = branch_list[0](left_terms_queue, right_terms_queue, variables) #split equation
                 branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v)
@@ -133,23 +135,27 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2V1'
         Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         '''
+        #local variables
+        local_left_terms_queue=left_terms_queue.copy()
+        local_right_terms_queue=right_terms_queue.copy()
+
         # pop both sides to [Terms] = [Terms]
-        left_term=left_terms_queue.popleft()
-        right_term=right_terms_queue.popleft()
+        left_term=local_left_terms_queue.popleft()
+        right_term=local_right_terms_queue.popleft()
 
         # create fresh variable V1'
         fresh_variable_term=Term(Variable(left_term.value.value+"'")) # V1'
         # replace V1 with V2 V1' to obtain [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
-        self.replace_a_term(old_term=left_term, new_term=[[right_term,fresh_variable_term]], terms_queue=left_terms_queue)
-        self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]], terms_queue=right_terms_queue)
+        self.replace_a_term(old_term=left_term, new_term=[[right_term,fresh_variable_term]], terms_queue=local_left_terms_queue)
+        self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]], terms_queue=local_right_terms_queue)
 
         # construct V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
-        left_terms_queue.appendleft(fresh_variable_term)
+        local_left_terms_queue.appendleft(fresh_variable_term)
 
         #update variables
-        updated_variables=self.update_variables(left_terms_queue, right_terms_queue)
+        updated_variables=self.update_variables(local_left_terms_queue, local_right_terms_queue)
 
-        return left_terms_queue, right_terms_queue, updated_variables
+        return local_left_terms_queue, local_right_terms_queue, updated_variables
     def two_variables_split_branch_2(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
         Equation: V1 [Terms] = V2 [Terms]
@@ -165,32 +171,77 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2
         Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
         '''
+        # local variables
+        local_left_terms_queue = left_terms_queue.copy()
+        local_right_terms_queue = right_terms_queue.copy()
 
         # pop both sides to [Terms] = [Terms]
-        left_term = left_terms_queue.popleft()
-        right_term = right_terms_queue.popleft()
+        left_term = local_left_terms_queue.popleft()
+        right_term = local_right_terms_queue.popleft()
 
         # replace V1 with V2 to obtain [Terms] [V1/V2] = [Terms] [V1/V2]
-        self.replace_a_term(old_term=left_term, new_term=right_term, terms_queue=left_terms_queue)
-        self.replace_a_term(old_term=left_term, new_term=right_term, terms_queue=right_terms_queue)
+        self.replace_a_term(old_term=left_term, new_term=right_term, terms_queue=local_left_terms_queue)
+        self.replace_a_term(old_term=left_term, new_term=right_term, terms_queue=local_right_terms_queue)
 
         # update variables
-        updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
+        updated_variables = self.update_variables(local_left_terms_queue, local_right_terms_queue)
 
 
-        return left_terms_queue, right_terms_queue, updated_variables
+        return local_left_terms_queue, local_right_terms_queue, updated_variables
     def one_variable_one_terminal_split_branch_1(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
         Equation: V1 [Terms] = a [Terms]
         Assume V1 = ""
+        Delete V1
+        Obtain [Terms] [V1/""] = a [Terms] [V1/""]
         '''
-        return left_terms_queue, right_terms_queue, variables
+
+        # local variables
+        local_left_terms_queue = left_terms_queue.copy()
+        local_right_terms_queue = right_terms_queue.copy()
+
+        #pop left side to [Terms] = a [Terms]
+        left_term = local_left_terms_queue.popleft()
+
+        # delete V1 from both sides to obtain [Terms] [V1/""] = a [Terms] [V1/""]
+        new_left_terms_queue = deque(item for item in local_left_terms_queue if item != left_term)
+        new_right_terms_queue = deque(item for item in local_right_terms_queue if item != left_term)
+
+
+        # update variables
+        self.update_variables(new_left_terms_queue, new_right_terms_queue)
+
+
+        return new_left_terms_queue, new_right_terms_queue, variables
     def one_variable_one_terminal_split_branch_2(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
         Equation: V1 [Terms] = a [Terms]
-        Assume V1 = aV'
+        Assume V1 = aV1'
+        Replace V1 with aV1'
+        Obtain V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         '''
-        return left_terms_queue, right_terms_queue, variables
+        # local variables
+        local_left_terms_queue = left_terms_queue.copy()
+        local_right_terms_queue = right_terms_queue.copy()
+
+        # pop both sides to [Terms] = [Terms]
+        left_term = local_left_terms_queue.popleft()
+        right_term = local_right_terms_queue.popleft()
+
+        # create fresh variable V1'
+        fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'
+
+        # replace V1 with aV1' to obtain [Terms] [V1/aV1'] = [Terms] [V1/aV1']
+        self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]], terms_queue=local_left_terms_queue)
+        self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]], terms_queue=local_right_terms_queue)
+
+        # construct V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
+        local_left_terms_queue.appendleft(fresh_variable_term)
+
+        # update variables
+        updated_variables = self.update_variables(local_left_terms_queue, local_right_terms_queue)
+
+        return local_left_terms_queue, local_right_terms_queue, updated_variables
 
     def replace_a_term(self, old_term: Term, new_term: Term, terms_queue: Deque[Term]):
         for i, t in enumerate(terms_queue):

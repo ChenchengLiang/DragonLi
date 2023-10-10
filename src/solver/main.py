@@ -26,8 +26,8 @@ def main():
     print("parsed_content:", parsed_content)
 
 
-    #solver = Solver(algorithm=ElimilateVariablesRecursive)
-    solver = Solver(algorithm=ElimilateVariables)
+    solver = Solver(algorithm=ElimilateVariablesRecursive)
+    #solver = Solver(algorithm=ElimilateVariables)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)
     result_dict = solver.solve(parsed_content,visualize=False)
