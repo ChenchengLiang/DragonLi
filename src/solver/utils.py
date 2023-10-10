@@ -1,12 +1,13 @@
 from .DataTypes import Variable, Terminal, Term, Assignment
 from typing import Dict, List, Union, Iterable
 from .Constants import INTERNAL_TIMEOUT
-
+import sys
 def print_results(result: Dict):
     if result["result"] == None:
         print("result: "+INTERNAL_TIMEOUT)
     else:
         print("-" * 10, "Problem", "-" * 10)
+        print("recursion limit number", sys.getrecursionlimit())
         original_equation, string_terminals, string_variables = assemble_parsed_content(result)
         print("Variables:", string_variables)
         print("Terminals:", string_terminals)
@@ -27,6 +28,9 @@ def print_results(result: Dict):
             print("result: UNSAT")
         else:
             print("result:", satisfiability)
+
+        if "total_explore_paths_call" in result:
+            print(f'Total explore_paths call: {result["total_explore_paths_call"]}')
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 

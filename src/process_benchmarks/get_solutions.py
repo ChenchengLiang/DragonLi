@@ -11,26 +11,56 @@ from src.solver.Constants import BRANCH_CLOSED,MAX_PATH_REACHED,INTERNAL_TIMEOUT
 
 
 def main():
+    test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
     example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
     track_01="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje"
+    track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track/woorpje"
+    track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje"
+
+    solver = "woorpje"
+
+    parameters_list=[]
 
     benchmark_dict={
-                    #"example_track":example_track,
-                    "track_01":track_01
+                    "test_track":test_track,
+                    "example_track":example_track,
+                    "track_01":track_01,
+                    "track_02":track_02,
+                    "track_03":track_03,
                     }
     for benchmark_name,benchmark_folder in benchmark_dict.items():
-        run_on_one_track(benchmark_name,benchmark_folder)
+        run_on_one_track(benchmark_name,benchmark_folder,parameters_list,solver)
+
+    solver = "this"
+    benchmark_dict = {
+        "test_track": test_track,
+        "example_track": example_track,
+        "track_01": track_01,
+        "track_02": track_02,
+        "track_03": track_03,
+    }
+    for benchmark_name, benchmark_folder in benchmark_dict.items():
+        run_on_one_track(benchmark_name, benchmark_folder, parameters_list, solver)
 
 
-def run_on_one_track(benchmark_name:str,benchmark_folder:str):
+def run_on_one_track(benchmark_name:str,benchmark_folder:str,parameters_list,solver):
     track_result_list = []
-    file_list = glob.glob(benchmark_folder + "/*.eq")
+    if solver == "woorpje":
+        file_suffix = ".eq"
+    elif solver == "this":
+        file_suffix = ".eq"
+    elif solver == "ostrich":
+        file_suffix = ".smt2"
+    else:
+        file_suffix = ".smt"
+
+    file_list = glob.glob(benchmark_folder + "/*" + file_suffix)
     for file in file_list:
-        result, used_time = run_on_one_benchmark(file)
+        result, used_time = run_on_one_benchmark(file,parameters_list,solver)
         track_result_list.append((os.path.basename(file), result, used_time))
 
     result_summary_dict = result_summary(track_result_list)
-    write_to_cvs_file(track_result_list,result_summary_dict,benchmark_name)
+    write_to_cvs_file(track_result_list,result_summary_dict,benchmark_name,solver)
 
 def result_summary(track_result_list:List[Tuple[str,str,float]]):
     SAT_count = [entry[1] for entry in track_result_list].count("SAT")
@@ -46,10 +76,10 @@ def result_summary(track_result_list:List[Tuple[str,str,float]]):
             INTERNAL_TIMEOUT:INTERNAL_TIMEOUT_count, "MAX_VARIABLE_LENGTH_EXCEEDED":MAX_VARIABLE_LENGTH_EXCEEDED_count,
             BRANCH_CLOSED:BRANCH_CLOSED_count,MAX_PATH_REACHED:MAX_PATH_REACHED_count, "Total": len(track_result_list)}
 
-def write_to_cvs_file(track_result_list:List[Tuple[str,str,float]],summary_dict:Dict,benchmark_name:str):
+def write_to_cvs_file(track_result_list:List[Tuple[str,str,float]],summary_dict:Dict,benchmark_name:str,solver):
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
     # Name of the CSV file to write to
-    summary_name = benchmark_name+"_summary.csv"
+    summary_name = solver+"_"+benchmark_name+"_summary.csv"
     summary_path = os.path.join(summary_folder, summary_name)
 
     if os.path.exists(summary_path):

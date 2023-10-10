@@ -18,21 +18,20 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.total_explore_paths_call = 0
 
         sys.setrecursionlimit(recursion_limit)
-        print("recursion limit number", sys.getrecursionlimit())
+        #print("recursion limit number", sys.getrecursionlimit())
 
     def run(self):
         satisfiability,variables = self.explore_paths(deque(self.left_terms), deque(self.right_terms), self.variables)
 
         result_dict = {"result": satisfiability, "assignment": self.assignment, "left_terms": self.left_terms,
                        "right_terms": self.right_terms,
-                       "variables": self.variables, "terminals": self.terminals}
-        print("result_dict",result_dict)
+                       "variables": self.variables, "terminals": self.terminals,"total_explore_paths_call":self.total_explore_paths_call}
         return result_dict
 
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
-        print("total_explore_paths_call:", self.total_explore_paths_call)
-        print("variables:", variables)
-        self.pretty_print_current_equation(left_terms_queue, right_terms_queue)
+        # print("total_explore_paths_call:", self.total_explore_paths_call)
+        # print("variables:", variables)
+        # self.pretty_print_current_equation(left_terms_queue, right_terms_queue)
         self.total_explore_paths_call += 1
 
         # terminate conditions
@@ -63,7 +62,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # split
         if left_term.value == right_term.value: # both side are the same
-            print("*","left = right","*")
+            #print("*","left = right","*")
             left_terms_queue.popleft()
             right_terms_queue.popleft()
             updated_variables=self.update_variables(left_terms_queue, right_terms_queue)
@@ -147,7 +146,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2V1'
         Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         '''
-        print("*","two_variables_split_branch_1","*")
+        #print("*","two_variables_split_branch_1","*")
         #local variables
         local_left_terms_queue=left_terms_queue.copy()
         local_right_terms_queue=right_terms_queue.copy()
@@ -176,7 +175,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V2 with V1V2'
         Obtain [Terms] [V2/V1V2'] = V2' [Terms] [V2/V1V2']
         '''
-        print("*","two_variables_split_branch_2","*")
+        #print("*","two_variables_split_branch_2","*")
         return self.two_variables_split_branch_1(right_terms_queue, left_terms_queue, variables)
     def two_variables_split_branch_3(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
@@ -185,7 +184,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2
         Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
         '''
-        print("*","two_variables_split_branch_3","*")
+        #print("*","two_variables_split_branch_3","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()
@@ -210,7 +209,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Delete V1
         Obtain [Terms] [V1/""] = a [Terms] [V1/""]
         '''
-        print("*","one_variable_one_terminal_split_branch_1","*")
+        #print("*","one_variable_one_terminal_split_branch_1","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()
@@ -235,7 +234,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with aV1'
         Obtain V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         '''
-        print("*","one_variable_one_terminal_split_branch_2","*")
+        #print("*","one_variable_one_terminal_split_branch_2","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()
