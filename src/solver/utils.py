@@ -1,10 +1,10 @@
 from .DataTypes import Variable, Terminal, Term, Assignment
 from typing import Dict, List, Union, Iterable
-
+from .Constants import INTERNAL_TIMEOUT
 
 def print_results(result: Dict):
     if result["result"] == None:
-        print("result: INTERNAL_TIMEOUT")
+        print("result: "+INTERNAL_TIMEOUT)
     else:
         print("-" * 10, "Problem", "-" * 10)
         original_equation, string_terminals, string_variables = assemble_parsed_content(result)
@@ -54,7 +54,11 @@ def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment())
                     right_str.append(tt.value)
         else:
             right_str.append(t.value.value)
-    string_equation = "".join(left_str) + " = " + "".join(right_str)
+
+    left_terms_str = "".join(left_str) if len(left_str)!=0 else "\"\""
+    right_terms_str = "".join(right_str) if len(right_str)!=0 else "\"\""
+
+    string_equation = left_terms_str + " = " + right_terms_str
 
     string_terminals = ",".join([t.value for t in result["terminals"]])
     string_variables = ",".join([t.value for t in result["variables"]])

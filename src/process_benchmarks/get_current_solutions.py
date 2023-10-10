@@ -7,7 +7,7 @@ import os.path
 from typing import List, Tuple ,Dict
 from utils import run_on_one_benchmark
 import csv
-from src.solver.Constants import BRANCH_CLOSED,MAX_PATH_REACHED
+from src.solver.Constants import BRANCH_CLOSED,MAX_PATH_REACHED,INTERNAL_TIMEOUT
 
 
 def main():
@@ -37,13 +37,13 @@ def result_summary(track_result_list:List[Tuple[str,str,float]]):
     UNSAT_count = [entry[1] for entry in track_result_list].count("UNSAT")
     UNKNOWN_count = [entry[1] for entry in track_result_list].count("UNKNOWN")
     MAX_VARIABLE_LENGTH_EXCEEDED_count = [entry[1] for entry in track_result_list].count("MAX VARIABLE LENGTH EXCEEDED")
-    INTERNAL_TIMEOUT_count = [entry[1] for entry in track_result_list].count("INTERNAL TIMEOUT")
+    INTERNAL_TIMEOUT_count = [entry[1] for entry in track_result_list].count("INTERNAL_TIMEOUT")
     BRANCH_CLOSED_count = [entry[1] for entry in track_result_list].count(BRANCH_CLOSED)
     ERROR_count = [entry[1] for entry in track_result_list].count("ERROR")
     MAX_PATH_REACHED_count = [entry[1] for entry in track_result_list].count(MAX_PATH_REACHED)
 
     return {"SAT": SAT_count, "UNSAT": UNSAT_count, "UNKNOWN": UNKNOWN_count, "ERROR": ERROR_count,
-            "INTERNAL_TIMEOUT":INTERNAL_TIMEOUT_count, "MAX_VARIABLE_LENGTH_EXCEEDED":MAX_VARIABLE_LENGTH_EXCEEDED_count,
+            INTERNAL_TIMEOUT:INTERNAL_TIMEOUT_count, "MAX_VARIABLE_LENGTH_EXCEEDED":MAX_VARIABLE_LENGTH_EXCEEDED_count,
             BRANCH_CLOSED:BRANCH_CLOSED_count,MAX_PATH_REACHED:MAX_PATH_REACHED_count, "Total": len(track_result_list)}
 
 def write_to_cvs_file(track_result_list:List[Tuple[str,str,float]],summary_dict:Dict,benchmark_name:str):

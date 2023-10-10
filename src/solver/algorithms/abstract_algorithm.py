@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List,Union,Deque
+from src.solver.utils import assemble_parsed_content
 
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable
 
@@ -18,6 +19,17 @@ class AbstractAlgorithm(ABC):
 
     def visualize(self,file_path:str):
         pass
+
+    def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
+                                      right_terms: Union[List[Term], Deque[Term]]):
+        content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
+                        "variables": self.variables}
+        string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
+        # print("string_terminals:",string_terminals)
+        #print("string_variables:", string_variables)
+        print("string_equation:", string_equation)
+        print("-" * 10)
+        return string_equation, string_terminals, string_variables
 
     def check_equation(self, left_terms: List[Term], right_terms: List[Term],
                        assignment: Assignment = Assignment()) -> bool:

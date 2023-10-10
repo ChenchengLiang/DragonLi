@@ -316,17 +316,6 @@ class ElimilateVariables(AbstractAlgorithm):
         self.nodes.append(after_process_string_equation)
         self.edges.append((before_process_string_equation, after_process_string_equation, {"label": label}))
 
-    def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
-                                      right_terms: Union[List[Term], Deque[Term]]):
-        content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
-                        "variables": self.variables}
-        string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
-        # print("string_terminals:",string_terminals)
-        print("string_variables:", string_variables)
-        print("string_equation:", string_equation)
-        print("-" * 10)
-        return string_equation, string_terminals, string_variables
-
     def visualize(self,file_path):
         visualize_path(self.nodes, self.edges,file_path)
 

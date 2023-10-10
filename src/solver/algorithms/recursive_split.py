@@ -2,12 +2,12 @@ import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
-from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
+from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED,recursion_limit
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable
 from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
 from src.solver.visualize_util import visualize_path
 from .abstract_algorithm import AbstractAlgorithm
-
+import sys
 
 class ElimilateVariablesRecursive(AbstractAlgorithm):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
@@ -15,6 +15,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         super().__init__(terminals, variables, left_terms, right_terms)
         self.assignment = Assignment()
         self.parameters = parameters
+        self.total_explore_paths_call = 0
+
+        sys.setrecursionlimit(recursion_limit)
+        print("recursion limit number", sys.getrecursionlimit())
 
     def run(self):
         satisfiability,variables = self.explore_paths(deque(self.left_terms), deque(self.right_terms), self.variables)
@@ -26,6 +30,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return result_dict
 
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
+        print("total_explore_paths_call:", self.total_explore_paths_call)
+        print("variables:", variables)
+        self.pretty_print_current_equation(left_terms_queue, right_terms_queue)
+        self.total_explore_paths_call += 1
 
         # terminate conditions
         # both side only have terminals
@@ -55,6 +63,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # split
         if left_term.value == right_term.value: # both side are the same
+            print("*","left = right","*")
             left_terms_queue.popleft()
             right_terms_queue.popleft()
             updated_variables=self.update_variables(left_terms_queue, right_terms_queue)
@@ -72,6 +81,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     branch_list=branch_list[1:] #branch_1 closed
 
 
+
                 l, r, v = branch_list[0](left_terms_queue, right_terms_queue, variables) #split equation
                 branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v)
                 if branch_2_satisfiability == "SAT":
@@ -79,12 +89,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 else:
                     branch_list = branch_list[1:] #branch_2 closed
 
+
                 l, r, v = branch_list[0](left_terms_queue, right_terms_queue, variables) #split equation
                 branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v)
                 if branch_3_satisfiability == "SAT":
                     return "SAT", branch_3_variables
                 else:
-                    return "UNSAT", variables # all branches closed
+                    return "UNSAT", branch_3_variables # all branches closed
 
             elif type(left_term.value) == Variable and type(right_term.value) == Terminal: # left side is variable, right side is terminal
                 branch_list = [self.one_variable_one_terminal_split_branch_1, self.one_variable_one_terminal_split_branch_2]
@@ -97,12 +108,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 else:
                     branch_list = branch_list[1:]  # branch_1 closed
 
+
                 l, r, v = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v)
-                if branch_3_satisfiability == "SAT":
-                    return "SAT", branch_3_variables
+                branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v)
+                if branch_2_satisfiability == "SAT":
+                    return "SAT", branch_2_variables
                 else:
-                    return "UNSAT", variables  # all branches closed
+                    return "UNSAT", branch_2_variables  # all branches closed
 
 
 
@@ -135,6 +147,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2V1'
         Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         '''
+        print("*","two_variables_split_branch_1","*")
         #local variables
         local_left_terms_queue=left_terms_queue.copy()
         local_right_terms_queue=right_terms_queue.copy()
@@ -163,6 +176,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V2 with V1V2'
         Obtain [Terms] [V2/V1V2'] = V2' [Terms] [V2/V1V2']
         '''
+        print("*","two_variables_split_branch_2","*")
         return self.two_variables_split_branch_1(right_terms_queue, left_terms_queue, variables)
     def two_variables_split_branch_3(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
@@ -171,6 +185,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with V2
         Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
         '''
+        print("*","two_variables_split_branch_3","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()
@@ -195,7 +210,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Delete V1
         Obtain [Terms] [V1/""] = a [Terms] [V1/""]
         '''
-
+        print("*","one_variable_one_terminal_split_branch_1","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()
@@ -209,10 +224,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
         # update variables
-        self.update_variables(new_left_terms_queue, new_right_terms_queue)
+        updated_variables=self.update_variables(new_left_terms_queue, new_right_terms_queue)
 
 
-        return new_left_terms_queue, new_right_terms_queue, variables
+        return new_left_terms_queue, new_right_terms_queue, updated_variables
     def one_variable_one_terminal_split_branch_2(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable]):
         '''
         Equation: V1 [Terms] = a [Terms]
@@ -220,6 +235,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         Replace V1 with aV1'
         Obtain V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         '''
+        print("*","one_variable_one_terminal_split_branch_2","*")
         # local variables
         local_left_terms_queue = left_terms_queue.copy()
         local_right_terms_queue = right_terms_queue.copy()

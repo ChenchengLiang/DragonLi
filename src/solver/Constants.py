@@ -7,6 +7,8 @@ shell_timeout:int = 30
 BRANCH_CLOSED:str = "BRANCH_CLOSED"
 MAX_PATH:int = 10000000
 MAX_PATH_REACHED:str = "MAX_PATH_REACHED"
+INTERNAL_TIMEOUT:str = "INTERNAL_TIMEOUT"
+recursion_limit:int = 10000
 
 branch_name_map:Dict = {"BRANCH_CLOSED": "Branch closed"}
 
