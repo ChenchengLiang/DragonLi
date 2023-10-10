@@ -16,7 +16,7 @@ class AbstractAlgorithm(ABC):
     def run(self):
         pass
 
-    def visualize(self):
+    def visualize(self,file_path:str):
         pass
 
     def check_equation(self, left_terms: List[Term], right_terms: List[Term],

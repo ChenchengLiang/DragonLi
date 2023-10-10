@@ -1,7 +1,8 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 
-def visualize_path(nodes, edges):
+
+def visualize_path(nodes, edges, file_path):
     '''
     inputs:
         nodes = ["1", "2", "3"]
@@ -28,5 +29,4 @@ def visualize_path(nodes, edges):
     # Draw edge labels
     nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): G[u][v]['label'] for u, v in G.edges()}, font_size=12)
 
-    # Display the graph
-    plt.show()
+    plt.savefig(file_path + ".png")

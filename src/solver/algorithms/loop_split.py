@@ -327,6 +327,6 @@ class ElimilateVariables(AbstractAlgorithm):
         print("-" * 10)
         return string_equation, string_terminals, string_variables
 
-    def visualize(self):
-        visualize_path(self.nodes, self.edges)
+    def visualize(self,file_path):
+        visualize_path(self.nodes, self.edges,file_path)
 

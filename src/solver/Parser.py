@@ -31,6 +31,7 @@ class EqParser(AbstractParser):
         self.terminal_str = content["terminals_str"]
         self.variables = remove_duplicates([Variable(v) for v in content["variables_str"]])
         self.terminals = remove_duplicates([EMPTY_TERMINAL] + [Terminal(t) for t in content["terminals_str"]])
+        self.file_path = content["file_path"]
 
         left_str, right_str = content["equation_str"].split('=')
 
@@ -38,7 +39,7 @@ class EqParser(AbstractParser):
         self.right_terms = [self.wrap_to_term(c) for c in right_str]
 
         parsed_content = {"variables": self.variables, "terminals": self.terminals, "left_terms": self.left_terms,
-                          "right_terms": self.right_terms}
+                          "right_terms": self.right_terms, "file_path": self.file_path}
 
         return parsed_content
 
@@ -78,7 +79,7 @@ class EqReader(AbstractFileReader):
         equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
         #todo: read the ground truth
 
-        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str": equation_str}
+        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str": equation_str,"file_path": file_path}
         return content
 
 

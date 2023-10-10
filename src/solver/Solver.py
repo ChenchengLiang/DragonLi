@@ -25,7 +25,7 @@ class Solver:
         result_dict, running_time = self.count_time(self._algorithm.run, algorithm_timeout)
         result_dict["running_time"] = running_time
         if visualize==True:
-            self._algorithm.visualize()
+            self._algorithm.visualize(parsed_equation["file_path"])
         return result_dict
 
 
