@@ -11,7 +11,7 @@ def main():
     # solver = "this"
     solver = "z3"
 
-    folder_dict = {"z3": "smt", "woorpje": "woorpje", "this": "woorpje","ostrich":"smt2","cvc5":"smt"}
+    folder_dict = {"z3": "smt", "woorpje": "woorpje", "this": "woorpje", "ostrich":"smt2", "cvc5":"smt"}
 
     test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
     example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
@@ -43,16 +43,10 @@ def main():
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver):
     track_result_list = []
-    if solver == "woorpje":
-        file_suffix = ".eq"
-    elif solver == "this":
-        file_suffix = ".eq"
-    elif solver == "ostrich":
-        file_suffix = ".smt2"
-    else:
-        file_suffix = ".smt"
+    suffix_dict={"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich":".smt2", "cvc5":".smt"}
 
-    file_list = glob.glob(benchmark_folder + "/*" + file_suffix)
+
+    file_list = glob.glob(benchmark_folder + "/*" + suffix_dict["solver"])
     for file in file_list:
         result, used_time = run_on_one_benchmark(file, parameters_list, solver)
         track_result_list.append((os.path.basename(file), result, used_time))

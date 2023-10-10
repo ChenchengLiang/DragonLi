@@ -58,9 +58,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         #########################################################################
 
+        # split equation
         left_term = left_terms_queue[0]
         right_term = right_terms_queue[0]
-        # split
         if left_term.value == right_term.value: # both side are the same
             #print("*","left = right","*")
             left_terms_queue.popleft()
