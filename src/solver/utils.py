@@ -1,5 +1,5 @@
 from .DataTypes import Variable, Terminal, Term, Assignment
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Iterable
 
 
 def print_results(result: Dict):
@@ -62,7 +62,7 @@ def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment())
     return string_equation, string_terminals, string_variables
 
 
-def remove_duplicates(lst):
+def remove_duplicates(lst:Iterable)->List:
     seen = set()
     result = []
     for item in lst:
@@ -72,7 +72,7 @@ def remove_duplicates(lst):
     return result
 
 
-def flatten_list(nested_list):
+def flatten_list(nested_list:Iterable)->List:
     flattened = []
     for item in nested_list:
         if isinstance(item, list):
