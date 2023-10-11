@@ -55,33 +55,30 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if previous_dict["node_number"] != None:
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
+        #########################################################################
+
         # terminate conditions
         ## both side only have terminals
         if len(variables) == 0:
             satisfiability = "SAT" if self.check_equation(left_terms_queue, right_terms_queue) ==True else "UNSAT"
-            return self.handle_all_branch_closed(satisfiability, variables, node_info)
-
+            return self.record_and_close_branch(satisfiability, variables, node_info)
 
         ## both side only have variables
         left_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in left_terms_queue)
         right_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in right_terms_queue)
         if left_contains_no_terminal and right_contains_no_terminal:
-            node_info[1]["status"] = "SAT"
-            return "SAT", variables
+            return self.record_and_close_branch("SAT", variables, node_info)
 
         ## both side contains variables and terminals
         ###both side empty
         if len(left_terms_queue) == 0 and len(right_terms_queue) == 0:
-            node_info[1]["status"] = "SAT"
-            return "SAT", variables
+            return self.record_and_close_branch("SAT", variables, node_info)
         ### left side empty
         if len(left_terms_queue) == 0 and len(right_terms_queue) != 0:
-            node_info[1]["status"] = "UNSAT"
-            return "UNSAT", variables  # since one side has terminals
+            return self.record_and_close_branch("UNSAT", variables, node_info) # since one side has terminals
         ### right side empty
         if len(left_terms_queue) != 0 and len(right_terms_queue) == 0:
-            node_info[1]["status"] = "UNSAT"
-            return "UNSAT", variables  # since one side has terminals
+            return self.record_and_close_branch("UNSAT", variables, node_info) # since one side has terminals
 
         #########################################################################
 
@@ -90,7 +87,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # both side are the same
         if left_term.value == right_term.value:
-            # print("*","left = right","*")
             left_terms_queue.popleft()
             right_terms_queue.popleft()
             updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
@@ -98,7 +94,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                          updated_variables,
                                                                          {"node_number": current_node_number,
                                                                           "label": "L=R"})
-            return self.handle_all_branch_closed(branch_satisfiability, branch_variables,node_info)
+            return self.record_and_close_branch(branch_satisfiability, branch_variables,node_info)
 
         # both side are different
         else:
@@ -113,28 +109,26 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
                 if branch_1_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_1_variables
-                else:
+                    return self.record_and_close_branch("SAT", branch_1_variables, node_info)
+                else: # branch_1 closed go to next branch
                     node_info[1]["status"] = "UNSAT"
-                    branch_list = branch_list[1:]  # branch_1 closed
+                    branch_list = branch_list[1:]
 
                 l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
                 branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
                 if branch_2_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_2_variables
-                else:
+                    return self.record_and_close_branch("SAT", branch_2_variables, node_info)
+                else: # branch_2 closed go to next branch
                     node_info[1]["status"] = "UNSAT"
-                    branch_list = branch_list[1:]  # branch_2 closed
+                    branch_list = branch_list[1:]
 
                 l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
                 branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                return  self.handle_all_branch_closed(branch_3_satisfiability, branch_3_variables, node_info)
+                return  self.record_and_close_branch(branch_3_satisfiability, branch_3_variables, node_info)
 
             ## left side is variable, right side is terminal
             elif type(left_term.value) == Variable and type(right_term.value) == Terminal:
@@ -147,18 +141,16 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
                 if branch_1_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_1_variables
-                else:
+                    return self.record_and_close_branch("SAT", branch_1_variables, node_info)
+                else:  # branch_1 closed go to next branch
                     node_info[1]["status"] = "UNSAT"
-                    branch_list = branch_list[1:]  # branch_1 closed
+                    branch_list = branch_list[1:]
 
                 l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
                 branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                return self.handle_all_branch_closed(branch_2_satisfiability, branch_2_variables, node_info)
-
+                return self.record_and_close_branch(branch_2_satisfiability, branch_2_variables, node_info)
 
 
             ## left side is terminal, right side is variable
@@ -172,24 +164,25 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
                 if branch_1_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_1_variables
-                else:
+                    return self.record_and_close_branch("SAT", branch_1_variables, node_info)
+                else: # branch_1 closed go to next branch
                     node_info[1]["status"] = "UNSAT"
-                    branch_list = branch_list[1:]  # branch_1 closed
+                    branch_list = branch_list[1:]
 
                 l, r, v, edge_label = branch_list[0](right_terms_queue, left_terms_queue, variables)  # split equation
-                branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v,
+                branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                return self.handle_all_branch_closed(branch_3_satisfiability, branch_3_variables, node_info)
+                return self.record_and_close_branch(branch_2_satisfiability, branch_2_variables, node_info)
 
             ## both side are different terminals
             elif type(left_term.value) == Terminal and type(right_term.value) == Terminal:
-                node_info[1]["status"] = "UNSAT"
-                return "UNSAT", variables
+                return self.record_and_close_branch("UNSAT", variables, node_info)
 
-    def handle_all_branch_closed(self,satisfiability,variables,node_info):
+
+
+
+    def record_and_close_branch(self, satisfiability:str, variables, node_info):
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
 

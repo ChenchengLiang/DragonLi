@@ -83,9 +83,9 @@ def visualize_path_html(nodes, edges, file_path):
                 yref='y',
                 showarrow=True,
                 arrowhead=3,
-                arrowsize=1,
+                arrowsize=2,
                 arrowwidth=1.5,
-                arrowcolor='#888'
+                arrowcolor='black'
             )
         )
 
@@ -133,7 +133,7 @@ def visualize_path_html(nodes, edges, file_path):
         node_colors.append(color)
 
     node_colors[0] = 'black'
-    print("node_colors",node_colors)
+    #print("node_colors",node_colors)
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
