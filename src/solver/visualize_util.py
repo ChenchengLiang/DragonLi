@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from pyvis.network import Network
+import plotly.graph_objects as go
 
 def visualize_path(nodes, edges, file_path):
     '''
@@ -24,9 +25,137 @@ def visualize_path(nodes, edges, file_path):
     pos = nx.spring_layout(G)
 
     # Draw the graph with node labels
-    nx.draw(G, pos, with_labels=True, node_size=2000, node_color='skyblue', font_size=15)
+    nx.draw(G, pos, with_labels=True, node_size=200, node_color='skyblue', font_size=15)
 
     # Draw edge labels
     nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): G[u][v]['label'] for u, v in G.edges()}, font_size=12)
 
     plt.savefig(file_path + ".png")
+
+
+
+
+def visualize_path_html(nodes, edges, file_path):
+    '''
+    inputs:
+        nodes = [("1", {"label": "1","status":None}), ("2", {"label": "2","status":None}), ("3", {"label": "3","status":None})]
+        edges = [("1", "2", {'label': 'A'}),
+                 ("3", "1", {'label': 'B'}),
+                 ("3", "3", {'label': 'C'})]
+    '''
+
+    G = nx.DiGraph()
+    G.add_nodes_from(nodes)
+    G.add_edges_from(edges)
+
+    pos = nx.spring_layout(G)
+
+    edge_x = []
+    edge_y = []
+    edge_centers_x = []
+    edge_centers_y = []
+    edge_texts = []
+    arrows = []
+
+    for edge in G.edges(data=True):
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_texts.append(edge[2]['label'])
+        edge_centers_x.append((x0 + x1) / 2)
+        edge_centers_y.append((y0 + y1) / 2)
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+        # Arrow annotations
+        arrows.append(
+            dict(
+                ax=x0,
+                ay=y0,
+                axref='x',
+                ayref='y',
+                x=x1,
+                y=y1,
+                xref='x',
+                yref='y',
+                showarrow=True,
+                arrowhead=3,
+                arrowsize=1,
+                arrowwidth=1.5,
+                arrowcolor='#888'
+            )
+        )
+
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=2, color='#888'),
+        hoverinfo='none',
+        mode='lines'
+    )
+
+    annotations = [
+        dict(
+            x=xc, y=yc,
+            xref='x', yref='y',
+            text=edge_texts[i],
+            showarrow=False,
+            font=dict(size=10)
+        )
+        for i, (xc, yc) in enumerate(zip(edge_centers_x, edge_centers_y))
+    ]
+
+    node_x = []
+    node_y = []
+    node_ids = []
+    node_hovertexts = []
+    for node, attributes in G.nodes(data=True):
+        x, y = pos[node]
+        node_hovertexts.append(attributes['label'])
+        node_ids.append(node)
+        node_x.append(x)
+        node_y.append(y)
+
+    # Create a list of colors for each node based on status
+    node_colors = []
+    for _, attributes in G.nodes(data=True):
+        status = attributes.get('status', None)
+        if status is None:
+            color = 'blue'
+        elif status == "SAT":
+            color = 'green'
+        elif status == "UNSAT":
+            color = 'red'
+        node_colors.append(color)
+
+    node_colors[0] = 'black'
+    print("node_colors",node_colors)
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers+text',
+        hoverinfo='text',
+        hovertext=node_hovertexts,
+        marker=dict(
+            size=20,
+            color=node_colors,  # using the list of colors
+            opacity=0.5,
+        ),
+        text=node_ids,
+        textposition="top center"
+    )
+
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        title='Network Graph Visualization',
+                        titlefont_size=16,
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=0, l=0, r=0, t=0),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        annotations=annotations+arrows
+                    ))
+
+    fig.write_html(file_path + ".html")

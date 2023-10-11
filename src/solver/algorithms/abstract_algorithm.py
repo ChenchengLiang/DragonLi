@@ -21,14 +21,15 @@ class AbstractAlgorithm(ABC):
         pass
 
     def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
-                                      right_terms: Union[List[Term], Deque[Term]]):
+                                      right_terms: Union[List[Term], Deque[Term]],mute=True):
         content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
                         "variables": self.variables}
         string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
         # print("string_terminals:",string_terminals)
         #print("string_variables:", string_variables)
-        print("string_equation:", string_equation)
-        print("-" * 10)
+        if mute==False:
+            print("string_equation:", string_equation)
+            print("-" * 10)
         return string_equation, string_terminals, string_variables
 
     def check_equation(self, left_terms: List[Term], right_terms: List[Term],
