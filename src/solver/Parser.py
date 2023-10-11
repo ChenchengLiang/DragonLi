@@ -33,13 +33,17 @@ class EqParser(AbstractParser):
         self.terminals = remove_duplicates([EMPTY_TERMINAL] + [Terminal(t) for t in content["terminals_str"]])
         self.file_path = content["file_path"]
 
-        left_str, right_str = content["equation_str"].split('=')
+        equation_list=[]
+        for eq_str in content["equation_str_list"]:
+            left_str, right_str = eq_str.split('=')
+            left_terms= [self.wrap_to_term(c) for c in left_str]
+            right_terms = [self.wrap_to_term(c) for c in right_str]
+            equation_list.append({"eq_str":eq_str,"left_str":left_str,"right_str":right_str,"left_terms":left_terms,"right_terms":right_terms})
 
-        self.left_terms = [self.wrap_to_term(c) for c in left_str]
-        self.right_terms = [self.wrap_to_term(c) for c in right_str]
 
-        parsed_content = {"variables": self.variables, "terminals": self.terminals, "left_terms": self.left_terms,
-                          "right_terms": self.right_terms, "file_path": self.file_path}
+
+
+        parsed_content = {"variables": self.variables, "terminals": self.terminals,"equation_list":equation_list, "file_path": self.file_path}
 
         return parsed_content
 
@@ -71,15 +75,20 @@ class AbstractFileReader(ABC):
 
 class EqReader(AbstractFileReader):
     def read(self, file_path: str) -> Dict:
+        equation_str_list=[]
         with open(file_path, 'r') as f:
             lines = f.readlines()
 
         variables_str = lines[0].strip().split("{")[1].split("}")[0]
         terminals_str = lines[1].strip().split("{")[1].split("}")[0]
-        equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
-        #todo: read the ground truth
+        #equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
+        for line in lines[2:]:
+            if line.startswith("Equation"):
+                equation_str_list.append(line.strip().split(": ")[1].replace(" ", ""))
 
-        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str": equation_str,"file_path": file_path}
+
+
+        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str_list": equation_str_list,"file_path": file_path}
         return content
 
 

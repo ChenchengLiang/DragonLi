@@ -17,8 +17,11 @@ class Solver:
     def solve(self, parsed_equation: Dict,visualize=False) -> (bool, Assignment):
         variables: List[Variable] = parsed_equation["variables"]
         terminals: List[Terminal] = parsed_equation["terminals"]
-        left_terms: List[Term] = parsed_equation["left_terms"]
-        right_terms: List[Term] = parsed_equation["right_terms"]
+
+        first_equation = parsed_equation["equation_list"][0]
+
+        left_terms: List[Term] = first_equation["left_terms"]
+        right_terms: List[Term] = first_equation["right_terms"]
 
         print("-"*10, "Solving equation", "-"*10)
         self._algorithm = self._algorithm(terminals, variables, left_terms, right_terms, self.kwargs)
