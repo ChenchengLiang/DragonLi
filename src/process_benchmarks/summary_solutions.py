@@ -5,8 +5,12 @@ import os
 def main():
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
 
-    track="track_02"
-    summary_file_dict={"this":"this_"+track+"_summary.csv","woorpje":"woorpje_"+track+"_summary.csv"}
+    track="track_03"
+    summary_file_dict={"this":"this_"+track+"_summary.csv",
+                       "woorpje":"woorpje_"+track+"_summary.csv",
+                       "z3":"z3_"+track+"_summary.csv",
+                       "ostrich":"ostrich_"+track+"_summary.csv",
+                       "cvc5":"cvc5_"+track+"_summary.csv"}
 
     summary_one_track(summary_folder,summary_file_dict,track)
 
@@ -31,12 +35,18 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
         if len(first_summary_data_rows) == 0:
             first_summary_data_rows = [[] for x in reconstructed_list]
 
+
         for f, r in zip(first_summary_data_rows, reconstructed_list):
-            if len(f) == 0:
+            if len(f)==0:
                 f.extend(r)
             else:
-                if f[0] == r[0]:
-                    f.extend(r[1:])
+                file_name_1 = f[0].replace(".eq", "").replace(".smt", "").replace(".smt2", "")
+                for rr in reconstructed_list:
+                    file_name_2 = rr[0].replace(".eq","").replace(".smt2","").replace(".smt","")
+                    if file_name_1 == file_name_2:
+                        f.extend(rr[1:])
+
+
 
         if len(second_summary_title_row) == 1:
             second_summary_title_row.extend(reconstructed_summary_title)

@@ -75,7 +75,18 @@ def process_solver_output(solver_output: str, problem_file_path: str,solver):
             result = "UNSAT"
 
     elif solver == "ostrich":
-        print("solver_output",solver_output)
+        lines = solver_output.split('\n')
+        if lines[0] == "sat":
+            result = "SAT"
+        elif lines[0] == "unsat":
+            result = "UNSAT"
+
+    elif solver == "cvc5":
+        lines = solver_output.split('\n')
+        if lines[0] == "sat":
+            result = "SAT"
+        elif lines[0] == "unsat":
+            result = "UNSAT"
 
 
 

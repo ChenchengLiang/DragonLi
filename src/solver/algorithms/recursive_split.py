@@ -2,7 +2,7 @@ import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
-from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED,recursion_limit
+from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED,recursion_limit,RECURSION_DEPTH_EXCEEDED,RECURSION_ERROR
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable
 from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
 from src.solver.visualize_util import visualize_path
@@ -21,7 +21,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #print("recursion limit number", sys.getrecursionlimit())
 
     def run(self):
-        satisfiability,variables = self.explore_paths(deque(self.left_terms), deque(self.right_terms), self.variables)
+        try:
+            satisfiability,variables = self.explore_paths(deque(self.left_terms), deque(self.right_terms), self.variables)
+        except RecursionError as e:
+            if "maximum recursion depth exceeded" in str(e):
+                satisfiability = RECURSION_DEPTH_EXCEEDED
+                print(RECURSION_DEPTH_EXCEEDED)
+            else:
+                satisfiability=RECURSION_ERROR
+                print(RECURSION_ERROR)
 
         result_dict = {"result": satisfiability, "assignment": self.assignment, "left_terms": self.left_terms,
                        "right_terms": self.right_terms,
