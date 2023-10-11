@@ -45,6 +45,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable],
                       previous_dict) -> Tuple[str, List[Variable]]:
 
+        # record nodes and edges for visualization
         string_equation, string_terminals, string_variables = self.pretty_print_current_equation(left_terms_queue,
                                                                                                  right_terms_queue)
         self.total_explore_paths_call += 1
@@ -55,32 +56,29 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
         # terminate conditions
-        # both side only have terminals
+        ## both side only have terminals
         if len(variables) == 0:
-            if self.check_equation(left_terms_queue, right_terms_queue) == True:
-                node_info[1]["status"] = "SAT"
-                return "SAT", variables
-            else:
-                node_info[1]["status"] = "UNSAT"
-                return "UNSAT", variables
+            satisfiability = "SAT" if self.check_equation(left_terms_queue, right_terms_queue) ==True else "UNSAT"
+            return self.handle_all_branch_closed(satisfiability, variables, node_info)
 
-        # both side only have variables
+
+        ## both side only have variables
         left_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in left_terms_queue)
         right_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in right_terms_queue)
         if left_contains_no_terminal and right_contains_no_terminal:
             node_info[1]["status"] = "SAT"
             return "SAT", variables
 
-        # both side contains variables and terminals
-        # both side empty
+        ## both side contains variables and terminals
+        ###both side empty
         if len(left_terms_queue) == 0 and len(right_terms_queue) == 0:
             node_info[1]["status"] = "SAT"
             return "SAT", variables
-        # left side empty
+        ### left side empty
         if len(left_terms_queue) == 0 and len(right_terms_queue) != 0:
             node_info[1]["status"] = "UNSAT"
             return "UNSAT", variables  # since one side has terminals
-        # right side empty
+        ### right side empty
         if len(left_terms_queue) != 0 and len(right_terms_queue) == 0:
             node_info[1]["status"] = "UNSAT"
             return "UNSAT", variables  # since one side has terminals
@@ -90,7 +88,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # split equation
         left_term = left_terms_queue[0]
         right_term = right_terms_queue[0]
-        if left_term.value == right_term.value:  # both side are the same
+        # both side are the same
+        if left_term.value == right_term.value:
             # print("*","left = right","*")
             left_terms_queue.popleft()
             right_terms_queue.popleft()
@@ -99,17 +98,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                          updated_variables,
                                                                          {"node_number": current_node_number,
                                                                           "label": "L=R"})
-            if branch_satisfiability == "SAT":
-                node_info[1]["status"] = "SAT"
-                return "SAT", branch_variables
-            else:
-                node_info[1]["status"] = "UNSAT"
-                return "UNSAT", branch_variables
-            return self.explore_paths(left_terms_queue, right_terms_queue, updated_variables,
-                                      {"node_number": current_node_number, "label": "L=R"})
-        else:  # both side are different
-            if type(left_term.value) == Variable and type(
-                    right_term.value) == Variable:  # both side are differernt variables
+            return self.handle_all_branch_closed(branch_satisfiability, branch_variables,node_info)
+
+        # both side are different
+        else:
+            ## both side are differernt variables
+            if type(left_term.value) == Variable and type(right_term.value) == Variable:
                 branch_list = [self.two_variables_split_branch_1, self.two_variables_split_branch_2,
                                self.two_variables_split_branch_3]
                 random.shuffle(branch_list)
@@ -140,15 +134,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                if branch_3_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_3_variables
-                else:
-                    node_info[1]["status"] = "UNSAT"
-                    return "UNSAT", branch_3_variables  # all branches closed
+                return  self.handle_all_branch_closed(branch_3_satisfiability, branch_3_variables, node_info)
 
-            elif type(left_term.value) == Variable and type(
-                    right_term.value) == Terminal:  # left side is variable, right side is terminal
+            ## left side is variable, right side is terminal
+            elif type(left_term.value) == Variable and type(right_term.value) == Terminal:
                 branch_list = [self.one_variable_one_terminal_split_branch_1,
                                self.one_variable_one_terminal_split_branch_2]
                 random.shuffle(branch_list)
@@ -168,17 +157,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                if branch_2_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_2_variables
-                else:
-                    node_info[1]["status"] = "UNSAT"
-                    return "UNSAT", branch_2_variables  # all branches closed
+                return self.handle_all_branch_closed(branch_2_satisfiability, branch_2_variables, node_info)
 
 
 
-            elif type(left_term.value) == Terminal and type(
-                    right_term.value) == Variable:  # left side is terminal, right side is variable
+            ## left side is terminal, right side is variable
+            elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
                 branch_list = [self.one_variable_one_terminal_split_branch_1,
                                self.one_variable_one_terminal_split_branch_2]
                 random.shuffle(branch_list)
@@ -198,17 +182,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v,
                                                                                  {"node_number": current_node_number,
                                                                                   "label": edge_label})
-                if branch_3_satisfiability == "SAT":
-                    node_info[1]["status"] = "SAT"
-                    return "SAT", branch_3_variables
-                else:
-                    node_info[1]["status"] = "UNSAT"
-                    return "UNSAT", variables  # all branches closed
+                return self.handle_all_branch_closed(branch_3_satisfiability, branch_3_variables, node_info)
 
-            elif type(left_term.value) == Terminal and type(
-                    right_term.value) == Terminal:  # both side are different terminals
+            ## both side are different terminals
+            elif type(left_term.value) == Terminal and type(right_term.value) == Terminal:
                 node_info[1]["status"] = "UNSAT"
                 return "UNSAT", variables
+
+    def handle_all_branch_closed(self,satisfiability,variables,node_info):
+        node_info[1]["status"] = satisfiability
+        return satisfiability, variables
+
+
+
 
     def two_variables_split_branch_1(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term],
                                      variables: List[Variable]):

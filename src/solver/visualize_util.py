@@ -128,6 +128,8 @@ def visualize_path_html(nodes, edges, file_path):
             color = 'green'
         elif status == "UNSAT":
             color = 'red'
+        else:
+            color = 'yellow'
         node_colors.append(color)
 
     node_colors[0] = 'black'
