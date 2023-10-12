@@ -3,7 +3,7 @@ sys.path.append("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boostin
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results
-from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive
+from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
 from src.solver.Constants import max_variable_length, algorithm_timeout
 def main():
     # example path
@@ -32,8 +32,8 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-
-    solver = Solver(algorithm=ElimilateVariablesRecursive)
+    solver = Solver(algorithm=SplitEquations)
+    #solver = Solver(algorithm=ElimilateVariablesRecursive)
     #solver = Solver(algorithm=ElimilateVariables)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)

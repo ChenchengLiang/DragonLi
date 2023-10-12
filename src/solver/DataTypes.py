@@ -60,6 +60,47 @@ class Term:
             raise Exception("unknown type")
 
 
+class Equation:
+    def __init__(self, left_terms: List[Term], right_terms: List[Term]):
+        self.left_terms = left_terms
+        self.right_terms = right_terms
+
+    def __repr__(self):
+        return f"Equation({self.left_terms}, {self.right_terms})"
+
+    def __hash__(self):
+        return hash((tuple(self.left_terms), tuple(self.right_terms)))
+
+    def __eq__(self, other):
+        if not isinstance(other, Equation):
+            return False
+        return self.left_terms == other.left_terms and self.right_terms == other.right_terms
+    @property
+    def term_list(self)->List[Term]:
+        return self.left_terms + self.right_terms
+    @property
+    def variable_numbers(self)->int:
+        return len(self.variable_list)
+    @property
+    def variable_list(self)->List[Variable]:
+        return [item.value for item in self.term_list if isinstance(item.value, Variable)]
+    @property
+    def terminal_list(self)->List[Terminal]:
+        return [item.value for item in self.term_list if isinstance(item.value, Terminal)]
+    @property
+    def is_fact(self)->bool:
+        # Check if left side has a single Variable and right side has only Terminals or is empty
+        if len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable):
+            return all(isinstance(term.value, Terminal) for term in self.right_terms)
+
+        # Check if right side has a single Variable and left side has only Terminals or is empty
+        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable):
+            return all(isinstance(term.value, Terminal) for term in self.left_terms)
+        # If neither condition is met, it's not a fact
+        else:
+            return False
+
+
 class Assignment:
     def __init__(self):
         self.assignments = {}  # Dictionary to hold variable assignments
@@ -83,3 +124,5 @@ class Assignment:
         print("Assignment:")
         for key, value in self.assignments.items():
             print(key.value, "=", "".join([v.value for v in value]))
+
+

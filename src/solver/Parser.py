@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict, List
-from .DataTypes import Variable, Terminal, Term
+from .DataTypes import Variable, Terminal, Term,Equation
 from .Constants import EMPTY_TERMINAL
 from .utils import remove_duplicates
 
@@ -38,8 +38,7 @@ class EqParser(AbstractParser):
             left_str, right_str = eq_str.split('=')
             left_terms= [self.wrap_to_term(c) for c in left_str]
             right_terms = [self.wrap_to_term(c) for c in right_str]
-            equation_list.append({"eq_str":eq_str,"left_str":left_str,"right_str":right_str,"left_terms":left_terms,"right_terms":right_terms})
-
+            equation_list.append(Equation(left_terms,right_terms))
 
 
 

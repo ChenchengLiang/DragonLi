@@ -4,7 +4,7 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable,Equation
 from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
@@ -12,7 +12,7 @@ import sys
 
 
 class ElimilateVariablesRecursive(AbstractAlgorithm):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Dict],
+    def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Equation],
                  parameters: Dict):
         super().__init__(terminals, variables, equation_list)
         self.assignment = Assignment()
@@ -27,8 +27,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def run(self):
 
         first_equation = self.equation_list[0]
-        left_terms = first_equation["left_terms"]
-        right_terms = first_equation["right_terms"]
+        left_terms = first_equation.left_terms
+        right_terms = first_equation.right_terms
         try:
             satisfiability, variables = self.explore_paths(deque(left_terms), deque(right_terms),
                                                            self.variables, {"node_number": None, "label": None})

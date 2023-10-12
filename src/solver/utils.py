@@ -1,4 +1,4 @@
-from .DataTypes import Variable, Terminal, Term, Assignment
+from .DataTypes import Variable, Terminal, Term, Assignment,Equation
 from typing import Dict, List, Union, Iterable
 from .Constants import INTERNAL_TIMEOUT
 import sys
@@ -41,7 +41,7 @@ def print_results(result: Dict):
 def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment()):
     string_equation_list=[]
     for eq in result["equation_list"]:
-        string_equation=assemble_one_equation(eq["left_terms"], eq["right_terms"], assignment)
+        string_equation=assemble_one_equation(eq.left_terms, eq.right_terms, assignment)
         string_equation_list.append(string_equation)
 
     string_terminals = get_terminal_string(result["terminals"])
@@ -54,29 +54,29 @@ def get_terminal_string(terminals: List[Terminal]):
 def get_variable_string(variables: List[Variable]):
     return ",".join([t.value for t in variables])
 
-def assemble_one_equation(left_terms, right_terms, assignment: Assignment = Assignment()):
+def assemble_one_equation(left_terms:List[Term], right_terms:List[Term], assignment: Assignment = Assignment()):
     left_str = []
     right_str = []
     for t in left_terms:
         if type(t.value) == Variable:
             if assignment.is_empty():
-                left_str.append(t.value.value)
+                left_str.append(t.get_value_str)
             else:
                 terminal_list = assignment.get_assignment(t.value)
                 for tt in terminal_list:
                     left_str.append(tt.value)
         else:
-            left_str.append(t.value.value)
+            left_str.append(t.get_value_str)
     for t in right_terms:
         if type(t.value) == Variable:
             if assignment.is_empty():
-                right_str.append(t.value.value)
+                right_str.append(t.get_value_str)
             else:
                 terminal_list = assignment.get_assignment(t.value)
                 for tt in terminal_list:
                     right_str.append(tt.value)
         else:
-            right_str.append(t.value.value)
+            right_str.append(t.get_value_str)
 
     left_terms_str = "".join(left_str) if len(left_str) != 0 else "\"\""
     right_terms_str = "".join(right_str) if len(right_str) != 0 else "\"\""

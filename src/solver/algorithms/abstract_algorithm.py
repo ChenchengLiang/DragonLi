@@ -2,11 +2,11 @@ from abc import ABC, abstractmethod
 from typing import List,Union,Deque, Dict
 from src.solver.utils import assemble_parsed_content,assemble_one_equation,get_variable_string,get_terminal_string
 
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation
 
 
 class AbstractAlgorithm(ABC):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list:List[Dict]):
+    def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list:List[Equation]):
         self.terminals = terminals
         self.variables = variables
         self.equation_list=equation_list
