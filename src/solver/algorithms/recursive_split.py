@@ -90,13 +90,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # both side are the same
         if left_term.value == right_term.value:
-            left_terms_queue.popleft()
-            right_terms_queue.popleft()
+            left_poped_list_str,right_poped_list_str=self.pop_both_same_terms(left_terms_queue, right_terms_queue)
             updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
             branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue, right_terms_queue,
                                                                          updated_variables,
                                                                          {"node_number": current_node_number,
-                                                                          "label": left_term.get_value_str+"="+right_term.get_value_str})
+                                                                          "label": left_poped_list_str+"="+right_poped_list_str})
             return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info)
 
         # both side are different
@@ -185,6 +184,28 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def record_and_close_branch(self, satisfiability: str, variables, node_info):
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
+
+    def pop_both_same_terms(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term]):
+        '''
+        This will change left_terms_queue and right_terms_queue
+        '''
+        equal_term_counter = 0
+        for l, r in zip(left_terms_queue, right_terms_queue):
+            if l.value == r.value:
+                equal_term_counter += 1
+            else:
+                break
+
+        left_poped_list = []
+        right_poped_list = []
+        for i in range(equal_term_counter):
+            left_poped_list.append(left_terms_queue.popleft())
+            right_poped_list.append(right_terms_queue.popleft())
+
+        left_poped_list_str = "".join([term.get_value_str for term in left_poped_list])
+        right_poped_list_str = "".join([term.get_value_str for term in right_poped_list])
+
+        return left_poped_list_str, right_poped_list_str
 
     def two_variables_split_branch_1(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term],
                                      variables: List[Variable]):
