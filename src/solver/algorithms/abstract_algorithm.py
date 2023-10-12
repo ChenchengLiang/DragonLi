@@ -1,17 +1,16 @@
 from abc import ABC, abstractmethod
-from typing import List,Union,Deque
-from src.solver.utils import assemble_parsed_content
+from typing import List,Union,Deque, Dict
+from src.solver.utils import assemble_parsed_content,assemble_one_equation,get_variable_string,get_terminal_string
 
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable
 
 
 class AbstractAlgorithm(ABC):
-    def __init__(self, terminals: List[Terminal], variables: List[Variable], left_terms: List[Term],
-                 right_terms: List[Term]):
+    def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list:List[Dict]):
         self.terminals = terminals
         self.variables = variables
-        self.left_terms = left_terms.copy()
-        self.right_terms = right_terms.copy()
+        self.equation_list=equation_list
+
 
     @abstractmethod
     def run(self):
@@ -22,9 +21,10 @@ class AbstractAlgorithm(ABC):
 
     def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
                                       right_terms: Union[List[Term], Deque[Term]],mute=True):
-        content_dict = {"left_terms": left_terms, "right_terms": right_terms, "terminals": self.terminals,
-                        "variables": self.variables}
-        string_equation, string_terminals, string_variables = assemble_parsed_content(content_dict)
+
+        string_equation = assemble_one_equation(left_terms, right_terms,Assignment())
+        string_terminals = get_terminal_string(self.terminals)
+        string_variables = get_variable_string(self.variables)
         # print("string_terminals:",string_terminals)
         #print("string_variables:", string_variables)
         if mute==False:

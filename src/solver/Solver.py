@@ -11,26 +11,20 @@ from .DataTypes import Variable, Terminal, Term, Assignment
 class Solver:
     def __init__(self, algorithm: AbstractAlgorithm, **kwargs):
         self._algorithm = algorithm
-        self.kwargs=kwargs
+        self.kwargs = kwargs
+
+    def solve(self, parsed_equations: Dict, visualize=False) -> (bool, Assignment):
+        variables: List[Variable] = parsed_equations["variables"]
+        terminals: List[Terminal] = parsed_equations["terminals"]
 
 
-    def solve(self, parsed_equation: Dict,visualize=False) -> (bool, Assignment):
-        variables: List[Variable] = parsed_equation["variables"]
-        terminals: List[Terminal] = parsed_equation["terminals"]
-
-        first_equation = parsed_equation["equation_list"][0]
-
-        left_terms: List[Term] = first_equation["left_terms"]
-        right_terms: List[Term] = first_equation["right_terms"]
-
-        print("-"*10, "Solving equation", "-"*10)
-        self._algorithm = self._algorithm(terminals, variables, left_terms, right_terms, self.kwargs)
+        print("-" * 10, "Solving equation", "-" * 10)
+        self._algorithm = self._algorithm(terminals, variables, parsed_equations["equation_list"], self.kwargs)
         result_dict, running_time = self.count_time(self._algorithm.run, algorithm_timeout)
         result_dict["running_time"] = running_time
-        if visualize==True:
-            self._algorithm.visualize(parsed_equation["file_path"])
+        if visualize == True:
+            self._algorithm.visualize(parsed_equations["file_path"])
         return result_dict
-
 
     def count_time(self, func: Callable[..., Any], timeout=algorithm_timeout, *args, **kwargs) -> Tuple[float, Any]:
         with ThreadPoolExecutor() as executor:
@@ -43,7 +37,8 @@ class Solver:
             except TimeoutError:
                 future.cancel()  # Cancel the function if it times out
                 end_time = time.time()
-                return {"result":None}, end_time - start_time  # Return the elapsed time and None if the function times out
+                return {
+                    "result": None}, end_time - start_time  # Return the elapsed time and None if the function times out
 
             end_time = time.time()
         return result, end_time - start_time  # Return the elapsed time and the result if the function completes

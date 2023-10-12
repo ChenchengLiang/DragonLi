@@ -8,26 +8,29 @@ def print_results(result: Dict):
     else:
         print("-" * 10, "Problem", "-" * 10)
         print("recursion limit number", sys.getrecursionlimit())
-        original_equation, string_terminals, string_variables = assemble_parsed_content(result)
+        original_equation_list, string_terminals, string_variables = assemble_parsed_content(result)
         print("Variables:", string_variables)
         print("Terminals:", string_terminals)
-        print("Equation:", original_equation)
+        for e in original_equation_list:
+            print("Equation:", e)
+
 
         print("-" * 10, "Solution", "-" * 10)
 
         satisfiability = result["result"]
         assignment = result["assignment"]
 
-        solved_string_equation, _, _ = assemble_parsed_content(result, assignment)
+        solved_string_equation_list, _, _ = assemble_parsed_content(result, assignment)
 
-        if satisfiability == True:
+        if satisfiability == "SAT":
             print("result: SAT")
             assignment.pretty_print()
-            print(solved_string_equation)
-        elif satisfiability == False:
+            for se in solved_string_equation_list:
+                print("Solved Equation:", se)
+        elif satisfiability == "UNSAT":
             print("result: UNSAT")
         else:
-            print("result:", satisfiability)
+            print("result:", "ERROR")
 
         if "total_explore_paths_call" in result:
             print(f'Total explore_paths call: {result["total_explore_paths_call"]}')
@@ -36,9 +39,25 @@ def print_results(result: Dict):
 
 
 def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment()):
+    string_equation_list=[]
+    for eq in result["equation_list"]:
+        string_equation=assemble_one_equation(eq["left_terms"], eq["right_terms"], assignment)
+        string_equation_list.append(string_equation)
+
+    string_terminals = get_terminal_string(result["terminals"])
+    string_variables = get_variable_string(result["variables"])
+
+    return string_equation_list, string_terminals, string_variables
+
+def get_terminal_string(terminals: List[Terminal]):
+    return ",".join([t.value for t in terminals])
+def get_variable_string(variables: List[Variable]):
+    return ",".join([t.value for t in variables])
+
+def assemble_one_equation(left_terms, right_terms, assignment: Assignment = Assignment()):
     left_str = []
     right_str = []
-    for t in result["left_terms"]:
+    for t in left_terms:
         if type(t.value) == Variable:
             if assignment.is_empty():
                 left_str.append(t.value.value)
@@ -48,7 +67,7 @@ def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment())
                     left_str.append(tt.value)
         else:
             left_str.append(t.value.value)
-    for t in result["right_terms"]:
+    for t in right_terms:
         if type(t.value) == Variable:
             if assignment.is_empty():
                 right_str.append(t.value.value)
@@ -59,15 +78,11 @@ def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment())
         else:
             right_str.append(t.value.value)
 
-    left_terms_str = "".join(left_str) if len(left_str)!=0 else "\"\""
-    right_terms_str = "".join(right_str) if len(right_str)!=0 else "\"\""
+    left_terms_str = "".join(left_str) if len(left_str) != 0 else "\"\""
+    right_terms_str = "".join(right_str) if len(right_str) != 0 else "\"\""
 
     string_equation = left_terms_str + " = " + right_terms_str
-
-    string_terminals = ",".join([t.value for t in result["terminals"]])
-    string_variables = ",".join([t.value for t in result["variables"]])
-
-    return string_equation, string_terminals, string_variables
+    return string_equation
 
 
 def remove_duplicates(lst:Iterable)->List:

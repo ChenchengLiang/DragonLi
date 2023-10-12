@@ -48,6 +48,16 @@ class Term:
         if not isinstance(other, Term):
             return False
         return self.value == other.value
+    @property
+    def get_value_str(self):
+        if isinstance(self.value,Variable):
+            return self.value.value
+        elif isinstance(self.value,Terminal):
+            return self.value.value
+        elif isinstance(self.value,list):
+            return "".join([t.get_value_str() for t in self.value])
+        else:
+            raise Exception("unknown type")
 
 
 class Assignment:
