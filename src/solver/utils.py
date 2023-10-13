@@ -30,7 +30,7 @@ def print_results(result: Dict):
         elif satisfiability == "UNSAT":
             print("result: UNSAT")
         else:
-            print("result:", "ERROR")
+            print("result:",satisfiability)
 
         if "total_explore_paths_call" in result:
             print(f'Total explore_paths call: {result["total_explore_paths_call"]}')

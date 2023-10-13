@@ -17,7 +17,7 @@ def main():
     ##file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_3.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_4.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_5.eq"
-    #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_36.eq"
+    file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_36.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_37.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_58.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/woorpje/01_track_93.eq"
@@ -27,7 +27,7 @@ def main():
     #file_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje/03_track_17.eq"
 
     #multiple equations
-    file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/test2.eq"
+    #file_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/test2.eq"
 
 
     parser_type = EqParser()
@@ -35,8 +35,8 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    solver = Solver(algorithm=SplitEquations)
-    #solver = Solver(algorithm=ElimilateVariablesRecursive)
+    #solver = Solver(algorithm=SplitEquations)
+    solver = Solver(algorithm=ElimilateVariablesRecursive)
     #solver = Solver(algorithm=ElimilateVariables)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)

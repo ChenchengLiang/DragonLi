@@ -1,5 +1,5 @@
 from typing import Union, List
-from Constants import UNKNOWN, SAT, UNSAT
+from .Constants import UNKNOWN, SAT, UNSAT
 
 
 
