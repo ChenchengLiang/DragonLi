@@ -1,6 +1,5 @@
-from typing import Union, List
+from typing import Union, List, Tuple
 from .Constants import UNKNOWN, SAT, UNSAT
-
 
 
 class Variable:
@@ -35,7 +34,9 @@ class Terminal:
             return False
         return self.value == other.value
 
-EMPTY_TERMINAL:Terminal = Terminal("\"\"")
+
+EMPTY_TERMINAL: Terminal = Terminal("\"\"")
+
 
 class Term:
     def __init__(self, value: Union[Variable, Terminal, List['Term']]):
@@ -85,58 +86,96 @@ class Equation:
         return self.left_terms + self.right_terms
 
     @property
-    def variable_numbers(self) -> int:
-        return len(self.variable_list)
-
-    @property
     def variable_list(self) -> List[Variable]:
         return [item.value for item in self.term_list if isinstance(item.value, Variable)]
 
     @property
-    def terminal_list(self) -> List[Terminal]:
-        return [item.value for item in self.term_list if isinstance(item.value, Terminal)]
+    def variable_numbers(self) -> int:
+        return len(self.variable_list)
 
     @property
-    def is_fact(self) -> bool:
-        # Check if left side has a single Variable and right side has only Terminals or is empty
-        print(self.eq_str)
-        if len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable):
-            return all(isinstance(term.value, Terminal) for term in self.right_terms)
-
-        # Check if right side has a single Variable and left side has only Terminals or is empty
-        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable):
-            return all(isinstance(term.value, Terminal) for term in self.left_terms)
-        # If neither condition is met, it's not a fact
+    def terminal_list(self) -> List[Terminal]:
+        terminals = [item.value for item in self.term_list if isinstance(item.value, Terminal)]
+        if len(terminals) == 0:
+            return [EMPTY_TERMINAL]
         else:
-            return False
+            return terminals
+
+    @property
+    def terminal_numbers(self) -> int:
+        return len(self.terminal_list)
 
     @property
     def eq_str(self) -> str:
         return "".join([t.get_value_str for t in self.left_terms]) + " = " + "".join(
             [t.get_value_str for t in self.right_terms])
 
-    def satisfiability(self):
-        if len(self.term_list) == 0:
-            return SAT
-        elif len(self.left_terms) == 0 and len(self.right_terms) > 0:
-            pass
-        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:
-            pass
+    def is_fact(self) -> (bool, List[Tuple[Variable, List[Terminal]]]):
+
+        # Condition: "" = List[Variable]
+        if len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
+            if all(isinstance(term.value, Variable) for term in
+                   self.right_terms):  # if all right hand side are variables
+                return True, [(term.value, [EMPTY_TERMINAL]) for term in self.right_terms]
+        # Condition: List[Variable] = ""
+        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
+            if all(isinstance(term.value, Variable) for term in self.left_terms):  # if all left hand side are variables
+                return True, [(term.value, [EMPTY_TERMINAL]) for term in self.left_terms]
+        # Condition: A=AA
+        elif len(self.left_terms) > 0 and len(self.right_terms) > 0 and len(self.left_terms) != len(
+                self.right_terms) and self.variable_numbers == 1 and self.terminal_numbers <= 1:
+            return True, [(self.variable_list[0], [EMPTY_TERMINAL])]
+        # Condition: Variable=List[Terminal]
+        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable):
+            if all(isinstance(term.value, Terminal) for term in self.right_terms):
+                return True, [(self.left_terms[0].value, [t.value for t in self.right_terms])]
+        # Condition: List[Terminal]=Variable
+        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable):
+            if all(isinstance(term.value, Terminal) for term in self.left_terms):
+                return True, [(self.right_terms[0].value, [t.value for t in self.left_terms])]
         else:
-            pass
+            return False, []
 
-    def satisfiability_one_side_empty(self,not_empty_side:List[Term]):
+    def check_satisfiability(self) -> str:
+        if len(self.term_list) == 0:  # both sides are empty
+            return SAT
+        elif len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
+            return self.satisfiability_one_side_empty(self.right_terms)
+        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
+            return self.satisfiability_one_side_empty(self.left_terms)
+        else:  # both sides are not empty
+            # both sides are exatcly the same
+            if self.left_terms == self.right_terms:
+                return SAT
+            elif all(isinstance(term.value, Variable) for term in self.term_list):  # if all terms are variables
+                result, _ = self.is_fact()
+                return SAT if result == True else UNKNOWN
+            elif all(isinstance(term.value, Terminal) for term in self.term_list):  # if all terms are terminals
+                return self.check_all_terminal_case()
+            else:
+                result, _ = self.is_fact()
+                return SAT if result == True else UNKNOWN
+
+    def satisfiability_one_side_empty(self, not_empty_side: List[Term]) -> str:
         '''
-        This assume another side is empty.
+        Assume another side is empty.
         there are three conditions for one side: (1). terminals + variables (2). only terminals (3). only variables
-
         '''
-        #(1) + (2): if there are any Terminal in the not_empty_side, then it is UNSAT
+        # (1) + (2): if there are any Terminal in the not_empty_side, then it is UNSAT
         if any(isinstance(term.value, Terminal) for term in not_empty_side):
             return UNSAT
-        #(3): if there are only Variables in the not_empty_side
+        # (3): if there are only Variables in the not_empty_side
         else:
-            return SAT if self.is_fact else UNKNOWN
+            result, _ = self.is_fact()
+            return SAT if result == True else UNKNOWN
+
+    def check_all_terminal_case(self):
+        left_str = "".join([t.get_value_str for t in self.left_terms if t.value != EMPTY_TERMINAL]) #ignore empty terminal
+        right_str = "".join([t.get_value_str for t in self.right_terms if t.value != EMPTY_TERMINAL])
+        if left_str == right_str:
+            return SAT
+        else:
+            return UNSAT
 
 
 class Assignment:
