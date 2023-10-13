@@ -5,7 +5,8 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable,Equation, EMPTY_TERMINAL
-from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
+from src.solver.utils import assemble_parsed_content
+from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
 import sys

@@ -5,7 +5,8 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
-from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
+from src.solver.utils import assemble_parsed_content
+from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
 import sys
@@ -43,6 +44,8 @@ class SplitEquations(AbstractAlgorithm):
 
         self.propagate_facts(self.equation_list)
 
+        #todo split equations
+
 
 
         satisfiability="SAT"
@@ -51,6 +54,9 @@ class SplitEquations(AbstractAlgorithm):
         return result_dict
 
     def propagate_facts(self, equation_list: List[Equation]):
+        '''
+        Propagate facts in equation_list until no more facts can be propagated
+        '''
         facts = []
         not_facts = []
         unknown_eq_list=[]
@@ -79,6 +85,12 @@ class SplitEquations(AbstractAlgorithm):
         print("facts_len:",len(facts))
         print("not_facts_len:",len(not_facts))
         print("unknown_eq_list_len:",len(unknown_eq_list))
+
+        #todo: propagate facts to unknown equations
+
+
+
+
 
 
 

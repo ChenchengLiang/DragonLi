@@ -1,5 +1,6 @@
 from typing import Union, List, Tuple
 from .Constants import UNKNOWN, SAT, UNSAT
+from .independent_utils import remove_duplicates
 
 
 class Variable:
@@ -87,7 +88,7 @@ class Equation:
 
     @property
     def variable_list(self) -> List[Variable]:
-        return [item.value for item in self.term_list if isinstance(item.value, Variable)]
+        return remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Variable)])
 
     @property
     def variable_numbers(self) -> int:
@@ -95,7 +96,7 @@ class Equation:
 
     @property
     def terminal_list(self) -> List[Terminal]:
-        terminals = [item.value for item in self.term_list if isinstance(item.value, Terminal)]
+        terminals = remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Terminal)])
         if len(terminals) == 0:
             return [EMPTY_TERMINAL]
         else:
@@ -201,3 +202,4 @@ class Assignment:
         print("Assignment:")
         for key, value in self.assignments.items():
             print(key.value, "=", "".join([v.value for v in value]))
+        print("-"*10)

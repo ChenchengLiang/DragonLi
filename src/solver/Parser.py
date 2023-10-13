@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict
 
 from .DataTypes import Variable, Terminal, Term, Equation, EMPTY_TERMINAL
-from .utils import remove_duplicates
+from .independent_utils import remove_duplicates
 
 
 class AbstractParser(ABC):

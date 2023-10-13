@@ -1,5 +1,5 @@
-from .DataTypes import Variable, Terminal, Term, Assignment,Equation
-from typing import Dict, List, Union, Iterable
+from .DataTypes import Variable, Terminal, Term, Assignment
+from typing import Dict, List
 from .Constants import INTERNAL_TIMEOUT
 import sys
 def print_results(result: Dict):
@@ -85,21 +85,3 @@ def assemble_one_equation(left_terms:List[Term], right_terms:List[Term], assignm
     return string_equation
 
 
-def remove_duplicates(lst:Iterable)->List:
-    seen = set()
-    result = []
-    for item in lst:
-        if item not in seen:
-            seen.add(item)
-            result.append(item)
-    return result
-
-
-def flatten_list(nested_list:Iterable)->List:
-    flattened = []
-    for item in nested_list:
-        if isinstance(item, list):
-            flattened.extend(flatten_list(item))
-        else:
-            flattened.append(item)
-    return flattened
