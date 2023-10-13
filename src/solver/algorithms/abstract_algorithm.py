@@ -53,6 +53,6 @@ class AbstractAlgorithm(ABC):
                 for tt in terminal_list:
                     value_list.append(tt.value)
             else:  # type(t.value) == Terminal
-                value_list.append(t.value.value)
+                value_list.append(t.get_value_str)
         return value_list
 

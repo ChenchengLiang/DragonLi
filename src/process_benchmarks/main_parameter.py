@@ -12,7 +12,6 @@ def main(args):
     # example path
     file_path=args[0]
 
-
     parser_type = EqParser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
@@ -21,7 +20,7 @@ def main(args):
     solver = Solver(algorithm=ElimilateVariablesRecursive)
     #solver = Solver(algorithm=ElimilateVariables)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
-    result_dict = solver.solve(parsed_content)
+    result_dict = solver.solve(parsed_content,visualize=False)
 
     print_results(result_dict)
 

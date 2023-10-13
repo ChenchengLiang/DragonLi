@@ -2,8 +2,8 @@ import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
-from src.solver.Constants import EMPTY_TERMINAL, BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable
+from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, EMPTY_TERMINAL
 from src.solver.utils import flatten_list, assemble_parsed_content, remove_duplicates
 from src.solver.visualize_util import visualize_path
 from .abstract_algorithm import AbstractAlgorithm

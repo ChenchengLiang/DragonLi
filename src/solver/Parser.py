@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List
-from .DataTypes import Variable, Terminal, Term,Equation
-from .Constants import EMPTY_TERMINAL
+from typing import Dict
+
+from .DataTypes import Variable, Terminal, Term, Equation, EMPTY_TERMINAL
 from .utils import remove_duplicates
 
 
@@ -21,9 +21,9 @@ class EqParser(AbstractParser):
         self.right_terms = None
 
     def wrap_to_term(self, c: str) -> Term:
-        if c in self.variable_str:
+        if c in self.variable_values:
             return Term(Variable(c))
-        elif c in self.terminal_str:
+        elif c in self.terminal_values:
             return Term(Terminal(c))
 
     def parse(self, content: Dict) -> Dict:
@@ -31,13 +31,27 @@ class EqParser(AbstractParser):
         self.terminal_str = content["terminals_str"]
         self.variables = remove_duplicates([Variable(v) for v in content["variables_str"]])
         self.terminals = remove_duplicates([EMPTY_TERMINAL] + [Terminal(t) for t in content["terminals_str"]])
+        self.variable_values = [v.value for v in self.variables]
+        self.terminal_values = [t.value for t in self.terminals]
         self.file_path = content["file_path"]
 
         equation_list=[]
         for eq_str in content["equation_str_list"]:
             left_str, right_str = eq_str.split('=')
-            left_terms= [self.wrap_to_term(c) for c in left_str]
-            right_terms = [self.wrap_to_term(c) for c in right_str]
+            #dealing with "" and empty string
+            if left_str == "\"\"":
+                left_terms = [self.wrap_to_term(left_str)]
+            elif len(left_str) == 0:
+                left_terms = [Term(EMPTY_TERMINAL)]
+            else:
+                left_terms= [self.wrap_to_term(c) for c in left_str]
+            if right_str == "\"\"":
+                right_terms = [self.wrap_to_term(right_str)]
+            elif len(right_str) == 0:
+                right_terms = [Term(EMPTY_TERMINAL)]
+            else:
+                right_terms = [self.wrap_to_term(c) for c in right_str]
+
             equation_list.append(Equation(left_terms,right_terms))
 
 

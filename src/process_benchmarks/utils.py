@@ -2,6 +2,7 @@ from src.solver.Constants import shell_timeout, solver_command_map
 import os
 import time
 import subprocess
+from src.solver.Constants import UNKNOWN, SAT, UNSAT
 
 
 def run_on_one_benchmark(file_path,parameters_list,solver):
@@ -52,7 +53,7 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str,solver):
 
 
 def process_solver_output(solver_output: str, problem_file_path: str,solver):
-    result = "UNKNOWN"
+    result = UNKNOWN
 
     if solver == "this":
         lines = solver_output.split('\n')
@@ -63,30 +64,30 @@ def process_solver_output(solver_output: str, problem_file_path: str,solver):
 
     elif solver == "woorpje":
         if "Found a solution" in solver_output:
-            result = "SAT"
+            result = SAT
         elif "Equation has no solution due to set bounds" in solver_output:
-            result = "UNSAT"
+            result = UNSAT
 
     elif solver == "z3":
         lines = solver_output.split('\n')
         if lines[0] == "sat":
-            result = "SAT"
+            result = SAT
         elif lines[0] == "unsat":
-            result = "UNSAT"
+            result = UNSAT
 
     elif solver == "ostrich":
         lines = solver_output.split('\n')
         if lines[0] == "sat":
-            result = "SAT"
+            result = SAT
         elif lines[0] == "unsat":
-            result = "UNSAT"
+            result = UNSAT
 
     elif solver == "cvc5":
         lines = solver_output.split('\n')
         if lines[0] == "sat":
-            result = "SAT"
+            result = SAT
         elif lines[0] == "unsat":
-            result = "UNSAT"
+            result = UNSAT
 
 
 
@@ -95,7 +96,7 @@ def process_solver_output(solver_output: str, problem_file_path: str,solver):
 
 
     # write to log file
-    if result == "SAT" or result == "UNSAT":
+    if result == SAT or result == UNSAT:
         log_file = problem_file_path + "."+solver+".log"
         if os.path.exists(log_file):
             os.remove(log_file)
