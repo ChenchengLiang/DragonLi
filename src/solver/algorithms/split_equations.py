@@ -4,13 +4,12 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -25,15 +24,14 @@ class SplitEquations(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         print("recursion limit number", sys.getrecursionlimit())
 
-
-    def check_satisfiability_for_all_eqs(self, equation_list: List[Equation]):
+    def check_satisfiability_for_all_eqs(self, equation_list: List[Equation]) -> str:
         '''
         Check satisfiability for all equations in equation_list,
         if there is a UNSAT equation, then return UNSAT,
         if all equations are SAT, then return SAT,
         otherwise return UNKNOWN
         '''
-        satisfiability_list=[]
+        satisfiability_list = []
         for eq in equation_list:
             satisfiability = eq.check_satisfiability()
             # if there is a UNSAT equation, then return UNSAT
@@ -46,105 +44,71 @@ class SplitEquations(AbstractAlgorithm):
             return SAT
         return UNKNOWN
 
-
     def run(self):
+        original_formula = Formula(self.equation_list)
+        satisfiability, equation_list = self.propagate_facts(original_formula, unknown_number=original_formula.unknown_number)
+        return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
+                "variables": self.variables, "terminals": self.terminals}
 
+        # if satisfiability != UNKNOWN:
+        #     return {"result": SAT, "assignment": self.assignment, "equation_list": self.equation_list,
+        #             "variables": self.variables, "terminals": self.terminals}
 
-        satisfiability=self.check_satisfiability_for_all_eqs(self.equation_list)
-        if satisfiability!=UNKNOWN:
-            return {"result": SAT, "assignment": self.assignment, "equation_list": self.equation_list,
-                       "variables": self.variables, "terminals": self.terminals}
+        # todo split equations
 
-
-        satisfiability_list=self.propagate_facts(self.equation_list)
-
-        #todo split equations
-
-
-
-        satisfiability="SAT"
-        result_dict = {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
-                       "variables": self.variables, "terminals": self.terminals}
-        return result_dict
-
-    def propagate_facts(self, equation_list: List[Equation]):
+    def propagate_facts(self, original_formula:Formula, unknown_number):
         '''
         Propagate facts in equation_list until no more facts can be propagated
         '''
-        satisfiability_list=[]
-        facts = []
-        not_facts = []
-        unknown_eq_list=[]
-        for eq in equation_list:
-            is_fact, assignment_list = eq.is_fact()
-            if is_fact:
-                facts.append(eq)
-                # transform facts to assignments
-                for (v,t_list) in assignment_list:
-                    self.assignment.set_assignment(v, t_list)
-            else:
-                not_facts.append(eq)
-            if eq.check_satisfiability() == "UNKNOWN":
-                unknown_eq_list.append(eq)
 
+        print("propagate",str(original_formula.fact_number), "facts to ", str(unknown_number), "unknown equations")
+        # transform facts to assignment
+        temp_assigment = Assignment()
+        if original_formula.fact_number != 0:
+            for f, assignment_list in original_formula.facts:
+                for (v, t_list) in assignment_list:
+                    temp_assigment.set_assignment(v, t_list)
 
-
-        for f in facts:
-            print("fact:",f.eq_str,f.check_satisfiability())
-        for not_f in not_facts:
-            print("not fact:",not_f.eq_str,not_f.check_satisfiability())
-        for unknown_eq in unknown_eq_list:
-            print("unknown_eq:",unknown_eq.eq_str,unknown_eq.check_satisfiability())
-
-        print("equation_list_len:",len(equation_list))
-        print("facts_len:",len(facts))
-        print("not_facts_len:",len(not_facts))
-        print("unknown_eq_list_len:",len(unknown_eq_list))
-
-        #todo: propagate facts to unknown equations
-
-        updated_unknown_eq_list=[]
-        if self.assignment.is_empty():
-            pass
         else:
-            for unknown_eq in unknown_eq_list:
-                new_left_terms=[]
-                for t in unknown_eq.left_terms:
-                    if t.value in self.assignment.assigned_variables:
-                        for terminal in self.assignment.get_assignment(t.value):
-                            new_left_terms.append(Term(terminal))
-                    else:
-                        new_left_terms.append(t)
-                new_right_terms=[]
-                for t in unknown_eq.right_terms:
-                    if t.value in self.assignment.assigned_variables:
-                        for terminal in self.assignment.get_assignment(t.value):
-                            new_right_terms.append(Term(terminal))
-                    else:
-                        new_right_terms.append(t)
+            pass
 
-                new_eq=Equation(new_left_terms,new_right_terms)
+        # propagate facts to unknown equations
+        propagated_eq_list = []
+        if temp_assigment.is_empty():
+            propagated_eq_list = original_formula.formula
+        else:
+            for eq in original_formula.formula:
+                if eq.check_satisfiability() == UNKNOWN:
+                    new_left_terms = []
+                    for t in eq.left_terms:
+                        if t.value in temp_assigment.assigned_variables:
+                            for terminal in temp_assigment.get_assignment(t.value):
+                                new_left_terms.append(Term(terminal))
+                        else:
+                            new_left_terms.append(t)
+                    new_right_terms = []
+                    for t in eq.right_terms:
+                        if t.value in temp_assigment.assigned_variables:
+                            for terminal in temp_assigment.get_assignment(t.value):
+                                new_right_terms.append(Term(terminal))
+                        else:
+                            new_right_terms.append(t)
 
-                if new_eq.check_satisfiability() == SAT:
-                    return SAT
-                elif new_eq.check_satisfiability() == UNSAT:
-                    return UNSAT
+                    new_eq = Equation(new_left_terms, new_right_terms)
+                    propagated_eq_list.append(new_eq)
                 else:
-                    updated_unknown_eq_list.append(new_eq)
+                    propagated_eq_list.append(eq)
 
-
-        return satisfiability_list
-
-
-
-
-
-
-
-
-
-
-
+        # check propageted equations
+        new_formula = Formula(propagated_eq_list)
+        satisfiability_new_eq_list = new_formula.satisfiability
+        if satisfiability_new_eq_list == UNKNOWN:
+            if new_formula.unknown_number < unknown_number:  # if new unknown equations are found, continue to propagate
+                return self.propagate_facts(new_formula, unknown_number=new_formula.unknown_number)
+            else:  # if no new unknown equations are found, return unknown
+                return satisfiability_new_eq_list, propagated_eq_list
+        else:  # find solution
+            return satisfiability_new_eq_list, propagated_eq_list
 
     def visualize(self, file_path: str):
         pass

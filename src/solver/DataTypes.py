@@ -102,7 +102,7 @@ class Equation:
         if len(terminals) == 0:
             return [EMPTY_TERMINAL]
         else:
-            return terminals
+            return terminals + [EMPTY_TERMINAL]
 
     @property
     def terminal_numbers(self) -> int:
@@ -129,13 +129,11 @@ class Equation:
                 self.right_terms) and self.variable_numbers == 1 and self.terminal_numbers <= 1:
             return True, [(self.variable_list[0], [EMPTY_TERMINAL])]
         # Condition: Variable=List[Terminal]
-        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable):
-            if all(isinstance(term.value, Terminal) for term in self.right_terms):
-                return True, [(self.left_terms[0].value, [t.value for t in self.right_terms])]
+        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable) and all(isinstance(term.value, Terminal) for term in self.right_terms):
+            return True, [(self.left_terms[0].value, [t.value for t in self.right_terms])]
         # Condition: List[Terminal]=Variable
-        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable):
-            if all(isinstance(term.value, Terminal) for term in self.left_terms):
-                return True, [(self.right_terms[0].value, [t.value for t in self.left_terms])]
+        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable) and all(isinstance(term.value, Terminal) for term in self.left_terms):
+            return True, [(self.right_terms[0].value, [t.value for t in self.left_terms])]
         else:
             return False, []
 
@@ -182,11 +180,45 @@ class Equation:
 
 
 
-class EquationChain:
-    def __init__(self, equation: Equation):
-        self.equation_chain = [equation]
-        self.transformation_chain = []
+class Formula:
+    def __init__(self, eq_list: List[Equation]):
+        self.formula = eq_list
+        self.facts = []
+        self.sat_equations = []
+        self.unsat_equations = []
+        self.unknown_equations = []
+        for eq in self.formula:
+            satisfiability=eq.check_satisfiability()
+            if satisfiability == SAT:
+                self.sat_equations.append(eq)
+                is_fact,fact_assignment=eq.is_fact()
+                if is_fact:
+                    self.facts.append((eq,fact_assignment))
+            elif satisfiability == UNSAT:
+                self.unsat_equations.append(eq)
+            else:
+                self.unknown_equations.append(eq)
 
+    @property
+    def fact_number(self) -> int:
+        return len(self.facts)
+    @property
+    def unknown_number(self) -> int:
+        return len(self.unknown_equations)
+
+    @property
+    def unsat_number(self) -> int:
+        return len(self.unsat_equations)
+
+    @property
+    def satisfiability(self) -> str:
+        if self.unknown_number == 0:
+            if self.unsat_number == 0:
+                return SAT
+            else:
+                return UNSAT
+        else:
+            return UNKNOWN
 
 
 
