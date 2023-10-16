@@ -66,6 +66,8 @@ class Term:
             raise Exception("unknown type")
 
 
+
+
 class Equation:
     def __init__(self, left_terms: List[Term], right_terms: List[Term]):
         self.left_terms = left_terms
@@ -179,12 +181,26 @@ class Equation:
             return UNSAT
 
 
+
+class EquationChain:
+    def __init__(self, equation: Equation):
+        self.equation_chain = [equation]
+        self.transformation_chain = []
+
+
+
+
 class Assignment:
     def __init__(self):
         self.assignments = {}  # Dictionary to hold variable assignments
 
     def __repr__(self):
         return f"Assignment({self.assignments})"
+
+    @property
+    def assigned_variables(self) -> List[Variable]:
+        """Returns a list of assigned variables."""
+        return list(self.assignments.keys())
 
     def is_empty(self) -> bool:
         """Returns True if the assignment is empty, False otherwise."""

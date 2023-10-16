@@ -36,12 +36,12 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    solver = Solver(algorithm=SplitEquations)
-    #solver = Solver(algorithm=ElimilateVariablesRecursive)
+    #solver = Solver(algorithm=SplitEquations)
+    solver = Solver(algorithm=ElimilateVariablesRecursive)
     #solver = Solver(algorithm=ElimilateVariables)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length)
-    result_dict = solver.solve(parsed_content,visualize=False)
+    result_dict = solver.solve(parsed_content,visualize=True)
 
     print_results(result_dict)
 

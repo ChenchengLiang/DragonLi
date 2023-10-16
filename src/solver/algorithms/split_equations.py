@@ -25,24 +25,38 @@ class SplitEquations(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         print("recursion limit number", sys.getrecursionlimit())
 
-    def run(self):
-        #check satisfiability for all equations
+
+    def check_satisfiability_for_all_eqs(self, equation_list: List[Equation]):
+        '''
+        Check satisfiability for all equations in equation_list,
+        if there is a UNSAT equation, then return UNSAT,
+        if all equations are SAT, then return SAT,
+        otherwise return UNKNOWN
+        '''
         satisfiability_list=[]
-        for eq in self.equation_list:
+        for eq in equation_list:
             satisfiability = eq.check_satisfiability()
             # if there is a UNSAT equation, then return UNSAT
             if satisfiability == UNSAT:
-                return {"result": UNSAT, "assignment": self.assignment, "equation_list": self.equation_list,
-                       "variables": self.variables, "terminals": self.terminals}
+                return UNSAT
             satisfiability_list.append(satisfiability)
 
-        #if all elements are SAT, then return SAT
+        # if all elements are SAT, then return SAT
         if all([s == SAT for s in satisfiability_list]):
+            return SAT
+        return UNKNOWN
+
+
+    def run(self):
+
+
+        satisfiability=self.check_satisfiability_for_all_eqs(self.equation_list)
+        if satisfiability!=UNKNOWN:
             return {"result": SAT, "assignment": self.assignment, "equation_list": self.equation_list,
                        "variables": self.variables, "terminals": self.terminals}
 
 
-        self.propagate_facts(self.equation_list)
+        satisfiability_list=self.propagate_facts(self.equation_list)
 
         #todo split equations
 
@@ -57,6 +71,7 @@ class SplitEquations(AbstractAlgorithm):
         '''
         Propagate facts in equation_list until no more facts can be propagated
         '''
+        satisfiability_list=[]
         facts = []
         not_facts = []
         unknown_eq_list=[]
@@ -87,6 +102,39 @@ class SplitEquations(AbstractAlgorithm):
         print("unknown_eq_list_len:",len(unknown_eq_list))
 
         #todo: propagate facts to unknown equations
+
+        updated_unknown_eq_list=[]
+        if self.assignment.is_empty():
+            pass
+        else:
+            for unknown_eq in unknown_eq_list:
+                new_left_terms=[]
+                for t in unknown_eq.left_terms:
+                    if t.value in self.assignment.assigned_variables:
+                        for terminal in self.assignment.get_assignment(t.value):
+                            new_left_terms.append(Term(terminal))
+                    else:
+                        new_left_terms.append(t)
+                new_right_terms=[]
+                for t in unknown_eq.right_terms:
+                    if t.value in self.assignment.assigned_variables:
+                        for terminal in self.assignment.get_assignment(t.value):
+                            new_right_terms.append(Term(terminal))
+                    else:
+                        new_right_terms.append(t)
+
+                new_eq=Equation(new_left_terms,new_right_terms)
+
+                if new_eq.check_satisfiability() == SAT:
+                    return SAT
+                elif new_eq.check_satisfiability() == UNSAT:
+                    return UNSAT
+                else:
+                    updated_unknown_eq_list.append(new_eq)
+
+
+        return satisfiability_list
+
 
 
 

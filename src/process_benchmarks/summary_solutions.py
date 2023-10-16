@@ -37,12 +37,15 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
             first_summary_data_rows = [[] for x in reconstructed_list]
 
 
+        # print("solver",solver)
+        # print(reconstructed_list)
         for f, r in zip(first_summary_data_rows, reconstructed_list):
             if len(f)==0:
                 f.extend(r)
             else:
-                file_name_1 = f[0].replace(".eq", "").replace(".smt", "").replace(".smt2", "")
+                file_name_1 = f[0].replace(".eq", "").replace(".smt2", "").replace(".smt", "")
                 for rr in reconstructed_list:
+                    rr=[x for x in rr if x!=""]
                     file_name_2 = rr[0].replace(".eq","").replace(".smt2","").replace(".smt","")
                     if file_name_1 == file_name_2:
                         f.extend(rr[1:])
@@ -92,6 +95,8 @@ def extract_one_csv_data(summary_folder,summary_file):
         reconstructed_list_title = reader[0][:3]
         reconstructed_summary_title = reader[0][4:]
         reconstructed_summary_data = reader[1][4:]
+
+
 
         # print(reconstructed_list_title)
         # for row in reconstructed_list:
