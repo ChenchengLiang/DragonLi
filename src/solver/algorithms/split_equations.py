@@ -46,7 +46,8 @@ class SplitEquations(AbstractAlgorithm):
 
     def run(self):
         original_formula = Formula(self.equation_list)
-        satisfiability, equation_list = self.propagate_facts(original_formula, unknown_number=original_formula.unknown_number)
+        satisfiability, new_formula = self.propagate_facts(original_formula,
+                                                           unknown_number=original_formula.unknown_number)
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
@@ -56,19 +57,21 @@ class SplitEquations(AbstractAlgorithm):
 
         # todo split equations
 
-    def propagate_facts(self, original_formula:Formula, unknown_number):
+    def split_equations(self, original_formula: Formula) -> Tuple[str, Formula]:
+        pass
+
+    def propagate_facts(self, original_formula: Formula, unknown_number) -> Tuple[str, Formula]:
         '''
         Propagate facts in equation_list until no more facts can be propagated
         '''
 
-        print("propagate",str(original_formula.fact_number), "facts to ", str(unknown_number), "unknown equations")
+        print("propagate", str(original_formula.fact_number), "facts to ", str(unknown_number), "unknown equations")
         # transform facts to assignment
         temp_assigment = Assignment()
         if original_formula.fact_number != 0:
             for f, assignment_list in original_formula.facts:
                 for (v, t_list) in assignment_list:
                     temp_assigment.set_assignment(v, t_list)
-
         else:
             pass
 
@@ -106,9 +109,9 @@ class SplitEquations(AbstractAlgorithm):
             if new_formula.unknown_number < unknown_number:  # if new unknown equations are found, continue to propagate
                 return self.propagate_facts(new_formula, unknown_number=new_formula.unknown_number)
             else:  # if no new unknown equations are found, return unknown
-                return satisfiability_new_eq_list, propagated_eq_list
+                return satisfiability_new_eq_list, new_formula
         else:  # find solution
-            return satisfiability_new_eq_list, propagated_eq_list
+            return satisfiability_new_eq_list, new_formula
 
     def visualize(self, file_path: str):
         pass
