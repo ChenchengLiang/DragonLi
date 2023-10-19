@@ -15,7 +15,7 @@ def train(dataset):
 
 
     # Create the model with given dimensions
-    model = GCN(dataset.dim_nfeats, 16, dataset.gclasses)
+    model = GCN(dataset.node_embedding_dim, 16, dataset.gclasses)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
     num_examples = len(dataset)

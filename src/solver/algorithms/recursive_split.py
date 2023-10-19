@@ -3,8 +3,8 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable,Equation, EMPTY_TERMINAL
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
@@ -41,7 +41,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 satisfiability = RECURSION_ERROR
                 print(RECURSION_ERROR)
 
-        result_dict = {"result": satisfiability, "assignment": self.assignment, "equation_list":self.equation_list,
+        result_dict = {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                        "variables": self.variables, "terminals": self.terminals,
                        "total_explore_paths_call": self.total_explore_paths_call}
         return result_dict
@@ -91,12 +91,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # both side are the same
         if left_term.value == right_term.value:
-            left_poped_list_str,right_poped_list_str=self.pop_both_same_terms(left_terms_queue, right_terms_queue)
+            left_poped_list_str, right_poped_list_str = self.pop_both_same_terms(left_terms_queue, right_terms_queue)
             updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
             branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue, right_terms_queue,
                                                                          updated_variables,
                                                                          {"node_number": current_node_number,
-                                                                          "label": left_poped_list_str+"="+right_poped_list_str})
+                                                                          "label": left_poped_list_str + "=" + right_poped_list_str})
             return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info)
 
         # both side are different
@@ -186,7 +186,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
 
-    def pop_both_same_terms(self,left_terms_queue: Deque[Term], right_terms_queue: Deque[Term]):
+    def pop_both_same_terms(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term]):
         '''
         This will change left_terms_queue and right_terms_queue
         '''
@@ -360,4 +360,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.equation_list[0].visualize_graph(file_path)
 
     def output_train_data(self, file_path):
-        pass
+        nodes, edges = self.equation_list[0].get_graph_1()
+        satisfiability = UNKNOWN
+        graph_dict = self.equation_list[0].graph_to_gnn_format(nodes, edges, satisfiability)

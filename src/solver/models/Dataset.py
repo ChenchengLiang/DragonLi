@@ -14,7 +14,7 @@ class WordEquationDataset(DGLDataset):
     def process(self):
         self.graphs = []
         self.labels = []
-        self.dim_nfeats = 1
+        self.node_embedding_dim = 1
         self.gclasses = 2
 
         graph_1 = {"nodes": [0, 1, 2, 3,4], "node_types": [1, 1, 1, 2,2], "edges": [(1, 2), (2, 3),(3,0)], "edge_types": [1, 1,1],

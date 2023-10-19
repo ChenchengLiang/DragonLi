@@ -13,7 +13,7 @@ def main():
     # solver = "z3"
     # solver = "ostrich"
     # solver = "cvc5"
-    for solver in ["this"]:
+    for solver in ["woorpje"]:
 
         folder_dict = {"z3": "smt", "woorpje": "woorpje", "this": "woorpje", "ostrich": "smt2", "cvc5": "smt2"}
         suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
@@ -34,11 +34,11 @@ def main():
         parameters_list = []
 
         benchmark_dict = {
-            # "test_track":test_track,
+            "test_track":test_track,
             # "example_track":example_track,
             #"track_01": track_01,
-            "track_02": track_02,
-            "track_03": track_03,
+            #"track_02": track_02,
+            #"track_03": track_03,
             # "track_04": track_04,
             # "track_05": track_05
         }

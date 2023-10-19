@@ -5,6 +5,9 @@ import plotly.graph_objects as go
 from graphviz import Digraph
 
 
+
+
+
 def visualize_path(nodes, edges, file_path):
     '''
     inputs:
@@ -165,18 +168,20 @@ def visualize_path_html(nodes, edges, file_path):
 
 
 def draw_graph(nodes, edges,filename="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/visualize"):
+    from src.solver.DataTypes import Variable, Terminal, Operator
+    equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black"}
     dot = Digraph()
 
     # Add nodes
     for node in nodes:
-        dot.node(str(node.id), label=node.content)
+        dot.node(str(node.id), label=node.content,color=equation_graph_node_color_map[node.type])
 
     # Add edges
     for edge in edges:
-        dot.edge(str(edge.source), str(edge.target))#label=edge.label
+        dot.edge(str(edge.source), str(edge.target),label=edge.content)
 
     # Render the graph
-    #dot.view()
+    # dot.view()
 
     # Save the DOT representation to a file
     # with open(filename + '.dot', 'w') as f:

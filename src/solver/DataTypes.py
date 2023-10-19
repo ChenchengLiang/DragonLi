@@ -1,16 +1,16 @@
 from typing import Union, List, Tuple, Deque
-from .Constants import UNKNOWN, SAT, UNSAT
-from .independent_utils import remove_duplicates
+from src.solver.Constants import UNKNOWN, SAT, UNSAT, satisfiability_to_int_label
+from src.solver.independent_utils import remove_duplicates
 from collections import deque
 from src.solver.visualize_util import draw_graph
 
 
 class Node:
     def __init__(self, id, type, content, label):
-        self.label = label
-        self.type = type
         self.id = id
+        self.type = type
         self.content = content
+        self.label = label
 
     def __repr__(self):
         return f"Node({self.id}, {self.label}, {self.type},{self.content})"
@@ -24,13 +24,14 @@ class Node:
         return self.label == other.label and self.type == other.type and self.id == other.id and self.content == other.content
 
 class Edge:
-    def __init__(self, source, target, type,label):
+    def __init__(self, source, target, type,content,label):
         self.source = source
         self.target = target
-        self.label = label
         self.type = type
+        self.content = content
+        self.label = label
     def __repr__(self):
-        return f"Edge({self.source}, {self.target}, {self.label},{self.type})"
+        return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
 
 class Operator:
     def __init__(self, value: str):
@@ -235,8 +236,18 @@ class Equation:
         else:
             return UNSAT
 
-    def output_graphs_json(self, file_path):
-        pass
+    def graph_to_gnn_format(self,nodes:List[Node],edges:List[Edge],satisfiability:str):
+        graph_dict={"nodes": [], "node_types": [], "edges": [], "edge_types": [],
+                   "label": satisfiability_to_int_label[satisfiability]}
+        for node in nodes:
+            graph_dict["nodes"].append(node.id)
+            graph_dict["node_types"].append(node.type)
+        for edge in edges:
+            graph_dict["edges"].append((edge.source,edge.target))
+            graph_dict["edge_types"].append(edge.type)
+
+        return graph_dict
+
 
     def visualize_graph(self,file_path):
         nodes,edges=self.get_graph_1()
@@ -255,11 +266,11 @@ class Equation:
                 current_node=Node(id=global_node_counter, type=current_term.value_type,content=current_term.get_value_str, label=None)
                 global_node_counter+=1
                 nodes.append(current_node)
-                edges.append(Edge(source=previous_node.id, target=current_node.id,type=None, label=None))
+                edges.append(Edge(source=previous_node.id, target=current_node.id,type=1,content="", label=None))
                 return construct_tree(term_list,current_node,global_node_counter)
 
         #Add "=" node
-        equation_node=Node(id=global_node_counter, type=Operator("="),content="=", label=None)
+        equation_node=Node(id=global_node_counter, type=Operator,content="=", label=None)
         nodes.append(equation_node)
         global_node_counter+=1
 
