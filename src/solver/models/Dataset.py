@@ -9,7 +9,8 @@ import glob
 import json
 
 class WordEquationDataset(DGLDataset):
-    def __init__(self,graph_folder):
+    def __init__(self,graph_folder,data_fold="train"):
+        self.data_fold = data_fold
         self.graph_folder = graph_folder
         super().__init__(name="WordEquation")
 
@@ -74,7 +75,10 @@ class WordEquationDataset(DGLDataset):
         for graph_file in graph_file_list:
             with open(graph_file, 'r') as f:
                 loaded_dict = json.load(f)
-            if loaded_dict["label"] !=-1:
+            if self.data_fold == "train":
+                if loaded_dict["label"] !=-1:
+                    yield loaded_dict
+            else:
                 yield loaded_dict
 
 

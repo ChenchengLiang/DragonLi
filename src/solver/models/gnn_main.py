@@ -27,8 +27,11 @@ def main():
     graph, label = train_valid_dataset[0]
     print("train_valid_dataset[0]",graph, label)
 
+
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
     model=train(train_valid_dataset,model_save_path=save_path)
+
+
 
 
 

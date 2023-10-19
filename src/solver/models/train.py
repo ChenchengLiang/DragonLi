@@ -32,6 +32,7 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
     model = GCN(dataset.node_embedding_dim, 16, dataset.gclasses)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     best_valid_loss = float('inf')  # Initialize with a high value
+    best_model=None
 
     for epoch in range(20):
         # Training Phase
@@ -67,17 +68,16 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
         if avg_valid_loss < best_valid_loss:
             best_valid_loss = avg_valid_loss
             print(
-                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}","save model")
+                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",", Save model fow lowest validation loss")
             # Save the model with the best validation loss
-            torch.save(model, model_save_path)
+            best_model= model
+            torch.save(best_model, model_save_path)
 
         # Print the losses once every five epochs
         if epoch % 5 == 0:
             print(f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
 
 
-    # Save the entire model
-    torch.save(model, model_save_path)
-    return model
+    return best_model
 
 
