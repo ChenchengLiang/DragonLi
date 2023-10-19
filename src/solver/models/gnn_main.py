@@ -23,11 +23,12 @@ def main():
     # print(graph, label)
 
     graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
-    dataset = WordEquationDataset(graph_folder=graph_folder)
-    graph, label = dataset[0]
-    print(graph, label)
+    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
+    graph, label = train_valid_dataset[0]
+    print("train_valid_dataset[0]",graph, label)
 
-    train(dataset)
+    save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
+    model=train(train_valid_dataset,model_save_path=save_path)
 
 
 
