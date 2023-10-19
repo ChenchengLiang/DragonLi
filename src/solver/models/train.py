@@ -7,16 +7,17 @@ import dgl.data
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Models import GCN
+from Models import GCNWithNFFNN,GATWithNFFNN
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
+from typing import Dict
 
 from Dataset import WordEquationDataset
 
 def main():
 
 
-    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje"
+    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
     graph, label = train_valid_dataset[0]
@@ -25,11 +26,13 @@ def main():
 
 
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    model=train(train_valid_dataset,model_save_path=save_path)
+    parameters ={"model_save_path":save_path,"num_epochs":50,"learning_rate":0.001,"batch_size":10,"layer_dim":64,
+                 "num_layers":2,"num_heads":2,"ffnn_hidden_size":64,"n_ffnn":2}
+    model=train(train_valid_dataset,parameters)
 
 
 
-def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"):
+def train(dataset,parameters:Dict):
     num_examples = len(dataset)
 
     # Split the dataset into 80% training and 20% validation
@@ -38,20 +41,20 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
     train_sampler = SubsetRandomSampler(torch.arange(num_train))
     valid_sampler = SubsetRandomSampler(torch.arange(num_train, num_examples))
 
-    train_dataloader = GraphDataLoader(
-        dataset, sampler=train_sampler, batch_size=5, drop_last=False
-    )
-    valid_dataloader = GraphDataLoader(
-        dataset, sampler=valid_sampler, batch_size=5, drop_last=False
-    )
+    train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
+    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
 
     # Create the model with given dimensions
-    model = GCN(dataset.node_embedding_dim, 16, dataset.gclasses)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    model = GCNWithNFFNN(in_feats=dataset.node_embedding_dim,h_feats=parameters["layer_dim"],
+                n_layers=parameters["num_layers"],ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+    model = GATWithNFFNN(in_feats=dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
+                n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
+                         ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+    optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
     best_valid_loss = float('inf')  # Initialize with a high value
     best_model=None
 
-    for epoch in range(20):
+    for epoch in range(parameters["num_epochs"]):
         # Training Phase
         model.train()
         train_loss = 0.0
@@ -88,7 +91,7 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",", Save model fow lowest validation loss")
             # Save the model with the best validation loss
             best_model= model
-            torch.save(best_model, model_save_path)
+            torch.save(best_model, parameters["model_save_path"])
 
         # Print the losses once every five epochs
         if epoch % 5 == 0:

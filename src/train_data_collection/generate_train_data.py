@@ -4,7 +4,7 @@ from src.solver.Parser import Parser,EqParser
 import json
 import glob
 def main():
-    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje/*.eq")
+    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/*.eq")
 
     for file_path in file_list:
         output_one_eq_graph(file_path,visualize=False)
