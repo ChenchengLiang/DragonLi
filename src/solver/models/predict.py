@@ -1,5 +1,5 @@
 import torch
-
+from src.solver.Constants import int_label_to_satisfiability
 from Dataset import WordEquationDataset
 from dgl.dataloading import GraphDataLoader
 def main():
@@ -12,16 +12,24 @@ def main():
 
     evaluation_dataloader = GraphDataLoader(evaluation_dataset,  batch_size=1, drop_last=False)
 
-
+    # Load the model
     model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
     model = load_model(model_path)
 
-
-    for batched_graph, labels in evaluation_dataloader:
+    # Evaluate the model
+    for (batched_graph, labels), graph in zip(evaluation_dataloader,evaluation_dataset.get_graph_list_from_folder()):
         pred = model(batched_graph, batched_graph.ndata["feat"].float())
         binary_labels = pred.argmax(dim=1)
+        print("graph", graph["file_path"])
+        print("number of nodes", len(graph["nodes"]))
+        print("number of edges", len(graph["edges"]))
         print("pred", pred)
-        print("binary_labels",binary_labels)
+        print("binary_labels",binary_labels.item())
+        # create the prediction file
+        prediction_file = graph["file_path"].replace(".json","") + ".prediction"
+        with open(prediction_file, 'w') as file:
+            file.write(int_label_to_satisfiability[binary_labels.item()])
+
 
 
 

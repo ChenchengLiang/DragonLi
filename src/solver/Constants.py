@@ -15,6 +15,7 @@ SAT = "SAT"
 UNSAT = "UNSAT"
 
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
+int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
 solver_command_map = {"z3": "z3",
                       "this": "python3 /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/main_parameter.py",

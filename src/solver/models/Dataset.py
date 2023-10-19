@@ -34,6 +34,7 @@ class WordEquationDataset(DGLDataset):
             dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
             dgl_graph = dgl.add_self_loop(dgl_graph)
 
+
             self.graphs.append(dgl_graph)
             self.labels.append(g["label"])
 
@@ -90,6 +91,7 @@ class WordEquationDataset(DGLDataset):
         for graph_file in graph_file_list:
             with open(graph_file, 'r') as f:
                 loaded_dict = json.load(f)
+                loaded_dict["file_path"] =  graph_file
             if self.data_fold == "train":
                 if loaded_dict["label"] !=-1:
                     yield loaded_dict

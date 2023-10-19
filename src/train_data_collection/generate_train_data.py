@@ -13,7 +13,6 @@ def main():
 
 
 
-
 def output_one_eq_graph(file_path,visualize=False):
 
     parser_type = EqParser()
