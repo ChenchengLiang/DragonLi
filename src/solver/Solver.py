@@ -13,7 +13,7 @@ class Solver:
         self._algorithm = algorithm
         self.kwargs = kwargs
 
-    def solve(self, parsed_equations: Dict, visualize=False) -> (bool, Assignment):
+    def solve(self, parsed_equations: Dict, visualize=False,output_train_data=False) -> (bool, Assignment):
         variables: List[Variable] = parsed_equations["variables"]
         terminals: List[Terminal] = parsed_equations["terminals"]
 
@@ -24,6 +24,8 @@ class Solver:
         result_dict["running_time"] = running_time
         if visualize == True:
             self._algorithm.visualize(parsed_equations["file_path"])
+        if output_train_data == True:
+            self._algorithm.output_train_data(parsed_equations["file_path"])
         return result_dict
 
     def count_time(self, func: Callable[..., Any], timeout=algorithm_timeout, *args, **kwargs) -> Tuple[float, Any]:

@@ -357,3 +357,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def visualize(self, file_path):
         visualize_path_html(self.nodes, self.edges, file_path)
+        self.equation_list[0].visualize_graph(file_path)
+
+    def output_train_data(self, file_path):
+        pass

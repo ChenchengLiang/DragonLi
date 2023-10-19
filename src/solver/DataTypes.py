@@ -1,6 +1,51 @@
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, Deque
 from .Constants import UNKNOWN, SAT, UNSAT
 from .independent_utils import remove_duplicates
+from collections import deque
+from src.solver.visualize_util import draw_graph
+
+
+class Node:
+    def __init__(self, id, type, content, label):
+        self.label = label
+        self.type = type
+        self.id = id
+        self.content = content
+
+    def __repr__(self):
+        return f"Node({self.id}, {self.label}, {self.type},{self.content})"
+
+    def __hash__(self):
+        return hash((self.label, self.type, self.id,self.content))
+
+    def __eq__(self, other):
+        if not isinstance(other, Node):
+            return False
+        return self.label == other.label and self.type == other.type and self.id == other.id and self.content == other.content
+
+class Edge:
+    def __init__(self, source, target, type,label):
+        self.source = source
+        self.target = target
+        self.label = label
+        self.type = type
+    def __repr__(self):
+        return f"Edge({self.source}, {self.target}, {self.label},{self.type})"
+
+class Operator:
+    def __init__(self, value: str):
+        self.value = value
+
+    def __repr__(self):
+        return f"Operator({self.value})"
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, Operator):
+            return False
+        return self.value == other.value
 
 
 class Variable:
@@ -55,6 +100,17 @@ class Term:
         return self.value == other.value
 
     @property
+    def value_type(self):
+        if isinstance(self.value, Variable):
+            return Variable
+        elif isinstance(self.value, Terminal):
+            return Terminal
+        elif isinstance(self.value, list):
+            return list
+        else:
+            raise Exception("unknown type")
+
+    @property
     def get_value_str(self):
         if isinstance(self.value, Variable):
             return self.value.value
@@ -64,8 +120,6 @@ class Term:
             return "".join([t.get_value_str() for t in self.value])
         else:
             raise Exception("unknown type")
-
-
 
 
 class Equation:
@@ -129,10 +183,12 @@ class Equation:
                 self.right_terms) and self.variable_numbers == 1 and self.terminal_numbers <= 1:
             return True, [(self.variable_list[0], [EMPTY_TERMINAL])]
         # Condition: Variable=List[Terminal]
-        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable) and all(isinstance(term.value, Terminal) for term in self.right_terms):
+        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable) and all(
+                isinstance(term.value, Terminal) for term in self.right_terms):
             return True, [(self.left_terms[0].value, [t.value for t in self.right_terms])]
         # Condition: List[Terminal]=Variable
-        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable) and all(isinstance(term.value, Terminal) for term in self.left_terms):
+        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable) and all(
+                isinstance(term.value, Terminal) for term in self.left_terms):
             return True, [(self.right_terms[0].value, [t.value for t in self.left_terms])]
         else:
             return False, []
@@ -171,12 +227,55 @@ class Equation:
             return SAT if result == True else UNKNOWN
 
     def check_all_terminal_case(self):
-        left_str = "".join([t.get_value_str for t in self.left_terms if t.value != EMPTY_TERMINAL]) #ignore empty terminal
+        left_str = "".join(
+            [t.get_value_str for t in self.left_terms if t.value != EMPTY_TERMINAL])  # ignore empty terminal
         right_str = "".join([t.get_value_str for t in self.right_terms if t.value != EMPTY_TERMINAL])
         if left_str == right_str:
             return SAT
         else:
             return UNSAT
+
+    def output_graphs_json(self, file_path):
+        pass
+
+    def visualize_graph(self,file_path):
+        nodes,edges=self.get_graph_1()
+        draw_graph(nodes,edges,file_path)
+
+    def get_graph_1(self):
+        global_node_counter=0
+        nodes = []
+        edges = []
+
+        def construct_tree(term_list: Deque[Term], previous_node: Node,global_node_counter):
+            if len(term_list)==0:
+                return global_node_counter
+            else:
+                current_term=term_list.popleft()
+                current_node=Node(id=global_node_counter, type=current_term.value_type,content=current_term.get_value_str, label=None)
+                global_node_counter+=1
+                nodes.append(current_node)
+                edges.append(Edge(source=previous_node.id, target=current_node.id,type=None, label=None))
+                return construct_tree(term_list,current_node,global_node_counter)
+
+        #Add "=" node
+        equation_node=Node(id=global_node_counter, type=Operator("="),content="=", label=None)
+        nodes.append(equation_node)
+        global_node_counter+=1
+
+        local_left_terms = deque(self.left_terms.copy())
+        local_right_terms = deque(self.right_terms.copy())
+
+        global_node_counter=construct_tree(local_left_terms,equation_node,global_node_counter)
+        global_node_counter = construct_tree(local_right_terms, equation_node, global_node_counter)
+
+        return nodes, edges
+
+
+
+
+
+
 
 
 
@@ -188,12 +287,12 @@ class Formula:
         self.unsat_equations = []
         self.unknown_equations = []
         for eq in self.formula:
-            satisfiability=eq.check_satisfiability()
+            satisfiability = eq.check_satisfiability()
             if satisfiability == SAT:
                 self.sat_equations.append(eq)
-                is_fact,fact_assignment=eq.is_fact()
+                is_fact, fact_assignment = eq.is_fact()
                 if is_fact:
-                    self.facts.append((eq,fact_assignment))
+                    self.facts.append((eq, fact_assignment))
             elif satisfiability == UNSAT:
                 self.unsat_equations.append(eq)
             else:
@@ -202,6 +301,7 @@ class Formula:
     @property
     def fact_number(self) -> int:
         return len(self.facts)
+
     @property
     def unknown_number(self) -> int:
         return len(self.unknown_equations)
@@ -219,7 +319,6 @@ class Formula:
                 return UNSAT
         else:
             return UNKNOWN
-
 
 
 class Assignment:
@@ -250,4 +349,4 @@ class Assignment:
         print("Assignment:")
         for key, value in self.assignments.items():
             print(key.value, "=", "".join([v.value for v in value]))
-        print("-"*10)
+        print("-" * 10)

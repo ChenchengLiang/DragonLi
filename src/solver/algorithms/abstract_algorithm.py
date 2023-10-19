@@ -18,6 +18,9 @@ class AbstractAlgorithm(ABC):
     def visualize(self, file_path: str):
         pass
 
+    def output_train_data(self, file_path: str):
+        pass
+
     def pretty_print_current_equation(self, left_terms: Union[List[Term], Deque[Term]],
                                       right_terms: Union[List[Term], Deque[Term]], mute=True):
 

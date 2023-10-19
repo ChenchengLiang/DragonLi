@@ -2,6 +2,8 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from pyvis.network import Network
 import plotly.graph_objects as go
+from graphviz import Digraph
+
 
 def visualize_path(nodes, edges, file_path):
     '''
@@ -31,8 +33,6 @@ def visualize_path(nodes, edges, file_path):
     nx.draw_networkx_edge_labels(G, pos, edge_labels={(u, v): G[u][v]['label'] for u, v in G.edges()}, font_size=12)
 
     plt.savefig(file_path + ".png")
-
-
 
 
 def visualize_path_html(nodes, edges, file_path):
@@ -161,3 +161,26 @@ def visualize_path_html(nodes, edges, file_path):
                     ))
 
     fig.write_html(file_path + ".html")
+    print("Graph in", file_path + ".html")
+
+
+def draw_graph(nodes, edges,filename="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/visualize"):
+    dot = Digraph()
+
+    # Add nodes
+    for node in nodes:
+        dot.node(str(node.id), label=node.content)
+
+    # Add edges
+    for edge in edges:
+        dot.edge(str(edge.source), str(edge.target))#label=edge.label
+
+    # Render the graph
+    #dot.view()
+
+    # Save the DOT representation to a file
+    # with open(filename + '.dot', 'w') as f:
+    #     f.write(dot.source)
+
+    dot.render(filename=filename+".png", cleanup=True)  # This will create a png file named 'filename.png'
+    print("Graph in",filename+".png.pdf")
