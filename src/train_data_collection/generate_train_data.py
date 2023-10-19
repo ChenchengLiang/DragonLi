@@ -4,10 +4,15 @@ from src.solver.Parser import Parser,EqParser
 import json
 import glob
 def main():
-    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test/*.eq")
+    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje/*.eq")
 
     for file_path in file_list:
-        output_one_eq_graph(file_path,visualize=True)
+        output_one_eq_graph(file_path,visualize=False)
+
+
+
+
+
 
 def output_one_eq_graph(file_path,visualize=False):
 
@@ -28,7 +33,7 @@ def output_one_eq_graph(file_path,visualize=False):
         nodes, edges = eq.get_graph_1()
         satisfiability = answer
         graph_dict = eq.graph_to_gnn_format(nodes, edges, satisfiability)
-        print(graph_dict)
+        #print(graph_dict)
         # Dumping the dictionary to a JSON file
         json_file=strip_file_name_suffix(file_path) + ".json"
         dump_to_json_with_format(graph_dict, json_file)

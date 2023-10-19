@@ -60,6 +60,21 @@ class WordEquationDataset(DGLDataset):
                 if isinstance(g[k], list):
                     g[k] = pd.DataFrame(g[k])
 
+    def statistics(self):
+        sat_label_number=0
+        unsat_label_number=0
+        unknown_label_number=0
+        for g in self.get_graph_list_from_folder():
+            if g["label"]==1:
+                sat_label_number+=1
+            elif g["label"]==0:
+                unsat_label_number+=1
+            else:
+                unknown_label_number+=1
+
+        print("sat_label_number",sat_label_number,"unsat_label_number",unsat_label_number,"unknown_label_number",unknown_label_number)
+
+
     def get_graph_list_from_folder(self):
         '''
         graph_1 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],

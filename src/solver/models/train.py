@@ -11,6 +11,23 @@ from Models import GCN
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
+from Dataset import WordEquationDataset
+
+def main():
+
+
+    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/woorpje"
+    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
+    train_valid_dataset.statistics()
+    graph, label = train_valid_dataset[0]
+    print("train_valid_dataset[0]",graph, label)
+
+
+
+    save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
+    model=train(train_valid_dataset,model_save_path=save_path)
+
+
 
 def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"):
     num_examples = len(dataset)
@@ -22,10 +39,10 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
     valid_sampler = SubsetRandomSampler(torch.arange(num_train, num_examples))
 
     train_dataloader = GraphDataLoader(
-        dataset, sampler=train_sampler, batch_size=1, drop_last=False
+        dataset, sampler=train_sampler, batch_size=5, drop_last=False
     )
     valid_dataloader = GraphDataLoader(
-        dataset, sampler=valid_sampler, batch_size=1, drop_last=False
+        dataset, sampler=valid_sampler, batch_size=5, drop_last=False
     )
 
     # Create the model with given dimensions
@@ -79,5 +96,9 @@ def train(dataset,model_save_path="/home/cheli243/Desktop/CodeToGit/string-equat
 
 
     return best_model
+
+
+if __name__ == '__main__':
+    main()
 
 

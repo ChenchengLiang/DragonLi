@@ -10,7 +10,7 @@ from dgl.dataloading import GraphDataLoader
 import urllib.request
 import pandas as pd
 from Dataset import KarateClubDataset,SyntheticDataset,WordEquationDataset
-from train import train
+
 def main():
 
 
@@ -26,12 +26,6 @@ def main():
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     graph, label = train_valid_dataset[0]
     print("train_valid_dataset[0]",graph, label)
-
-
-    save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    model=train(train_valid_dataset,model_save_path=save_path)
-
-
 
 
 

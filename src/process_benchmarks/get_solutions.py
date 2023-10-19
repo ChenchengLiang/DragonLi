@@ -13,32 +13,26 @@ def main():
     # solver = "z3"
     # solver = "ostrich"
     # solver = "cvc5"
-    for solver in ["cvc5"]:
+    for solver in ["z3","cvc5","ostrich"]:
 
-        folder_dict = {"z3": "smt", "woorpje": "woorpje", "this": "woorpje", "ostrich": "smt2", "cvc5": "smt2"}
         suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
         test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
         example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
-        track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track/" + \
-                   folder_dict[solver]
-        track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track/" + \
-                   folder_dict[solver]
-        track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/" + \
-                   folder_dict[solver]
-        track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track/" + \
-                   folder_dict[solver]
-        track_05 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/05_track/" + \
-                   folder_dict[solver]
+        track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
+        track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
+        track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
+        track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
+        track_05 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/05_track"
 
         parameters_list = []
 
         benchmark_dict = {
-            "test_track":test_track,
+            #"test_track":test_track,
             # "example_track":example_track,
             #"track_01": track_01,
             #"track_02": track_02,
-            #"track_03": track_03,
+            "track_03": track_03,
             # "track_04": track_04,
             # "track_05": track_05
         }
