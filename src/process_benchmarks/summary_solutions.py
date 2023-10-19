@@ -1,5 +1,6 @@
 import csv
 import os
+from src.solver.independent_utils import strip_file_name_suffix
 
 
 def main():
@@ -43,10 +44,10 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
             if len(f)==0:
                 f.extend(r)
             else:
-                file_name_1 = f[0].replace(".eq", "").replace(".smt2", "").replace(".smt", "")
+                file_name_1 = strip_file_name_suffix(f[0])
                 for rr in reconstructed_list:
                     rr=[x for x in rr if x!=""]
-                    file_name_2 = rr[0].replace(".eq","").replace(".smt2","").replace(".smt","")
+                    file_name_2 = strip_file_name_suffix(rr[0])
                     if file_name_1 == file_name_2:
                         f.extend(rr[1:])
 

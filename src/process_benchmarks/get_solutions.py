@@ -13,7 +13,7 @@ def main():
     # solver = "z3"
     # solver = "ostrich"
     # solver = "cvc5"
-    for solver in ["woorpje"]:
+    for solver in ["cvc5"]:
 
         folder_dict = {"z3": "smt", "woorpje": "woorpje", "this": "woorpje", "ostrich": "smt2", "cvc5": "smt2"}
         suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}

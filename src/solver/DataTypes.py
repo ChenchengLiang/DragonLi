@@ -16,22 +16,25 @@ class Node:
         return f"Node({self.id}, {self.label}, {self.type},{self.content})"
 
     def __hash__(self):
-        return hash((self.label, self.type, self.id,self.content))
+        return hash((self.label, self.type, self.id, self.content))
 
     def __eq__(self, other):
         if not isinstance(other, Node):
             return False
         return self.label == other.label and self.type == other.type and self.id == other.id and self.content == other.content
 
+
 class Edge:
-    def __init__(self, source, target, type,content,label):
+    def __init__(self, source, target, type, content, label):
         self.source = source
         self.target = target
         self.type = type
         self.content = content
         self.label = label
+
     def __repr__(self):
         return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
+
 
 class Operator:
     def __init__(self, value: str):
@@ -236,58 +239,59 @@ class Equation:
         else:
             return UNSAT
 
-    def graph_to_gnn_format(self,nodes:List[Node],edges:List[Edge],satisfiability:str):
-        graph_dict={"nodes": [], "node_types": [], "edges": [], "edge_types": [],
-                   "label": satisfiability_to_int_label[satisfiability]}
+    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], satisfiability: str):
+        '''
+        output format:
+        {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2],
+        "edges": [[1, 2], [2, 3], [3, 0]], "edge_types": [1, 1, 1],
+        "label": 1}
+        '''
+        node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2}
+        edge_type_to_int_map = {None: 1}
+        graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
+                      "label": satisfiability_to_int_label[satisfiability]}
         for node in nodes:
             graph_dict["nodes"].append(node.id)
-            graph_dict["node_types"].append(node.type)
+            graph_dict["node_types"].append(node_type_to_int_map[node.type])
         for edge in edges:
-            graph_dict["edges"].append((edge.source,edge.target))
-            graph_dict["edge_types"].append(edge.type)
+            graph_dict["edges"].append([edge.source, edge.target])
+            graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
 
         return graph_dict
 
-
-    def visualize_graph(self,file_path):
-        nodes,edges=self.get_graph_1()
-        draw_graph(nodes,edges,file_path)
+    def visualize_graph(self, file_path):
+        nodes, edges = self.get_graph_1()
+        draw_graph(nodes, edges, file_path)
 
     def get_graph_1(self):
-        global_node_counter=0
+        global_node_counter = 0
         nodes = []
         edges = []
 
-        def construct_tree(term_list: Deque[Term], previous_node: Node,global_node_counter):
-            if len(term_list)==0:
+        def construct_tree(term_list: Deque[Term], previous_node: Node, global_node_counter):
+            if len(term_list) == 0:
                 return global_node_counter
             else:
-                current_term=term_list.popleft()
-                current_node=Node(id=global_node_counter, type=current_term.value_type,content=current_term.get_value_str, label=None)
-                global_node_counter+=1
+                current_term = term_list.popleft()
+                current_node = Node(id=global_node_counter, type=current_term.value_type,
+                                    content=current_term.get_value_str, label=None)
+                global_node_counter += 1
                 nodes.append(current_node)
-                edges.append(Edge(source=previous_node.id, target=current_node.id,type=1,content="", label=None))
-                return construct_tree(term_list,current_node,global_node_counter)
+                edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+                return construct_tree(term_list, current_node, global_node_counter)
 
-        #Add "=" node
-        equation_node=Node(id=global_node_counter, type=Operator,content="=", label=None)
+        # Add "=" node
+        equation_node = Node(id=global_node_counter, type=Operator, content="=", label=None)
         nodes.append(equation_node)
-        global_node_counter+=1
+        global_node_counter += 1
 
         local_left_terms = deque(self.left_terms.copy())
         local_right_terms = deque(self.right_terms.copy())
 
-        global_node_counter=construct_tree(local_left_terms,equation_node,global_node_counter)
+        global_node_counter = construct_tree(local_left_terms, equation_node, global_node_counter)
         global_node_counter = construct_tree(local_right_terms, equation_node, global_node_counter)
 
         return nodes, edges
-
-
-
-
-
-
-
 
 
 class Formula:

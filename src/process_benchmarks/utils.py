@@ -3,6 +3,7 @@ import os
 import time
 import subprocess
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
+from src.solver.independent_utils import strip_file_name_suffix
 
 
 def run_on_one_benchmark(file_path, parameters_list, solver):
@@ -98,7 +99,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver):
             file.write(solver_output)
 
     # update answer file
-    answer_file = problem_file_path + ".answer"
+    answer_file = strip_file_name_suffix(problem_file_path) + ".answer"
     if os.path.exists(answer_file):
         # read the answer file
         with open(answer_file, 'r') as file:

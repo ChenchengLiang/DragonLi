@@ -22,7 +22,8 @@ def main():
     # graph, label = dataset[0]
     # print(graph, label)
 
-    dataset = WordEquationDataset()
+    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
+    dataset = WordEquationDataset(graph_folder=graph_folder)
     graph, label = dataset[0]
     print(graph, label)
 

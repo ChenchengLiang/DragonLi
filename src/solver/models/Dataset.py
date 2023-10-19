@@ -5,11 +5,14 @@ import dgl
 import torch
 from dgl.data import DGLDataset
 import pandas as pd
-
+import glob
+import json
 
 class WordEquationDataset(DGLDataset):
-    def __init__(self):
+    def __init__(self,graph_folder):
+        self.graph_folder = graph_folder
         super().__init__(name="WordEquation")
+
 
     def process(self):
         self.graphs = []
@@ -17,13 +20,10 @@ class WordEquationDataset(DGLDataset):
         self.node_embedding_dim = 1
         self.gclasses = 2
 
-        graph_1 = {"nodes": [0, 1, 2, 3,4], "node_types": [1, 1, 1, 2,2], "edges": [(1, 2), (2, 3),(3,0)], "edge_types": [1, 1,1],
-                   "label": 1}
-        graph_2 = {"nodes": [0, 1, 2, 3,4], "node_types": [1, 1, 1, 2,2], "edges": [(1, 2), (2, 3),(3,0)], "edge_types": [1, 1,1],
-                   "label": 1}
-        graphs = [graph_1, graph_2]
 
-        for g in graphs:
+        graph_generator=self.get_graph_list_from_folder()
+
+        for g in graph_generator:
             edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
             num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
 
@@ -31,7 +31,7 @@ class WordEquationDataset(DGLDataset):
             dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
             # dgl_graph.ndata["label"] = node_labels #node label
             dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
-            dgl_graph=dgl.add_self_loop(dgl_graph)
+            dgl_graph = dgl.add_self_loop(dgl_graph)
 
             self.graphs.append(dgl_graph)
             self.labels.append(g["label"])
@@ -58,6 +58,25 @@ class WordEquationDataset(DGLDataset):
             for k in g:
                 if isinstance(g[k], list):
                     g[k] = pd.DataFrame(g[k])
+
+    def get_graph_list_from_folder(self):
+        '''
+        graph_1 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],
+                   "edge_types": [1, 1, 1],
+                   "label": 1}
+        graph_2 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],
+                   "edge_types": [1, 1, 1],
+                   "label": 1}
+        graphs = [graph_1, graph_2]
+        '''
+        graph_file_list = glob.glob(self.graph_folder + "/*.json")
+
+        for graph_file in graph_file_list:
+            with open(graph_file, 'r') as f:
+                loaded_dict = json.load(f)
+            if loaded_dict["label"] !=-1:
+                yield loaded_dict
+
 
 
 class SyntheticDataset(DGLDataset):

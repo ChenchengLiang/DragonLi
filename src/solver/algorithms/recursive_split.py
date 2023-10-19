@@ -360,6 +360,5 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.equation_list[0].visualize_graph(file_path)
 
     def output_train_data(self, file_path):
-        nodes, edges = self.equation_list[0].get_graph_1()
-        satisfiability = UNKNOWN
-        graph_dict = self.equation_list[0].graph_to_gnn_format(nodes, edges, satisfiability)
+        pass
+
