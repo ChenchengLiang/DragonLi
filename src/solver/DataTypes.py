@@ -239,7 +239,7 @@ class Equation:
         else:
             return UNSAT
 
-    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], satisfiability: str):
+    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], satisfiability: str=UNKNOWN):
         '''
         output format:
         {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2],

@@ -42,10 +42,10 @@ class GCNWithNFFNN(nn.Module):
             ffnn_out = F.relu(layer(ffnn_out))
         h_single = self.fc_final(ffnn_out)
 
-        # Expanding to 2-class logits
-        h = torch.cat([-h_single, h_single], dim=1)
+        # Convert h_single to a probability between 0 and 1 using sigmoid activation
+        prob = torch.sigmoid(h_single)
 
-        return h
+        return prob
 
 
 
@@ -84,9 +84,7 @@ class GATWithNFFNN(nn.Module):
             ffnn_out = F.relu(layer(ffnn_out))
         h_single = self.fc_final(ffnn_out)
 
-        # Expanding to 2-class logits
-        h = torch.cat([-h_single, h_single], dim=1)
+        # Convert h_single to a probability between 0 and 1 using sigmoid activation
+        prob = torch.sigmoid(h_single)
 
-        return h
-
-
+        return prob

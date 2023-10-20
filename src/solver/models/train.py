@@ -47,12 +47,14 @@ def train(dataset,parameters:Dict):
     # Create the model with given dimensions
     model = GCNWithNFFNN(in_feats=dataset.node_embedding_dim,h_feats=parameters["layer_dim"],
                 n_layers=parameters["num_layers"],ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
-    model = GATWithNFFNN(in_feats=dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
-                n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
-                         ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+    # model = GATWithNFFNN(in_feats=dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
+    #             n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
+    #                      ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
+    loss_function = nn.BCELoss() # Initialize the loss function
     best_valid_loss = float('inf')  # Initialize with a high value
     best_model=None
+
 
     for epoch in range(parameters["num_epochs"]):
         # Training Phase
@@ -60,7 +62,11 @@ def train(dataset,parameters:Dict):
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
             pred = model(batched_graph, batched_graph.ndata["feat"].float())
-            loss = F.cross_entropy(pred, labels)
+
+            # Convert labels to float for BCELoss
+            labels = labels.float()
+
+            loss = loss_function(pred.squeeze(), labels)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -76,9 +82,16 @@ def train(dataset,parameters:Dict):
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
                 pred = model(batched_graph, batched_graph.ndata["feat"].float())
-                loss = F.cross_entropy(pred, labels)
+
+                # Convert labels to float for BCELoss
+                labels_float = labels.float()
+
+                loss = loss_function(pred.squeeze(), labels_float)
                 valid_loss += loss.item()
-                num_correct += (pred.argmax(1) == labels).sum().item()
+
+                # Compute accuracy for binary classification
+                predicted_labels = (pred > 0.5).float()
+                num_correct += (predicted_labels.squeeze() == labels_float).sum().item()
                 num_valids += len(labels)
 
         avg_valid_loss = valid_loss / len(valid_dataloader)
@@ -88,15 +101,17 @@ def train(dataset,parameters:Dict):
         if avg_valid_loss < best_valid_loss:
             best_valid_loss = avg_valid_loss
             print(
-                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",", Save model fow lowest validation loss")
+                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",
+                ", Save model for lowest validation loss")
             # Save the model with the best validation loss
-            best_model= model
-            torch.save(best_model, parameters["model_save_path"])
+            best_model = model
+            #torch.save(best_model.state_dict(), parameters["model_save_path"])
+            torch.save(best_model,parameters["model_save_path"])
 
         # Print the losses once every five epochs
         if epoch % 5 == 0:
-            print(f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
-
+            print(
+                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
 
     return best_model
 

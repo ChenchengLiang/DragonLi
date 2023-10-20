@@ -5,6 +5,7 @@ from utils import run_on_one_benchmark
 import csv
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, RECURSION_DEPTH_EXCEEDED, \
     RECURSION_ERROR
+from src.process_benchmarks.utils import summary_one_track
 
 
 def main():
@@ -38,6 +39,19 @@ def main():
         }
         for benchmark_name, benchmark_folder in benchmark_dict.items():
             run_on_one_track(benchmark_name, benchmark_folder, parameters_list, solver, suffix_dict)
+
+
+    # summary
+    summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
+
+    for track in benchmark_dict.keys():
+        summary_file_dict = {"this": "this_" + track + "_summary.csv",
+                             "woorpje": "woorpje_" + track + "_summary.csv",
+                             "z3": "z3_" + track + "_summary.csv",
+                             "ostrich": "ostrich_" + track + "_summary.csv",
+                             "cvc5": "cvc5_" + track + "_summary.csv"}
+
+        summary_one_track(summary_folder, summary_file_dict, track)
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict):

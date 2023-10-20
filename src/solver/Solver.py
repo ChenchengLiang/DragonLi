@@ -9,9 +9,9 @@ from .DataTypes import Variable, Terminal, Term, Assignment
 
 
 class Solver:
-    def __init__(self, algorithm: AbstractAlgorithm, **kwargs):
+    def __init__(self, algorithm: AbstractAlgorithm, algorithm_parameters: Dict):
         self._algorithm = algorithm
-        self.kwargs = kwargs
+        self._algorithm_parameters = algorithm_parameters
 
     def solve(self, parsed_equations: Dict, visualize=False,output_train_data=False) -> (bool, Assignment):
         variables: List[Variable] = parsed_equations["variables"]
@@ -19,7 +19,7 @@ class Solver:
 
 
         print("-" * 10, "Solving equation", "-" * 10)
-        self._algorithm = self._algorithm(terminals, variables, parsed_equations["equation_list"], self.kwargs)
+        self._algorithm = self._algorithm(terminals, variables, parsed_equations["equation_list"], self._algorithm_parameters)
         result_dict, running_time = self.count_time(self._algorithm.run, algorithm_timeout)
         result_dict["running_time"] = running_time
         if visualize == True:

@@ -6,9 +6,12 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
-from ..independent_utils import remove_duplicates, flatten_list
+from src.solver.independent_utils import remove_duplicates, flatten_list,strip_file_name_suffix,dump_to_json_with_format
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
+from src.solver.models.utils import load_model
+from src.solver.models.Dataset import WordEquationDataset
+from dgl.dataloading import GraphDataLoader
 import sys
 
 
@@ -21,9 +24,16 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.total_explore_paths_call = 0
         self.nodes = []
         self.edges = []
-
+        self.temp_graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/temp/graph_prediction"
+        self.gnn_model=None
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
+
+        if self.parameters["use_gnn"] == True:
+            # Load the model
+            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
+            self.gnn_model = load_model(model_path)
+
 
     def run(self):
 
@@ -49,9 +59,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable],
                       previous_dict) -> Tuple[str, List[Variable]]:
 
-        # record nodes and edges for visualization
-        string_equation, string_terminals, string_variables = self.pretty_print_current_equation(left_terms_queue,
-                                                                                                 right_terms_queue)
+        ################################ Record nodes and edges ################################
+
+        string_equation, string_terminals, string_variables = self.pretty_print_current_equation(left_terms_queue,right_terms_queue)
         self.total_explore_paths_call += 1
         current_node_number = self.total_explore_paths_call
         node_info = (current_node_number, {"label": string_equation, "status": None})
@@ -59,9 +69,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if previous_dict["node_number"] != None:
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
-        #########################################################################
+        ################################ Check terminate conditions ################################
 
-        # terminate conditions
         ## both side only have terminals
         if len(variables) == 0:
             satisfiability = SAT if self.check_equation(left_terms_queue, right_terms_queue) == True else UNSAT
@@ -84,78 +93,23 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if len(left_terms_queue) != 0 and len(right_terms_queue) == 0:
             return self.record_and_close_branch(UNSAT, variables, node_info)  # since one side has terminals
 
-        #########################################################################
+        ################################ Split equation ################################
 
-        # split equation
         left_term = left_terms_queue[0]
         right_term = right_terms_queue[0]
         # both side are the same
         if left_term.value == right_term.value:
-            left_poped_list_str, right_poped_list_str = self.pop_both_same_terms(left_terms_queue, right_terms_queue)
-            updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
-            branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue, right_terms_queue,
-                                                                         updated_variables,
-                                                                         {"node_number": current_node_number,
-                                                                          "label": left_poped_list_str + "=" + right_poped_list_str})
-            return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info)
+            return self.both_side_same_terms(left_terms_queue, right_terms_queue, variables, current_node_number, node_info)
 
         # both side are different
         else:
             ## both side are differernt variables
             if type(left_term.value) == Variable and type(right_term.value) == Variable:
-                branch_list = [self.two_variables_split_branch_1, self.two_variables_split_branch_2,
-                               self.two_variables_split_branch_3]
-                random.shuffle(branch_list)
-
-                l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                branch_1_satisfiability, branch_1_variables = self.explore_paths(l, r, v,
-                                                                                 {"node_number": current_node_number,
-                                                                                  "label": edge_label})
-                if branch_1_satisfiability == SAT:
-                    return self.record_and_close_branch(SAT, branch_1_variables, node_info)
-                else:  # branch_1 closed go to next branch
-                    node_info[1]["status"] = UNSAT
-                    branch_list = branch_list[1:]
-
-                l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
-                                                                                 {"node_number": current_node_number,
-                                                                                  "label": edge_label})
-                if branch_2_satisfiability == SAT:
-                    return self.record_and_close_branch(SAT, branch_2_variables, node_info)
-                else:  # branch_2 closed go to next branch
-                    node_info[1]["status"] = UNSAT
-                    branch_list = branch_list[1:]
-
-                l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                branch_3_satisfiability, branch_3_variables = self.explore_paths(l, r, v,
-                                                                                 {"node_number": current_node_number,
-                                                                                  "label": edge_label})
-                return self.record_and_close_branch(branch_3_satisfiability, branch_3_variables, node_info)
+                return self.both_side_different_variables(left_terms_queue, right_terms_queue, variables, current_node_number,node_info)
 
             ## left side is variable, right side is terminal
             elif type(left_term.value) == Variable and type(right_term.value) == Terminal:
                 return self.left_side_variable_right_side_terminal(left_terms_queue, right_terms_queue, variables,current_node_number, node_info)
-                #
-                # branch_list = [self.one_variable_one_terminal_split_branch_1,
-                #                self.one_variable_one_terminal_split_branch_2]
-                # random.shuffle(branch_list)
-                #
-                # l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                # branch_1_satisfiability, branch_1_variables = self.explore_paths(l, r, v,
-                #                                                                  {"node_number": current_node_number,
-                #                                                                   "label": edge_label})
-                # if branch_1_satisfiability == SAT:
-                #     return self.record_and_close_branch(SAT, branch_1_variables, node_info)
-                # else:  # branch_1 closed go to next branch
-                #     node_info[1]["status"] = UNSAT
-                #     branch_list = branch_list[1:]
-                #
-                # l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-                # branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
-                #                                                                  {"node_number": current_node_number,
-                #                                                                   "label": edge_label})
-                # return self.record_and_close_branch(branch_2_satisfiability, branch_2_variables, node_info)
 
 
             ## left side is terminal, right side is variable
@@ -163,52 +117,116 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.left_side_variable_right_side_terminal(right_terms_queue,left_terms_queue, variables,
                                                                    current_node_number, node_info)
 
-                # branch_list = [self.one_variable_one_terminal_split_branch_1,
-                #                self.one_variable_one_terminal_split_branch_2]
-                # random.shuffle(branch_list)
-                #
-                # l, r, v, edge_label = branch_list[0](right_terms_queue, left_terms_queue, variables)  # split equation
-                # branch_1_satisfiability, branch_1_variables = self.explore_paths(l, r, v,
-                #                                                                  {"node_number": current_node_number,
-                #                                                                   "label": edge_label})
-                # if branch_1_satisfiability == SAT:
-                #     return self.record_and_close_branch(SAT, branch_1_variables, node_info)
-                # else:  # branch_1 closed go to next branch
-                #     node_info[1]["status"] = UNSAT
-                #     branch_list = branch_list[1:]
-                #
-                # l, r, v, edge_label = branch_list[0](right_terms_queue, left_terms_queue, variables)  # split equation
-                # branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
-                #                                                                  {"node_number": current_node_number,
-                #                                                                   "label": edge_label})
-                # return self.record_and_close_branch(branch_2_satisfiability, branch_2_variables, node_info)
-
             ## both side are different terminals
             elif type(left_term.value) == Terminal and type(right_term.value) == Terminal:
                 return self.record_and_close_branch(UNSAT, variables, node_info)
 
 
-    def left_side_variable_right_side_terminal(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables,current_node_number,node_info):
-        branch_list = [self.one_variable_one_terminal_split_branch_1,
-                       self.one_variable_one_terminal_split_branch_2]
+    def both_side_same_terms(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables,current_node_number,node_info):
+        left_poped_list_str, right_poped_list_str = self.pop_both_same_terms(left_terms_queue, right_terms_queue)
+        updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
+        branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue, right_terms_queue,
+                                                                     updated_variables,
+                                                                     {"node_number": current_node_number,
+                                                                      "label": left_poped_list_str + "=" + right_poped_list_str})
+        return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info)
+
+
+    def both_side_different_variables(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables,current_node_number,node_info):
+
+        # # Define the methods for each branch
+        # branch_methods = [
+        #     self.two_variables_split_branch_1,
+        #     self.two_variables_split_branch_2,
+        #     self.two_variables_split_branch_3
+        # ]
+        #
+        # # Compute branches and prepare data structures
+        # branches = []
+        # graph_list = []
+        #
+        # for method in branch_methods:
+        #     l, r, v, edge_label = method(left_terms_queue, right_terms_queue, variables)
+        #     eq = Equation(l, r)
+        #     graph_dict = eq.graph_to_gnn_format(eq.get_graph_1())
+        #     tuple_data = (eq, v, edge_label)
+        #
+        #     branches.append(tuple_data)
+        #     graph_list.append(graph_dict)
+        #
+        # # Load data
+        # evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", graphs_from_memory=graph_list)
+        # evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
+        #
+        # # Call gnn to predict
+        # prediction_list = []
+        #
+        # for (batched_graph, labels), eq_tuple in zip(evaluation_dataloader, branches):
+        #     pred = self.gnn_model(batched_graph, batched_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+        #     prediction_list.append([pred, eq_tuple])
+        #
+        # sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+        #
+        # # Perform depth-first search based on the sorted prediction list
+        # for i, data in enumerate(sorted_prediction_list):
+        #     eq, v, edge_label = data[1]
+        #     satisfiability, variables = self.explore_paths(eq.left_terms, eq.right_terms, v,
+        #                                                    {"node_number": current_node_number, "label": edge_label})
+        #
+        #     # Handle branch outcome
+        #     if satisfiability == SAT:
+        #         return self.record_and_close_branch(SAT, variables, node_info)
+        #     elif i < len(sorted_prediction_list) - 1:  # If not the last branch, mark as UNSAT and continue
+        #         node_info[1]["status"] = UNSAT
+        #     else:  # For the last branch
+        #         return self.record_and_close_branch(satisfiability, variables, node_info)
+
+
+
+        ###############################
+
+        branch_list = [
+            self.two_variables_split_branch_1,
+            self.two_variables_split_branch_2,
+            self.two_variables_split_branch_3
+        ]
+
         random.shuffle(branch_list)
 
-        l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-        branch_1_satisfiability, branch_1_variables = self.explore_paths(l, r, v,
-                                                                         {"node_number": current_node_number,
-                                                                          "label": edge_label})
-        if branch_1_satisfiability == SAT:
-            return self.record_and_close_branch(SAT, branch_1_variables, node_info)
-        else:  # branch_1 closed go to next branch
-            node_info[1]["status"] = UNSAT
-            branch_list = branch_list[1:]
+        for i in range(len(branch_list)):
+            l, r, v, edge_label = branch_list[i](left_terms_queue, right_terms_queue, variables)
+            satisfiability, variables = self.explore_paths(l, r, v,
+                                                           {"node_number": current_node_number, "label": edge_label})
 
-        l, r, v, edge_label = branch_list[0](left_terms_queue, right_terms_queue, variables)  # split equation
-        branch_2_satisfiability, branch_2_variables = self.explore_paths(l, r, v,
-                                                                         {"node_number": current_node_number,
-                                                                          "label": edge_label})
-        return self.record_and_close_branch(branch_2_satisfiability, branch_2_variables, node_info)
+            if satisfiability == SAT:
+                return self.record_and_close_branch(SAT, variables, node_info)
+            elif i < len(branch_list) - 1:  # Not the last branch, mark as UNSAT and continue
+                node_info[1]["status"] = UNSAT
+            else:  # Last branch
+                return self.record_and_close_branch(satisfiability, variables, node_info)
 
+    def left_side_variable_right_side_terminal(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables,current_node_number,node_info):
+        branch_list = [
+            self.one_variable_one_terminal_split_branch_1,
+            self.one_variable_one_terminal_split_branch_2
+        ]
+        random.shuffle(branch_list)
+
+        for i, branch in enumerate(branch_list):
+            l, r, v, edge_label = branch(left_terms_queue, right_terms_queue, variables)
+            satisfiability, branch_variables = self.explore_paths(l, r, v,
+                                                                  {"node_number": current_node_number,
+                                                                   "label": edge_label})
+
+            if satisfiability == SAT:
+                return self.record_and_close_branch(SAT, branch_variables, node_info)
+
+            # If we reach here and it's not the last branch, update status to UNSAT and continue
+            if i < len(branch_list) - 1:
+                node_info[1]["status"] = UNSAT
+            else:
+                # If it's the last branch, record and close regardless of the outcome
+                return self.record_and_close_branch(satisfiability, branch_variables, node_info)
     def record_and_close_branch(self, satisfiability: str, variables, node_info):
         node_info[1]["status"] = satisfiability
         return satisfiability, variables

@@ -18,9 +18,13 @@ def main(args):
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    solver = Solver(algorithm=ElimilateVariablesRecursive)
-    # solver = Solver(algorithm=ElimilateVariables)
-    # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length)
+    algorithm_parameters = {"use_gnn":False}
+
+    #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
+    solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
+    #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
+    #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
+    #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     result_dict = solver.solve(parsed_content, visualize=False)
 
     print_results(result_dict)
