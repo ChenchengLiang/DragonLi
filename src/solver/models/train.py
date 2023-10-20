@@ -38,7 +38,7 @@ def main():
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
 
 
-    trained_model=train(train_valid_dataset,GNN_model=GCN_model,parameters=parameters)
+    trained_model=train(train_valid_dataset,GNN_model=GAT_model,parameters=parameters)
 
 
 
@@ -115,7 +115,7 @@ def train(dataset,GNN_model,parameters:Dict):
             torch.save(best_model,parameters["model_save_path"])
 
         # Print the losses once every five epochs
-        if epoch % 5 == 0:
+        if epoch % 10 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
 

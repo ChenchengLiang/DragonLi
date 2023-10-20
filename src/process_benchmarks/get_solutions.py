@@ -14,13 +14,14 @@ def main():
     # solver = "z3"
     # solver = "ostrich"
     # solver = "cvc5"
-    for solver in ["this"]:
+    for solver in ["woorpje"]:
 
         suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
         test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
         example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
         track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
+        g_track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated"
         track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
         track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
         track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
@@ -32,8 +33,9 @@ def main():
             #"test_track":test_track,
             # "example_track":example_track,
             "track_01": track_01,
-            "track_02": track_02,
-            "track_03": track_03,
+            "g_track_01":g_track_01,
+            # "track_02": track_02,
+            # "track_03": track_03,
             # "track_04": track_04,
             # "track_05": track_05
         }
@@ -42,16 +44,16 @@ def main():
 
 
     # summary
-    summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
-
-    for track in benchmark_dict.keys():
-        summary_file_dict = {"this": "this_" + track + "_summary.csv",
-                             "woorpje": "woorpje_" + track + "_summary.csv",
-                             "z3": "z3_" + track + "_summary.csv",
-                             "ostrich": "ostrich_" + track + "_summary.csv",
-                             "cvc5": "cvc5_" + track + "_summary.csv"}
-
-        summary_one_track(summary_folder, summary_file_dict, track)
+    # summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
+    #
+    # for track in benchmark_dict.keys():
+    #     summary_file_dict = {"this": "this_" + track + "_summary.csv",
+    #                          "woorpje": "woorpje_" + track + "_summary.csv",
+    #                          "z3": "z3_" + track + "_summary.csv",
+    #                          "ostrich": "ostrich_" + track + "_summary.csv",
+    #                          "cvc5": "cvc5_" + track + "_summary.csv"}
+    #
+    #     summary_one_track(summary_folder, summary_file_dict, track)
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict):
