@@ -260,13 +260,19 @@ class Equation:
         return graph_dict
 
     def visualize_graph(self, file_path):
-        nodes, edges = self.get_graph_1()
+        nodes, edges = self.get_graph_1(self.left_terms,self.right_terms)
         draw_graph(nodes, edges, file_path)
 
-    def get_graph_1(self):
+    @staticmethod
+    def _construct_graph(left_terms: List[Term], right_terms: List[Term], include_equation_edge: bool = False):
         global_node_counter = 0
         nodes = []
         edges = []
+
+        # Add "=" node
+        equation_node = Node(id=global_node_counter, type=Operator, content="=", label=None)
+        nodes.append(equation_node)
+        global_node_counter += 1
 
         def construct_tree(term_list: Deque[Term], previous_node: Node, global_node_counter):
             if len(term_list) == 0:
@@ -278,21 +284,26 @@ class Equation:
                 global_node_counter += 1
                 nodes.append(current_node)
                 edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+                if include_equation_edge:
+                    edges.append(
+                        Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
                 return construct_tree(term_list, current_node, global_node_counter)
 
-        # Add "=" node
-        equation_node = Node(id=global_node_counter, type=Operator, content="=", label=None)
-        nodes.append(equation_node)
-        global_node_counter += 1
-
-        local_left_terms = deque(self.left_terms.copy())
-        local_right_terms = deque(self.right_terms.copy())
+        local_left_terms = deque(left_terms.copy())
+        local_right_terms = deque(right_terms.copy())
 
         global_node_counter = construct_tree(local_left_terms, equation_node, global_node_counter)
         global_node_counter = construct_tree(local_right_terms, equation_node, global_node_counter)
 
         return nodes, edges
 
+    @staticmethod
+    def get_graph_1(left_terms: List[Term], right_terms: List[Term]):
+        return Equation._construct_graph(left_terms, right_terms, include_equation_edge=False)
+
+    @staticmethod
+    def get_graph_2(left_terms: List[Term], right_terms: List[Term]):
+        return Equation._construct_graph(left_terms, right_terms, include_equation_edge=True)
 
 class Formula:
     def __init__(self, eq_list: List[Equation]):

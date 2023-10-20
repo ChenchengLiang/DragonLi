@@ -32,6 +32,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.edges = []
         self.temp_graph_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/temp/graph_prediction"
         self.gnn_model = None
+        self.graph_func = Equation.get_graph_1
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
@@ -181,7 +182,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         for method in branch_methods:
             l, r, v, edge_label = method(left_terms_queue, right_terms_queue, variables)
             eq = Equation(l, r)
-            nodes, edges = eq.get_graph_1()
+            nodes, edges = self.graph_func(eq.left_terms, eq.right_terms)
             graph_dict = eq.graph_to_gnn_format(nodes, edges)
             tuple_data = (eq, v, edge_label)
 

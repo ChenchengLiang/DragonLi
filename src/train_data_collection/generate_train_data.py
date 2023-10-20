@@ -3,17 +3,18 @@ from src.solver.independent_utils import strip_file_name_suffix,dump_to_json_wit
 from src.solver.Parser import Parser,EqParser
 import json
 import glob
+from src.solver.DataTypes import Equation
+from typing import List, Tuple, Dict, Union, Optional, Callable
 def main():
     file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/*.eq")
-
     for file_path in file_list:
-        output_one_eq_graph(file_path,visualize=False)
+        output_one_eq_graph(file_path=file_path,graph_func=Equation.get_graph_1,visualize=False)
 
 
 
 
 
-def output_one_eq_graph(file_path,visualize=False):
+def output_one_eq_graph(file_path,graph_func:Callable,visualize:bool=False):
 
     parser_type = EqParser()
     parser = Parser(parser_type)
@@ -29,7 +30,7 @@ def output_one_eq_graph(file_path,visualize=False):
             # visualize
             eq.visualize_graph(file_path)
         # get gnn format
-        nodes, edges = eq.get_graph_1()
+        nodes, edges = graph_func(eq.left_terms, eq.right_terms)
         satisfiability = answer
         graph_dict = eq.graph_to_gnn_format(nodes, edges, satisfiability)
         #print(graph_dict)
