@@ -19,7 +19,7 @@ class WordEquationDataset(DGLDataset):
     def process(self):
         self.graphs = []
         self.labels = []
-        self.node_embedding_dim = 1
+        self.node_embedding_dim = 3 # equal to number of node types
         self.gclasses = 2
 
 

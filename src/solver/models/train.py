@@ -26,15 +26,16 @@ def main():
 
 
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    parameters ={"model_save_path":save_path,"num_epochs":50,"learning_rate":0.001,"batch_size":10,"layer_dim":64,
-                 "num_layers":2,"num_heads":2,"ffnn_hidden_size":64,"n_ffnn":2}
+    parameters ={"model_save_path":save_path,"num_epochs":200,"learning_rate":0.001,"batch_size":10,"gnn_hidden_dim":64,
+                 "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
 
-    GCN_model = GCNWithNFFNN(in_feats=train_valid_dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
-                         n_layers=parameters["num_layers"], ffnn_hidden_size=parameters["ffnn_hidden_size"],
-                         n_ffnn=parameters["n_ffnn"])
-    GAT_model = GATWithNFFNN(in_feats=train_valid_dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
-                n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
-                         ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+
+    GCN_model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                             gnn_layer_num=parameters["gnn_layer_num"], ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                             ffnn_layer_num=parameters["ffnn_layer_num"])
+    GAT_model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                             gnn_layer_num=parameters["gnn_layer_num"], num_heads=parameters["num_heads"],
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
 
 
     trained_model=train(train_valid_dataset,GNN_model=GCN_model,parameters=parameters)
