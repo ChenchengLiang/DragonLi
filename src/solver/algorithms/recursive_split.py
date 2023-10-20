@@ -35,13 +35,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
-        if self.parameters["use_gnn"] == True:
+        if self.parameters["branch_method"] == "gnn":
             # Load the model
             model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
             self.gnn_model = load_model(model_path)
 
     def run(self):
-
+        print("branch_method:",self.parameters["branch_method"])
         first_equation = self.equation_list[0]
         left_terms = first_equation.left_terms
         right_terms = first_equation.right_terms
@@ -105,8 +105,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = right_terms_queue[0]
         # both side are the same
         if left_term.value == right_term.value:
-            return self.both_side_same_terms(left_terms_queue, right_terms_queue, variables, current_node_number,
-                                             node_info)
+            return self.both_side_same_terms(left_terms_queue, right_terms_queue, variables, current_node_number,node_info)
 
         # both side are different
         else:
@@ -163,11 +162,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _execute_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                            branch_methods):
-        if self.parameters["use_gnn"]:
+        if self.parameters["branch_method"]=="gnn":
             return self._use_gnn_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
                                              node_info, branch_methods)
-        else:
+        elif self.parameters["branch_method"]=="random":
             return self._use_random_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
+                                                node_info, branch_methods)
+        elif self.parameters["branch_method"]=="fixed":
+            return self._use_fixed_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
                                                 node_info, branch_methods)
 
     def _use_gnn_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
@@ -216,7 +218,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_random_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                               branch_methods):
         random.shuffle(branch_methods)
+        return self._use_fixed_branching(left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
+                              branch_methods)
 
+    def _use_fixed_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
+                              branch_methods):
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(left_terms_queue, right_terms_queue, variables)
             satisfiability, branch_variables = self.explore_paths(l, r, v,
@@ -225,7 +231,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             if satisfiability == SAT:
                 return self.record_and_close_branch(SAT, branch_variables, node_info)
-
             # If we reach here and it's not the last branch, update status to UNSAT and continue
             if i < len(branch_methods) - 1:
                 node_info[1]["status"] = UNSAT
