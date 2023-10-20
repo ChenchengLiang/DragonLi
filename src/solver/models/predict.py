@@ -1,8 +1,8 @@
-import torch
 from src.solver.Constants import int_label_to_satisfiability
 from Dataset import WordEquationDataset
 from dgl.dataloading import GraphDataLoader
 from src.solver.models.utils import load_model
+
 def main():
     # Load the evaluation dataset
     graph_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/eval"
