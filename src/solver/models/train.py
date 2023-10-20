@@ -28,11 +28,20 @@ def main():
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
     parameters ={"model_save_path":save_path,"num_epochs":50,"learning_rate":0.001,"batch_size":10,"layer_dim":64,
                  "num_layers":2,"num_heads":2,"ffnn_hidden_size":64,"n_ffnn":2}
-    model=train(train_valid_dataset,parameters)
+
+    GCN_model = GCNWithNFFNN(in_feats=train_valid_dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
+                         n_layers=parameters["num_layers"], ffnn_hidden_size=parameters["ffnn_hidden_size"],
+                         n_ffnn=parameters["n_ffnn"])
+    GAT_model = GATWithNFFNN(in_feats=train_valid_dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
+                n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
+                         ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+
+
+    trained_model=train(train_valid_dataset,GNN_model=GCN_model,parameters=parameters)
 
 
 
-def train(dataset,parameters:Dict):
+def train(dataset,GNN_model,parameters:Dict):
     num_examples = len(dataset)
 
     # Split the dataset into 80% training and 20% validation
@@ -45,11 +54,7 @@ def train(dataset,parameters:Dict):
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
 
     # Create the model with given dimensions
-    model = GCNWithNFFNN(in_feats=dataset.node_embedding_dim,h_feats=parameters["layer_dim"],
-                n_layers=parameters["num_layers"],ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
-    # model = GATWithNFFNN(in_feats=dataset.node_embedding_dim, h_feats=parameters["layer_dim"],
-    #             n_layers=parameters["num_layers"],num_heads=parameters["num_heads"],
-    #                      ffnn_hidden_size=parameters["ffnn_hidden_size"],n_ffnn=parameters["n_ffnn"])
+    model = GNN_model
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
     loss_function = nn.BCELoss() # Initialize the loss function
     best_valid_loss = float('inf')  # Initialize with a high value
