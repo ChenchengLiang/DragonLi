@@ -3,24 +3,20 @@ import string
 import os
 
 def main():
-    # track_1_sat_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/SAT"
-    # for i in range(100):
-    #     equation = generate_one_track_1()
-    #     filename = os.path.join(track_1_sat_folder, f"g_01_track_{i + 1}.eq")
-    #     with open(filename, 'w') as file:
-    #         file.write(equation)
+    track_1_mixed_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
+    start_idx = 101
+    end_idx = 500
+    save_equations(start_idx, end_idx, track_1_mixed_folder, generate_one_track_1_unsat)
 
-    track_1_unsat_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/UNSAT"
-    for i in range(100):
-        equation = generate_one_track_1_unsat()
-        filename = os.path.join(track_1_unsat_folder, f"g_01_track_{i + 1}.eq")
+
+
+
+def save_equations(start_index, end_index, folder, equation_generator):
+    for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
+        equation = equation_generator()
+        filename = os.path.join(folder, f"g_01_track_{i}.eq")
         with open(filename, 'w') as file:
             file.write(equation)
-
-
-
-
-
 
 
 def generate_equation(max_variables=15, max_terminals=10, max_length=300, unsat=False):

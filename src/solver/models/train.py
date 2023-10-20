@@ -17,7 +17,7 @@ from Dataset import WordEquationDataset
 def main():
 
 
-    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
+    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_1"
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
     graph, label = train_valid_dataset[0]

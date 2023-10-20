@@ -22,7 +22,7 @@ def main():
         example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
         track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
         g_track_01_sat = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/SAT"
-        g_track_01_unsat = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/UNSAT"
+        g_track_01_mixed = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
         track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
         track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
         track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
@@ -35,9 +35,9 @@ def main():
             # "example_track":example_track,
             #"track_01": track_01,
             #"g_track_01_sat":g_track_01_sat,
-            "g_track_01_unsat": g_track_01_unsat,
-            # "track_02": track_02,
-            # "track_03": track_03,
+            "g_track_01_mixed": g_track_01_mixed,
+            #"track_02": track_02,
+            #"track_03": track_03,
             # "track_04": track_04,
             # "track_05": track_05
         }
@@ -48,7 +48,7 @@ def main():
     # summary
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
 
-    for track in ["track_01", "track_02", "track_03", "g_track_01_sat","g_track_01_unsat"]:
+    for track in ["track_01", "track_02", "track_03", "g_track_01_sat","g_track_01_mixed"]:
         summary_file_dict = {"this": "this_" + track + "_summary.csv",
                              "woorpje": "woorpje_" + track + "_summary.csv",
                              # "z3":"z3_"+track+"_summary.csv",

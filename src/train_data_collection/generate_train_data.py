@@ -6,7 +6,7 @@ import glob
 from src.solver.DataTypes import Equation
 from typing import List, Tuple, Dict, Union, Optional, Callable
 def main():
-    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track/*.eq")
+    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_1/*.eq")
     for file_path in file_list:
         output_one_eq_graph(file_path=file_path,graph_func=Equation.get_graph_1,visualize=False)
 
