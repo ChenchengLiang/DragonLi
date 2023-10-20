@@ -8,12 +8,13 @@ def main():
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
 
 
-    for track in ["track_01","track_02","track_03"]:
+    for track in ["track_01","track_02","track_03","g_track_01"]:
         summary_file_dict={"this":"this_"+track+"_summary.csv",
                            "woorpje":"woorpje_"+track+"_summary.csv",
-                           "z3":"z3_"+track+"_summary.csv",
-                           "ostrich":"ostrich_"+track+"_summary.csv",
-                           "cvc5":"cvc5_"+track+"_summary.csv"}
+                           # "z3":"z3_"+track+"_summary.csv",
+                           # "ostrich":"ostrich_"+track+"_summary.csv",
+                           # "cvc5":"cvc5_"+track+"_summary.csv"
+                           }
 
         summary_one_track(summary_folder,summary_file_dict,track)
 
