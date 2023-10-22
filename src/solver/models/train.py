@@ -27,7 +27,7 @@ def main():
 
 
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    parameters ={"model_save_path":save_path,"num_epochs":200,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":10,"gnn_hidden_dim":64,
+    parameters ={"model_save_path":save_path,"num_epochs":10,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":10,"gnn_hidden_dim":64,
                  "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
 
 
@@ -44,30 +44,7 @@ def main():
 
 
 def train(dataset,GNN_model,parameters:Dict):
-    num_examples = len(dataset)
-
-    # Split the dataset into 80% training and 20% validation
-    num_train = int(num_examples * 0.8)
-
-    train_sampler = SubsetRandomSampler(torch.arange(num_train))
-    valid_sampler = SubsetRandomSampler(torch.arange(num_train, num_examples))
-
-    # Count for training data
-    train_labels = [int(dataset[i][1].item()) for i in train_sampler.indices]
-    train_label_distribution = Counter(train_labels)
-
-    # Count for validation data
-    valid_labels = [int(dataset[i][1].item()) for i in valid_sampler.indices]
-    valid_label_distribution = Counter(valid_labels)
-
-    print("Training label distribution:", train_label_distribution)
-    print("Validation label distribution:", valid_label_distribution)
-
-    train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
-    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
-
-
-
+    train_dataloader, valid_dataloader  = create_data_loaders(dataset, parameters)
 
     # Create the model with given dimensions
     model = GNN_model
@@ -142,6 +119,45 @@ def train(dataset,GNN_model,parameters:Dict):
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
 
     return best_model
+
+
+def create_data_loaders(dataset, parameters):
+    # Set seed for reproducibility for shuffling
+    torch.manual_seed(42)
+
+    num_examples = len(dataset)
+    # Shuffle indices
+    indices = torch.randperm(num_examples)
+
+    # Reset randomness to ensure only the shuffling was deterministic
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
+    torch.manual_seed(torch.initial_seed())  # Set seed to a new random value
+
+    # Split the indices into 80% training and 20% validation
+    num_train = int(num_examples * 0.8)
+    train_indices = indices[:num_train]
+    valid_indices = indices[num_train:]
+
+    train_sampler = SubsetRandomSampler(train_indices)
+    valid_sampler = SubsetRandomSampler(valid_indices)
+
+    # Count for training data
+    train_labels = [int(dataset[i][1].item()) for i in train_indices]
+    train_label_distribution = Counter(train_labels)
+
+    # Count for validation data
+    valid_labels = [int(dataset[i][1].item()) for i in valid_indices]
+    valid_label_distribution = Counter(valid_labels)
+
+    train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
+    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
+
+    print("Training label distribution:", train_label_distribution)
+    print("Validation label distribution:", valid_label_distribution)
+
+    return train_dataloader, valid_dataloader
+
 
 
 if __name__ == '__main__':
