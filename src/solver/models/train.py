@@ -11,13 +11,14 @@ from Models import GCNWithNFFNN,GATWithNFFNN
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
+from collections import Counter
 
 from Dataset import WordEquationDataset
 
 def main():
 
 
-    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_1"
+    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/examples"
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
     graph, label = train_valid_dataset[0]
@@ -26,7 +27,7 @@ def main():
 
 
     save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    parameters ={"model_save_path":save_path,"num_epochs":200,"learning_rate":0.001,"batch_size":10,"gnn_hidden_dim":64,
+    parameters ={"model_save_path":save_path,"num_epochs":200,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":10,"gnn_hidden_dim":64,
                  "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
 
 
@@ -51,16 +52,31 @@ def train(dataset,GNN_model,parameters:Dict):
     train_sampler = SubsetRandomSampler(torch.arange(num_train))
     valid_sampler = SubsetRandomSampler(torch.arange(num_train, num_examples))
 
+    # Count for training data
+    train_labels = [int(dataset[i][1].item()) for i in train_sampler.indices]
+    train_label_distribution = Counter(train_labels)
+
+    # Count for validation data
+    valid_labels = [int(dataset[i][1].item()) for i in valid_sampler.indices]
+    valid_label_distribution = Counter(valid_labels)
+
+    print("Training label distribution:", train_label_distribution)
+    print("Validation label distribution:", valid_label_distribution)
+
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
+
+
+
 
     # Create the model with given dimensions
     model = GNN_model
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-    loss_function = nn.BCELoss() # Initialize the loss function
-    best_valid_loss = float('inf')  # Initialize with a high value
-    best_model=None
+    loss_function = nn.BCELoss()  # Initialize the loss function
 
+    best_model = None
+    best_valid_loss = float('inf')  # Initialize with a high value
+    best_valid_accuracy = float('-inf')  # Initialize with a low value
 
     for epoch in range(parameters["num_epochs"]):
         # Training Phase
@@ -103,18 +119,24 @@ def train(dataset,GNN_model,parameters:Dict):
         avg_valid_loss = valid_loss / len(valid_dataloader)
         valid_accuracy = num_correct / num_valids
 
-        # Check if the current validation loss is lower than the best known
-        if avg_valid_loss < best_valid_loss:
+        # Save based on specified criterion
+        if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_loss:
             best_valid_loss = avg_valid_loss
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",
                 ", Save model for lowest validation loss")
-            # Save the model with the best validation loss
             best_model = model
-            #torch.save(best_model.state_dict(), parameters["model_save_path"])
-            torch.save(best_model,parameters["model_save_path"])
+            torch.save(best_model, parameters["model_save_path"])
 
-        # Print the losses once every five epochs
+        elif parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracy:
+            best_valid_accuracy = valid_accuracy
+            print(
+                f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}",
+                ", Save model for highest validation accuracy")
+            best_model = model
+            torch.save(best_model, parameters["model_save_path"])
+
+        # Print the losses once every ten epochs
         if epoch % 10 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")

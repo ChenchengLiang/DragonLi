@@ -10,6 +10,11 @@ def main():
     for file_path in file_list:
         output_one_eq_graph(file_path=file_path,graph_func=Equation.get_graph_1,visualize=False)
 
+    file_list = glob.glob(
+        "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_2/*.eq")
+    for file_path in file_list:
+        output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=False)
+
 
 
 
