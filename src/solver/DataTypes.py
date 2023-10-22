@@ -259,8 +259,8 @@ class Equation:
 
         return graph_dict
 
-    def visualize_graph(self, file_path):
-        nodes, edges = self.get_graph_1(self.left_terms,self.right_terms)
+    def visualize_graph(self, file_path,graph_func):
+        nodes, edges = graph_func(self.left_terms,self.right_terms)
         draw_graph(nodes, edges, file_path)
 
     @staticmethod

@@ -16,30 +16,32 @@ from collections import Counter
 from Dataset import WordEquationDataset
 
 def main():
+    for graph_type in ["graph_1","graph_2"]:
+        print("-*10", graph_type, "-*10")
+
+        
+        graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/"+graph_type
+        train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
+        train_valid_dataset.statistics()
+        graph, label = train_valid_dataset[0]
+        print("train_valid_dataset[0]",graph, label)
 
 
-    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/examples"
-    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
-    train_valid_dataset.statistics()
-    graph, label = train_valid_dataset[0]
-    print("train_valid_dataset[0]",graph, label)
+
+        save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+graph_type+".pth"
+        parameters ={"model_save_path":save_path,"num_epochs":300,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":20,"gnn_hidden_dim":64,
+                     "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
 
 
-
-    save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
-    parameters ={"model_save_path":save_path,"num_epochs":10,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":10,"gnn_hidden_dim":64,
-                 "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
-
-
-    GCN_model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                             gnn_layer_num=parameters["gnn_layer_num"], ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                             ffnn_layer_num=parameters["ffnn_layer_num"])
-    GAT_model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                             gnn_layer_num=parameters["gnn_layer_num"], num_heads=parameters["num_heads"],
-                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
+        GCN_model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                                 gnn_layer_num=parameters["gnn_layer_num"], ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                                 ffnn_layer_num=parameters["ffnn_layer_num"])
+        GAT_model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                                 gnn_layer_num=parameters["gnn_layer_num"], num_heads=parameters["num_heads"],
+                                 ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
 
 
-    trained_model=train(train_valid_dataset,GNN_model=GAT_model,parameters=parameters)
+        trained_model=train(train_valid_dataset,GNN_model=GAT_model,parameters=parameters)
 
 
 
@@ -153,8 +155,8 @@ def create_data_loaders(dataset, parameters):
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
 
-    print("Training label distribution:", train_label_distribution)
-    print("Validation label distribution:", valid_label_distribution)
+    print("Training label distribution:", train_label_distribution, "Base accuracy", max(train_label_distribution.values()) / sum(train_label_distribution.values()))
+    print("Validation label distribution:", valid_label_distribution, "Base accuracy", max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
 
     return train_dataloader, valid_dataloader
 

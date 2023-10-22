@@ -38,7 +38,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if self.parameters["branch_method"] == "gnn":
             # Load the model
-            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model.pth"
+            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+parameters["parameters"]+".pth"
             self.gnn_model = load_model(model_path)
 
     def run(self):
@@ -412,9 +412,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         return remove_duplicates(new_variables)
 
-    def visualize(self, file_path):
+    def visualize(self, file_path,graph_func):
         visualize_path_html(self.nodes, self.edges, file_path)
-        self.equation_list[0].visualize_graph(file_path)
+        self.equation_list[0].visualize_graph(file_path,graph_func)
 
     def output_train_data(self, file_path):
         pass
