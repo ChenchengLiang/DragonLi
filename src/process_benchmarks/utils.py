@@ -5,19 +5,20 @@ import subprocess
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
 import csv
+from typing import List, Dict, Tuple
 
-def run_on_one_benchmark(file_path, parameters_list, solver):
+def run_on_one_benchmark(file_path:str, parameters_list:List[str], solver:str,solver_log:bool=False):
     # create a shell file to run the main_parameter.py
     shell_file_path = create_a_shell_file(file_path, parameters_list, solver)
 
     # run the shell file
-    result, used_time = run_a_shell_file(shell_file_path, file_path, solver)
+    result_dict = run_a_shell_file(shell_file_path, file_path, solver,log=solver_log)
 
     # delete the shell file
     if os.path.exists(shell_file_path):
         os.remove(shell_file_path)
 
-    return result, used_time
+    return result_dict
 
 
 def create_a_shell_file(file_path, parameter_list="", solver=""):
@@ -36,7 +37,7 @@ def create_a_shell_file(file_path, parameter_list="", solver=""):
     return shell_file_path
 
 
-def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver):
+def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,log:bool=False):
     print("-" * 10)
     print("run " + shell_file_path)
     run_shell_command = ["sh", shell_file_path]
@@ -48,19 +49,23 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver):
     end = time.time()
     used_time = end - start
     # print("Output from script:", completed_process.stdout)
-    result = process_solver_output(completed_process.stdout, problem_file_path, solver)
+    result_dict = process_solver_output(completed_process.stdout, problem_file_path, solver,log=log)
+    result_dict["used_time"] = used_time
     print("Finished", "use time: ", used_time)
-    return result, used_time
+    return result_dict
 
 
-def process_solver_output(solver_output: str, problem_file_path: str, solver):
+def process_solver_output(solver_output: str, problem_file_path: str, solver:str,log:bool=False):
     result = UNKNOWN
+    split_number = 0
 
     if solver == "this":
         lines = solver_output.split('\n')
         for line in lines:
             if "result:" in line:
                 result = line.split("result:")[1].strip(" ")
+            if "Total explore_paths call:" in line:
+                split_number = line.split("Total explore_paths call:")[1].strip(" ")
             # print(line)
 
     elif solver == "woorpje":
@@ -91,7 +96,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver):
             result = UNSAT
 
     # write to log file
-    if result == SAT or result == UNSAT:
+    if log==True and (result == SAT or result == UNSAT):
         log_file = problem_file_path + "." + solver + ".log"
         if os.path.exists(log_file):
             os.remove(log_file)
@@ -115,8 +120,8 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver):
         # create the answer file
         with open(answer_file, 'w') as file:
             file.write(result)
-
-    return result
+    result_dict={"result":result,"split_number":split_number,"solver":solver}
+    return result_dict
 
 
 

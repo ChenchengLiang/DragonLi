@@ -6,7 +6,7 @@ from src.solver.models.utils import load_model
 def main():
 
     for graph_type in ["graph_1","graph_2"]:
-        print("-*10",graph_type,"-*10")
+        print("-"*10,graph_type,"-"*10)
 
 
         # Load the evaluation dataset

@@ -3,9 +3,9 @@ import string
 import os
 
 def main():
-    track_1_mixed_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
-    start_idx = 501
-    end_idx = 1000
+    track_1_mixed_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_eval_data"
+    start_idx = 1001
+    end_idx = 1200
     save_equations(start_idx, end_idx, track_1_mixed_folder, generate_one_track_1_unsat)
 
     # track_2_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track_generated"

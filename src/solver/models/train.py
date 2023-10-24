@@ -17,9 +17,9 @@ from Dataset import WordEquationDataset
 
 def main():
     for graph_type in ["graph_1","graph_2"]:
-        print("-*10", graph_type, "-*10")
+        print("-"*10, graph_type, "-"*10)
 
-        
+
         graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/"+graph_type
         train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
         train_valid_dataset.statistics()

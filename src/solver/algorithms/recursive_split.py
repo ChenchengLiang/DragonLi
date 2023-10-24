@@ -38,7 +38,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if self.parameters["branch_method"] == "gnn":
             # Load the model
-            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+parameters["parameters"]+".pth"
+            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+parameters["graph_type"]+".pth"
             self.gnn_model = load_model(model_path)
 
     def run(self):

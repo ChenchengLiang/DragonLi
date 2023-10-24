@@ -40,7 +40,7 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    algorithm_parameters = {"branch_method":"random","graph_type":"graph_1","graph_func":Equation.get_graph_1} # branch_method [gnn.random,fixed]
+    algorithm_parameters = {"branch_method":"gnn","graph_type":"graph_1","graph_func":Equation.get_graph_1} # branch_method [gnn.random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
