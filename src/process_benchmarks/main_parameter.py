@@ -7,19 +7,40 @@ from src.solver.utils import print_results
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, ElimilateVariables, \
     ElimilateVariablesRecursive
 from src.solver.DataTypes import Equation
+import argparse
 
 
 def main(args):
+    #parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
 
-    # example path
-    file_path = args[0]
+    arg_parser.add_argument('file_path', type=str, help='Path to the file')
+    arg_parser.add_argument('branch_method', type=str, choices=['gnn', 'random', 'fixed'],
+                        help='Branching method to be used')
+    arg_parser.add_argument('--graph_type', type=str, choices=['graph_1', 'graph_2'], default=None,
+                        help='Type of graph (optional)')
 
+    args = arg_parser.parse_args()
+
+    # Accessing the arguments
+    file_path = args.file_path
+    branch_method = args.branch_method
+    graph_type = args.graph_type
+
+    print(file_path, branch_method, graph_type)
+
+
+
+    #handle parameters
+    graph_func_map={None:Equation.get_graph_1,"graph_1":Equation.get_graph_1,"graph_2":Equation.get_graph_2}
+
+    #parse file
     parser_type = EqParser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    algorithm_parameters = {"branch_method":"random","graph_type":"graph_2","graph_func":Equation.get_graph_2} # branch_method [gnn,random,fixed]
+    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

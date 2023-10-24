@@ -9,71 +9,84 @@ from src.process_benchmarks.utils import summary_one_track
 
 
 def main():
-    solver_log=False
-    # solver = "woorpje"
-    # solver = "this"
-    # solver = "z3"
-    # solver = "ostrich"
-    # solver = "cvc5"
-    for solver in ["this"]:
+    solver_log = False
+    suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
-        suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
+    solver_param_list = [["this", ["fixed"]],
+                         ["this",["random"]],
+                         ["this",["gnn","--graph_type graph_1"]],
+                         ["this",["gnn","--graph_type graph_2"]],
+                         # ["woorpje",[]],
+                         # ["z3",[]],
+                         # ["ostrich",[]],
+                         # ["cvc5",[]],
+                         ]
 
-        test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
-        example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
-        track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
-        g_track_01_sat = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/SAT"
-        g_track_01_mixed = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
-        g_track_01_eval = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_eval_data"
-        track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
-        track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
-        track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
-        track_05 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/05_track"
+    test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
+    example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
+    track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
+    g_track_01_sat = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/SAT"
+    g_track_01_mixed = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
+    g_track_01_eval = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_eval_data"
+    track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
+    track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
+    track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
+    track_05 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/05_track"
 
-        parameters_list = []
+    benchmark_dict = {
+        # "test_track":test_track,
+        "example_track": example_track,
+        # "track_01": track_01,
+        # "g_track_01_sat":g_track_01_sat,
+        # "g_track_01_mixed": g_track_01_mixed,
+        # "g_track_01_eval":g_track_01_eval,
+        # "track_02": track_02,
+        # "track_03": track_03,
+        # "track_04": track_04,
+        # "track_05": track_05
+    }
 
-        benchmark_dict = {
-            "test_track":test_track,
-            # "example_track":example_track,
-            #"track_01": track_01,
-            #"g_track_01_sat":g_track_01_sat,
-            #"g_track_01_mixed": g_track_01_mixed,
-            #"g_track_01_eval":g_track_01_eval,
-            #"track_02": track_02,
-            #"track_03": track_03,
-            # "track_04": track_04,
-            # "track_05": track_05
-        }
+    for solver_param in solver_param_list:
+        solver=solver_param[0]
+        parameters_list=solver_param[1]
+        print("solver:",solver,"parameters_list:",parameters_list)
+
+
         for benchmark_name, benchmark_folder in benchmark_dict.items():
-            run_on_one_track(benchmark_name, benchmark_folder, parameters_list, solver, suffix_dict,solver_log=solver_log)
+            run_on_one_track(benchmark_name, benchmark_folder, parameters_list, solver, suffix_dict,
+                             solver_log=solver_log)
+
+    # Symmary
+    summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
+    # summary one cross tracks
+    for track in benchmark_dict.keys():
+        summary_file_dict = {}
+        for solver_param in solver_param_list:
+            k=solver_param[0]
+            v=solver_param[1]
+            v = [i.replace("--graph_type ","") for i in v]
+            parammeters_str = "_".join(v)
+            summary_file_dict[k + ":" + parammeters_str] = k + "_" + parammeters_str + "_" + track + "_summary.csv"
 
 
-    # summary
-    # summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
-    #
-    # for track in ["track_01", "track_02", "track_03", "g_track_01_sat","g_track_01_mixed"]:
-    #     summary_file_dict = {"this": "this_" + track + "_summary.csv",
-    #                          "woorpje": "woorpje_" + track + "_summary.csv",
-    #                          # "z3":"z3_"+track+"_summary.csv",
-    #                          # "ostrich":"ostrich_"+track+"_summary.csv",
-    #                          # "cvc5":"cvc5_"+track+"_summary.csv"
-    #                          }
-    #
-    #     summary_one_track(summary_folder, summary_file_dict, track)
+
+        summary_one_track(summary_folder, summary_file_dict, track)
 
 
-def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict,solver_log:bool=False):
+def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict,
+                     solver_log: bool = False):
     track_result_list = []
 
     file_list = glob.glob(benchmark_folder + "/*" + suffix_dict[solver])
     file_list_num = len(file_list)
-    for i,file in enumerate(file_list):
+    for i, file in enumerate(file_list):
         print("processing progress:", i, "/", file_list_num)
-        result_dict = run_on_one_benchmark(file, parameters_list, solver,solver_log=solver_log)
-        track_result_list.append((os.path.basename(file), result_dict["result"], result_dict["used_time"], result_dict["split_number"]))
+        result_dict = run_on_one_benchmark(file, parameters_list, solver, solver_log=solver_log)
+        track_result_list.append(
+            (os.path.basename(file), result_dict["result"], result_dict["used_time"], result_dict["split_number"]))
 
     result_summary_dict = result_summary(track_result_list)
-    write_to_cvs_file(track_result_list, result_summary_dict, benchmark_name, solver)
+    write_to_cvs_file(track_result_list, result_summary_dict, benchmark_name, solver, parameters_list)
 
 
 def result_summary(track_result_list: List[Tuple[str, str, float]]):
@@ -96,10 +109,16 @@ def result_summary(track_result_list: List[Tuple[str, str, float]]):
             "Total": len(track_result_list)}
 
 
-def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_dict: Dict, benchmark_name: str, solver:str):
+def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_dict: Dict, benchmark_name: str,
+                      solver: str, parameters_list: List[str]):
     summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
     # Name of the CSV file to write to
-    summary_name = solver + "_" + benchmark_name + "_summary.csv"
+    parameters_list = [x.replace("--graph_type ","") for x in parameters_list]
+    parameters_list_str = "_".join(parameters_list)
+    if parameters_list_str == "":
+        summary_name = solver + "_" + benchmark_name + + "_summary.csv"
+    else:
+        summary_name = solver + "_" + parameters_list_str + "_" + benchmark_name + "_summary.csv"
     summary_path = os.path.join(summary_folder, summary_name)
 
     if os.path.exists(summary_path):
@@ -110,7 +129,7 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
         csvwriter = csv.writer(csvfile)
 
         # Writing the column headers and first row with summary_dict
-        if solver=="this":
+        if solver == "this":
 
             csvwriter.writerow(["File Name", "Result", "Used Time", "split_number"] + list(summary_dict.keys()))
             csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],

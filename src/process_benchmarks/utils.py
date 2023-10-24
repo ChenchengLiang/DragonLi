@@ -22,7 +22,7 @@ def run_on_one_benchmark(file_path:str, parameters_list:List[str], solver:str,so
 
 
 def create_a_shell_file(file_path, parameter_list="", solver=""):
-    parameter_str = "".join(parameter_list)
+    parameter_str = " ".join(parameter_list)
     shell_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/temp_shell"
     shell_file_name = "run-" + os.path.basename(file_path) + ".sh"
     shell_file_path = os.path.join(shell_folder, shell_file_name)
@@ -34,6 +34,7 @@ def create_a_shell_file(file_path, parameter_list="", solver=""):
     with open(shell_file_path, 'w') as file:
         file.write("#!/bin/sh\n")
         file.write(timeout_command + " " + solver_command + " " + file_path + " " + parameter_str + "\n")
+        print("run command:",timeout_command + " " + solver_command + " " + file_path + " " + parameter_str)
     return shell_file_path
 
 
@@ -136,10 +137,10 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     second_summary_data_rows = []
 
     for solver, summary_file in summary_file_dict.items():
-        first_summary_solver_row.extend([solver, solver])
+        #first_summary_solver_row.extend([solver, solver])
 
-        reconstructed_list_title, reconstructed_list, reconstructed_summary_title, reconstructed_summary_data = extract_one_csv_data(summary_folder,
-            summary_file)
+        first_summary_solver_row,reconstructed_list_title, reconstructed_list, reconstructed_summary_title, reconstructed_summary_data = extract_one_csv_data(summary_folder,
+            summary_file,first_summary_solver_row,solver)
         first_summary_title_row.extend(reconstructed_list_title[1:])
         if len(first_summary_data_rows) == 0:
             first_summary_data_rows = [[] for x in reconstructed_list]
@@ -164,6 +165,9 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
             second_summary_title_row.extend(reconstructed_summary_title)
 
         second_summary_data_rows.append([solver] + reconstructed_summary_data)
+
+
+    ############################################
 
     summary_path = os.path.join(summary_folder, track_name+"_reconstructed_summary_1.csv")
     if os.path.exists(summary_path):
@@ -192,17 +196,25 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
         csvwriter.writerows(second_summary_data_rows)
 
 
-def extract_one_csv_data(summary_folder,summary_file):
+def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,solver):
+
+    if "this" in solver:
+        first_summary_solver_row.extend([solver, solver, solver])
+        column_index = 4
+    else:
+        first_summary_solver_row.extend([solver, solver])
+        column_index = 3
 
     summary_path = os.path.join(summary_folder, summary_file)
     with open(summary_path, 'r') as file:
         reader = csv.reader(file)
         reader = list(reader)
-        reconstructed_first_row = reader[1][:3]
+        reconstructed_first_row = reader[1][:column_index]
+        reconstructed_list_title = reader[0][:column_index]
         reconstructed_list = [reconstructed_first_row] + reader[2:]
-        reconstructed_list_title = reader[0][:3]
-        reconstructed_summary_title = reader[0][4:]
-        reconstructed_summary_data = reader[1][4:]
+
+        reconstructed_summary_title = reader[0][column_index+1:]
+        reconstructed_summary_data = reader[1][column_index+1:]
 
 
 
@@ -213,5 +225,5 @@ def extract_one_csv_data(summary_folder,summary_file):
         # print(reconstructed_summary_title)
         # print(reconstructed_summary_data)
 
-        return reconstructed_list_title,reconstructed_list,reconstructed_summary_title,reconstructed_summary_data
+        return first_summary_solver_row,reconstructed_list_title,reconstructed_list,reconstructed_summary_title,reconstructed_summary_data
 

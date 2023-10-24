@@ -52,10 +52,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
-                print(RECURSION_DEPTH_EXCEEDED)
+                #print(RECURSION_DEPTH_EXCEEDED)
             else:
                 satisfiability = RECURSION_ERROR
-                print(RECURSION_ERROR)
+                #print(RECURSION_ERROR)
 
         result_dict = {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                        "variables": self.variables, "terminals": self.terminals,
