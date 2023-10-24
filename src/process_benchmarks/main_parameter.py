@@ -47,7 +47,7 @@ def main(args):
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=False)
+    result_dict = solver.solve(parsed_content, visualize=False,output_train_data=False)
 
     print_results(result_dict)
 

@@ -1,6 +1,6 @@
 from typing import Union, List, Tuple, Deque
 from src.solver.Constants import UNKNOWN, SAT, UNSAT, satisfiability_to_int_label
-from src.solver.independent_utils import remove_duplicates
+from src.solver.independent_utils import remove_duplicates,strip_file_name_suffix
 from collections import deque
 from src.solver.visualize_util import draw_graph
 
@@ -127,9 +127,10 @@ class Term:
 
 
 class Equation:
-    def __init__(self, left_terms: List[Term], right_terms: List[Term]):
+    def __init__(self, left_terms: List[Term], right_terms: List[Term],given_satisfiability:str=UNKNOWN):
         self.left_terms = left_terms
         self.right_terms = right_terms
+        self.given_satisfiability = given_satisfiability
 
     def __repr__(self):
         return f"Equation({self.left_terms}, {self.right_terms})"
@@ -149,7 +150,9 @@ class Equation:
     @property
     def variable_list(self) -> List[Variable]:
         return remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Variable)])
-
+    @property
+    def variable_str(self) -> str:
+        return "".join([item.value for item in self.variable_list])
     @property
     def variable_numbers(self) -> int:
         return len(self.variable_list)
@@ -161,7 +164,9 @@ class Equation:
             return [EMPTY_TERMINAL]
         else:
             return terminals + [EMPTY_TERMINAL]
-
+    @property
+    def terminal_str(self) -> str:
+        return "".join([item.value for item in self.terminal_list if item!= EMPTY_TERMINAL])
     @property
     def terminal_numbers(self) -> int:
         return len(self.terminal_list)
@@ -304,6 +309,18 @@ class Equation:
     @staticmethod
     def get_graph_2(left_terms: List[Term], right_terms: List[Term]):
         return Equation._construct_graph(left_terms, right_terms, include_equation_edge=True)
+
+    def output_eq_file(self,file_name,satisfiability=UNKNOWN):
+        # Format the content of the file
+        content = f"Variables {{{''.join(self.variable_str)}}}\n"
+        content += f"Terminals {{{''.join(self.terminal_str)}}}\n"
+        content += f"Equation: {self.eq_str}\n"
+        content += "SatGlucose(100)"
+        with open(file_name+".eq", "w") as f:
+            f.write(content)
+        with open(file_name+".answer","w") as f:
+            f.write(satisfiability)
+
 
 class Formula:
     def __init__(self, eq_list: List[Equation]):
