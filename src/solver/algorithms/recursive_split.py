@@ -30,9 +30,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.total_explore_paths_call = 0
         self.nodes = []
         self.edges = []
-        self.temp_graph_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/temp/graph_prediction"
-        self.gnn_model = None
-        self.graph_func = Equation.get_graph_1
+        # self.gnn_model = None
+        # self.graph_func = parameters["graph_func"]
+        self.branch_method_func_map = {"fixed":self._use_fixed_branching,"gnn": self._use_gnn_branching, "random": self._use_random_branching}
+        self._branch_method_func=self.branch_method_func_map[parameters["branch_method"]]
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
@@ -40,6 +41,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # Load the model
             model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+parameters["graph_type"]+".pth"
             self.gnn_model = load_model(model_path)
+            self.graph_func = parameters["graph_func"]
 
     def run(self):
         print("branch_method:",self.parameters["branch_method"])
@@ -147,8 +149,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.two_variables_split_branch_2,
             self.two_variables_split_branch_3
         ]
-        return self._execute_branching(left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
-                                       branch_methods)
+        return self._branch_method_func(left_terms_queue, right_terms_queue, variables, current_node_number,
+                                        node_info, branch_methods)
 
     def left_side_variable_right_side_terminal(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term],
                                                variables, current_node_number, node_info):
@@ -158,20 +160,20 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.one_variable_one_terminal_split_branch_2
         ]
 
-        return self._execute_branching(left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
-                                       branch_methods)
+        return self._branch_method_func(left_terms_queue, right_terms_queue, variables, current_node_number,
+                                        node_info, branch_methods)
 
-    def _execute_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
-                           branch_methods):
-        if self.parameters["branch_method"]=="gnn":
-            return self._use_gnn_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
-                                             node_info, branch_methods)
-        elif self.parameters["branch_method"]=="random":
-            return self._use_random_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
-                                                node_info, branch_methods)
-        elif self.parameters["branch_method"]=="fixed":
-            return self._use_fixed_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
-                                                node_info, branch_methods)
+    # def _execute_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
+    #                        branch_methods):
+    #     if self.parameters["branch_method"]=="gnn":
+    #         return self._use_gnn_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
+    #                                          node_info, branch_methods)
+    #     elif self.parameters["branch_method"]=="random":
+    #         return self._use_random_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
+    #                                             node_info, branch_methods)
+    #     elif self.parameters["branch_method"]=="fixed":
+    #         return self._use_fixed_branching(left_terms_queue, right_terms_queue, variables, current_node_number,
+    #                                             node_info, branch_methods)
 
     def _use_gnn_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                            branch_methods):
