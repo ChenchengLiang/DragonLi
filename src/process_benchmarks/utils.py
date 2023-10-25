@@ -1,4 +1,4 @@
-from src.solver.Constants import shell_timeout, solver_command_map
+from src.solver.Constants import shell_timeout, solver_command_map,project_folder
 import os
 import time
 import subprocess
@@ -23,7 +23,7 @@ def run_on_one_benchmark(file_path:str, parameters_list:List[str], solver:str,so
 
 def create_a_shell_file(file_path, parameter_list="", solver=""):
     parameter_str = " ".join(parameter_list)
-    shell_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/temp_shell"
+    shell_folder = project_folder+"/src/process_benchmarks/temp_shell"
     shell_file_name = "run-" + os.path.basename(file_path) + ".sh"
     shell_file_path = os.path.join(shell_folder, shell_file_name)
     timeout_command = "timeout " + str(shell_timeout)
@@ -213,8 +213,25 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
         reconstructed_list_title = reader[0][:column_index]
         reconstructed_list = [reconstructed_first_row] + reader[2:]
 
-        reconstructed_summary_title = reader[0][column_index+1:]
-        reconstructed_summary_data = reader[1][column_index+1:]
+        reconstructed_summary_title = reader[0][column_index:] + ["sat_average_split_number"]
+        reconstructed_summary_data = reader[1][column_index:]
+
+
+
+        if "this" in solver:
+            #compute average split number for SAT problems
+            split_number_list = []
+            for row in reader:
+                if row[1]=="SAT":
+                    split_number_list.append(row[3])
+            sat_average_split_number = sum([int(x) for x in split_number_list])/len(split_number_list)
+        else:
+            sat_average_split_number = 0
+
+        reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number]
+
+        # print(reconstructed_summary_title)
+        # print(reconstructed_summary_data)
 
 
 

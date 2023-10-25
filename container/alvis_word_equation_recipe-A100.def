@@ -1,0 +1,31 @@
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%setup
+    mkdir ${APPTAINER_ROOTFS}/requirement
+
+%files
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src .
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/requirements.txt requirement
+
+
+%post
+    # Update conda
+    conda update -n base -c defaults conda
+    
+    # Install Python (if not already included in your base image)
+    conda install -y python=3.8
+    
+    # Install PyTorch
+    conda install -y pytorch torchvision torchaudio -c pytorch
+    
+    # Any additional setup can go here
+    pip install -r requirement/requirements.txt    
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    
+%runscript
+    exec python "$@"
+

@@ -1,6 +1,6 @@
 import sys
-
-sys.path.append("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs")
+from src.solver.Constants import project_folder
+sys.path.append(project_folder)
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results

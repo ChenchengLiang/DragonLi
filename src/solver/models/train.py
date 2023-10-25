@@ -12,6 +12,7 @@ from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
 from collections import Counter
+from src.solver.Constants import project_folder
 
 from Dataset import WordEquationDataset
 
@@ -20,7 +21,7 @@ def main():
         print("-"*10, graph_type, "-"*10)
 
 
-        graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/"+graph_type
+        graph_folder=project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/SAT_from_solver/"+graph_type
         train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
         train_valid_dataset.statistics()
         graph, label = train_valid_dataset[0]
@@ -28,9 +29,9 @@ def main():
 
 
 
-        save_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+graph_type+".pth"
-        parameters ={"model_save_path":save_path,"num_epochs":300,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":20,"gnn_hidden_dim":64,
-                     "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":64,"ffnn_layer_num":2}
+        save_path = project_folder+"/models/model_"+graph_type+".pth"
+        parameters ={"model_save_path":save_path,"num_epochs":300,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":20,"gnn_hidden_dim":32,
+                     "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":32,"ffnn_layer_num":2}
 
 
         GCN_model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -41,7 +42,7 @@ def main():
                                  ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
 
 
-        trained_model=train(train_valid_dataset,GNN_model=GAT_model,parameters=parameters)
+        trained_model=train(train_valid_dataset,GNN_model=GCN_model,parameters=parameters)
 
 
 

@@ -2,10 +2,11 @@ import csv
 import os
 from src.solver.independent_utils import strip_file_name_suffix
 from src.process_benchmarks.utils import summary_one_track
+from src.solver.Constants import project_folder
 
 
 def main():
-    summary_folder = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary"
+    summary_folder = project_folder+"/src/process_benchmarks/summary"
 
     solver_param_list = [["this", ["fixed"]],
                          ["this", ["random"]],
@@ -17,21 +18,21 @@ def main():
                          # ["cvc5",[]],
                          ]
 
-    test_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
-    example_track = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples"
-    track_01 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track"
-    g_track_01_sat = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/SAT"
-    g_track_01_mixed = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated/mixed"
-    g_track_01_eval = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_eval_data"
-    track_02 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/02_track"
-    track_03 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/03_track"
-    track_04 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/04_track"
-    track_05 = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/05_track"
+    test_track = project_folder+"/Woorpje_benchmarks/test"
+    example_track = project_folder+"/Woorpje_benchmarks/examples"
+    track_01 = project_folder+"/Woorpje_benchmarks/01_track"
+    g_track_01_sat = project_folder+"/Woorpje_benchmarks/01_track_generated/SAT"
+    g_track_01_mixed = project_folder+"/Woorpje_benchmarks/01_track_generated/mixed"
+    g_track_01_eval = project_folder+"/Woorpje_benchmarks/01_track_generated_eval_data"
+    track_02 = project_folder+"/Woorpje_benchmarks/02_track"
+    track_03 = project_folder+"/Woorpje_benchmarks/03_track"
+    track_04 = project_folder+"/Woorpje_benchmarks/04_track"
+    track_05 = project_folder+"/Woorpje_benchmarks/05_track"
 
     benchmark_dict = {
         # "test_track":test_track,
-        "example_track": example_track,
-        # "track_01": track_01,
+        #"example_track": example_track,
+        "track_01": track_01,
         # "g_track_01_sat":g_track_01_sat,
         # "g_track_01_mixed": g_track_01_mixed,
         # "g_track_01_eval":g_track_01_eval,

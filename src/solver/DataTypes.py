@@ -1,6 +1,6 @@
 from typing import Union, List, Tuple, Deque
 from src.solver.Constants import UNKNOWN, SAT, UNSAT, satisfiability_to_int_label
-from src.solver.independent_utils import remove_duplicates,strip_file_name_suffix
+from src.solver.independent_utils import remove_duplicates,strip_file_name_suffix,replace_primed_vars
 from collections import deque
 from src.solver.visualize_util import draw_graph
 
@@ -311,6 +311,7 @@ class Equation:
         return Equation._construct_graph(left_terms, right_terms, include_equation_edge=True)
 
     def output_eq_file(self,file_name,satisfiability=UNKNOWN):
+        #replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
         # Format the content of the file
         content = f"Variables {{{''.join(self.variable_str)}}}\n"
         content += f"Terminals {{{''.join(self.terminal_str)}}}\n"

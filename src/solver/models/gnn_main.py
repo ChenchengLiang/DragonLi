@@ -10,6 +10,7 @@ from dgl.dataloading import GraphDataLoader
 import urllib.request
 import pandas as pd
 from Dataset import KarateClubDataset,SyntheticDataset,WordEquationDataset
+from src.solver.Constants import project_folder
 
 def main():
 
@@ -22,7 +23,7 @@ def main():
     # graph, label = dataset[0]
     # print(graph, label)
 
-    graph_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/test"
+    graph_folder=project_folder+"/Woorpje_benchmarks/test"
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     graph, label = train_valid_dataset[0]
     print("train_valid_dataset[0]",graph, label)

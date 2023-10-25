@@ -1,0 +1,27 @@
+# build image command: apptainer build image.sif my_recipe.def
+BootStrap: docker
+From: ubuntu:20.04
+
+%setup
+    mkdir ${APPTAINER_ROOTFS}/requirement
+
+%files
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src .
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/requirements.txt requirement
+
+%environment
+    export LISTEN_PORT=12345
+    export LC_ALL=C
+
+%post
+    #install python packages
+    apt-get -y update
+    apt-get -y install pip
+   # pip install -r requirement/requirements.txt
+    pip install torch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1
+    pip install -r requirement/requirements.txt
+
+
+
+%labels
+    Chencheng Liang

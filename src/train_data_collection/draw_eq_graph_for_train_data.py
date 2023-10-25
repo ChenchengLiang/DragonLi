@@ -5,26 +5,26 @@ import json
 import glob
 from src.solver.DataTypes import Equation
 from typing import List, Tuple, Dict, Union, Optional, Callable
+from src.solver.Constants import project_folder
 def main():
 
     #visualize examples
     # file_list = glob.glob(
-    #     "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_1/*.eq")
+    #     project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/graph_1/*.eq")
     # for file_path in file_list:
     #     output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_1, visualize=True)
 
     # file_list = glob.glob(
-    #     "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/examples/*.eq")
+    #     project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/examples/*.eq")
     # for file_path in file_list:
     #     output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=True)
     #
 
-    file_list = glob.glob("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_1/*.eq")
+    file_list = glob.glob(project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/SAT_from_solver/graph_1/*.eq")
     for file_path in file_list:
         output_one_eq_graph(file_path=file_path,graph_func=Equation.get_graph_1,visualize=False)
 
-    file_list = glob.glob(
-        "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data/graph_2/*.eq")
+    file_list = glob.glob(project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/SAT_from_solver/graph_2/*.eq")
     for file_path in file_list:
         output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=False)
 

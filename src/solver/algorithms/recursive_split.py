@@ -3,11 +3,11 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format
+    dump_to_json_with_format,identify_available_capitals
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model
@@ -16,7 +16,7 @@ from dgl.dataloading import GraphDataLoader
 import sys
 
 sys.path.append(
-    "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/models")
+    project_folder+"/src/solver/models")
 
 
 class ElimilateVariablesRecursive(AbstractAlgorithm):
@@ -38,7 +38,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if parameters["branch_method"] == "gnn":
             # Load the model
-            model_path = "/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/models/model_"+parameters["graph_type"]+".pth"
+            model_path = project_folder+"/models/model_"+parameters["graph_type"]+".pth"
             self.gnn_model = load_model(model_path)
             self.graph_func = parameters["graph_func"]
         if self.file_name!="":
@@ -52,8 +52,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         left_terms = first_equation.left_terms
         right_terms = first_equation.right_terms
         try:
-            satisfiability, variables = self.explore_paths(deque(left_terms), deque(right_terms),
-                                                           self.variables, {"node_number": None, "label": None})
+            satisfiability, variables = self.explore_paths(deque(left_terms.copy()), deque(right_terms.copy()),
+                                                           self.variables.copy(), {"node_number": None, "label": None})
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
@@ -82,6 +82,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
         ################################ Check terminate conditions ################################
+        ##todo add this condition M = fbburutbruG SAT
 
         ## both side only have terminals
         if len(variables) == 0:
@@ -138,8 +139,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                              current_node_number, node_info):
         left_poped_list_str, right_poped_list_str = self.pop_both_same_terms(left_terms_queue, right_terms_queue)
         updated_variables = self.update_variables(left_terms_queue, right_terms_queue)
-        branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue, right_terms_queue,
-                                                                     updated_variables,
+        branch_satisfiability, branch_variables = self.explore_paths(left_terms_queue.copy(), right_terms_queue.copy(),
+                                                                     updated_variables.copy(),
                                                                      {"node_number": current_node_number,
                                                                       "label": left_poped_list_str + "=" + right_poped_list_str})
         return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info)
@@ -199,7 +200,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # Perform depth-first search based on the sorted prediction list
         for i, data in enumerate(sorted_prediction_list):
             eq, v, edge_label = data[1]
-            satisfiability, variables = self.explore_paths(eq.left_terms, eq.right_terms, v,
+            satisfiability, variables = self.explore_paths(eq.left_terms.copy(), eq.right_terms.copy(), v.copy(),
                                                            {"node_number": current_node_number, "label": edge_label})
 
             # Handle branch outcome
@@ -220,11 +221,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                               branch_methods):
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(left_terms_queue, right_terms_queue, variables)
-            satisfiability, branch_variables = self.explore_paths(l, r, v,
+
+            satisfiability, branch_variables = self.explore_paths(l.copy(), r.copy(), v.copy(),
                                                                   {"node_number": current_node_number,
                                                                    "label": edge_label})
             # output train data
-            print(Equation(l,r,satisfiability).eq_str)
+            #print(Equation(l,r,satisfiability).eq_str,satisfiability, str(current_node_number)+"_"+str(i))
             middle_eq_file_name=self.file_name+"_"+str(current_node_number)+"_"+str(i)
             self._output_middle_eq_func(middle_eq_file_name,l,r,satisfiability)
 
@@ -280,7 +282,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = local_right_terms_queue.popleft()
 
         # create fresh variable V1'
-        fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'
+        fresh_variable_term = self._create_fresh_variables(variables.copy())
         # replace V1 with V2 V1' to obtain [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]],
                             terms_queue=local_left_terms_queue)
@@ -375,7 +377,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = local_right_terms_queue.popleft()
 
         # create fresh variable V1'
-        fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'
+        fresh_variable_term = self._create_fresh_variables(variables.copy())
 
         # replace V1 with aV1' to obtain [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]],
@@ -390,6 +392,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         updated_variables = self.update_variables(local_left_terms_queue, local_right_terms_queue)
 
         return local_left_terms_queue, local_right_terms_queue, updated_variables, left_term.get_value_str + "=" + right_term.get_value_str + fresh_variable_term.get_value_str
+
+
+    def _create_fresh_variables(self, variables: List[Variable]) -> Term:
+        # fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'
+        available_caps = identify_available_capitals("".join([v.value for v in variables]))
+        fresh_variable_term = Term(Variable(available_caps.pop()))  # a capital rather than V1
+        return fresh_variable_term
 
     def replace_a_term(self, old_term: Term, new_term: Term, terms_queue: Deque[Term]):
         for i, t in enumerate(terms_queue):

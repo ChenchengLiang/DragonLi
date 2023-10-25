@@ -1,0 +1,8 @@
+dgl~=1.1.2
+torch~=2.1.0
+pandas~=2.0.3
+networkx~=3.1
+matplotlib~=3.7.3
+plotly~=5.17.0
+pyvis~=0.3.2
+graphviz~=0.20.1

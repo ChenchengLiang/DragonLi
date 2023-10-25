@@ -1,5 +1,6 @@
 from typing import Iterable, List
 import json
+import re
 
 def remove_duplicates(lst:Iterable)->List:
     seen = set()
@@ -32,3 +33,29 @@ def dump_to_json_with_format(graph_dict,file_path):
 
     with open(file_path, 'w') as f:
         f.write(formatted_json)
+
+
+def replace_primed_vars(v, e):
+    # Find all unique capital letters followed by primes in both v and e
+    patterns = set(re.findall(r"[A-Z]'+", v + e))
+
+    # Identify available capital letters for replacement
+    available_caps = identify_available_capitals(v + e)
+
+    # Create a mapping from the old pattern to a new capital letter
+    mapping = {pattern: available_caps.pop() for pattern in patterns}
+
+    # Replace occurrences in v and e
+    for old, new in mapping.items():
+        #print("replace",old,"by", new)
+        v = v.replace(old, new)
+        e = e.replace(old, new)
+
+    return v, e
+
+def identify_available_capitals(s):
+    # Identify available capital letters for replacement
+    all_used_vars = set(re.findall(r"[A-Z]", s))
+    all_caps = set(chr(i) for i in range(65, 91))
+    available_caps = list(all_caps - all_used_vars)
+    return available_caps
