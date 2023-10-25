@@ -1,49 +1,72 @@
 
 import os
-
+import sys
+sys.path.append("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs")
 os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import dgl.data
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Models import GCNWithNFFNN,GATWithNFFNN
+from Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
 from collections import Counter
 from src.solver.Constants import project_folder
-
 from Dataset import WordEquationDataset
 
 def main():
+    configurations=[]
     for graph_type in ["graph_1","graph_2"]:
-        print("-"*10, graph_type, "-"*10)
-
-
-        graph_folder=project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/SAT_from_solver/"+graph_type
-        train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
-        train_valid_dataset.statistics()
-        graph, label = train_valid_dataset[0]
-        print("train_valid_dataset[0]",graph, label)
+        for model_type in ["GCN","GAT","GIN"]:
+            configurations.append({
+                "graph_type": graph_type, "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
+                "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
+                "gnn_layer_num": 2, "num_heads": 2, "ffnn_hidden_dim": 32, "ffnn_layer_num": 2
+            })
 
 
 
-        save_path = project_folder+"/models/model_"+graph_type+".pth"
-        parameters ={"model_save_path":save_path,"num_epochs":300,"learning_rate":0.001,"save_criterion":"valid_accuracy","batch_size":20,"gnn_hidden_dim":32,
-                     "gnn_layer_num":2,"num_heads":2,"ffnn_hidden_dim":32,"ffnn_layer_num":2}
+    for config in configurations:
+        train_one_model(config)
 
 
-        GCN_model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                                 gnn_layer_num=parameters["gnn_layer_num"], ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                                 ffnn_layer_num=parameters["ffnn_layer_num"])
-        GAT_model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                                 gnn_layer_num=parameters["gnn_layer_num"], num_heads=parameters["num_heads"],
-                                 ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"])
+def train_one_model(parameters):
+    print("-" * 10, parameters["graph_type"], "-" * 10)
 
+    graph_folder = os.path.join(project_folder, "Woorpje_benchmarks", "example_train", parameters["graph_type"])
+    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
+    train_valid_dataset.statistics()
 
-        trained_model=train(train_valid_dataset,GNN_model=GCN_model,parameters=parameters)
+    model = None
+    if parameters["model_type"] == "GCN":
+        model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+                             gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                             gnn_layer_num=parameters["gnn_layer_num"],
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                             ffnn_layer_num=parameters["ffnn_layer_num"])
+    elif parameters["model_type"] == "GAT":
+        model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+                             gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                             gnn_layer_num=parameters["gnn_layer_num"],
+                             num_heads=parameters["num_heads"],
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                             ffnn_layer_num=parameters["ffnn_layer_num"])
+    elif parameters["model_type"] == "GIN":
+        model = GINWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+                                gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                                gnn_layer_num=parameters["gnn_layer_num"],
+                             ffnn_layer_num=parameters["ffnn_layer_num"],
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"])
 
+    else:
+        raise ValueError("Unsupported model type")
+
+    save_path = os.path.join(project_folder, "models", f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
+    parameters["model_save_path"] = save_path
+
+    trained_model = train(train_valid_dataset, GNN_model=model, parameters=parameters)
 
 
 def train(dataset,GNN_model,parameters:Dict):
@@ -117,7 +140,7 @@ def train(dataset,GNN_model,parameters:Dict):
             torch.save(best_model, parameters["model_save_path"])
 
         # Print the losses once every ten epochs
-        if epoch % 10 == 0:
+        if epoch % 20 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
 
