@@ -165,8 +165,12 @@ class Equation:
         else:
             return terminals + [EMPTY_TERMINAL]
     @property
+    def termimal_list_without_empty_terminal(self)->List[Terminal]:
+        return remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Terminal)])
+
+    @property
     def terminal_str(self) -> str:
-        return "".join([item.value for item in self.terminal_list if item!= EMPTY_TERMINAL])
+        return "".join(self.termimal_list_without_empty_terminal)
     @property
     def terminal_numbers(self) -> int:
         return len(self.terminal_list)
@@ -269,15 +273,12 @@ class Equation:
         draw_graph(nodes, edges, file_path)
 
     @staticmethod
-    def _construct_graph(left_terms: List[Term], right_terms: List[Term], include_equation_edge: bool = False):
+    def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type:str):
         global_node_counter = 0
         nodes = []
         edges = []
-
-        # Add "=" node
-        equation_node = Node(id=global_node_counter, type=Operator, content="=", label=None)
-        nodes.append(equation_node)
-        global_node_counter += 1
+        variable_nodes=[]
+        terminal_nodes=[]
 
         def construct_tree(term_list: Deque[Term], previous_node: Node, global_node_counter):
             if len(term_list) == 0:
@@ -289,10 +290,68 @@ class Equation:
                 global_node_counter += 1
                 nodes.append(current_node)
                 edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
-                if include_equation_edge:
+                if graph_type=="graph_2": #add edge back to equation node
                     edges.append(
                         Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
+                if graph_type=="graph_3": # add edge to corresponding variable node
+                    if current_node.type==Variable:
+                        for v_node in variable_nodes:
+                            if v_node.content==current_node.content:
+                                edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+                                break
+                if graph_type=="graph_4":
+                    if current_node.type==Terminal:
+                        for t_node in terminal_nodes:
+                            if t_node.content==current_node.content:
+                                edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+                                break
+                if graph_type == "graph_5":
+                    if current_node.type==Variable:
+                        for v_node in variable_nodes:
+                            if v_node.content==current_node.content:
+                                edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+                                break
+                    if current_node.type==Terminal:
+                        for t_node in terminal_nodes:
+                            if t_node.content==current_node.content:
+                                edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+                                break
+
+
+
                 return construct_tree(term_list, current_node, global_node_counter)
+
+        def add_a_node(global_node_counter,type,content,label):
+            current_node= Node(id=global_node_counter, type=type, content=content, label=label)
+            nodes.append(current_node)
+            global_node_counter += 1
+            return current_node,global_node_counter
+
+        def add_variable_nodes(global_node_counter):
+            for v in Equation(left_terms.copy(),right_terms.copy()).variable_list:
+                v_node,global_node_counter=add_a_node(global_node_counter, type=Variable, content=v.value, label=None)
+                variable_nodes.append(v_node)
+            return global_node_counter
+        def add_terminal_nodes(global_node_counter):
+            for t in Equation(left_terms.copy(), right_terms.copy()).termimal_list_without_empty_terminal:
+                t_node, global_node_counter = add_a_node(global_node_counter, type=Terminal, content=t.value, label=None)
+                terminal_nodes.append(t_node)
+            return global_node_counter
+
+
+
+        # Add "=" node
+        equation_node,global_node_counter = add_a_node(global_node_counter, type=Operator, content="=", label=None)
+
+        if graph_type=="graph_3": # Add variable nodes
+            global_node_counter=add_variable_nodes(global_node_counter)
+        if graph_type == "graph_4": # Add terminal nodes
+            global_node_counter=add_terminal_nodes(global_node_counter)
+        if graph_type == "graph_5": # Add add variable and terminal nodes
+            global_node_counter=add_variable_nodes(global_node_counter)
+            global_node_counter=add_terminal_nodes(global_node_counter)
+
+
 
         local_left_terms = deque(left_terms.copy())
         local_right_terms = deque(right_terms.copy())
@@ -304,11 +363,22 @@ class Equation:
 
     @staticmethod
     def get_graph_1(left_terms: List[Term], right_terms: List[Term]):
-        return Equation._construct_graph(left_terms, right_terms, include_equation_edge=False)
+        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_1")
 
     @staticmethod
-    def get_graph_2(left_terms: List[Term], right_terms: List[Term]):
-        return Equation._construct_graph(left_terms, right_terms, include_equation_edge=True)
+    def get_graph_2(left_terms: List[Term], right_terms: List[Term]): #add edge back to equation node
+        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_2")
+
+    @staticmethod
+    def get_graph_3(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding variable nodes
+        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_3")
+    @staticmethod
+    def get_graph_4(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding terminal nodes
+        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_4")
+
+    @staticmethod
+    def get_graph_5(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
+        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_5")
 
     def output_eq_file(self,file_name,satisfiability=UNKNOWN):
         #replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)

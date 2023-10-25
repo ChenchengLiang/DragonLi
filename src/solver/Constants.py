@@ -1,7 +1,7 @@
 from typing import Dict, List, Set
 project_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs"
 max_variable_length: int = 8
-algorithm_timeout: int = 60
+algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
 BRANCH_CLOSED: str = "BRANCH_CLOSED"
 MAX_PATH: int = 10000000
