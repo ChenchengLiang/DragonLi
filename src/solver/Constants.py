@@ -1,5 +1,9 @@
 from typing import Dict, List, Set
-project_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs"
+import configparser
+config = configparser.ConfigParser()
+config.read('config.ini')
+project_folder = config['Path']['local']
+bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
 algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout

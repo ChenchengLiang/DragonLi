@@ -1,3 +1,4 @@
+# build image command: apptainer build image.sif my_recipe.def
 Bootstrap: docker
 From: continuumio/miniconda3
 
@@ -21,6 +22,9 @@ From: continuumio/miniconda3
     
     # Any additional setup can go here
     pip install -r requirement/requirements.txt    
+    
+    pip install mlflow torch
+
 
 %environment
     export LC_ALL=C.UTF-8

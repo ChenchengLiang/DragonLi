@@ -1,7 +1,13 @@
-
 import os
 import sys
-sys.path.append("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs")
+import configparser
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path','local')
+sys.path.append(path)
+
 os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import dgl.data
@@ -15,11 +21,12 @@ from typing import Dict
 from collections import Counter
 from src.solver.Constants import project_folder
 from Dataset import WordEquationDataset
+import mlflow
 
 def main():
     configurations=[]
-    for graph_type in ["graph_1","graph_2"]:
-        for model_type in ["GCN","GAT","GIN"]:
+    for graph_type in ["graph_1"]:
+        for model_type in ["GCN"]:#["GCN","GAT","GIN"]
             configurations.append({
                 "graph_type": graph_type, "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
                 "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
@@ -29,13 +36,18 @@ def main():
 
 
     for config in configurations:
-        train_one_model(config)
+        mlflow.set_tracking_uri("http://127.0.0.1:5000")
+        with mlflow.start_run():
+            mlflow.log_params(config)
+            train_one_model(config)
 
 
 def train_one_model(parameters):
-    print("-" * 10, parameters["graph_type"], "-" * 10)
 
-    graph_folder = os.path.join(project_folder, "Woorpje_benchmarks", "example_train", parameters["graph_type"])
+    print("-" * 10, parameters["graph_type"], "-" * 10)
+    benchmark_folder = config['Path']['woorpje_benchmarks']
+
+    graph_folder = os.path.join(benchmark_folder, "example_train", parameters["graph_type"])
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
 
@@ -66,7 +78,12 @@ def train_one_model(parameters):
     save_path = os.path.join(project_folder, "models", f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     parameters["model_save_path"] = save_path
 
-    trained_model = train(train_valid_dataset, GNN_model=model, parameters=parameters)
+    best_model,metrics = train(train_valid_dataset, GNN_model=model, parameters=parameters)
+
+    mlflow.log_metrics(metrics)
+    mlflow.pytorch.log_model(best_model, "model")
+
+
 
 
 def train(dataset,GNN_model,parameters:Dict):
@@ -143,8 +160,12 @@ def train(dataset,GNN_model,parameters:Dict):
         if epoch % 20 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
+        metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss, "valid_accuracy": valid_accuracy}
+        mlflow.log_metrics(metrics, step=epoch)
 
-    return best_model
+    # Return the trained model and the best metrics
+    best_metrics = {"best_valid_loss": best_valid_loss, "best_valid_accuracy": best_valid_accuracy}
+    return best_model, best_metrics
 
 
 def create_data_loaders(dataset, parameters):

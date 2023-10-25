@@ -1,4 +1,4 @@
-from src.solver.Constants import int_label_to_satisfiability,project_folder
+from src.solver.Constants import int_label_to_satisfiability,project_folder,bench_folder
 from Dataset import WordEquationDataset
 from dgl.dataloading import GraphDataLoader
 from src.solver.models.utils import load_model
@@ -10,7 +10,7 @@ def main():
 
 
         # Load the evaluation dataset
-        graph_folder = project_folder+"/Woorpje_benchmarks/example_predict/"+graph_type
+        graph_folder = bench_folder+"/example_predict/"+graph_type
         evaluation_dataset = WordEquationDataset(graph_folder=graph_folder,data_fold="eval")
         evaluation_dataset.statistics()
         graph, label = evaluation_dataset[0]

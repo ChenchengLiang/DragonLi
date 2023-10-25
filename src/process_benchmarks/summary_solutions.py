@@ -2,7 +2,7 @@ import csv
 import os
 from src.solver.independent_utils import strip_file_name_suffix
 from src.process_benchmarks.utils import summary_one_track
-from src.solver.Constants import project_folder
+from src.solver.Constants import project_folder,bench_folder
 
 
 def main():
@@ -18,16 +18,16 @@ def main():
                          # ["cvc5",[]],
                          ]
 
-    test_track = project_folder+"/Woorpje_benchmarks/test"
-    example_track = project_folder+"/Woorpje_benchmarks/examples"
-    track_01 = project_folder+"/Woorpje_benchmarks/01_track"
-    g_track_01_sat = project_folder+"/Woorpje_benchmarks/01_track_generated/SAT"
-    g_track_01_mixed = project_folder+"/Woorpje_benchmarks/01_track_generated/mixed"
-    g_track_01_eval = project_folder+"/Woorpje_benchmarks/01_track_generated_eval_data"
-    track_02 = project_folder+"/Woorpje_benchmarks/02_track"
-    track_03 = project_folder+"/Woorpje_benchmarks/03_track"
-    track_04 = project_folder+"/Woorpje_benchmarks/04_track"
-    track_05 = project_folder+"/Woorpje_benchmarks/05_track"
+    test_track = bench_folder +"/test"
+    example_track = bench_folder +"/examples"
+    track_01 = bench_folder +"/01_track"
+    g_track_01_sat = bench_folder +"/01_track_generated/SAT"
+    g_track_01_mixed = bench_folder +"/01_track_generated/mixed"
+    g_track_01_eval = bench_folder +"/01_track_generated_eval_data"
+    track_02 = bench_folder +"/02_track"
+    track_03 = bench_folder +"/03_track"
+    track_04 = bench_folder +"/04_track"
+    track_05 = bench_folder +"/05_track"
 
     benchmark_dict = {
         # "test_track":test_track,

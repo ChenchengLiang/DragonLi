@@ -1,15 +1,15 @@
 import random
 import string
 import os
-from src.solver.Constants import project_folder
+from src.solver.Constants import project_folder,bench_folder
 
 def main():
-    track_1_mixed_folder = project_folder+"/Woorpje_benchmarks/01_track_generated_eval_data"
+    track_1_mixed_folder = bench_folder+"/01_track_generated_eval_data"
     start_idx = 1001
     end_idx = 1200
     save_equations(start_idx, end_idx, track_1_mixed_folder, generate_one_track_1_unsat)
 
-    # track_2_folder = project_folder+"/Woorpje_benchmarks/02_track_generated"
+    # track_2_folder = bench_folder+"/02_track_generated"
     # generate_track_2(folder=track_2_folder)
 
 

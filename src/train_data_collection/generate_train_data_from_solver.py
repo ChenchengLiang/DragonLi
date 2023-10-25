@@ -8,10 +8,10 @@ from src.solver.utils import print_results
 from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
 from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
-from src.solver.Constants import project_folder
+from src.solver.Constants import project_folder,bench_folder
 def main():
 
-    for file_path in glob.glob(project_folder+"/Woorpje_benchmarks/01_track_generated_train_data/SAT_from_solver/graph_1/*.eq"):
+    for file_path in glob.glob(bench_folder+"/01_track_generated_train_data/SAT_from_solver/graph_1/*.eq"):
 
         parser_type = EqParser()
         parser = Parser(parser_type)

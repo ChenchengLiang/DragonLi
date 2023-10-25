@@ -1,5 +1,9 @@
 .idea/*
 Woorpje_benchmarks/*
+mlruns/*
+container/mlruns/*
+models/mlruns/*
+src/solver/models/mlruns/*
 other_solvers/*
 src/process_benchmarks/temp_shell/*
 src/process_benchmarks/summary/*

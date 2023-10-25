@@ -1,6 +1,13 @@
+import os
 import sys
-from src.solver.Constants import project_folder
-sys.path.append(project_folder)
+import configparser
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path','local')
+sys.path.append(path)
+
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results
