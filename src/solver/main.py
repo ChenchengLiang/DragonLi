@@ -49,12 +49,12 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_5"
+    graph_type="graph_1"
     graph_func_map = {None: Equation.get_graph_1, "graph_1": Equation.get_graph_1,
                       "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
                       "graph_5":Equation.get_graph_5}
 
-    algorithm_parameters = {"branch_method":"fixed","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
+    algorithm_parameters = {"branch_method":"gnn","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

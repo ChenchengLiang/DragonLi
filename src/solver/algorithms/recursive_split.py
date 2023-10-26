@@ -10,7 +10,7 @@ from src.solver.independent_utils import remove_duplicates, flatten_list, strip_
     dump_to_json_with_format,identify_available_capitals
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
-from src.solver.models.utils import load_model
+from src.solver.models.utils import load_model, load_model_from_mlflow
 from src.solver.models.Dataset import WordEquationDataset
 from dgl.dataloading import GraphDataLoader
 import sys
@@ -38,8 +38,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if parameters["branch_method"] == "gnn":
             # Load the model
-            model_path = project_folder+"/models/model_"+parameters["graph_type"]+".pth"
-            self.gnn_model = load_model(model_path)
+            # model_path = project_folder+"/models/model_"+parameters["graph_type"]+".pth"
+            # self.gnn_model = load_model(model_path)
+            #load the model from mlflow
+            experiment_id = "856005721390468951"
+            run_id = "feb2e17e68bb4310bb3c539c672fd166"
+            self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
         if self.file_name!="":
             self._output_middle_eq_func = self._output_train_data

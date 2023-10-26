@@ -15,7 +15,7 @@ import shutil
 def main():
     configurations=[]
     for benchmark in ["example_train"]:
-        for graph_type in ["graph_1","graph_2"]:
+        for graph_type in ["graph_1"]:
             for model_type in ["GCN", "GAT", "GIN"]:  # ["GCN","GAT","GIN"]
                 configurations.append({
                     "benchmark":benchmark,"graph_type": graph_type, "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
