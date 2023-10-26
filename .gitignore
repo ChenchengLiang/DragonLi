@@ -5,6 +5,7 @@ other_solvers/*
 models/*
 src/process_benchmarks/temp_shell/*
 src/process_benchmarks/summary/*
+src/process_benchmarks/configurations/*
 src/solver/block_code_test.py
 # Byte-compiled / optimized / DLL files
 __pycache__/

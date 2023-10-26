@@ -1,6 +1,8 @@
 from typing import Iterable, List
 import json
 import re
+import os
+import shutil
 
 def remove_duplicates(lst:Iterable)->List:
     seen = set()
@@ -59,3 +61,15 @@ def identify_available_capitals(s):
     all_caps = set(chr(i) for i in range(65, 91))
     available_caps = list(all_caps - all_used_vars)
     return available_caps
+
+def write_configurations_to_json_file(configuration_folder,configurations):
+    if os.path.exists(configuration_folder) == False:
+        os.mkdir(configuration_folder)
+    else:
+        shutil.rmtree(configuration_folder)
+        os.mkdir(configuration_folder)
+
+    for i, config in enumerate(configurations):
+        file_name = configuration_folder + "/config_" + str(i) + ".json"
+        with open(file_name, 'w') as f:
+            json.dump(config, f, indent=4)
