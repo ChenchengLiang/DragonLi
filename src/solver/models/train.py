@@ -22,32 +22,50 @@ from collections import Counter
 from src.solver.Constants import project_folder
 from Dataset import WordEquationDataset
 import mlflow
-
+import argparse
+import json
+import datetime
 def main():
-    configurations=[]
-    for graph_type in ["graph_1"]:
-        for model_type in ["GCN"]:#["GCN","GAT","GIN"]
-            configurations.append({
-                "graph_type": graph_type, "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
-                "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
-                "gnn_layer_num": 2, "num_heads": 2, "ffnn_hidden_dim": 32, "ffnn_layer_num": 2
-            })
+    # parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+
+    arg_parser.add_argument('--configuration_file', type=str, default=None,
+                            help='path to configuration json file ')
+
+    args = arg_parser.parse_args()
+
+    # Accessing the arguments
+    configuration_file = args.configuration_file
 
 
 
-    for config in configurations:
-        mlflow.set_tracking_uri("http://127.0.0.1:5000")
-        with mlflow.start_run():
-            mlflow.log_params(config)
-            train_one_model(config)
+    if configuration_file is not None:
+        #read json file
+        with open(configuration_file) as f:
+            config = json.load(f)
+    else:
+        config = {
+            "benchmark":"example_train","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 50, "learning_rate": 0.001,
+            "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
+            "gnn_layer_num": 2, "num_heads": 2, "ffnn_hidden_dim": 32, "ffnn_layer_num": 2
+        }
+
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    mlflow.set_experiment(today+"-"+config["benchmark"])
+    mlflow.set_tracking_uri("http://127.0.0.1:5000")
+    with mlflow.start_run():
+        mlflow.log_params(config)
+        train_one_model(config)
+
 
 
 def train_one_model(parameters):
 
-    print("-" * 10, parameters["graph_type"], "-" * 10)
+    print("-" * 10, "train", "-" * 10)
+    print("parameters:", parameters)
     benchmark_folder = config['Path']['woorpje_benchmarks']
 
-    graph_folder = os.path.join(benchmark_folder, "example_train", parameters["graph_type"])
+    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
 
