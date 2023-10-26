@@ -45,9 +45,9 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark":"example_train","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 50, "learning_rate": 0.001,
+            "benchmark":"example_train","graph_type": "graph_1", "model_type": "GAT", "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
-            "gnn_layer_num": 2, "num_heads": 2, "ffnn_hidden_dim": 32, "ffnn_layer_num": 2
+            "gnn_layer_num": 4, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
 
     today = datetime.date.today().strftime("%Y-%m-%d")
@@ -74,22 +74,22 @@ def train_one_model(parameters):
     if parameters["model_type"] == "GCN":
         model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                             gnn_layer_num=parameters["gnn_layer_num"],
+                             gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                             ffnn_layer_num=parameters["ffnn_layer_num"])
+                             ffnn_layer_num=parameters["ffnn_layer_num"],ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
     elif parameters["model_type"] == "GAT":
         model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                             gnn_layer_num=parameters["gnn_layer_num"],
+                             gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              num_heads=parameters["num_heads"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                             ffnn_layer_num=parameters["ffnn_layer_num"])
+                             ffnn_layer_num=parameters["ffnn_layer_num"],ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
     elif parameters["model_type"] == "GIN":
         model = GINWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
                                 gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                                gnn_layer_num=parameters["gnn_layer_num"],
+                                gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
-                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"])
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"],ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
 
     else:
         raise ValueError("Unsupported model type")
