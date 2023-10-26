@@ -21,8 +21,8 @@ def main():
     solver_param_list = [
         ["this", ["fixed"]],
         ["this", ["random"]],
-        ["this",["gnn","--graph_type graph_1"]],
-        ["this",["gnn","--graph_type graph_2"]],
+        ["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GAT.pth"]],
+        ["this",["gnn","--graph_type graph_2","--gnn_model_path "+project_folder+"/models/model_graph_2_GAT.pth"]],
         # ["woorpje",[]],
         # ["z3",[]],
         # ["ostrich",[]],
@@ -46,9 +46,14 @@ def main():
     for solver_param in solver_param_list:
         solver = solver_param[0]
         parameters_list = solver_param[1]
-        print("solver:", solver, "parameters_list:", parameters_list)
+
         for benchmark_name, benchmark_folder in benchmark_dict.items():
-            configuration_list.append({"solver":solver,"parameters_list":parameters_list,"benchmark_name":benchmark_name,"benchmark_folder":benchmark_folder})
+            if len(parameters_list)>1:
+                graph_type=parameters_list[1].replace("--graph_type ","")
+            else:
+                graph_type="graph_1"
+            configuration_list.append({"solver":solver,"parameters_list":parameters_list,"benchmark_name":benchmark_name,
+                                       "benchmark_folder":benchmark_folder})
 
     # Writing the dictionary to a JSON file
     configuration_folder = project_folder + "/src/process_benchmarks/configurations"

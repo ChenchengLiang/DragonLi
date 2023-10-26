@@ -8,7 +8,7 @@ config.read("config.ini")
 path = config.get('Path','local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder
+from src.solver.Constants import bench_folder,project_folder
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results
@@ -54,7 +54,8 @@ def main():
                       "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
                       "graph_5":Equation.get_graph_5}
 
-    algorithm_parameters = {"branch_method":"gnn","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
+    algorithm_parameters = {"branch_method":"gnn","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GAT.pth"} # branch_method [gnn.random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

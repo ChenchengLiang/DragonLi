@@ -38,12 +38,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if parameters["branch_method"] == "gnn":
             # Load the model
-            # model_path = project_folder+"/models/model_"+parameters["graph_type"]+".pth"
-            # self.gnn_model = load_model(model_path)
+            self.gnn_model = load_model(parameters["gnn_model_path"])
             #load the model from mlflow
-            experiment_id = "856005721390468951"
-            run_id = "feb2e17e68bb4310bb3c539c672fd166"
-            self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
+            # experiment_id = "856005721390468951"
+            # run_id = "feb2e17e68bb4310bb3c539c672fd166"
+            # self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
         if self.file_name!="":
             self._output_middle_eq_func = self._output_train_data

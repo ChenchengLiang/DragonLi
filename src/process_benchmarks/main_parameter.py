@@ -24,8 +24,10 @@ def main(args):
     arg_parser.add_argument('file_path', type=str, help='Path to the file')
     arg_parser.add_argument('branch_method', type=str, choices=['gnn', 'random', 'fixed'],
                         help='Branching method to be used')
-    arg_parser.add_argument('--graph_type', type=str, choices=['graph_1', 'graph_2'], default=None,
+    arg_parser.add_argument('--graph_type', type=str, default=None,
                         help='Type of graph (optional)')
+    arg_parser.add_argument('--gnn_model_path', type=str,  default=None,
+                            help='path to .pth file')
 
     args = arg_parser.parse_args()
 
@@ -33,6 +35,7 @@ def main(args):
     file_path = args.file_path
     branch_method = args.branch_method
     graph_type = args.graph_type
+    gnn_model_path = args.gnn_model_path
 
     print(file_path, branch_method, graph_type)
 
@@ -47,7 +50,8 @@ def main(args):
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn,random,fixed]
+    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,
+                            "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path} # branch_method [gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

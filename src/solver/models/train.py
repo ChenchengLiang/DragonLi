@@ -69,6 +69,7 @@ def train_one_model(parameters):
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()
 
+
     model = None
     if parameters["model_type"] == "GCN":
         model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
@@ -178,7 +179,7 @@ def train(dataset,GNN_model,parameters:Dict):
         if epoch % 20 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
-        metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss, "valid_accuracy": valid_accuracy}
+        metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss, "valid_accuracy": valid_accuracy,"epoch":epoch}
         mlflow.log_metrics(metrics, step=epoch)
 
     # Return the trained model and the best metrics
@@ -218,8 +219,12 @@ def create_data_loaders(dataset, parameters):
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
 
-    print("Training label distribution:", train_label_distribution, "Base accuracy", max(train_label_distribution.values()) / sum(train_label_distribution.values()))
-    print("Validation label distribution:", valid_label_distribution, "Base accuracy", max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
+    train_distribution_str="Training label distribution: "+ str(train_label_distribution)+ "\n Base accuracy: "+ str(max(train_label_distribution.values()) / sum(train_label_distribution.values()))
+    valid_distribution_str="Validation label distribution: "+ str(valid_label_distribution)+ "\n Base accuracy: "+str( max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
+    print(train_distribution_str)
+    print(valid_distribution_str)
+
+    mlflow.log_text(train_distribution_str+"\n"+valid_distribution_str,artifact_file="data_distribution.txt")
 
     return train_dataloader, valid_dataloader
 

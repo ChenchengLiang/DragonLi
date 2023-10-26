@@ -51,8 +51,12 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
                       solver: str, parameters_list: List[str]):
     summary_folder = project_folder + "/src/process_benchmarks/summary"
     # Name of the CSV file to write to
-    parameters_list = [x.replace("--graph_type ", "") for x in parameters_list]
-    parameters_list_str = "_".join(parameters_list)
+    if len(parameters_list)>1:
+        parameters_str_list=[parameters_list[0]] + [parameters_list[1].replace("--graph_type ", "")] + [parameters_list[2][parameters_list[2].rfind("_")+1:parameters_list[2].rfind(".")]]
+    else:
+        parameters_str_list=[parameters_list[0]]
+    parameters_list_str = "_".join(parameters_str_list)
+
     if parameters_list_str == "":
         summary_name = solver + "_" + benchmark_name + + "_summary.csv"
     else:
@@ -280,7 +284,7 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
         first_summary_solver_row.extend([solver, solver])
         column_index = 3
 
-    summary_path = os.path.join(summary_folder, summary_file)
+    summary_path = os.path.join(summary_folder+"/to_summary/", summary_file)
     with open(summary_path, 'r') as file:
         reader = csv.reader(file)
         reader = list(reader)

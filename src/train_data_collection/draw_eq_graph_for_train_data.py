@@ -1,3 +1,13 @@
+import os
+import sys
+import configparser
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path','local')
+sys.path.append(path)
+
 import os.path
 from src.solver.independent_utils import strip_file_name_suffix,dump_to_json_with_format
 from src.solver.Parser import Parser,EqParser
@@ -20,13 +30,16 @@ def main():
     #     output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=True)
     #
 
-    file_list = glob.glob(bench_folder +"/01_track_generated_train_data/SAT_from_solver/graph_1/*.eq")
-    for file_path in file_list:
-        output_one_eq_graph(file_path=file_path,graph_func=Equation.get_graph_1,visualize=False)
+    #/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data_sat_from_solver
+    graph_func_map = {None: Equation.get_graph_1, "graph_1": Equation.get_graph_1,
+                      "graph_2": Equation.get_graph_2, "graph_3": Equation.get_graph_3, "graph_4": Equation.get_graph_4,
+                      "graph_5": Equation.get_graph_5}
+    for graph_type in ["graph_3","graph_4","graph_5"]:
 
-    file_list = glob.glob(bench_folder +"/01_track_generated_train_data/SAT_from_solver/graph_2/*.eq")
-    for file_path in file_list:
-        output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=False)
+        file_list = glob.glob(bench_folder +"/example_train/"+graph_type+"/*.eq")
+        for file_path in file_list:
+            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
+
 
 
 

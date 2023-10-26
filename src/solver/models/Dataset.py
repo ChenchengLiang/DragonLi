@@ -75,6 +75,7 @@ class WordEquationDataset(DGLDataset):
                 unknown_label_number+=1
 
         print("sat_label_number",sat_label_number,"unsat_label_number",unsat_label_number,"unknown_label_number",unknown_label_number)
+        #return "sat_label_number:"+str(sat_label_number)+"unsat_label_number:"+str(unsat_label_number)+"unknown_label_number:",str(unknown_label_number)
 
 
     def get_graph_list_from_folder(self):
