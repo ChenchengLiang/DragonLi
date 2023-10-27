@@ -54,7 +54,7 @@ def main():
                       "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
                       "graph_5":Equation.get_graph_5}
 
-    algorithm_parameters = {"branch_method":"gnn","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"fixed","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GAT.pth"} # branch_method [gnn.random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)

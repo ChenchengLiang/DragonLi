@@ -72,6 +72,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable],
                       previous_dict) -> Tuple[str, List[Variable]]:
+        current_eq=Equation(left_terms_queue,right_terms_queue)
 
         ################################ Record nodes and edges ################################
 
@@ -85,18 +86,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
         ################################ Check terminate conditions ################################
-        ##todo add this condition M = fbburutbruG SAT
 
-        ## both side only have terminals
-        if len(variables) == 0:
-            satisfiability = SAT if self.check_equation(left_terms_queue, right_terms_queue) == True else UNSAT
-            return self.record_and_close_branch(satisfiability, variables, node_info)
-
-        ## both side only have variables
-        left_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in left_terms_queue)
-        right_contains_no_terminal = not any(isinstance(term.value, Terminal) for term in right_terms_queue)
-        if left_contains_no_terminal and right_contains_no_terminal:
-            return self.record_and_close_branch(SAT, variables, node_info)
 
         ## both side contains variables and terminals
         ###both side empty
@@ -104,10 +94,64 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             return self.record_and_close_branch(SAT, variables, node_info)
         ### left side empty
         if len(left_terms_queue) == 0 and len(right_terms_queue) != 0:
-            return self.record_and_close_branch(UNSAT, variables, node_info)  # since one side has terminals
+            if len(current_eq.termimal_list_without_empty_terminal) !=0 and current_eq.variable_number !=0: #terminals+variables
+                return self.record_and_close_branch(UNSAT, variables, node_info)
+            elif len(current_eq.termimal_list_without_empty_terminal) ==0 and current_eq.variable_number !=0: #variables
+                return self.record_and_close_branch(SAT, variables, node_info)
+            else: #terminals
+                return self.record_and_close_branch(UNSAT, variables, node_info)
         ### right side empty
         if len(left_terms_queue) != 0 and len(right_terms_queue) == 0:
-            return self.record_and_close_branch(UNSAT, variables, node_info)  # since one side has terminals
+            if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
+                return self.record_and_close_branch(UNSAT, variables, node_info)
+            elif len(current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
+                return self.record_and_close_branch(SAT, variables, node_info)
+            else:  # terminals
+                return self.record_and_close_branch(UNSAT, variables, node_info)
+
+        ## both side only have terminals
+        if current_eq.variable_number == 0:
+            satisfiability = SAT if self.check_equation(left_terms_queue, right_terms_queue) == True else UNSAT
+            return self.record_and_close_branch(satisfiability, variables, node_info)
+
+        ## both side only have variables
+        if len(current_eq.termimal_list_without_empty_terminal)==0:
+            return self.record_and_close_branch(SAT, variables, node_info)
+
+        ## special cases
+        ### special case: variables surrounded by identical terminals
+        ### special case: variables surrounded by different terminals
+        ### special case: starting or ending with variables
+
+
+        ### special case 1: mismatched leading or tailing terminals
+        left_leading_terminals = self.get_leading_terminals(left_terms_queue)
+        right_leading_terminals = self.get_leading_terminals(right_terms_queue)
+        if len(left_leading_terminals)>0 and len(right_leading_terminals)>0 and left_leading_terminals!=right_leading_terminals:
+            return self.record_and_close_branch(UNSAT, variables, node_info)
+        left_tailing_terminals = self.get_leading_terminals(reversed(left_terms_queue))
+        right_tailing_terminals = self.get_leading_terminals(reversed(right_terms_queue))
+        if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and left_tailing_terminals != right_tailing_terminals:
+            return self.record_and_close_branch(UNSAT, variables, node_info)
+
+
+        ### special case 2: one side only have one variable, e,g. M = terminals+variables SAT, M = terminals SAT, M = variables SAT, M="" SAT
+        if (len(left_terms_queue)==1 and left_terms_queue[0].value_type == Variable):
+            if left_terms_queue[0] in right_terms_queue: # M = terminals+variables and M in right hand side
+                return self.record_and_close_branch(UNSAT, variables, node_info)
+            else:
+                return self.record_and_close_branch(SAT, variables, node_info)
+        if (len(right_terms_queue) == 1 and right_terms_queue[0].value_type == Variable):
+            if right_terms_queue[0] in left_terms_queue:
+                return self.record_and_close_branch(UNSAT, variables, node_info)
+            else:
+                return self.record_and_close_branch(SAT, variables, node_info)
+
+
+
+
+
+
 
         ################################ Split equation ################################
 
@@ -421,6 +465,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 new_variables.append(t.value)
 
         return remove_duplicates(new_variables)
+
+    def get_leading_terminals(self,term_list:Deque[Term])->List[Term]:
+        leading_terminal_list=[]
+        for t in term_list:
+            if t.value_type==Variable:
+                break
+            else:
+                leading_terminal_list.append(t)
+        return leading_terminal_list
+
+
+
+
 
     def visualize(self, file_path,graph_func):
         visualize_path_html(self.nodes, self.edges, file_path)

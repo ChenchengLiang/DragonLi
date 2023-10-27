@@ -20,7 +20,7 @@ def main():
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
             for gnn_layer_num in [2, 4, 8]:
                 for hidden_dim in [32, 64, 128]:
-                    for model_type in ["GAT"]:  # ["GCN", "GAT", "GIN"]
+                    for model_type in ["GCN", "GAT", "GIN"]:  # ["GCN", "GAT", "GIN"]
                         if model_type == "GAT":
                             for num_heads in [1]:
                                 configurations.append({

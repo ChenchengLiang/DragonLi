@@ -154,7 +154,7 @@ class Equation:
     def variable_str(self) -> str:
         return "".join([item.value for item in self.variable_list])
     @property
-    def variable_numbers(self) -> int:
+    def variable_number(self) -> int:
         return len(self.variable_list)
 
     @property
@@ -193,7 +193,7 @@ class Equation:
                 return True, [(term.value, [EMPTY_TERMINAL]) for term in self.left_terms]
         # Condition: A=AA
         elif len(self.left_terms) > 0 and len(self.right_terms) > 0 and len(self.left_terms) != len(
-                self.right_terms) and self.variable_numbers == 1 and self.terminal_numbers <= 1:
+                self.right_terms) and self.variable_number == 1 and self.terminal_numbers <= 1:
             return True, [(self.variable_list[0], [EMPTY_TERMINAL])]
         # Condition: Variable=List[Terminal]
         elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable) and all(
