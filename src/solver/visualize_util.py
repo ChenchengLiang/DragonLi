@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from pyvis.network import Network
 import plotly.graph_objects as go
 from graphviz import Digraph
-from independent_utils import strip_file_name_suffix
 
 
 
@@ -63,7 +62,7 @@ def visualize_path_png(nodes, edges, file_path):
         dot.edge(str(source), str(target))
 
     # Save the dot file and render as a PNG
-    file_name=strip_file_name_suffix(file_path)
+    file_name=file_path.replace(".eq","")
     dot.render(file_name, format='jpg', cleanup=True)
     print("Graph saved to", file_name + '.jpg')
 

@@ -35,10 +35,10 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "test",
-            "benchmark_folder":bench_folder+"/test",
-            "solver":"this",
-            "parameters_list":["fixed"],
+            "benchmark_name": "01_track_generated",
+            "benchmark_folder":bench_folder+"/01_track_generated/mixed",
+            "solver":"woorpje",
+            "parameters_list":[],
             #"gnn_model_path":project_folder+"/models/model_graph_1_GAT.pth"
         }
 

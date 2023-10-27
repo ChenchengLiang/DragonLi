@@ -176,6 +176,10 @@ class Equation:
         return len(self.terminal_list)
 
     @property
+    def terminal_numers_without_empty_terminal(self):
+        return len(self.termimal_list_without_empty_terminal)
+
+    @property
     def eq_str(self) -> str:
         return "".join([t.get_value_str for t in self.left_terms]) + " = " + "".join(
             [t.get_value_str for t in self.right_terms])

@@ -141,12 +141,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         ### special case 2: one side only have one variable, e,g. M = terminals+variables SAT, M = terminals SAT, M = variables SAT, M="" SAT
         if (len(left_terms_queue)==1 and left_terms_queue[0].value_type == Variable):
-            if left_terms_queue[0] in right_terms_queue: # M = terminals+variables and M in right hand side
+            if left_terms_queue[0] in right_terms_queue and current_eq.terminal_numers_without_empty_terminal!=0: # M = terminals+variables and M in right hand side
                 return self.record_and_close_branch(UNSAT, variables, node_info)
             else:
                 return self.record_and_close_branch(SAT, variables, node_info)
         if (len(right_terms_queue) == 1 and right_terms_queue[0].value_type == Variable):
-            if right_terms_queue[0] in left_terms_queue:
+            if right_terms_queue[0] in left_terms_queue and current_eq.terminal_numers_without_empty_terminal!=0:
                 return self.record_and_close_branch(UNSAT, variables, node_info)
             else:
                 return self.record_and_close_branch(SAT, variables, node_info)

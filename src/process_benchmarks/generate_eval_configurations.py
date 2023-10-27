@@ -32,12 +32,12 @@ def main():
     benchmark_dict = {
         #"test_track": bench_folder + "/test",
         #"example_track": bench_folder + "/examples",
-        "track_01": bench_folder + "/01_track",
+        #"track_01": bench_folder + "/01_track",
         # "g_track_01_sat":bench_folder + "/01_track_generated/SAT",
-        # "g_track_01_mixed": bench_folder + "/01_track_generated/mixed",
+        "g_track_01_mixed": bench_folder + "/01_track_generated/mixed",
         # "g_track_01_eval":bench_folder + "/01_track_generated_eval_data",
-        "track_02": bench_folder + "/02_track",
-        "track_03": bench_folder + "/03_track",
+        #"track_02": bench_folder + "/02_track",
+        #"track_03": bench_folder + "/03_track",
         # "track_04": bench_folder + "/04_track",
         # "track_05": bench_folder + "/05_track",
     }

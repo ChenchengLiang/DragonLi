@@ -8,7 +8,7 @@ import csv
 from typing import List, Dict, Tuple
 import glob
 from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR
-
+import random
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict,
@@ -103,7 +103,8 @@ def run_on_one_benchmark(file_path:str, parameters_list:List[str], solver:str,so
 def create_a_shell_file(file_path, parameter_list="", solver=""):
     parameter_str = " ".join(parameter_list)
     shell_folder = project_folder+"/src/process_benchmarks/temp_shell"
-    shell_file_name = "run-" + os.path.basename(file_path) + ".sh"
+    random_integer = random.randint(1, 10000)
+    shell_file_name = "run-" + os.path.basename(file_path)+"-" +str(random_integer)+ ".sh"
     shell_file_path = os.path.join(shell_folder, shell_file_name)
     timeout_command = "timeout " + str(shell_timeout)
 
