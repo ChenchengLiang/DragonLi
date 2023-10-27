@@ -170,7 +170,7 @@ class Equation:
 
     @property
     def terminal_str(self) -> str:
-        return "".join(self.termimal_list_without_empty_terminal)
+        return "".join([x.value for x in self.termimal_list_without_empty_terminal])
     @property
     def terminal_numbers(self) -> int:
         return len(self.terminal_list)

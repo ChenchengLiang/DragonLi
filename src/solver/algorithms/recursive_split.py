@@ -3,12 +3,12 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
     dump_to_json_with_format,identify_available_capitals
-from src.solver.visualize_util import visualize_path, visualize_path_html
+from src.solver.visualize_util import visualize_path, visualize_path_html,visualize_path_png
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model, load_model_from_mlflow
 from src.solver.models.Dataset import WordEquationDataset
@@ -29,9 +29,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.parameters = parameters
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.total_explore_paths_call = 0
+        self.current_deep=0
         self.nodes = []
         self.edges = []
-        self.branch_method_func_map = {"fixed":self._use_fixed_branching,"gnn": self._use_gnn_branching, "random": self._use_random_branching}
+        self.branch_method_func_map = {"extract_branching_data":self._extract_branching_data,"fixed":self._use_fixed_branching,"gnn": self._use_gnn_branching, "random": self._use_random_branching}
         self._branch_method_func=self.branch_method_func_map[parameters["branch_method"]]
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -79,11 +80,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         string_equation, string_terminals, string_variables = self.pretty_print_current_equation(left_terms_queue,
                                                                                                  right_terms_queue)
         self.total_explore_paths_call += 1
+        self.current_deep += 1
         current_node_number = self.total_explore_paths_call
         node_info = (current_node_number, {"label": string_equation, "status": None})
         self.nodes.append(node_info)
         if previous_dict["node_number"] != None:
             self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
+
+
 
         ################################ Check terminate conditions ################################
 
@@ -125,13 +129,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
         ### special case 1: mismatched leading or tailing terminals
-        left_leading_terminals = self.get_leading_terminals(left_terms_queue)
-        right_leading_terminals = self.get_leading_terminals(right_terms_queue)
-        if len(left_leading_terminals)>0 and len(right_leading_terminals)>0 and left_leading_terminals!=right_leading_terminals:
+        left_leading_terminals,left_first_variable = self.get_leading_terminals(left_terms_queue)
+        right_leading_terminals,right_first_variable = self.get_leading_terminals(right_terms_queue)
+        if len(left_leading_terminals)>0 and len(right_leading_terminals)>0 and len(left_leading_terminals)==len(right_leading_terminals) and left_first_variable!=None and right_first_variable!=None and left_leading_terminals!=right_leading_terminals and left_first_variable==right_first_variable:
             return self.record_and_close_branch(UNSAT, variables, node_info)
-        left_tailing_terminals = self.get_leading_terminals(reversed(left_terms_queue))
-        right_tailing_terminals = self.get_leading_terminals(reversed(right_terms_queue))
-        if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and left_tailing_terminals != right_tailing_terminals:
+        left_tailing_terminals,left_first_variable = self.get_leading_terminals(reversed(left_terms_queue))
+        right_tailing_terminals,right_first_variable = self.get_leading_terminals(reversed(right_terms_queue))
+        if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and len(left_tailing_terminals) ==len(right_tailing_terminals)  and left_first_variable!=None and right_first_variable!=None and left_tailing_terminals != right_tailing_terminals and left_first_variable==right_first_variable:
             return self.record_and_close_branch(UNSAT, variables, node_info)
 
 
@@ -146,10 +150,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.record_and_close_branch(UNSAT, variables, node_info)
             else:
                 return self.record_and_close_branch(SAT, variables, node_info)
-
-
-
-
 
 
 
@@ -251,12 +251,21 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                            {"node_number": current_node_number, "label": edge_label})
 
             # Handle branch outcome
-            if satisfiability == SAT:
-                return self.record_and_close_branch(SAT, variables, node_info)
-            elif i < len(sorted_prediction_list) - 1:  # If not the last branch, mark as UNSAT and continue
-                node_info[1]["status"] = UNSAT
-            else:  # For the last branch
+            if i < len(sorted_prediction_list) - 1: # not the last branch
+                if satisfiability == SAT:
+                    return self.record_and_close_branch(SAT, variables, node_info)
+                elif satisfiability==UNSAT:
+                    node_info[1]["status"] = UNSAT
+            else: #last branch
                 return self.record_and_close_branch(satisfiability, variables, node_info)
+
+
+            # if satisfiability == SAT:
+            #     return self.record_and_close_branch(SAT, variables, node_info)
+            # elif i < len(sorted_prediction_list) - 1:  # If not the last branch, mark as UNSAT and continue
+            #     node_info[1]["status"] = UNSAT
+            # else:  # For the last branch
+            #     return self.record_and_close_branch(satisfiability, variables, node_info)
 
     def _use_random_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                               branch_methods):
@@ -272,19 +281,67 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             satisfiability, branch_variables = self.explore_paths(l.copy(), r.copy(), v.copy(),
                                                                   {"node_number": current_node_number,
                                                                    "label": edge_label})
-            # output train data
-            #print(Equation(l,r,satisfiability).eq_str,satisfiability, str(current_node_number)+"_"+str(i))
-            middle_eq_file_name=self.file_name+"_"+str(current_node_number)+"_"+str(i)
-            self._output_middle_eq_func(middle_eq_file_name,l,r,satisfiability)
 
-            if satisfiability == SAT:
-                return self.record_and_close_branch(SAT, branch_variables, node_info)
-            # If we reach here and it's not the last branch, update status to UNSAT and continue
-            if i < len(branch_methods) - 1:
-                node_info[1]["status"] = UNSAT
-            else:
-                # If it's the last branch, record and close regardless of the outcome
+            # Handle branch outcome
+            if i < len(branch_methods) - 1:# not last branch
+                if satisfiability == SAT:
+                    return self.record_and_close_branch(SAT, branch_variables, node_info)
+                elif satisfiability==UNSAT:
+                    node_info[1]["status"] = UNSAT
+            else:# last branch
                 return self.record_and_close_branch(satisfiability, branch_variables, node_info)
+
+
+            # if satisfiability == SAT:
+            #     return self.record_and_close_branch(SAT, branch_variables, node_info)
+            # # If we reach here and it's not the last branch, update status to UNSAT and continue
+            # if i < len(branch_methods) - 1:
+            #     node_info[1]["status"] = UNSAT
+            # else:
+            #     # If it's the last branch, record and close regardless of the outcome
+            #     return self.record_and_close_branch(satisfiability, branch_variables, node_info)
+
+
+
+    def _extract_branching_data(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
+                             branch_methods):
+        if self.current_deep>max_deep:
+            node_info[1]["status"] = UNKNOWN
+            self.current_deep=0
+            return self.record_and_close_branch(UNKNOWN, variables, node_info)
+
+        satisfiability_list = []
+        for i, branch in enumerate(branch_methods):
+            l, r, v, edge_label = branch(left_terms_queue, right_terms_queue, variables)
+
+            satisfiability, branch_variables = self.explore_paths(l.copy(), r.copy(), v.copy(),
+                                                                  {"node_number": current_node_number,
+                                                                   "label": edge_label})
+            satisfiability_list.append(satisfiability)
+
+            # output train data
+            print(Equation(l, r, satisfiability).eq_str, satisfiability, str(current_node_number) + "_" + str(i))
+            middle_eq_file_name = self.file_name + "_" + str(current_node_number) + "_" + str(i)
+            self._output_middle_eq_func(middle_eq_file_name, l, r, satisfiability)
+
+            # Handle branch outcome
+            # if i < len(branch_methods) - 1:  # not last branch
+            #     if satisfiability == SAT:
+            #         return self.record_and_close_branch(SAT, branch_variables, node_info)
+            #     elif satisfiability == UNSAT:
+            #         node_info[1]["status"] = UNSAT
+            # else:  # last branch
+            #     return self.record_and_close_branch(satisfiability, branch_variables, node_info)
+
+
+        #if there is an element in satisfiability_list is SAT, return SAT
+        if SAT in satisfiability_list:
+            return self.record_and_close_branch(SAT, branch_variables, node_info)
+        elif UNKNOWN in satisfiability_list:
+            return self.record_and_close_branch(UNKNOWN, branch_variables, node_info)
+        else:
+            return self.record_and_close_branch(UNSAT, branch_variables, node_info)
+
 
     def record_and_close_branch(self, satisfiability: str, variables, node_info):
         node_info[1]["status"] = satisfiability
@@ -468,12 +525,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def get_leading_terminals(self,term_list:Deque[Term])->List[Term]:
         leading_terminal_list=[]
+        first_variable=None
         for t in term_list:
             if t.value_type==Variable:
+                first_variable=t
                 break
             else:
                 leading_terminal_list.append(t)
-        return leading_terminal_list
+        return leading_terminal_list,first_variable
 
 
 
@@ -481,6 +540,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def visualize(self, file_path,graph_func):
         visualize_path_html(self.nodes, self.edges, file_path)
+        visualize_path_png(self.nodes, self.edges, file_path)
+
         self.equation_list[0].visualize_graph(file_path,graph_func)
 
     def _output_train_data(self, file_name,l,r,satisfiability):

@@ -303,7 +303,10 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
             for row in reader:
                 if row[1]=="SAT":
                     split_number_list.append(row[3])
-            sat_average_split_number = sum([int(x) for x in split_number_list])/len(split_number_list)
+            if len(split_number_list)!=0:
+                sat_average_split_number = sum([int(x) for x in split_number_list])/len(split_number_list)
+            else:
+                sat_average_split_number=0
         else:
             sat_average_split_number = 0
 

@@ -8,8 +8,9 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
-algorithm_timeout: int = 10
+algorithm_timeout: int = 15
 shell_timeout: int = algorithm_timeout
+max_deep=30
 BRANCH_CLOSED: str = "BRANCH_CLOSED"
 MAX_PATH: int = 10000000
 MAX_PATH_REACHED: str = "MAX_PATH_REACHED"

@@ -3,9 +3,22 @@ import matplotlib.pyplot as plt
 from pyvis.network import Network
 import plotly.graph_objects as go
 from graphviz import Digraph
+from independent_utils import strip_file_name_suffix
 
 
 
+def get_node_color(status):
+    if status is None:
+        color = 'blue'
+    elif status == "SAT":
+        color = 'green'
+    elif status == "UNSAT":
+        color = 'red'
+    elif status == "UNKNOWN":
+        color = 'yellow'
+    else:
+        color = "black"
+    return color
 
 
 def visualize_path(nodes, edges, file_path):
@@ -37,6 +50,22 @@ def visualize_path(nodes, edges, file_path):
 
     plt.savefig(file_path + ".png")
 
+def visualize_path_png(nodes, edges, file_path):
+    dot = Digraph(comment='The Graph')
+
+    # Add nodes
+    for node_id, attributes in nodes:
+        fillcolor = get_node_color(attributes["status"])
+        dot.node(str(node_id),style = 'filled',fillcolor=fillcolor)
+
+    # Add edges
+    for source, target, attributes in edges:
+        dot.edge(str(source), str(target))
+
+    # Save the dot file and render as a PNG
+    file_name=strip_file_name_suffix(file_path)
+    dot.render(file_name, format='jpg', cleanup=True)
+    print("Graph saved to", file_name + '.jpg')
 
 def visualize_path_html(nodes, edges, file_path):
     '''
@@ -125,14 +154,7 @@ def visualize_path_html(nodes, edges, file_path):
     node_colors = []
     for _, attributes in G.nodes(data=True):
         status = attributes.get('status', None)
-        if status is None:
-            color = 'blue'
-        elif status == "SAT":
-            color = 'green'
-        elif status == "UNSAT":
-            color = 'red'
-        else:
-            color = 'yellow'
+        color = get_node_color(status)
         node_colors.append(color)
 
     node_colors[0] = 'black'
@@ -165,6 +187,7 @@ def visualize_path_html(nodes, edges, file_path):
 
     fig.write_html(file_path + ".html")
     print("Graph in", file_path + ".html")
+
 
 
 def draw_graph(nodes, edges,filename="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/visualize"):

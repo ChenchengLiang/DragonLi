@@ -70,16 +70,16 @@ def main():
 
         #summary_one_track(summary_folder, summary_file_dict, track)
 
-    track="example_track"
-    summary_file_dict={}
-    for f in glob.glob(project_folder+"/src/process_benchmarks/summary/to_summary/*.csv"):
-        f=f[f.rfind("/")+1:]
-        solver=f[:f.find("_")]
-        parameter_str=f[f.find("_")+1:f.find(track)-1]
-        summary_file_dict[solver+":"+parameter_str]=solver+"_"+parameter_str+"_"+track+"_summary.csv"
-    print(summary_file_dict)
-
-    summary_one_track(summary_folder, summary_file_dict, track)
+    for track in ["track_01","track_02","track_03"]:
+        summary_file_dict={}
+        for f in glob.glob(project_folder+"/src/process_benchmarks/summary/to_summary/*.csv"):
+            if track in f:
+                f=f[f.rfind("/")+1:]
+                solver=f[:f.find("_")]
+                parameter_str=f[f.find("_")+1:f.find(track)-1]
+                summary_file_dict[solver+":"+parameter_str]=solver+"_"+parameter_str+"_"+track+"_summary.csv"
+        print(summary_file_dict)
+        summary_one_track(summary_folder, summary_file_dict, track)
 
 
 
