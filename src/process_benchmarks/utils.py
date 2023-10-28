@@ -54,11 +54,12 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
     if len(parameters_list)>1:
         parameters_str_list=[parameters_list[0]] + [parameters_list[1].replace("--graph_type ", "")] + [parameters_list[2][parameters_list[2].rfind("_")+1:parameters_list[2].rfind(".")]]
     else:
-        parameters_str_list=[parameters_list[0]]
+        parameters_str_list=[]
     parameters_list_str = "_".join(parameters_str_list)
 
+
     if parameters_list_str == "":
-        summary_name = solver + "_" + benchmark_name + + "_summary.csv"
+        summary_name = solver + "_" + benchmark_name + "_summary.csv"
     else:
         summary_name = solver + "_" + parameters_list_str + "_" + benchmark_name + "_summary.csv"
     summary_path = os.path.join(summary_folder, summary_name)
@@ -226,8 +227,8 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
             first_summary_data_rows = [[] for x in reconstructed_list]
 
 
-        # print("solver",solver)
-        # print(reconstructed_list)
+        print("solver",solver)
+        print(reconstructed_list)
         for f, r in zip(first_summary_data_rows, reconstructed_list):
             if len(f)==0:
                 f.extend(r)
@@ -277,13 +278,15 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
 
 
 def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,solver):
+    first_summary_solver_row.extend([solver, solver, solver])
+    column_index = 4
 
-    if "this" in solver:
-        first_summary_solver_row.extend([solver, solver, solver])
-        column_index = 4
-    else:
-        first_summary_solver_row.extend([solver, solver])
-        column_index = 3
+    # if "this" in solver:
+    #     first_summary_solver_row.extend([solver, solver, solver])
+    #     column_index = 4
+    # else:
+    #     first_summary_solver_row.extend([solver, solver])
+    #     column_index = 3
 
     summary_path = os.path.join(summary_folder+"/to_summary/", summary_file)
     with open(summary_path, 'r') as file:
