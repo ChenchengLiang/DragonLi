@@ -45,9 +45,9 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark":"example_train","graph_type": "graph_1", "model_type": "GAT", "num_epochs": 50, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 20, "gnn_hidden_dim": 32,
-            "gnn_layer_num": 4, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
+            "benchmark":"01_track_generated_train_data_sat_from_solver_multiple_path","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 300, "learning_rate": 0.001,
+            "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": 32,
+            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
 
     today = datetime.date.today().strftime("%Y-%m-%d")
@@ -219,8 +219,8 @@ def create_data_loaders(dataset, parameters):
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"], drop_last=False)
 
-    train_distribution_str="Training label distribution: "+ str(train_label_distribution)+ "\n Base accuracy: "+ str(max(train_label_distribution.values()) / sum(train_label_distribution.values()))
-    valid_distribution_str="Validation label distribution: "+ str(valid_label_distribution)+ "\n Base accuracy: "+str( max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
+    train_distribution_str="Training label distribution: "+ str(train_label_distribution)+ "\nBase accuracy: "+ str(max(train_label_distribution.values()) / sum(train_label_distribution.values()))
+    valid_distribution_str="Validation label distribution: "+ str(valid_label_distribution)+ "\nBase accuracy: "+str( max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
     print(train_distribution_str)
     print(valid_distribution_str)
 

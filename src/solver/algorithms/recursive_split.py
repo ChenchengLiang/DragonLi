@@ -3,7 +3,7 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep,MAX_SPLIT_CALL
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
@@ -29,6 +29,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.parameters = parameters
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.total_explore_paths_call = 0
+        self.total_split_call = 0
         self.current_deep=0
         self.nodes = []
         self.edges = []
@@ -56,8 +57,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         left_terms = first_equation.left_terms
         right_terms = first_equation.right_terms
         try:
+            node_info = (0, {"label": "start", "status": None})
+            self.nodes.append(node_info)
             satisfiability, variables = self.explore_paths(deque(left_terms.copy()), deque(right_terms.copy()),
-                                                           self.variables.copy(), {"node_number": None, "label": None})
+                                                           self.variables.copy(), {"node_number": node_info[0], "label": node_info[1]["label"]})
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
@@ -74,18 +77,16 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def explore_paths(self, left_terms_queue: Deque[Term], right_terms_queue: Deque[Term], variables: List[Variable],
                       previous_dict) -> Tuple[str, List[Variable]]:
         current_eq=Equation(left_terms_queue,right_terms_queue)
+        self.total_explore_paths_call += 1
+
+
 
         ################################ Record nodes and edges ################################
 
-        string_equation, string_terminals, string_variables = self.pretty_print_current_equation(left_terms_queue,
-                                                                                                 right_terms_queue)
-        self.total_explore_paths_call += 1
-        self.current_deep += 1
         current_node_number = self.total_explore_paths_call
-        node_info = (current_node_number, {"label": string_equation, "status": None})
+        node_info = (current_node_number, {"label": current_eq.eq_str, "status": None})
         self.nodes.append(node_info)
-        if previous_dict["node_number"] != None:
-            self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
+        self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
 
 
@@ -200,6 +201,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.two_variables_split_branch_2,
             self.two_variables_split_branch_3
         ]
+        self.total_split_call+=1
         return self._branch_method_func(left_terms_queue, right_terms_queue, variables, current_node_number,
                                         node_info, branch_methods)
 
@@ -210,7 +212,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.one_variable_one_terminal_split_branch_1,
             self.one_variable_one_terminal_split_branch_2
         ]
-
+        self.total_split_call += 1
         return self._branch_method_func(left_terms_queue, right_terms_queue, variables, current_node_number,
                                         node_info, branch_methods)
 
@@ -260,13 +262,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.record_and_close_branch(satisfiability, variables, node_info)
 
 
-            # if satisfiability == SAT:
-            #     return self.record_and_close_branch(SAT, variables, node_info)
-            # elif i < len(sorted_prediction_list) - 1:  # If not the last branch, mark as UNSAT and continue
-            #     node_info[1]["status"] = UNSAT
-            # else:  # For the last branch
-            #     return self.record_and_close_branch(satisfiability, variables, node_info)
-
     def _use_random_branching(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                               branch_methods):
         random.shuffle(branch_methods)
@@ -292,22 +287,17 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.record_and_close_branch(satisfiability, branch_variables, node_info)
 
 
-            # if satisfiability == SAT:
-            #     return self.record_and_close_branch(SAT, branch_variables, node_info)
-            # # If we reach here and it's not the last branch, update status to UNSAT and continue
-            # if i < len(branch_methods) - 1:
-            #     node_info[1]["status"] = UNSAT
-            # else:
-            #     # If it's the last branch, record and close regardless of the outcome
-            #     return self.record_and_close_branch(satisfiability, branch_variables, node_info)
-
-
 
     def _extract_branching_data(self, left_terms_queue, right_terms_queue, variables, current_node_number, node_info,
                              branch_methods):
-        if self.current_deep>max_deep:
-            node_info[1]["status"] = UNKNOWN
-            self.current_deep=0
+
+        ################################ stop branching  ################################
+        # self.current_deep += 1
+        # if self.current_deep > max_deep:
+        #     node_info[1]["status"] = UNKNOWN
+        #     self.current_deep = 0
+        #     return self.record_and_close_branch(UNKNOWN, variables, node_info)
+        if self.total_split_call>MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, variables, node_info)
 
         satisfiability_list = []
@@ -320,7 +310,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             satisfiability_list.append(satisfiability)
 
             # output train data
-            print(Equation(l, r, satisfiability).eq_str, satisfiability, str(current_node_number) + "_" + str(i))
+            print(str(current_node_number) + "_" + str(i),satisfiability,Equation(l, r, satisfiability).eq_str)
             middle_eq_file_name = self.file_name + "_" + str(current_node_number) + "_" + str(i)
             self._output_middle_eq_func(middle_eq_file_name, l, r, satisfiability)
 
@@ -545,7 +535,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.equation_list[0].visualize_graph(file_path,graph_func)
 
     def _output_train_data(self, file_name,l,r,satisfiability):
-        Equation(l,r).output_eq_file(file_name,satisfiability)
+        if satisfiability!=UNKNOWN:
+            Equation(l,r).output_eq_file(file_name,satisfiability)
 
 
     def _output_train_data_empty(self, file_name,l,r,satisfiability):

@@ -8,12 +8,13 @@ config.read("config.ini")
 path = config.get('Path','local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder,project_folder
+from src.solver.Constants import bench_folder,project_folder,UNKNOWN
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results
 from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
 from src.solver.DataTypes import Equation
+from src.solver.independent_utils import strip_file_name_suffix
 def main():
     # example path
     #file_path=bench_folder +"/examples/test.eq"
@@ -21,8 +22,9 @@ def main():
     #file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/01_track_43.eq"
+    file_path = bench_folder+"/examples/g_01_track_85.eq"
 
-    file_path = bench_folder +"/test/03_track_11.eq"
+    #file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
     #SAT
     #file_path = bench_folder +"/01_track/01_track_1.eq"
@@ -47,6 +49,7 @@ def main():
     #file_path=bench_folder +"/04_track/04_track_10.eq"
 
 
+
     parser_type = EqParser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
@@ -57,7 +60,7 @@ def main():
                       "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
                       "graph_5":Equation.get_graph_5}
 
-    algorithm_parameters = {"branch_method":"fixed","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GAT.pth"} # branch_method [extract_branching_data,gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
