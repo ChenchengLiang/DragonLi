@@ -21,9 +21,9 @@ def main():
     solver_param_list = [
         ["this", ["fixed"]],
         ["this", ["random"]],
-        ["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GAT.pth"]],
+        #["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GAT.pth"]],
         #["this",["gnn","--graph_type graph_2","--gnn_model_path "+project_folder+"/models/model_graph_2_GAT.pth"]],
-        # ["woorpje",[]],
+        ["woorpje",[]],
         # ["z3",[]],
         # ["ostrich",[]],
         # ["cvc5",[]],
@@ -34,12 +34,14 @@ def main():
         #"example_track": bench_folder + "/examples",
         #"track_01": bench_folder + "/01_track",
         # "g_track_01_sat":bench_folder + "/01_track_generated/SAT",
-        "g_track_01_mixed": bench_folder + "/01_track_generated/mixed",
+        #"g_track_01_mixed": bench_folder + "/01_track_generated/mixed",
         # "g_track_01_eval":bench_folder + "/01_track_generated_eval_data",
         #"track_02": bench_folder + "/02_track",
         #"track_03": bench_folder + "/03_track",
         # "track_04": bench_folder + "/04_track",
         # "track_05": bench_folder + "/05_track",
+        "track_random_train": bench_folder + "/random_track_train",
+        "track_random_eval": bench_folder + "/random_track_eval",
     }
 
     configuration_list = []

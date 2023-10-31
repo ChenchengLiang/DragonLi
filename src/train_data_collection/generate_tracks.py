@@ -1,22 +1,44 @@
+import os
+import sys
+import configparser
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path','local')
+sys.path.append(path)
+
 import random
 import string
 import os
 from src.solver.Constants import project_folder,bench_folder
 
 def main():
-    track_1_mixed_folder = bench_folder+"/01_track_generated_eval_data"
+    track_1_mixed_folder = bench_folder+"/random_track"
     start_idx = 1001
     end_idx = 1200
-    save_equations(start_idx, end_idx, track_1_mixed_folder, generate_one_track_1_unsat)
+    save_equations(start_idx, end_idx, track_1_mixed_folder, "random_track",generate_one_random)
 
-    # track_2_folder = bench_folder+"/02_track_generated"
-    # generate_track_2(folder=track_2_folder)
 
+
+
+def generate_one_random(max_variables=15, max_terminals=10, max_length=50):
+    variables,terminals=get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
+
+    # Create a random string of the terminals
+    random_left_string = ''.join(random.choice(terminals+variables) for _ in range(max_length))
+    random_right_string = ''.join(random.choice(terminals + variables) for _ in range(max_length))
+
+    # Format the result
+    result = f"Variables {{{''.join(variables)}}}\n"
+    result += f"Terminals {{{''.join(terminals)}}}\n"
+    result += f"Equation: {random_left_string} = {random_right_string}\n"
+    result += "SatGlucose(100)"
+
+    return result
 
 
 def generate_one_track_2(num_variables=1):
-
-
     # Generate variable and terminal sets
     variables = [string.ascii_uppercase[i] for i in range(num_variables)]
     terminals = ["a", "b"]
@@ -44,36 +66,21 @@ def generate_one_track_2(num_variables=1):
 
     return result
 
-def generate_track_2(num_variables=15,folder=""):
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-
-    for i in range(1, num_variables+1):
-        equation = generate_one_track_2(i)
-        filename = os.path.join(folder, f"g_02_track_{i}.eq")
-        with open(filename, 'w') as file:
-            file.write(equation)
 
 
-
-def save_equations(start_index, end_index, folder, equation_generator):
+def save_equations(start_index, end_index, folder, track_name,equation_generator):
     if not os.path.exists(folder):
         os.makedirs(folder)
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         equation = equation_generator()
-        filename = os.path.join(folder, f"g_01_track_{i}.eq")
+        filename = os.path.join(folder, f"g_{track_name}_{i}.eq")
         with open(filename, 'w') as file:
             file.write(equation)
 
 
 def generate_equation(max_variables=15, max_terminals=10, max_length=300, unsat=False):
-    # Choose a number of variables and terminals
-    num_variables = random.randint(1, max_variables)
-    num_terminals = random.randint(1, max_terminals)
 
-    # Generate variable and terminal sets
-    variables = [string.ascii_uppercase[i] for i in range(num_variables)]
-    terminals = random.sample(string.ascii_lowercase, num_terminals)
+    variables,terminals=get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
     random_string = ''.join(random.choice(terminals) for _ in range(max_length))
@@ -120,6 +127,15 @@ def generate_one_track_1_unsat():
 
 
 
+def get_variables_and_terminals(max_variables=15, max_terminals=10):
+    # Choose a number of variables and terminals
+    num_variables = random.randint(1, max_variables)
+    num_terminals = random.randint(1, max_terminals)
+
+    # Generate variable and terminal sets
+    variables = [string.ascii_uppercase[i] for i in range(num_variables)]
+    terminals = random.sample(string.ascii_lowercase, num_terminals)
+    return variables,terminals
 
 if __name__ == '__main__':
     main()

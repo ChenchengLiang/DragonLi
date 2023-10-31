@@ -46,8 +46,8 @@ def main():
     else:
         config = {
             "benchmark":"01_track_generated_train_data_sat_from_solver_multiple_path","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 300, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": 32,
-            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
+            "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": 64,
+            "gnn_layer_num": 4, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 64, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
 
     today = datetime.date.today().strftime("%Y-%m-%d")
@@ -56,6 +56,8 @@ def main():
     with mlflow.start_run():
         mlflow.log_params(config)
         train_one_model(config)
+
+    print("done")
 
 
 

@@ -20,9 +20,10 @@ def main():
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
-    #file_path = bench_folder+"/examples/03_track_11.eq"
+    file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/01_track_43.eq"
-    file_path = bench_folder+"/examples/g_01_track_85.eq"
+    #file_path = bench_folder+"/examples/g_01_track_85.eq"
+    #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
 
     #file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -61,7 +62,7 @@ def main():
                       "graph_5":Equation.get_graph_5}
 
     algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GAT.pth"} # branch_method [extract_branching_data,gnn,random,fixed]
+                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data,gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

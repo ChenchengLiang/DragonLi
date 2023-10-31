@@ -3,6 +3,7 @@ from src.solver.Constants import UNKNOWN, SAT, UNSAT, satisfiability_to_int_labe
 from src.solver.independent_utils import remove_duplicates,strip_file_name_suffix,replace_primed_vars
 from collections import deque
 from src.solver.visualize_util import draw_graph
+import copy
 
 
 class Node:
@@ -143,6 +144,10 @@ class Equation:
             return False
         return self.left_terms == other.left_terms and self.right_terms == other.right_terms
 
+    def copy(self):
+        return copy.copy(self)
+    def deepcopy(self):
+        return copy.deepcopy(self)
     @property
     def term_list(self) -> List[Term]:
         return self.left_terms + self.right_terms

@@ -17,6 +17,7 @@ from src.solver.DataTypes import Equation
 from typing import List, Tuple, Dict, Union, Optional, Callable
 from src.solver.Constants import project_folder,bench_folder
 def main():
+    sys.setrecursionlimit(1000000)
 
     #visualize examples
     # file_list = glob.glob(
@@ -35,7 +36,7 @@ def main():
     graph_func_map = {None: Equation.get_graph_1, "graph_1": Equation.get_graph_1,
                       "graph_2": Equation.get_graph_2, "graph_3": Equation.get_graph_3, "graph_4": Equation.get_graph_4,
                       "graph_5": Equation.get_graph_5}
-    for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+    for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
 
         file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
         for file_path in file_list:
