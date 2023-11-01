@@ -23,7 +23,7 @@ from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
 
-    for file_path in glob.glob(bench_folder+"/01_track_generated_train_data_sat_from_solver_multiple_path/graph_1/*.eq"):
+    for file_path in glob.glob(bench_folder+"/01_track_generated_train_data_sat_with_some_leafs/graph_1/*.eq"):
         file_name=strip_file_name_suffix(file_path)
         print(file_path)
 

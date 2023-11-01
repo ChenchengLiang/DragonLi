@@ -55,7 +55,10 @@ def visualize_path_png(nodes, edges, file_path):
     # Add nodes
     for node_id, attributes in nodes:
         fillcolor = get_node_color(attributes["status"])
-        shape = "box" if attributes["output_to_file"] else "ellipse"
+        if attributes["output_to_file"]:
+            shape = attributes["shape"]
+        else:
+            shape = "ellipse"
         dot.node(str(node_id),style = 'filled',fillcolor=fillcolor,shape=shape)
 
     # Add edges

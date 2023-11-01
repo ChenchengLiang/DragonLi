@@ -20,10 +20,11 @@ def main():
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
-    file_path = bench_folder+"/examples/03_track_11.eq"
+    #file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
-    #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
+    file_path = bench_folder + "/examples/32/g_01_track_32.eq"
+    #file_path = bench_folder + "/examples/g_random_track_1144.eq"
 
     #file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -61,8 +62,8 @@ def main():
                       "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
                       "graph_5":Equation.get_graph_5}
 
-    algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data,gnn,random,fixed]
+    algorithm_parameters = {"branch_method":"gnn:random","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

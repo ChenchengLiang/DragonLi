@@ -70,7 +70,7 @@ def main():
 
         #summary_one_track(summary_folder, summary_file_dict, track)
 
-    for track in ["track_01"]: #["track_01","track_02","track_03",g_track_01_mixed]
+    for track in ["track_01"]: #["track_01","track_02","track_03",g_track_01_mixed,track_random_eval]
         summary_file_dict={}
         for f in glob.glob(project_folder+"/src/process_benchmarks/summary/to_summary/*.csv"):
             if track in f:

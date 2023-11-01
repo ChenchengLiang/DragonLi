@@ -35,7 +35,7 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "01_track",
+            "benchmark_name": "track_01",
             "benchmark_folder":bench_folder+"/01_track",
             "solver":"this",
             "parameters_list":["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"],

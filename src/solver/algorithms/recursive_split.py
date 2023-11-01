@@ -3,7 +3,7 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep,MAX_SPLIT_CALL
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep,MAX_SPLIT_CALL,OUTPUT_LEAF_NODE_PERCENTAGE,GNN_BRANCH_RATIO
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
@@ -34,12 +34,18 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep=0
         self.nodes = []
         self.edges = []
-        self.branch_method_func_map = {"extract_branching_data":self._extract_branching_data,"fixed":self._use_fixed_branching,"gnn": self._use_gnn_branching, "random": self._use_random_branching}
+        self.branch_method_func_map = {"extract_branching_data":self._extract_branching_data,
+                                       "fixed":self._use_fixed_branching,"random": self._use_random_branching,
+                                       "gnn": self._use_gnn_branching,
+                                       "gnn:random":self._use_gnn_with_random_branching,
+                                       "gnn:fixed":self._use_gnn_with_fixed_branching}
+        self._branch_method=parameters["branch_method"]
         self._branch_method_func=self.branch_method_func_map[parameters["branch_method"]]
+        self.record_and_close_branch= self._record_and_close_branch_with_file if parameters["branch_method"]=="extract_branching_data" else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
-        if parameters["branch_method"] == "gnn":
+        if "gnn" in parameters["branch_method"]:
             # Load the model
             self.gnn_model = load_model(parameters["gnn_model_path"])
             #load the model from mlflow
@@ -56,9 +62,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         first_equation = self.equation_list[0]
 
         try:
-            node_info = (0, {"label": "start", "status": None,"output_to_file":False})
+            node_info = (0, {"label": "start", "status": None,"output_to_file":False,"shape":"ellipse"})
             self.nodes.append(node_info)
-            satisfiability, variables = self.explore_paths(first_equation,{"node_number": node_info[0], "label": node_info[1]["label"],"output_to_file":False})
+            satisfiability, variables = self.explore_paths(first_equation,{"node_number": node_info[0], "label": node_info[1]["label"]})
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
@@ -81,7 +87,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         ################################ Record nodes and edges ################################
 
         current_node_number = self.total_explore_paths_call
-        node_info = (current_node_number, {"label": current_eq.eq_str, "status": None,"output_to_file":False})
+        node_info = (current_node_number, {"label": current_eq.eq_str, "status": None,"output_to_file":False,"shape":"ellipse"})
         self.nodes.append(node_info)
         self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
@@ -176,7 +182,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             ## left side is terminal, right side is variable
             elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
-                return self.left_side_variable_right_side_terminal(current_eq,
+                return self.left_side_variable_right_side_terminal(Equation(current_eq.right_terms,current_eq.left_terms),
                                                                    current_node_number, node_info)
 
             ## both side are different terminals
@@ -217,8 +223,21 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                         node_info, branch_methods)
 
 
-    def _use_gnn_branching(self, eq:Equation, current_node_number, node_info,
-                           branch_methods):
+    def _use_gnn_with_random_branching(self,eq:Equation, current_node_number, node_info,branch_methods):
+        if random.random() < GNN_BRANCH_RATIO: #random.random() generate a float between 0 to 1
+            return self._use_gnn_branching(eq,current_node_number,node_info,branch_methods)
+        else:
+            return self._use_random_branching(eq,current_node_number,node_info,branch_methods)
+
+    def _use_gnn_with_fixed_branching(self,eq:Equation, current_node_number, node_info,branch_methods):
+        if random.random() < GNN_BRANCH_RATIO: #random.random() generate a float between 0 to 1
+            return self._use_gnn_branching(eq,current_node_number,node_info,branch_methods)
+        else:
+            return self._use_fixed_branching(eq,current_node_number,node_info,branch_methods)
+
+
+    def _use_gnn_branching(self, eq:Equation, current_node_number, node_info, branch_methods):
+        #print(self.total_split_call,"gnn branch")
         # Compute branches and prepare data structures
         branches = []
         graph_list = []
@@ -263,12 +282,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_random_branching(self, eq:Equation, current_node_number, node_info,
                               branch_methods):
+        #print(self.total_split_call,"random branch")
         random.shuffle(branch_methods)
         return self._use_fixed_branching(eq, current_node_number, node_info,
                               branch_methods)
 
     def _use_fixed_branching(self, eq:Equation, current_node_number, node_info,
                               branch_methods):
+        #print(self.total_split_call,"fixed branch")
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms,eq.variable_list)
 
@@ -320,18 +341,42 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         middle_eq_file_name = self.file_name + "_" + str(current_node_number)
         #if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
-            self._output_train_data(middle_eq_file_name, eq, satisfiability,node_info)
-            return self.record_and_close_branch(SAT, branch_variables, node_info,eq)
+            return self.record_and_close_branch_and_output_eq(SAT, branch_variables, node_info,eq)
         elif UNKNOWN in satisfiability_list:
-            return self.record_and_close_branch(UNKNOWN, branch_variables, node_info,eq)
+            return self.record_and_close_branch_and_output_eq(UNKNOWN, branch_variables, node_info,eq)
         else:
-            self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info)
-            return self.record_and_close_branch(UNSAT, branch_variables, node_info,eq)
+            return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info,eq)
 
 
-    def record_and_close_branch(self, satisfiability: str, variables, node_info,eq:Equation):
+
+
+    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info,eq:Equation):
+        if satisfiability!=UNKNOWN:
+            middle_eq_file_name = self.file_name + "_" + str(node_info[0])
+            self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info,"diamond")
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
+
+
+    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation):
+        if satisfiability!=UNKNOWN:
+            if random.random() < OUTPUT_LEAF_NODE_PERCENTAGE:  # random.random() generates a float between 0.0 and 1.0
+                middle_eq_file_name = self.file_name + "_" + str(node_info[0])
+                self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info, "box")
+            else:
+                pass
+        node_info[1]["status"] = satisfiability
+        return satisfiability, variables
+
+    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation):
+        node_info[1]["status"] = satisfiability
+        return satisfiability, variables
+
+    def _output_train_data(self, file_name,eq,satisfiability,node_info,shape):
+        node_info[1]["output_to_file"] = True
+        node_info[1]["shape"] = shape
+        if self.output_train_data==True:
+            eq.output_eq_file(file_name,satisfiability)
 
     def pop_both_same_terms(self, left_terms: List[Term], right_terms: List[Term],variables):
         '''
@@ -529,9 +574,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         self.equation_list[0].visualize_graph(file_path,graph_func)
 
-    def _output_train_data(self, file_name,eq,satisfiability,node_info):
-        node_info[1]["output_to_file"] = True
-        if self.output_train_data==True:
-            eq.output_eq_file(file_name,satisfiability)
+
 
 
