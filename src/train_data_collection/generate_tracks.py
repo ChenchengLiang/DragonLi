@@ -10,7 +10,6 @@ sys.path.append(path)
 
 import random
 import string
-import os
 from src.solver.Constants import project_folder,bench_folder
 
 def main():

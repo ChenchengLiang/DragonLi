@@ -22,7 +22,7 @@ def main(args):
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
 
     arg_parser.add_argument('file_path', type=str, help='Path to the file')
-    arg_parser.add_argument('branch_method', type=str, choices=['gnn', 'random', 'fixed'],
+    arg_parser.add_argument('branch_method', type=str, #choices=['gnn', 'random', 'fixed'],
                         help='Branching method to be used')
     arg_parser.add_argument('--graph_type', type=str, default=None,
                         help='Type of graph (optional)')
@@ -42,7 +42,8 @@ def main(args):
 
 
     #handle parameters
-    graph_func_map={None:Equation.get_graph_1,"graph_1":Equation.get_graph_1,"graph_2":Equation.get_graph_2}
+    graph_func_map={None:Equation.get_graph_1,"graph_1":Equation.get_graph_1,"graph_2":Equation.get_graph_2,
+                    "graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,"graph_5":Equation.get_graph_5}
 
     #parse file
     parser_type = EqParser()

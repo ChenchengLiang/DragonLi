@@ -11,7 +11,7 @@ from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACH
 import random
 
 
-def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict,
+def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict, summary_folder_name,
                      solver_log: bool = False):
     track_result_list = []
 
@@ -24,7 +24,7 @@ def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list
             (os.path.basename(file), result_dict["result"], result_dict["used_time"], result_dict["split_number"]))
 
     result_summary_dict = result_summary(track_result_list)
-    write_to_cvs_file(track_result_list, result_summary_dict, benchmark_name, solver, parameters_list)
+    write_to_cvs_file(track_result_list, result_summary_dict, benchmark_name, solver, parameters_list,summary_folder_name)
 
 
 def result_summary(track_result_list: List[Tuple[str, str, float]]):
@@ -48,8 +48,10 @@ def result_summary(track_result_list: List[Tuple[str, str, float]]):
 
 
 def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_dict: Dict, benchmark_name: str,
-                      solver: str, parameters_list: List[str]):
-    summary_folder = project_folder + "/src/process_benchmarks/summary"
+                      solver: str, parameters_list: List[str],summary_folder_name):
+    summary_folder = project_folder + "/src/process_benchmarks/summary/"+summary_folder_name
+    if os.path.exists(summary_folder) == False:
+        os.mkdir(summary_folder)
     # Name of the CSV file to write to
     if len(parameters_list)>1:
         parameters_str_list=[parameters_list[0]] + [parameters_list[1].replace("--graph_type ", "")] + [parameters_list[2][parameters_list[2].rfind("_")+1:parameters_list[2].rfind(".")]]

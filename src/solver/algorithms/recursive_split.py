@@ -265,6 +265,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
 
+
         # Perform depth-first search based on the sorted prediction list
         for i, data in enumerate(sorted_prediction_list):
             eq, v, edge_label = data[1]

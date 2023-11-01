@@ -35,10 +35,11 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "track_01",
-            "benchmark_folder":bench_folder+"/01_track",
+            "benchmark_name": "test",
+            "benchmark_folder":bench_folder+"/test",
             "solver":"this",
-            "parameters_list":["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"],
+            "parameters_list":["fixed","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"],
+            "summary_folder_name":"test_summary"
         }
 
     solver_log = False
@@ -46,7 +47,7 @@ def main():
 
     print("config:",config)
 
-    run_on_one_track(config["benchmark_name"], config["benchmark_folder"], config["parameters_list"], config["solver"], suffix_dict,
+    run_on_one_track(config["benchmark_name"], config["benchmark_folder"], config["parameters_list"], config["solver"], suffix_dict,summary_folder_name=config["summary_folder_name"],
                      solver_log=solver_log)
 
 
