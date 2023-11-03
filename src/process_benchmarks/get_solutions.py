@@ -35,11 +35,11 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "test",
-            "benchmark_folder":bench_folder+"/test",
+            "benchmark_name": "01_track",
+            "benchmark_folder":bench_folder+"/01_track",
             "solver":"this",
-            "parameters_list":["fixed","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"],
-            "summary_folder_name":"test_summary"
+            "parameters_list":["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GIN.pth"],
+            "summary_folder_name":"01_track_summary"
         }
 
     solver_log = False

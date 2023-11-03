@@ -10,7 +10,7 @@ sys.path.append(path)
 
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
-from src.solver.utils import print_results
+from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, ElimilateVariables, \
     ElimilateVariablesRecursive
 from src.solver.DataTypes import Equation
@@ -39,11 +39,6 @@ def main(args):
 
     print(file_path, branch_method, graph_type)
 
-
-
-    #handle parameters
-    graph_func_map={None:Equation.get_graph_1,"graph_1":Equation.get_graph_1,"graph_2":Equation.get_graph_2,
-                    "graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,"graph_5":Equation.get_graph_5}
 
     #parse file
     parser_type = EqParser()

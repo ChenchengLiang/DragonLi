@@ -6,6 +6,7 @@ from src.solver.visualize_util import draw_graph
 import copy
 
 
+
 class Node:
     def __init__(self, id, type, content, label):
         self.id = id

@@ -45,8 +45,8 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark":"01_track_generated_train_data_sat_with_some_leafs","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 300, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": 64,
+            "benchmark":"random_track_train","graph_type": "graph_1", "model_type": "GIN", "num_epochs": 300, "learning_rate": 0.001,
+            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 64,
             "gnn_layer_num": 4, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 64, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
 
@@ -181,7 +181,7 @@ def train(dataset,GNN_model,parameters:Dict):
         if epoch % 20 == 0:
             print(
                 f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}")
-        metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss, "valid_accuracy": valid_accuracy,"epoch":epoch}
+        metrics = {"train_loss": avg_train_loss, "valid_loss": avg_valid_loss, "best_valid_accuracy":best_valid_accuracy,"valid_accuracy": valid_accuracy,"epoch":epoch}
         mlflow.log_metrics(metrics, step=epoch)
 
     # Return the trained model and the best metrics

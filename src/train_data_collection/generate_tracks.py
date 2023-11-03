@@ -13,10 +13,10 @@ import string
 from src.solver.Constants import project_folder,bench_folder
 
 def main():
-    track_1_mixed_folder = bench_folder+"/random_track"
+    track_1_mixed_folder = bench_folder+"/01_track_generated/SAT_200_for_eval"
     start_idx = 1001
     end_idx = 1200
-    save_equations(start_idx, end_idx, track_1_mixed_folder, "random_track",generate_one_random)
+    save_equations(start_idx, end_idx, track_1_mixed_folder, "01_track_SAT",generate_one_track_1)
 
 
 

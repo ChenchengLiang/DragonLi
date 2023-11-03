@@ -15,7 +15,7 @@ from src.solver.Constants import project_folder
 sys.path.append(project_folder)
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
-from src.solver.utils import print_results
+from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
 from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
@@ -23,9 +23,10 @@ from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
 
-    for file_path in glob.glob(bench_folder+"/01_track_generated_train_data_sat_with_some_leafs/graph_1/*.eq"):
+    graph_type="graph_1"
+    for i,file_path in enumerate(glob.glob(bench_folder+"/random_track_train/"+graph_type+"/*.eq")):
         file_name=strip_file_name_suffix(file_path)
-        print(file_path)
+        print(i,file_path)
 
         #read file answer
         with open(file_name + ".answer", "r") as f:
@@ -37,7 +38,8 @@ def main():
             parsed_content = parser.parse(file_path)
             print("parsed_content:", parsed_content)
 
-            algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":"graph_1","graph_func":Equation.get_graph_1} # branch_method [gnn.random,fixed]
+
+            algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
 
             #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
             solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

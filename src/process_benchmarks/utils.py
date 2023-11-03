@@ -9,6 +9,7 @@ from typing import List, Dict, Tuple
 import glob
 from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR
 import random
+from src.solver.independent_utils import mean
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict, summary_folder_name,
@@ -252,7 +253,18 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
         second_summary_data_rows.append([solver] + reconstructed_summary_data)
 
 
-    ############################################
+
+
+    compute_split_number_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
+                                                    first_summary_solver_row, second_summary_title_row,
+                                                    second_summary_data_rows)
+
+
+
+
+
+
+    #################### write to csv ########################
 
     summary_path = os.path.join(summary_folder, track_name+"_reconstructed_summary_1.csv")
     if os.path.exists(summary_path):
@@ -262,10 +274,8 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     with open(summary_path, 'w') as csvfile:
         csvwriter = csv.writer(csvfile)
 
-        # Writing the column solvers
-        csvwriter.writerow(first_summary_solver_row)
-        # Writing the column headers
         csvwriter.writerow(first_summary_title_row)
+        csvwriter.writerow(first_summary_solver_row)
 
         for row in first_summary_data_rows:
             csvwriter.writerow(row)
@@ -279,6 +289,38 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
         csvwriter = csv.writer(csvfile)
         csvwriter.writerow(second_summary_title_row)
         csvwriter.writerows(second_summary_data_rows)
+
+
+
+def compute_split_number_for_common_solved_problems(first_summary_data_rows,first_summary_title_row,first_summary_solver_row,second_summary_title_row,second_summary_data_rows):
+    # compute sat_average_split_number for commonly solved problem
+    # find common solved problems
+    common_problem_list = []
+    for row in first_summary_data_rows:
+        result_count = 0
+        sat_configuration = 0
+        file_name = row[0]
+        for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+            if measurement == "Result":
+                result_count += 1
+                if value == SAT:
+                    sat_configuration += 1
+        if result_count == sat_configuration:
+            common_problem_list.append(file_name)
+
+    # compute sat_average_split_number_common_solved
+    sat_average_split_number_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
+    for row in first_summary_data_rows:
+        file_name = row[0]
+        if file_name in common_problem_list:
+            for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+                if measurement == "split_number":
+                    sat_average_split_number_common_solved_dict[solver].append(value)
+
+    # write to summary 2 file
+    second_summary_title_row +=  ["sat_average_split_number_common_solved " + str(len(common_problem_list))]
+    for summary_row in second_summary_data_rows:
+        summary_row.append(mean([int(x) for x in sat_average_split_number_common_solved_dict[summary_row[0]]]))
 
 
 def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,solver):
@@ -319,6 +361,8 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
             sat_average_split_number = 0
 
         reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number]
+
+
 
         # print(reconstructed_summary_title)
         # print(reconstructed_summary_data)

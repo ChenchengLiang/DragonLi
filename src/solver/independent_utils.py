@@ -73,3 +73,10 @@ def write_configurations_to_json_file(configuration_folder,configurations):
         file_name = configuration_folder + "/config_" + str(i) + ".json"
         with open(file_name, 'w') as f:
             json.dump(config, f, indent=4)
+
+def mean(l):
+    if len(l)==0:
+        return 0
+    else:
+        return sum(l)/len(l)
+

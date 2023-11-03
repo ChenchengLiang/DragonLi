@@ -16,7 +16,7 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 def main():
     configurations = []
-    for benchmark in ["01_track_generated_train_data_sat_with_some_leafs"]:
+    for benchmark in ["random_track_train"]:
         for graph_type in ["graph_1"]:#["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
             for gnn_layer_num in [2, 4, 8]:
                 for hidden_dim in [32, 64]:

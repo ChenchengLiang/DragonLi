@@ -3,7 +3,7 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,max_deep,MAX_SPLIT_CALL,OUTPUT_LEAF_NODE_PERCENTAGE,GNN_BRANCH_RATIO
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN,project_folder,MAX_DEEP,MAX_SPLIT_CALL,OUTPUT_LEAF_NODE_PERCENTAGE,GNN_BRANCH_RATIO
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
@@ -34,7 +34,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep=0
         self.nodes = []
         self.edges = []
-        self.branch_method_func_map = {"extract_branching_data":self._extract_branching_data,
+        self.branch_method_func_map = {"extract_branching_data":self._extract_branching_data_task_1,
                                        "fixed":self._use_fixed_branching,"random": self._use_random_branching,
                                        "gnn": self._use_gnn_branching,
                                        "gnn:random":self._use_gnn_with_random_branching,
@@ -308,19 +308,23 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.record_and_close_branch(satisfiability, branch_variables, node_info,eq)
 
 
+    def _extract_branching_data_task_2(self):
+        pass
 
-    def _extract_branching_data(self, eq:Equation, current_node_number, node_info,
-                             branch_methods):
+    def _extract_branching_data_task_1(self, eq:Equation, current_node_number, node_info,
+                                       branch_methods):
+
 
         ################################ stop branching  ################################
-        # self.current_deep += 1
-        # if self.current_deep > max_deep:
-        #     node_info[1]["status"] = UNKNOWN
-        #     self.current_deep = 0
-        #     return self.record_and_close_branch(UNKNOWN, variables, node_info)
+        self.current_deep+=1
+        if self.current_deep>MAX_DEEP:
+            self.current_deep=0
+            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+
         if self.total_split_call>MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info,eq)
 
+        ################################ branching  ################################
         satisfiability_list = []
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms,eq.variable_list)
@@ -332,14 +336,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             satisfiability_list.append(satisfiability)
 
-            # output train data
-            #print(str(current_node_number) + "_" + str(i),satisfiability,Equation(l, r, satisfiability).eq_str)
-            #middle_eq_file_name = self.file_name + "_" + str(current_node_number) + "_" + str(i)
-            #self._output_train_data(middle_eq_file_name, l, r, satisfiability,node_info)
 
-
-
-        middle_eq_file_name = self.file_name + "_" + str(current_node_number)
+        ################################ output train data ################################
         #if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
             return self.record_and_close_branch_and_output_eq(SAT, branch_variables, node_info,eq)
@@ -355,6 +353,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if satisfiability!=UNKNOWN:
             middle_eq_file_name = self.file_name + "_" + str(node_info[0])
             self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info,"diamond")
+
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
 

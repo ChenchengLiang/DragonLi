@@ -13,6 +13,7 @@ from src.solver.independent_utils import strip_file_name_suffix,dump_to_json_wit
 from src.solver.Parser import Parser,EqParser
 import json
 import glob
+from src.solver.utils import graph_func_map
 from src.solver.DataTypes import Equation
 from typing import List, Tuple, Dict, Union, Optional, Callable
 from src.solver.Constants import project_folder,bench_folder
@@ -32,10 +33,8 @@ def main():
     #
 
     #/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data_sat_from_solver
-    benchmark="01_track_generated_train_data_sat_with_some_leafs"
-    graph_func_map = {None: Equation.get_graph_1, "graph_1": Equation.get_graph_1,
-                      "graph_2": Equation.get_graph_2, "graph_3": Equation.get_graph_3, "graph_4": Equation.get_graph_4,
-                      "graph_5": Equation.get_graph_5}
+    benchmark="random_track_train"
+
     for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
 
         file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
