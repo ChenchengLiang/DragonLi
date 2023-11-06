@@ -11,12 +11,14 @@ sys.path.append(path)
 import random
 import string
 from src.solver.Constants import project_folder,bench_folder
+from copy import deepcopy
+from src.solver.independent_utils import remove_duplicates
 
 def main():
-    track_1_mixed_folder = bench_folder+"/01_track_generated/SAT_200_for_eval"
+    track_1_sat_folder = bench_folder+"/01_track_generated_SAT_eval"
     start_idx = 1001
     end_idx = 1200
-    save_equations(start_idx, end_idx, track_1_mixed_folder, "01_track_SAT",generate_one_track_1)
+    save_equations(start_idx, end_idx, track_1_sat_folder, "01_track_SAT",generate_one_track_1)
 
 
 
@@ -71,37 +73,55 @@ def save_equations(start_index, end_index, folder, track_name,equation_generator
     if not os.path.exists(folder):
         os.makedirs(folder)
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
+        print("---",str(i),"----")
         equation = equation_generator()
         filename = os.path.join(folder, f"g_{track_name}_{i}.eq")
         with open(filename, 'w') as file:
             file.write(equation)
 
 
-def generate_equation(max_variables=15, max_terminals=10, max_length=300, unsat=False):
+def replace_one_substring_with_variables(one_hand_side,random_string_length,variables):
+    end_index=0
+    replacement_counter=0
+    #print("one_hand_side", one_hand_side)
+    while end_index<random_string_length:
+        start_index = random.randint(end_index, random_string_length - 1)
+        end_index = start_index + random.randint(1, random_string_length - start_index)
+        random_variables = ''.join(random.choice(variables) for _ in range(random.randint(1, len(variables))))
+        #print(start_index,end_index,one_hand_side[start_index:end_index],"->",random_variables)
+        new_end_index = len(one_hand_side[:start_index] + random_variables)
+        one_hand_side=one_hand_side[:start_index]+random_variables+one_hand_side[end_index:]
+        end_index=new_end_index
+        random_string_length=len(one_hand_side)
+        #print("one_hand_side", one_hand_side)
+        replacement_counter += 1
 
+    print("replacement_counter",replacement_counter)
+    return one_hand_side
+
+
+
+
+def generate_equation(max_variables=15, max_terminals=10, max_length=300, unsat=False):
     variables,terminals=get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
-    random_string = ''.join(random.choice(terminals) for _ in range(max_length))
+    random_string = ''.join(random.choice(terminals) for _ in range(random.randint(1,max_length)))
+    equation_left = deepcopy(random_string)
+    equation_right = deepcopy(random_string)
 
-    # Create a dictionary to store variable replacement values
-    var_replacements = {}
+    print("random_string",len(random_string),random_string)
 
-    # Replace parts of the string with variables randomly
-    for var in variables:
-        start_index = random.randint(0, max_length - 1)
-        end_index = random.randint(start_index, max_length)
-        substring = random_string[start_index:end_index]
+    random_string_length=len(random_string)
 
-        # Replace and store the replacement value
-        random_string = random_string.replace(substring, var, 1)
-        var_replacements[var] = substring
+    equation_left=replace_one_substring_with_variables(equation_left,random_string_length,variables)
+    equation_right=replace_one_substring_with_variables(equation_right,random_string_length,variables)
+    print("equation_left",equation_left)
+    print("equation_right",equation_right)
 
-    # Create the equation string
-    equation_left = random_string
-    equation_right = equation_left
-    for var, value in var_replacements.items():
-        equation_right = equation_right.replace(var, value, 1)
+
+
+
 
     if unsat:
         # Make a single modification to the right side to make the equation UNSAT

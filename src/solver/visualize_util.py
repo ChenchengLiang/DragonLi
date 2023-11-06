@@ -4,7 +4,8 @@ from pyvis.network import Network
 import plotly.graph_objects as go
 from graphviz import Digraph
 
-
+show_limited_html_nodes=True
+show_html_nodes=20
 
 def get_node_color(status):
     if status is None:
@@ -78,10 +79,20 @@ def visualize_path_html(nodes, edges, file_path):
                  ("3", "1", {'label': 'B'}),
                  ("3", "3", {'label': 'C'})]
     '''
-
     G = nx.DiGraph()
-    G.add_nodes_from(nodes)
-    G.add_edges_from(edges)
+    if show_limited_html_nodes==True:
+        show_nodes=nodes[:show_html_nodes]
+        show_node_index = [n[0] for n in show_nodes]
+        show_edges=[]
+        for e in edges:
+            if e[0] in show_node_index and e[1] in show_node_index:
+                show_edges.append(e)
+
+        G.add_nodes_from(show_nodes)
+        G.add_edges_from(show_edges)
+    else:
+        G.add_nodes_from(nodes)
+        G.add_edges_from(edges)
 
     pos = nx.spring_layout(G)
 

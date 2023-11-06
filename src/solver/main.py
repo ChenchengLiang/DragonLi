@@ -25,7 +25,8 @@ def main():
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
     #file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"
-    file_path = bench_folder + "/examples/g_02_SAT/g_01_track_SAT_2.eq"
+    #file_path = bench_folder + "/examples/g_02_SAT/g_01_track_SAT_2.eq"
+    file_path = bench_folder + "/examples/g_01_SAT_464/g_01_track_SAT_464.eq"
     #file_path = bench_folder + "/examples/g_random_track_1144.eq"
 
     #file_path = bench_folder +"/test/03_track_11.eq"

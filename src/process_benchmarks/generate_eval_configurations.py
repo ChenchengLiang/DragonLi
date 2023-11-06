@@ -20,15 +20,15 @@ import shutil
 def main():
     solver_param_list = [
         ["this", ["fixed"]],
-        ["this", ["random"]],
+        #["this", ["random"]],
         #["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GAT.pth"]],
         #["this",["gnn","--graph_type graph_2","--gnn_model_path "+project_folder+"/models/model_graph_2_GAT.pth"]],
-        ["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
-        ["this",["gnn:random","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
-        ["this",["gnn:fixed","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
-        ["this",["gnn", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
-        ["this", ["gnn:random", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
-        ["this",["gnn:fixed", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
+        #["this",["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
+        #["this",["gnn:random","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
+        #["this",["gnn:fixed","--graph_type graph_1","--gnn_model_path "+project_folder+"/models/model_graph_1_GCN.pth"]],
+        #["this",["gnn", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
+        #["this", ["gnn:random", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
+        #["this",["gnn:fixed", "--graph_type graph_1", "--gnn_model_path " + project_folder + "/models/model_graph_1_GIN.pth"]],
         #["woorpje",[]],
         # ["z3",[]],
         # ["ostrich",[]],
@@ -46,10 +46,10 @@ def main():
         #"track_03": bench_folder + "/03_track",
         # "track_04": bench_folder + "/04_track",
         # "track_05": bench_folder + "/05_track",
-        "track_random_train": bench_folder + "/random_track_train",
+        #"track_random_train": bench_folder + "/random_track_train",
         #"track_random_eval": bench_folder + "/random_track_eval",
-        #"track_01_generated_SAT_train": bench_folder + "/01_track_generated_SAT_train",
-        #"track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
+        "track_01_generated_SAT_train": bench_folder + "/01_track_generated_SAT_train",
+        "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
     configuration_list = []
