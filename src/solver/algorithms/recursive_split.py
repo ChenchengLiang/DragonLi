@@ -4,7 +4,7 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, MAX_DEEP, MAX_SPLIT_CALL, \
-    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO
+    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO,MAX_EQ_LENGTH
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
@@ -47,7 +47,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
-        if "gnn" in parameters["branch_method"] or "extract_branching_data"==parameters["branch_method"]:
+        if "gnn" in parameters["branch_method"]:
             # Load the model
             self.gnn_model = load_model(parameters["gnn_model_path"])
             # load the model from mlflow
@@ -318,59 +318,64 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
 
         ################################ stop branching condition ################################
-        self.current_deep += 1
-        if self.current_deep > MAX_DEEP:
-            self.current_deep = 0
+        if eq.term_length>MAX_EQ_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
+        self.current_deep += 1
+        if self.current_deep > MAX_DEEP:
+            self.current_deep = 0
+            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+
+
+
         ################################ branching ################################
-        # satisfiability_list = []
-        # for i, branch in enumerate(branch_methods):
-        #     l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
-        #
-        #     satisfiability, branch_variables = self.explore_paths(Equation(l, r),
-        #                                                           {"node_number": current_node_number,
-        #                                                            "label": edge_label})
-        #     satisfiability_list.append(satisfiability)
+        satisfiability_list = []
+        for i, branch in enumerate(branch_methods):
+            l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
+
+            satisfiability, branch_variables = self.explore_paths(Equation(l, r),
+                                                                  {"node_number": current_node_number,
+                                                                   "label": edge_label})
+            satisfiability_list.append(satisfiability)
 
         ################################ gnn branching ################################
 
-        branches = []
-        graph_list = []
-
-        for method in branch_methods:
-            l, r, v, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
-            new_eq = Equation(l, r)
-            nodes, edges = self.graph_func(new_eq.left_terms, new_eq.right_terms)
-            graph_dict = new_eq.graph_to_gnn_format(nodes, edges)
-            tuple_data = (new_eq, v, edge_label)
-
-            branches.append(tuple_data)
-            graph_list.append(graph_dict)
-
-        # Load data
-        evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", graphs_from_memory=graph_list)
-        evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
-
-        # Call gnn to predict
-        prediction_list = []
-
-        for (batched_graph, labels), eq_tuple in zip(evaluation_dataloader, branches):
-            pred = self.gnn_model(batched_graph, batched_graph.ndata["feat"].float())  # pred is a float between 0 and 1
-            prediction_list.append([pred, eq_tuple])
-
-        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
-
-        # Perform depth-first search based on the sorted prediction list
-        satisfiability_list = []
-        for i, data in enumerate(sorted_prediction_list):
-            eq, v, edge_label = data[1]
-            satisfiability, branch_variables = self.explore_paths(eq,
-                                                           {"node_number": current_node_number, "label": edge_label})
-            satisfiability_list.append(satisfiability)
+        # branches = []
+        # graph_list = []
+        #
+        # for method in branch_methods:
+        #     l, r, v, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
+        #     new_eq = Equation(l, r)
+        #     nodes, edges = self.graph_func(new_eq.left_terms, new_eq.right_terms)
+        #     graph_dict = new_eq.graph_to_gnn_format(nodes, edges)
+        #     tuple_data = (new_eq, v, edge_label)
+        #
+        #     branches.append(tuple_data)
+        #     graph_list.append(graph_dict)
+        #
+        # # Load data
+        # evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", graphs_from_memory=graph_list)
+        # evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
+        #
+        # # Call gnn to predict
+        # prediction_list = []
+        #
+        # for (batched_graph, labels), eq_tuple in zip(evaluation_dataloader, branches):
+        #     pred = self.gnn_model(batched_graph, batched_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+        #     prediction_list.append([pred, eq_tuple])
+        #
+        # sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+        #
+        # # Perform depth-first search based on the sorted prediction list
+        # satisfiability_list = []
+        # for i, data in enumerate(sorted_prediction_list):
+        #     eq, v, edge_label = data[1]
+        #     satisfiability, branch_variables = self.explore_paths(eq,
+        #                                                    {"node_number": current_node_number, "label": edge_label})
+        #     satisfiability_list.append(satisfiability)
 
         ################################ output train data ################################
         # if there is an element in satisfiability_list is SAT, return SAT

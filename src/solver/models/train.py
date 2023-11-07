@@ -25,6 +25,8 @@ import mlflow
 import argparse
 import json
 import datetime
+import subprocess
+import signal
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -45,10 +47,12 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark":"random_track_train","graph_type": "graph_1", "model_type": "GIN", "num_epochs": 300, "learning_rate": 0.001,
+                "benchmark":"01_track_generated_SAT_train","graph_type": "graph_1", "model_type": "GCN", "num_epochs": 2, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 64,
-            "gnn_layer_num": 4, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 64, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
+            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 64, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
+
+    mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
 
     today = datetime.date.today().strftime("%Y-%m-%d")
     mlflow.set_experiment(today+"-"+config["benchmark"])
@@ -56,6 +60,11 @@ def main():
     with mlflow.start_run():
         mlflow.log_params(config)
         train_one_model(config)
+
+
+    mlflow_ui_process.terminate()
+
+    os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
 
     print("done")
 
@@ -67,6 +76,7 @@ def train_one_model(parameters):
     print("parameters:", parameters)
     benchmark_folder = config['Path']['woorpje_benchmarks']
 
+    print("load dataset")
     graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
     train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
     train_valid_dataset.statistics()

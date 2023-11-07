@@ -24,7 +24,7 @@ from src.solver.independent_utils import strip_file_name_suffix
 def main():
 
     graph_type="graph_1"
-    for i,file_path in enumerate(glob.glob(bench_folder+"/random_track_train/"+graph_type+"/*.eq")):
+    for i,file_path in enumerate(glob.glob(bench_folder+"/01_track_generated_SAT_train/"+graph_type+"/*.eq")):
         file_name=strip_file_name_suffix(file_path)
         print(i,file_path)
 

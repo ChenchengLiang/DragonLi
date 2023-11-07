@@ -33,7 +33,7 @@ def main():
     #
 
     #/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data_sat_from_solver
-    benchmark="random_track_train"
+    benchmark="01_track_generated_SAT_train"
 
     for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
 

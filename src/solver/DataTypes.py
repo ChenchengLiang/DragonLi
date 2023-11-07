@@ -152,6 +152,15 @@ class Equation:
     @property
     def term_list(self) -> List[Term]:
         return self.left_terms + self.right_terms
+    @property
+    def term_length(self):
+        return len(self.term_list)
+    @property
+    def left_hand_side_length(self):
+        return len(self.left_terms)
+    @property
+    def right_hand_side_length(self):
+        return len(self.right_terms)
 
     @property
     def variable_list(self) -> List[Variable]:

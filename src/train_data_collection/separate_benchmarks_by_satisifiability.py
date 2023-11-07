@@ -14,7 +14,7 @@ import shutil
 import glob
 
 def main():
-    benchmark_folder=bench_folder+"/random_track_train"
+    benchmark_folder=bench_folder+"/01_track_generated_SAT_train"
 
     #create folders
     sat_folder=benchmark_folder+"/SAT"
