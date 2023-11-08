@@ -21,32 +21,42 @@ from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
+from src.train_data_collection.utils import output_one_eq_graph
 def main():
 
-    graph_type="graph_1"
-    for i,file_path in enumerate(glob.glob(bench_folder+"/01_track_generated_SAT_train/"+graph_type+"/*.eq")):
-        file_name=strip_file_name_suffix(file_path)
-        print(i,file_path)
+    benchmark="01_track_generated_SAT_train"
 
-        #read file answer
-        with open(file_name + ".answer", "r") as f:
-            satisfiability = f.read()
-        if satisfiability == SAT or satisfiability==UNSAT:
+    for graph_type in ["graph_5"]:
+        # extract train data
+        for i,file_path in enumerate(glob.glob(bench_folder+"/"+benchmark+"/"+graph_type+"/*.eq")):
+            file_name=strip_file_name_suffix(file_path)
+            print(i,file_path)
 
-            parser_type = EqParser()
-            parser = Parser(parser_type)
-            parsed_content = parser.parse(file_path)
-            print("parsed_content:", parsed_content)
+            #read file answer
+            with open(file_name + ".answer", "r") as f:
+                satisfiability = f.read()
+            if satisfiability == SAT or satisfiability==UNSAT:
+
+                parser_type = EqParser()
+                parser = Parser(parser_type)
+                parsed_content = parser.parse(file_path)
+                print("parsed_content:", parsed_content)
 
 
-            algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
+                algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type]} # branch_method [gnn.random,fixed]
 
-            #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
-            solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
+                #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
+                solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
 
-            result_dict = solver.solve(parsed_content,visualize=False,output_train_data=True)
+                result_dict = solver.solve(parsed_content,visualize=False,output_train_data=True)
 
-            print_results(result_dict)
+                print_results(result_dict)
+
+        #draw graphs
+
+        file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
+        for file_path in file_list:
+            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
 
 
 if __name__ == '__main__':

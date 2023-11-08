@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
+from dgl.nn.pytorch.glob import GlobalAttentionPooling
 
 class BaseWithNFFNN(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, n_ffnn, ffnn_hidden_size,gnn_dropout_rate=0.5,ffnn_dropout_rate=0.5):
@@ -73,3 +74,37 @@ class GINWithNFFNN(BaseWithNFFNN):
             if i < len(self.gin_layers) - 1:  # Apply dropout to all layers except the last one
                 h = F.dropout(h, self.gnn_dropout_rate, training=self.training)
         return h
+
+
+class GatingNetwork(nn.Module):
+    def __init__(self, gnn_hidden_dim):
+        super(GatingNetwork, self).__init__()
+        self.gate_nn = nn.Linear(gnn_hidden_dim, 1)
+
+    def forward(self, h):
+        return self.gate_nn(h)
+
+class GCNWithGAPFFNN(BaseWithNFFNN):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, ffnn_layer_num, ffnn_hidden_dim, gnn_dropout_rate=0.5, ffnn_dropout_rate=0.5):
+        super(GCNWithGAPFFNN, self).__init__(input_feature_dim, gnn_hidden_dim, ffnn_layer_num, ffnn_hidden_dim, gnn_dropout_rate, ffnn_dropout_rate)
+        self.conv_layers = nn.ModuleList([GraphConv(gnn_hidden_dim, gnn_hidden_dim) for _ in range(gnn_layer_num)])
+        self.gating_network = GatingNetwork(gnn_hidden_dim)
+        self.global_attention_pooling = GlobalAttentionPooling(self.gating_network)
+
+    def gnn_forward(self, g, h):
+        # Apply GNN layers
+        for i, layer in enumerate(self.conv_layers):
+            h = F.relu(layer(g, h))
+            if i < len(self.conv_layers) - 1:
+                h = F.dropout(h, self.gnn_dropout_rate, training=self.training)
+        return h
+
+    def forward(self, g, in_feat):
+        h = self.embedding(in_feat.long())
+        h = self.gnn_forward(g, h)
+        g.ndata['h'] = h
+        # Apply Global Attention Pooling
+        hg = self.global_attention_pooling(g, h)
+        prob = self.process_ffnn(hg)
+        return prob
+
