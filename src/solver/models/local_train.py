@@ -32,12 +32,21 @@ def main():
         #     "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate": 0.5, "ffnn_hidden_dim": 128, "ffnn_layer_num": 2,
         #     "ffnn_dropout_rate": 0.5
         # },
+        # {
+        #     "benchmark": "01_track_generated_SAT_train", "graph_type": "graph_1", "model_type": "GCNwithGAP",
+        #     "num_epochs": 2,
+        #     "learning_rate": 0.001,
+        #     "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dimention,
+        #     "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate": 0.5, "ffnn_hidden_dim": hidden_dimention, "ffnn_layer_num": 2,
+        #     "ffnn_dropout_rate": 0.5
+        # },
         {
-            "benchmark": "01_track_generated_SAT_train", "graph_type": "graph_1", "model_type": "GCNwithGAP",
+            "benchmark": "example_train", "graph_type": "graph_1", "model_type": "MultiGNNs",
             "num_epochs": 2,
             "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dimention,
-            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate": 0.5, "ffnn_hidden_dim": hidden_dimention, "ffnn_layer_num": 2,
+            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate": 0.5, "ffnn_hidden_dim": hidden_dimention,
+            "ffnn_layer_num": 2,
             "ffnn_dropout_rate": 0.5
         }
     ]

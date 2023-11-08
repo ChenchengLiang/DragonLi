@@ -108,3 +108,65 @@ class GCNWithGAPFFNN(BaseWithNFFNN):
         prob = self.process_ffnn(hg)
         return prob
 
+
+
+class MultiGNNs(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, ffnn_layer_num, ffnn_hidden_dim,
+                 gnn_dropout_rate=0.5, ffnn_dropout_rate=0.5):
+        super(MultiGNNs, self).__init__()
+
+        # Separate embeddings for each GNN
+        self.gcn_embedding = nn.Embedding(input_feature_dim, gnn_hidden_dim)
+        self.gin_embedding = nn.Embedding(input_feature_dim, gnn_hidden_dim)
+
+        # GCN and GIN layers
+        self.gcn_layers = nn.ModuleList([GraphConv(gnn_hidden_dim, gnn_hidden_dim) for _ in range(gnn_layer_num)])
+        mlp = nn.Sequential(nn.Linear(gnn_hidden_dim, gnn_hidden_dim), nn.ReLU(),
+                            nn.Linear(gnn_hidden_dim, gnn_hidden_dim))
+        self.gin_layers = nn.ModuleList([GINConv(mlp, learn_eps=True) for _ in range(gnn_layer_num)])
+
+        # FFNN layers
+        self.ffnn_layers = nn.ModuleList(
+            [nn.Linear(gnn_hidden_dim * 2, ffnn_hidden_dim) if i == 0 else nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim)
+             for i in range(ffnn_layer_num)])
+
+        self.fc_final = nn.Linear(ffnn_hidden_dim, 1)
+
+        self.gnn_dropout_rate = gnn_dropout_rate
+        self.ffnn_dropout_rate = ffnn_dropout_rate
+
+    def forward(self, g, in_feat):
+        # GCN forward pass
+        gcn_h = self.gcn_embedding(in_feat.long())
+        for i, layer in enumerate(self.gcn_layers):
+            gcn_h = F.relu(layer(g, gcn_h))
+            if i < len(self.gcn_layers) - 1:
+                gcn_h = F.dropout(gcn_h, self.gnn_dropout_rate, training=self.training)
+
+        # GIN forward pass
+        gin_h = self.gin_embedding(in_feat.long())
+        for i, layer in enumerate(self.gin_layers):
+            gin_h = layer(g, gin_h)
+            if i < len(self.gin_layers) - 1:
+                gin_h = F.dropout(gin_h, self.gnn_dropout_rate, training=self.training)
+
+        # Aggregate node features to form graph representations
+        g.ndata["gcn_h"] = gcn_h
+        g.ndata["gin_h"] = gin_h
+        gcn_agg = dgl.mean_nodes(g, "gcn_h")
+        gin_agg = dgl.mean_nodes(g, "gin_h")
+
+        # Concatenate graph representations
+        concatenated = torch.cat((gcn_agg, gin_agg), dim=2)
+        #print("Shape of concatenated tensor:", concatenated.shape)
+
+        # FFNN processing
+        ffnn_out = concatenated
+        for i, layer in enumerate(self.ffnn_layers):
+            ffnn_out = F.relu(layer(ffnn_out))
+            if i < len(self.ffnn_layers) - 1:
+                ffnn_out = F.dropout(ffnn_out, self.ffnn_dropout_rate, training=self.training)
+        return torch.sigmoid(self.fc_final(ffnn_out))
+
+
+

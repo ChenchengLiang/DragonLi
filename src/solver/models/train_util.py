@@ -2,7 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN,GCNWithGAPFFNN
+from Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN,GCNWithGAPFFNN,MultiGNNs
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
@@ -49,6 +49,13 @@ def train_one_model(parameters,benchmark_folder):
                                 gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+    elif parameters["model_type"] == "MultiGNNs":
+        model = MultiGNNs(input_feature_dim=train_valid_dataset.node_embedding_dim,
+                                gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                                gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
+                             ffnn_layer_num=parameters["ffnn_layer_num"],
+                             ffnn_hidden_dim=parameters["ffnn_hidden_dim"],ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+
 
     else:
         raise ValueError("Unsupported model type")
