@@ -2,7 +2,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN,GCNWithGAPFFNN,MultiGNNs
+from src.solver.models.Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN,GCNWithGAPFFNN,MultiGNNs
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
@@ -60,7 +60,7 @@ def train_one_model(parameters,benchmark_folder):
     else:
         raise ValueError("Unsupported model type")
 
-    save_path = os.path.join(project_folder, "models", f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
+    save_path = os.path.join(project_folder, "Models", f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     parameters["model_save_path"] = save_path
 
     best_model,metrics = train(train_valid_dataset, GNN_model=model, parameters=parameters)

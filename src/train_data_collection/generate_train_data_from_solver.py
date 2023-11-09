@@ -26,7 +26,7 @@ def main():
 
     benchmark="01_track_generated_SAT_train"
 
-    for graph_type in ["graph_4"]:
+    for graph_type in ["graph_5"]:
         # extract train data
         for i,file_path in enumerate(glob.glob(bench_folder+"/"+benchmark+"/"+graph_type+"/*.eq")):
             file_name=strip_file_name_suffix(file_path)

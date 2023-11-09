@@ -21,9 +21,9 @@ def main():
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
             for gnn_layer_num in [2,4,8]:
                 for ffnn_layer_num in [2]:
-                    for hidden_dim in [32,64,128]:
+                    for hidden_dim in [64,128]:
                         for gnn_dropout_rate in [0.5]:
-                            for model_type in ["GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
+                            for model_type in ["GCN","GIN"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                 if model_type == "GAT":
                                     for num_heads in [1]:
                                         configurations.append({
@@ -31,7 +31,7 @@ def main():
                                             "num_epochs": num_epochs, "learning_rate": 0.001,
                                             "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": hidden_dim,
                                             "gnn_layer_num": gnn_layer_num, "num_heads": num_heads, "gnn_dropout_rate": gnn_dropout_rate,
-                                            "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": 0.5
+                                            "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": 0
                                         })
                                 else:
                                     configurations.append({
@@ -40,11 +40,11 @@ def main():
                                         "learning_rate": 0.001,
                                         "save_criterion": "valid_accuracy", "batch_size": 100, "gnn_hidden_dim": hidden_dim,
                                         "gnn_layer_num": gnn_layer_num, "num_heads": 0, "gnn_dropout_rate": gnn_dropout_rate,
-                                        "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": 2, "ffnn_dropout_rate": 0.5
+                                        "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": 0.5
                                     })
 
     # Writing the dictionary to a JSON file
-    configuration_folder = project_folder + "/models/configurations"
+    configuration_folder = project_folder + "/Models/configurations"
     write_configurations_to_json_file(configuration_folder=configuration_folder, configurations=configurations)
 
 

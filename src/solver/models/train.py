@@ -14,7 +14,7 @@ import dgl.data
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN
+from src.solver.models.Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict

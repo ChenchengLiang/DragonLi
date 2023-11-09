@@ -63,7 +63,7 @@ def main():
     graph_type="graph_1"
 
     algorithm_parameters = {"branch_method":"extract_branching_data","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":project_folder+"/models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data,random,fixed,gnn,gnn:fixed,gnn:random]
+                            "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

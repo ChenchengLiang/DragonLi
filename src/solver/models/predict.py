@@ -29,7 +29,7 @@ def main():
 
 
     # Load the model from path
-    #model_path = project_folder+"/models/model_"+graph_type+".pth"
+    #model_path = project_folder+"/Models/model_"+graph_type+".pth"
     #model = load_model(model_path)
     #load the model from mlflow
     experiment_id="856005721390468951"
