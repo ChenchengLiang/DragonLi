@@ -33,9 +33,14 @@ def parse_smtlib_to_simple_format(smtlib_input):
             print("rhs",rhs)
             eq_list.append([lhs,rhs])
 
-    woorpje_variables,variable_mapping=replace_elements_with_alphabets(variables)
+
     print("----- parsed results -----")
+    #replace variable names
+    woorpje_variables, variable_mapping = replace_elements_with_alphabets(variables)
     print("variable_mapping",variable_mapping)
+    #todo: replace terminal names to not collapse with variables
+
+    #replace variable and terminals in eqs
     woorpje_equation_list=[]
     for eq in eq_list:
         print("---")

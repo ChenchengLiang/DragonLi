@@ -1,6 +1,4 @@
-from pysmt.smtlib.parser import SmtLibParser
 from src.process_benchmarks.parser_utils import parse_smtlib_to_simple_format
-
 def main():
     # Example SMT-LIB input
     smtlib_input = """
