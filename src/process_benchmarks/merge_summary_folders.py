@@ -5,7 +5,7 @@ import csv
 import shutil
 def main():
     path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary/merge_summary"
-    folder_name="track_01_generated_SAT_eval"
+    folder_name="track_01_generated_SAT_train"
     merged_folder_name = os.path.join(path, folder_name + "_summary")
     if os.path.exists(merged_folder_name):
         shutil.rmtree(merged_folder_name)
@@ -16,7 +16,8 @@ def main():
     all_folders=os.listdir(path)
     print(len(all_folders),all_folders)
 
-    csv_file_dict = {os.path.basename(csv_file).replace("divided_1_",""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
+
+    csv_file_dict = {os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
     print(len(csv_file_dict),csv_file_dict)
 
@@ -33,7 +34,7 @@ def main():
 
 
     #collect divided tables in memory
-    merged_csv_file_dict={os.path.basename(csv_file).replace("divided_1_",""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
+    merged_csv_file_dict={os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
     for k,one_file in csv_file_dict.items():
         first_row = []
@@ -44,10 +45,6 @@ def main():
             second_rows.append([rows[1]])
             further_rows.append(rows[2:])
 
-        print("---")
-        print(k)
-        print(first_row)
-        print(second_rows)
 
 
         reconstructed_second_rows=[]
@@ -55,14 +52,8 @@ def main():
         for row in second_rows:
             reconstructed_second_rows.append([row[0][:4]])
             second_row_tail_list.append(row[0][4:])
-        print(reconstructed_second_rows)
-        print(second_row_tail_list)
         second_row_tail = [str(sum(int(x) for x in group)) for group in zip(*second_row_tail_list)]
-        print(second_row_tail)
         reconstructed_second_rows[0][0].extend(second_row_tail)
-
-        print(further_rows)
-
 
 
         merged_csv_file_dict[k].append(first_row)

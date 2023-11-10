@@ -31,12 +31,12 @@ def main():
         # ["this",["gnn", "--graph_type graph_1", "--gnn_model_path " + model_folder + "model_graph_1_GIN.pth"]],
         # ["this", ["gnn:random", "--graph_type graph_1", "--gnn_model_path " + model_folder + "model_graph_1_GIN.pth"]],
         # ["this",["gnn:fixed", "--graph_type graph_1", "--gnn_model_path " + model_folder + "model_graph_1_GIN.pth"]],
-        #["this", ["gnn", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
-        #["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
-        #["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
-        #["this", ["gnn", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
-        #["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
-        #["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
+        ["this", ["gnn", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
+        ["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
+        ["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth"]],
+        ["this", ["gnn", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
+        ["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
+        ["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_MultiGNNs.pth"]],
         # ["woorpje",[]],
         # ["z3",[]],
         # ["ostrich",[]],
@@ -60,10 +60,10 @@ def main():
         #"track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name="track_01_generated_SAT_eval"
-    benchmark_folder="01_track_generated_SAT_eval"
-
-    for i in range(20):
+    benchmark_name="track_01_generated_SAT_train"
+    benchmark_folder="01_track_generated_SAT_train/ALL"
+    folder_number=len(os.listdir(bench_folder+"/"+benchmark_folder))
+    for i in range(folder_number):
         divided_folder_index=i+1
         benchmark_dict[benchmark_name+"_divided_"+str(divided_folder_index)]=bench_folder + "/"+benchmark_folder+"/divided_"+str(divided_folder_index)
 

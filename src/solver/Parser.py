@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-from .DataTypes import Variable, Terminal, Term, Equation, EMPTY_TERMINAL
-from .independent_utils import remove_duplicates
-
+from src.solver.DataTypes import Variable, Terminal, Term, Equation, EMPTY_TERMINAL
+from src.solver.independent_utils import remove_duplicates
+from src.process_benchmarks.parser_utils import parse_smtlib_to_simple_format
 
 class AbstractParser(ABC):
     @abstractmethod
@@ -19,6 +19,8 @@ class EqParser(AbstractParser):
         self.terminals = None
         self.left_terms = None
         self.right_terms = None
+    def __str__(self):
+        return "EqParser"
 
     def wrap_to_term(self, c: str) -> Term:
         if c in self.variable_values:
@@ -62,10 +64,19 @@ class EqParser(AbstractParser):
 
 
 class SMT2Parser(AbstractParser):
-    def parse(self, content: Dict):
-        # Implement the parsing logic here for SMT2 files
-        # ...
-        pass
+    def __init__(self):
+        super().__init__()
+        self.eq_parser = EqParser()  # Create an instance of EqParser
+
+    def __str__(self):
+        return "SMT2Parser"
+
+    def parse(self, content):
+        # Use the eq_parser instance to parse the content
+        return self.eq_parser.parse(content)
+
+
+
 
 
 class Parser:
@@ -107,6 +118,11 @@ class EqReader(AbstractFileReader):
 
 class SMT2Reader(AbstractFileReader):
     def read(self, file_path: str) -> Dict:
-        # Implement the reading logic here for SMT2 files
-        # ...
-        pass
+        content={}
+        with open(file_path,'r') as smtlib_input:
+            parsed_format = parse_smtlib_to_simple_format(smtlib_input.read())
+            content["variables_str"]=parsed_format["Variables"]
+            content["terminals_str"] = parsed_format["Terminals"]
+            content["equation_str_list"] = parsed_format["Equation"]
+            content["file_path"] = file_path
+        return content

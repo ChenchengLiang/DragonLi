@@ -8,7 +8,7 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
-algorithm_timeout: int = 120
+algorithm_timeout: int = 6*60
 shell_timeout: int = algorithm_timeout
 MAX_DEEP=100
 MAX_SPLIT_CALL=1000
@@ -19,7 +19,7 @@ MAX_PATH_REACHED: str = "MAX_PATH_REACHED"
 INTERNAL_TIMEOUT: str = "INTERNAL_TIMEOUT"
 RECURSION_DEPTH_EXCEEDED: str = "RECURSION_DEPTH_EXCEEDED"
 RECURSION_ERROR: str = "RECURSION_ERROR"
-recursion_limit: int = 1000000
+recursion_limit: int = 10000000
 OUTPUT_LEAF_NODE_PERCENTAGE=0.01
 GNN_BRANCH_RATIO=0.5
 UNKNOWN = "UNKNOWN"
