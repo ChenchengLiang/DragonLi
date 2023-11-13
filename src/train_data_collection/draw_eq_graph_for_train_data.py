@@ -32,13 +32,13 @@ def main():
     #
 
     #/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data_sat_from_solver
-    benchmark="01_track_generated_SAT_train"
+    benchmark="example_graphs"
 
-    for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+    for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
 
         file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
         for file_path in file_list:
-            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
+            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=True)
 
 
 

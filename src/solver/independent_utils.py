@@ -55,7 +55,7 @@ def replace_primed_vars(v, e):
 
     return v, e
 
-def identify_available_capitals(s):
+def identify_available_capitals(s:str):
     # Identify available capital letters for replacement
     all_used_vars = set(re.findall(r"[A-Z]", s))
     all_caps = set(chr(i) for i in range(65, 91))

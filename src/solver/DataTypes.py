@@ -45,6 +45,9 @@ class Operator:
     def __repr__(self):
         return f"Operator({self.value})"
 
+    def __str__(self):
+        return "Operator"
+
     def __hash__(self):
         return hash(self.value)
 
@@ -58,6 +61,8 @@ class Variable:
     def __init__(self, value: str):
         self.value = value
         self.assignment: List[Terminal] = None
+    def __str__(self):
+        return "Variable"
 
     def __repr__(self):
         return f"Variable({self.value})"
@@ -74,6 +79,9 @@ class Variable:
 class Terminal:
     def __init__(self, value: str):
         self.value = value
+
+    def __str__(self):
+        return "Terminal"
 
     def __repr__(self):
         return f"Terminal({self.value})"
