@@ -15,9 +15,9 @@ from copy import deepcopy
 from src.solver.independent_utils import remove_duplicates,identify_available_capitals,strip_file_name_suffix
 
 def main():
-    track_1_sat_folder = bench_folder+"/track_generating_test"
+    track_1_sat_folder = bench_folder+"/01_track_generated_SAT_train"
     start_idx = 1
-    end_idx = 10
+    end_idx = 1000
     save_equations(start_idx, end_idx, track_1_sat_folder, "01_track_SAT",generate_one_track_1)
 
 
@@ -27,9 +27,12 @@ def main():
 def save_equations(start_index, end_index, folder, track_name,equation_generator):
     if not os.path.exists(folder):
         os.makedirs(folder)
+    all_folder=folder+"/ALL"
+    if not os.path.exists(all_folder):
+        os.makedirs(all_folder)
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         print("---",str(i),"----")
-        filename = os.path.join(folder, f"g_{track_name}_{i}.eq")
+        filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
         equation = equation_generator(filename)
         with open(filename, 'w') as file:
             file.write(equation)
@@ -37,7 +40,7 @@ def save_equations(start_index, end_index, folder, track_name,equation_generator
 
 
 def generate_one_track_1(file_name,max_variables=15, max_terminals=10, max_length=300):
-    variables,terminals=get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
+    _,terminals=get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
     random_string = ''.join(random.choice(terminals) for _ in range(random.randint(1,max_length)))
@@ -45,11 +48,12 @@ def generate_one_track_1(file_name,max_variables=15, max_terminals=10, max_lengt
     equation_right = deepcopy(random_string)
 
     replacement_log=""
-    replaced_left,replaced_right=replace_substring_with_new_variables(equation_left,equation_right,replacement_log)
-    replacement_log = replacement_log+ "---------- \n"
-    replacement_log = replacement_log + f"random_string {len(random_string)} {random_string} \n"
-    replacement_log=replacement_log+f"replaced_left {replaced_left} \n"
-    replacement_log = replacement_log + f"replaced_right {replaced_right} \n"
+    replaced_left,replaced_right,variables,replacement_log=replace_substring_with_new_variables(equation_left,equation_right,replacement_log)
+    replacement_log = replacement_log+ "\n ----- results ----- \n"
+    replacement_log = replacement_log + f"random_string {len(random_string)}: \n {random_string} \n"
+    replacement_log=replacement_log+f"replaced_left {len(replaced_left)}: \n {replaced_left} \n"
+    replacement_log = replacement_log + f"replaced_right {len(replaced_right)}: \n {replaced_right} \n"
+    replacement_log=replacement_log + f"variables: {variables}"
 
     replacement_log_file=strip_file_name_suffix(file_name)+".replacement_log"
     with open(replacement_log_file, 'w') as file:
@@ -59,7 +63,7 @@ def generate_one_track_1(file_name,max_variables=15, max_terminals=10, max_lengt
     # Format the result
     result = f"Variables {{{''.join(variables)}}}\n"
     result += f"Terminals {{{''.join(terminals)}}}\n"
-    result += f"Equation: {equation_left} = {equation_right}\n"
+    result += f"Equation: {replaced_left} = {replaced_right}\n"
     result += "SatGlucose(100)"
 
     return result
@@ -73,11 +77,12 @@ def replace_substring_with_new_variables(left,right,replacement_log):
     max_replace_variable_length=5
     max_replace_time=5
 
-    print("-lhs-")
+
+    replacement_log=replacement_log+f"-lhs- \n"
     replace_time = random.randint(0, max_replace_time)
-    print("replace_time", replace_time)
+    replacement_log = replacement_log + f"replace_time {replace_time}\n"
     for i in range(replace_time):
-        print("-",str(i),"-")
+        replacement_log=replacement_log+f"- {i} - \n"
         #substring index
         random_start_index=random.randint(0,left_length)
         random_substring_length=random.randint(0,left_length-random_start_index)
@@ -88,22 +93,26 @@ def replace_substring_with_new_variables(left,right,replacement_log):
             break
         random_variables=generate_random_variables(available_variables,max_random_variables_length=len(available_variables)%max_replace_variable_length)
         #replace substring
-        print("before",left)
-        print("replace:",left[random_start_index:random_end_index], random_variables)
+        replacement_log = replacement_log + f"before: {left}  \n"
+        replacement_log = replacement_log + f"replace: {left[random_start_index:random_end_index]} by {random_variables} \n"
         left = left[:random_start_index] + random_variables + left[random_end_index:]
-        print("after",left)
+        replacement_log = replacement_log + f"after: {left}  \n"
+
 
         #update length
         left_length=len(left)
         #update variables
         variables=remove_duplicates([x for x in left+right if x.isupper()])
-        print("variables:","".join(variables))
+        variable_str = "".join(variables)
+        replacement_log = replacement_log + f"variables: {variable_str}  \n"
 
-    print("-rhs-")
+    replacement_log = replacement_log + f"\n"
+
+    replacement_log=replacement_log+f"-rhs- \n"
     replace_time = random.randint(0, max_replace_time)
-    print("replace_time", replace_time)
+    replacement_log = replacement_log + f"replace_time {replace_time}\n"
     for i in range(replace_time):
-        print("-", str(i), "-")
+        replacement_log=replacement_log+f"- {i} - \n"
         #substring index
         random_start_index=random.randint(0,right_length)
         random_substring_length=random.randint(0,right_length-random_start_index)
@@ -115,17 +124,19 @@ def replace_substring_with_new_variables(left,right,replacement_log):
         random_variables=generate_random_variables(available_variables,max_random_variables_length=len(available_variables)%max_replace_variable_length)
 
         #replace substring
-        print("before", right)
-        print("replace:", right[random_start_index:random_end_index], random_variables)
+        replacement_log = replacement_log + f"before: {right}  \n"
+        replacement_log = replacement_log + f"replace: {right[random_start_index:random_end_index]} by {random_variables} \n"
         right = right[:random_start_index] + random_variables + right[random_end_index:]
-        print("after", right)
+        replacement_log = replacement_log + f"after: {right}  \n"
         #update length
         right_length=len(right)
         #update variables
         variables=remove_duplicates([x for x in left+right if x.isupper()])
-        print("variables:", "".join(variables))
+        variable_str="".join(variables)
+        replacement_log = replacement_log + f"variables: {variable_str}  \n"
 
-    return left, right
+
+    return left, right,variables,replacement_log
 
 
 def generate_random_variables(available_variables,max_random_variables_length=5):

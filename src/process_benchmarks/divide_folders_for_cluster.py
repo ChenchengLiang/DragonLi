@@ -1,11 +1,23 @@
 
+import os
+import sys
+import configparser
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path','local')
+sys.path.append(path)
+
+from src.solver.Constants import bench_folder
 import glob
 import os
 import shutil
 
 from src.solver.independent_utils import strip_file_name_suffix
+
 def main():
-    folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_SAT_train/ALL"
+    folder=bench_folder+"/01_track_generated_SAT_train/ALL"
     chunk_size=100
 
 
