@@ -2,11 +2,15 @@
 
 Woking pipeline:
 
-Local: generate track, send to Uppmax and Alvis
+Uppmax:generate track
+
+Uppmax:divide track
 
 Uppmax: get .answer and summary
 
-Local/Alvis: generate train data (.eq + .json)
+Uppmax+Local+Alvis: send answered track to and Alvis
+
+Alvis: generate train data (.eq + .json)
 
 Alvis: train, select and send back good model
 
