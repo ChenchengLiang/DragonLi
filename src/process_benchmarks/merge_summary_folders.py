@@ -5,7 +5,7 @@ import csv
 import shutil
 def main():
     path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary/merge_summary"
-    folder_name="track_01_generated_SAT_train"
+    folder_name="01_track_generated_SAT_train_1_1000"
     merged_folder_name = os.path.join(path, folder_name + "_summary")
     if os.path.exists(merged_folder_name):
         shutil.rmtree(merged_folder_name)
@@ -37,6 +37,8 @@ def main():
     merged_csv_file_dict={os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
     for k,one_file in csv_file_dict.items():
+        print(k)
+        print(one_file)
         first_row = []
         second_rows=[]
         further_rows=[]
@@ -44,6 +46,7 @@ def main():
             first_row=rows[0]
             second_rows.append([rows[1]])
             further_rows.append(rows[2:])
+
 
 
 
