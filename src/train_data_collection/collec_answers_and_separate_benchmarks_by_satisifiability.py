@@ -14,20 +14,32 @@ import shutil
 import glob
 
 def main():
+
+    #collect answers from divided folders
+    benchmark_folder = bench_folder + "/01_track_generated_SAT_train/ALL"
+
+    folder_number = sum([1 for fo in os.listdir(benchmark_folder) if "divided" in os.path.basename(fo)])
+    for i in range(folder_number):
+        divided_folder_index = i + 1
+        for a in glob.glob(benchmark_folder + "/divided_" + str(divided_folder_index) + "/*.answer"):
+            # print(a)
+            shutil.copy(a, benchmark_folder + "/ALL")
+
+
+    #separate to SAT UNSAT UNKNOWN
     benchmark_folder=bench_folder+"/01_track_generated_SAT_train"
 
     #create folders
     sat_folder=benchmark_folder+"/SAT"
     unsat_folder = benchmark_folder + "/UNSAT"
     unknown_folder = benchmark_folder + "/UNKNOWN"
-    all_folder = benchmark_folder + "/ALL"
-    for folder in [sat_folder,unsat_folder,unknown_folder,all_folder]:
+    for folder in [sat_folder,unsat_folder,unknown_folder]:
         if os.path.exists(folder)==False:
             os.mkdir(folder)
 
 
     #separate files according to answers
-    for file in glob.glob(benchmark_folder+"/*.eq"):
+    for file in glob.glob(benchmark_folder+"/ALL/ALL/*.eq"):
         file_name =  strip_file_name_suffix(file)
         #read .answer file
         answer_file=file_name+".answer"
@@ -48,14 +60,14 @@ def main():
             exit(1)
 
     #remove original files
-    for file in glob.glob(benchmark_folder+"/*.eq"):
-        if os.path.exists(file):
-            shutil.copy(file,all_folder)
-            os.remove(file)
-    for file in glob.glob(benchmark_folder + "/*.answer"):
-        if os.path.exists(file):
-            shutil.copy(file,all_folder)
-            os.remove(file)
+    # for file in glob.glob(benchmark_folder+"/*.eq"):
+    #     if os.path.exists(file):
+    #         shutil.copy(file,all_folder)
+    #         os.remove(file)
+    # for file in glob.glob(benchmark_folder + "/*.answer"):
+    #     if os.path.exists(file):
+    #         shutil.copy(file,all_folder)
+    #         os.remove(file)
 
 
 

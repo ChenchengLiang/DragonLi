@@ -4,7 +4,30 @@ from src.solver.Parser import Parser,EqParser
 import glob
 from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
-from src.solver.Constants import project_folder,bench_folder
+import os
+import shutil
+
+def dvivde_track_for_cluster(benchmark):
+    folder = benchmark+"/ALL"
+    chunk_size = 100
+
+    folder_counter = 0
+    all_folder = folder + "/ALL"
+    if not os.path.exists(all_folder):
+        os.mkdir(all_folder)
+
+    for file in glob.glob(folder + "/*"):
+        shutil.move(file, all_folder)
+
+    for i, eq_file in enumerate(glob.glob(all_folder + "/*.eq")):
+        if i % chunk_size == 0:
+            folder_counter += 1
+            divided_folder_name = folder + "/divided_" + str(folder_counter)
+            os.mkdir(divided_folder_name)
+        file_name = strip_file_name_suffix(eq_file)
+        for f in glob.glob(file_name + ".eq") + glob.glob(file_name + ".answer"):
+            shutil.copy(f, divided_folder_name)
+
 
 def output_one_eq_graph(file_path,graph_func:Callable,visualize:bool=False):
 

@@ -13,12 +13,19 @@ import string
 from src.solver.Constants import project_folder,bench_folder
 from copy import deepcopy
 from src.solver.independent_utils import remove_duplicates,identify_available_capitals,strip_file_name_suffix
+from src.train_data_collection.utils import dvivde_track_for_cluster
+import glob
+import shutil
 
 def main():
-    track_1_sat_folder = bench_folder+"/01_track_generated_SAT_train"
-    start_idx = 1
-    end_idx = 1000
+    track_1_sat_folder = bench_folder+"/01_track_generated_SAT_eval"
+    start_idx = 1001
+    end_idx = 1200
     save_equations(start_idx, end_idx, track_1_sat_folder, "01_track_SAT",generate_one_track_1)
+
+    dvivde_track_for_cluster(track_1_sat_folder)
+
+
 
 
 
