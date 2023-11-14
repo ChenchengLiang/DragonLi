@@ -18,12 +18,14 @@ import glob
 import shutil
 
 def main():
+    # generate tracks
     track_1_sat_folder = bench_folder+"/01_track_generated_SAT_eval"
     start_idx = 1001
     end_idx = 1200
     save_equations(start_idx, end_idx, track_1_sat_folder, "01_track_SAT",generate_one_track_1)
 
-    dvivde_track_for_cluster(track_1_sat_folder)
+    # divide tracks
+    dvivde_track_for_cluster(track_1_sat_folder,chunk_size=50)
 
 
 

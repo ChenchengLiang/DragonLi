@@ -7,9 +7,9 @@ from typing import List, Tuple, Dict, Union, Optional, Callable
 import os
 import shutil
 
-def dvivde_track_for_cluster(benchmark):
+def dvivde_track_for_cluster(benchmark,chunk_size=50):
     folder = benchmark+"/ALL"
-    chunk_size = 100
+    chunk_size = chunk_size
 
     folder_counter = 0
     all_folder = folder + "/ALL"

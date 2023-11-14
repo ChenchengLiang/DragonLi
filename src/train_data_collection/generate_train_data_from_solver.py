@@ -53,7 +53,6 @@ def main():
                 print_results(result_dict)
 
         #draw graphs
-
         file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
         for file_path in file_list:
             output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
