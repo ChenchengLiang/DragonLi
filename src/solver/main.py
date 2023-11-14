@@ -16,6 +16,8 @@ from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsing
 from src.solver.DataTypes import Equation
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
+    #debug
+    file_path=bench_folder +"/debug/g_01_track_SAT_1.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
@@ -54,7 +56,7 @@ def main():
     #file_path=bench_folder +"/04_track/04_track_10.eq"
 
     #smt format
-    file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
+    #file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
 
 
     parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
