@@ -20,9 +20,9 @@ import shutil
 
 def main():
     # generate track
-    track_1_sat_folder = bench_folder + "/03_track_generated_train_1_1000"
+    track_1_sat_folder = bench_folder + "/03_track_generated_train_1_20000"
     start_idx = 1
-    end_idx = 1000
+    end_idx = 20000
     save_equations(start_idx, end_idx, track_1_sat_folder, "03_track", generate_one_track_3)
 
     # divide tracks
