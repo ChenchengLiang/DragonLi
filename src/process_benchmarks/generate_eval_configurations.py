@@ -60,8 +60,8 @@ def main():
         #"track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name="track_01_generated_SAT_train"
-    benchmark_folder="01_track_generated_SAT_train/ALL"
+    benchmark_name="01_track_generated_SAT_train_2000_3000"
+    benchmark_folder="01_track_generated_SAT_train_2000_3000/ALL"
     folder_number=len(os.listdir(bench_folder+"/"+benchmark_folder))
     for i in range(folder_number):
         divided_folder_index=i+1
