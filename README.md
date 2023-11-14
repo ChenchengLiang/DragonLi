@@ -14,7 +14,7 @@ Woking pipeline:
 4. Uppmax+Local+Alvis: send answered track to and Alvis
 
 
-5. Alvis: sh word_equation_generate_train_data.sh #generate train data (.eq + .json)
+5. Alvis: sh word_equation_submit_generate_train_data.sh #generate train data (.eq + .json)
 
 
 6. Alvis: sh word_equation_submit_multiple_train.sh #train, select and send back good model

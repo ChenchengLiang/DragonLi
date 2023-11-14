@@ -25,7 +25,7 @@ from src.solver.independent_utils import strip_file_name_suffix
 from src.train_data_collection.utils import output_one_eq_graph
 def main():
 
-    benchmark="01_track_generated_test"#"01_track_generated_SAT_train"
+    benchmark="01_track_generated_SAT_train_new"#"01_track_generated_SAT_train"
 
     #prepare train folder
     all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"
