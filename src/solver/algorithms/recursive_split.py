@@ -4,7 +4,7 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, MAX_DEEP, MAX_SPLIT_CALL, \
-    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO,MAX_EQ_LENGTH,MAX_ONE_SIDE_LENGTH
+    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_EQ_LENGTH, MAX_ONE_SIDE_LENGTH
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
@@ -43,7 +43,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
-        self.record_and_close_branch = self._record_and_close_branch_with_file if parameters["branch_method"]=="extract_branching_data_task_1"  else self._record_and_close_branch_without_file
+        self.record_and_close_branch = self._record_and_close_branch_with_file if parameters[
+                                                                                      "branch_method"] == "extract_branching_data_task_1" else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
@@ -62,9 +63,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         first_equation = self.equation_list[0]
 
         try:
-            node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse","back_track_count":0})
+            node_info = (
+            0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
             self.nodes.append(node_info)
-            satisfiability, variables,back_track_count = self.explore_paths(first_equation, {"node_number": node_info[0], "label": node_info[1]["label"]})
+            satisfiability, variables, back_track_count = self.explore_paths(first_equation,
+                                                                             {"node_number": node_info[0],
+                                                                              "label": node_info[1]["label"]})
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
@@ -86,7 +90,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         current_node_number = self.total_explore_paths_call
         node_info = (
-        current_node_number, {"label": current_eq.eq_str, "status": None, "output_to_file": False, "shape": "ellipse"})
+            current_node_number,
+            {"label": current_eq.eq_str, "status": None, "output_to_file": False, "shape": "ellipse"})
         self.nodes.append(node_info)
         self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
@@ -192,11 +197,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                    eq.variable_list)
         new_eq = Equation(l, r)
         # updated_variables = self.update_variables(eq.left_terms, eq.right_terms)
-        branch_satisfiability, branch_variables,back_track_count_list = self.explore_paths(new_eq,
-                                                                     {"node_number": current_node_number,
-                                                                      "label": left_poped_list_str + "=" + right_poped_list_str})
+        branch_satisfiability, branch_variables, back_track_count_list = self.explore_paths(new_eq,
+                                                                                            {
+                                                                                                "node_number": current_node_number,
+                                                                                                "label": left_poped_list_str + "=" + right_poped_list_str})
         back_track_count_list = [x + 1 for x in back_track_count_list]
-        return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+        return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info, eq,
+                                            back_track_count=back_track_count_list)
 
     def both_side_different_variables(self, eq: Equation,
                                       current_node_number, node_info):
@@ -265,13 +272,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # Perform depth-first search based on the sorted prediction list
         for i, data in enumerate(sorted_prediction_list):
             eq, v, edge_label = data[1]
-            satisfiability, branch_variables,back_track_count_list = self.explore_paths(eq,
-                                                           {"node_number": current_node_number, "label": edge_label})
+            satisfiability, branch_variables, back_track_count_list = self.explore_paths(eq,
+                                                                                         {
+                                                                                             "node_number": current_node_number,
+                                                                                             "label": edge_label})
 
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
-                                                           node_info, eq,back_track_count=back_track_count_list)
+                                                           node_info, eq, back_track_count=back_track_count_list)
             if result == None:
                 pass
             else:
@@ -291,114 +300,167 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
 
             satisfiability, branch_variables, back_track_count_list = self.explore_paths(Equation(l, r),
-                                                                  {"node_number": current_node_number,
-                                                                   "label": edge_label})
+                                                                                         {
+                                                                                             "node_number": current_node_number,
+                                                                                             "label": edge_label})
 
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
-            result= self._handle_one_split_branch_outcome(i,branch_methods,satisfiability,branch_variables,node_info,eq,back_track_count=back_track_count_list)
+            result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
+                                                           node_info, eq, back_track_count=back_track_count_list)
             if result == None:
                 pass
             else:
                 return result
 
-
-    def _handle_one_split_branch_outcome(self,i,branch_methods,satisfiability,branch_variables,node_info,eq,back_track_count=1):
+    def _handle_one_split_branch_outcome(self, i, branch_methods, satisfiability, branch_variables, node_info, eq,
+                                         back_track_count=1):
         if i < len(branch_methods) - 1:  # not last branch
             if satisfiability == SAT:
-                return self.record_and_close_branch(SAT, branch_variables, node_info, eq,back_track_count=back_track_count)
+                return self.record_and_close_branch(SAT, branch_variables, node_info, eq,
+                                                    back_track_count=back_track_count)
             elif satisfiability == UNSAT:
                 node_info[1]["status"] = UNSAT
                 return None
         else:  # last branch
-            return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,back_track_count=back_track_count)
+            return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,
+                                                back_track_count=back_track_count)
+
     def _extract_branching_data_task_2(self, eq: Equation, current_node_number, node_info, branch_methods):
 
         ################################ stop branching condition ################################
-        if eq.left_hand_side_length>MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length>MAX_ONE_SIDE_LENGTH:
+        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
-
         ################################ branching ################################
         satisfiability_list = []
-        back_track_count_list=[]
-        branch_eq_list=[]
+        back_track_count_list = []
+        branch_eq_list = []
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
-            branch_eq=Equation(l,r)
+            branch_eq = Equation(l, r)
 
-            satisfiability, branch_variables,back_track_count = self.explore_paths(branch_eq,
-                                                                  {"node_number": current_node_number,
-                                                                   "label": edge_label})
+            satisfiability, branch_variables, back_track_count = self.explore_paths(branch_eq,
+                                                                                    {"node_number": current_node_number,
+                                                                                     "label": edge_label})
 
             satisfiability_list.append(satisfiability)
             back_track_count_list.append(sum(back_track_count))
             branch_eq_list.append(branch_eq)
 
-
         ################################ output train data ################################
-        #draw two eq graphs
+        back_track_count_list = [x + 1 for x in back_track_count_list]
+        # draw two eq graphs
 
-        #get current eq satisfiability
+        # get current eq satisfiability
         if SAT in satisfiability_list:
-            current_eq_satisfiability=SAT
+            current_eq_satisfiability = SAT
         elif UNKNOWN in satisfiability_list:
-            current_eq_satisfiability=UNKNOWN
+            current_eq_satisfiability = UNKNOWN
         else:
-            current_eq_satisfiability=UNSAT
+            current_eq_satisfiability = UNSAT
 
         # output current node to eq file
-
         middle_eq_file_name = f"{self.file_name}_{node_info[0]}"
         self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
 
-        #output splited nodes to eq files
         if self.output_train_data == True:
-            for branch_index,(branch_eq,satisfiability) in enumerate(zip(branch_eq_list,satisfiability_list)):
+            # output splited nodes to eq files
+            for branch_index, (branch_eq, satisfiability) in enumerate(zip(branch_eq_list, satisfiability_list)):
                 middle_branch_eq_file_name = f"{self.file_name}_{node_info[0]}:{branch_index}"
                 branch_eq.output_eq_file(middle_branch_eq_file_name, satisfiability)
 
+            # output pairs' labels to file
+            if len(back_track_count_list) == 2:
+                # two branches 2 (positions) x 3 (conditions) = 6 situations
+                ## 2 SAT
+                ## 1 SAT 1 others
+                ## 2 UNSAT
+                ## 1 UNSAT 1 UNKNOWN
+                ## 2 UNKNOWN
+                label_list = [0, 0]
+                # if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
+                if satisfiability_list.count(SAT) == 2: # 2 SAT
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                elif satisfiability_list.count(SAT) == 1: # 1 SAT 1 others
+                    label_list[satisfiability_list.index(SAT)] = 1
+                elif satisfiability_list.count(UNSAT) == 2: # 2 UNSAT
+                    pass
+                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 1: # 1 UNSAT 1 UNKNOWN
+                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+                elif satisfiability_list.count(UNKNOWN) == 2: # 2 UNKNOWN
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
 
 
-        #return result
-        back_track_count_list = [x + 1 for x in back_track_count_list]
+
+            elif len(back_track_count_list) == 3:
+                # three branches 3 (positions) x 3 (conditions) = 9 situations
+                ## 3 SAT
+                ## 3 UNSAT
+                ## 3 UNKNOWN
+                ## 2 SAT 1 others [UNSAT or UNKNOWN]
+                ## 1 SAT 2 others [UNSAT or UNKNOWN]
+                ## 2 UNKNOWN 1 UNSAT
+                ## 2 UNSAT 1 UNKNWON
+
+                label_list = [0, 0, 0]
+                if satisfiability_list.count(SAT) == 3:
+                    min_value = min(back_track_count_list)
+                    min_value_indeces=[i for i,x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                elif satisfiability_list.count(UNSAT) == 3:
+                    pass
+                elif satisfiability_list.count(UNKNOWN) == 3:
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                elif satisfiability_list.count(SAT) == 2:
+                    sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
+                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
+                    min_value = min([back_track_count_list[i] for i in sat_indices])
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value and i not in others_indices]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+
+
+                elif satisfiability_list.count(SAT) == 1:
+                    label_list[satisfiability_list.index(SAT)] = 1
+                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
+                    unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
+                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
+                    min_value = min([back_track_count_list[i] for i in unknown_indices])
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value and i not in others_indices]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+
+                elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
+                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+
+            # write label_list to file
+            label_json_file_name = middle_eq_file_name + ".label.json"
+            label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
+                          "label_list": label_list}
+            dump_to_json_with_format(label_dict, label_json_file_name)
+
+        # return result
         return self.record_and_close_branch(current_eq_satisfiability, eq.variable_list, node_info, eq,
-                                                          back_track_count=back_track_count_list)
-
-
-        # eq pairs and their labels
-
-        # two branches 2 (positions) x 3 (conditions) = 6 situations
-        ## SAT SAT
-        ## SAT UNSAT
-        ## SAT UNKNOWN
-        ## UNSAT UNSAT
-        ## UNSAT UNKNOWN
-        ## UNKNOWN UNKNWON
-
-        #three branches 3 (positions) x 3 (conditions) = 9 situations
-        ## 3 SAT
-        ## 3 UNSAT
-        ## 3 UNKNOWN
-        ##
-        ## SAT SAT SAT
-        ## SAT SAT UNSAT
-        ## SAT SAT UNKNOWN
-        ## SAT UNSAT UNSAT
-        ## SAT UNSAT UNKNOWN
-        ## SAT UUNKNOWN UNKNOWN
-        ## UNSAT UNSAT UNKNOWN
-        ## UNSAT UNSAT UNSAT
-        ## UNKNOWN UNKNWON UNKNWON
-
+                                            back_track_count=back_track_count_list)
 
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
 
         ################################ stop branching condition ################################
-        if eq.term_length>MAX_EQ_LENGTH:
+        if eq.term_length > MAX_EQ_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
@@ -409,17 +471,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.current_deep = 0
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
-
-
         ################################ branching ################################
         satisfiability_list = []
-        back_track_count_list=[]
+        back_track_count_list = []
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
 
-            satisfiability, branch_variables,back_track_count = self.explore_paths(Equation(l, r),
-                                                                  {"node_number": current_node_number,
-                                                                   "label": edge_label})
+            satisfiability, branch_variables, back_track_count = self.explore_paths(Equation(l, r),
+                                                                                    {"node_number": current_node_number,
+                                                                                     "label": edge_label})
             satisfiability_list.append(satisfiability)
             back_track_count_list.append(sum(back_track_count))
 
@@ -460,14 +520,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #     satisfiability_list.append(satisfiability)
 
         ################################ output train data ################################
-        back_track_count_list=[x+1 for x in back_track_count_list]
+        back_track_count_list = [x + 1 for x in back_track_count_list]
         # if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
-            current_eq_satisfiability=SAT
+            current_eq_satisfiability = SAT
         elif UNKNOWN in satisfiability_list:
-            current_eq_satisfiability=UNKNOWN
+            current_eq_satisfiability = UNKNOWN
         else:
-            current_eq_satisfiability=UNSAT
+            current_eq_satisfiability = UNSAT
 
         return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, branch_variables, node_info, eq,
                                                           back_track_count=back_track_count_list)
@@ -478,27 +538,30 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # else:
         #     return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
 
-    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation,back_track_count): #non-leaf node
+    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation,
+                                              back_track_count):  # non-leaf node
         if satisfiability != UNKNOWN:
             middle_eq_file_name = self.file_name + "_" + str(node_info[0])
             self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info, "diamond")
 
-        return self._record_and_close_branch_without_file(satisfiability, variables,node_info, eq,back_track_count=back_track_count)
+        return self._record_and_close_branch_without_file(satisfiability, variables, node_info, eq,
+                                                          back_track_count=back_track_count)
 
-
-    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation,back_track_count=[0]): #leaf node
+    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation,
+                                           back_track_count=[0]):  # leaf node
         if satisfiability != UNKNOWN:
             if random.random() < OUTPUT_LEAF_NODE_PERCENTAGE:  # random.random() generates a float between 0.0 and 1.0
                 middle_eq_file_name = self.file_name + "_" + str(node_info[0])
                 self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info, "box")
             else:
                 pass
-        return self._record_and_close_branch_without_file(satisfiability,variables,node_info,eq,back_track_count=back_track_count)
+        return self._record_and_close_branch_without_file(satisfiability, variables, node_info, eq,
+                                                          back_track_count=back_track_count)
 
-
-    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation,back_track_count=[0]): #leaf node
+    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation,
+                                              back_track_count=[0]):  # leaf node
         node_info[1]["status"] = satisfiability
-        node_info[1]["back_track_count"]=back_track_count
+        node_info[1]["back_track_count"] = back_track_count
         return satisfiability, variables, back_track_count
 
     def _output_train_data(self, file_name, eq, satisfiability, node_info, shape):
