@@ -16,6 +16,7 @@ from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
 from src.solver.Constants import project_folder,bench_folder
 from src.train_data_collection.utils import output_one_eq_graph
+import shutil
 def main():
     sys.setrecursionlimit(1000000)
 
@@ -38,7 +39,24 @@ def main():
 
         file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
         for file_path in file_list:
-            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=True)
+            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
+
+    # # draw graphs
+    # train_eq_folder = bench_folder + "/" + benchmark + "/train"
+    # for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
+    #     # prepare folder
+    #     graph_folder = bench_folder + "/" + benchmark + "/" + graph_type
+    #
+    #     if os.path.exists(graph_folder):
+    #         shutil.rmtree(graph_folder)
+    #     print(f"- copy train to {graph_type} -")
+    #     shutil.copytree(train_eq_folder, graph_folder)
+    #
+    #     # draw one type graphs
+    #     print(f"- draw {graph_type} -")
+    #     file_list = glob.glob(graph_folder + "/*.eq")
+    #     for file_path in file_list:
+    #         output_one_eq_graph(file_path=file_path, graph_func=graph_func_map[graph_type], visualize=False)
 
 
 

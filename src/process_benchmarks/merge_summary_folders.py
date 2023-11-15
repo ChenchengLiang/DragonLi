@@ -5,7 +5,7 @@ import csv
 import shutil
 def main():
     path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary/merge_summary"
-    folder_name="03_track_generated_train_1_10000"
+    folder_name="03_track_generated_train_1_20000"
     merged_folder_name = os.path.join(path, folder_name + "_summary")
     if os.path.exists(merged_folder_name):
         shutil.rmtree(merged_folder_name)

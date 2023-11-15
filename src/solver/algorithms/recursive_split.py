@@ -35,15 +35,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep = 0
         self.nodes = []
         self.edges = []
-        self.branch_method_func_map = {"extract_branching_data": self._extract_branching_data_task_1,
+        self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
+                                       "extract_branching_data_task_2": self._extract_branching_data_task_2,
                                        "fixed": self._use_fixed_branching, "random": self._use_random_branching,
                                        "gnn": self._use_gnn_branching,
                                        "gnn:random": self._use_gnn_with_random_branching,
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
-        self.record_and_close_branch = self._record_and_close_branch_with_file if parameters[
-                                                                                      "branch_method"] == "extract_branching_data" else self._record_and_close_branch_without_file
+        self.record_and_close_branch = self._record_and_close_branch_with_file if "extract_branching_data" in parameters["branch_method"] else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
