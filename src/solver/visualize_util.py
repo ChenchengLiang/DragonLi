@@ -60,7 +60,8 @@ def visualize_path_png(nodes, edges, file_path):
             shape = attributes["shape"]
         else:
             shape = "ellipse"
-        dot.node(str(node_id),style = 'filled',fillcolor=fillcolor,shape=shape)
+        back_track_count=attributes["back_track_count"]
+        dot.node(str(node_id),label=f"{node_id}:{back_track_count}",style = 'filled',fillcolor=fillcolor,shape=shape)
 
     # Add edges
     for source, target, attributes in edges:
