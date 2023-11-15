@@ -14,19 +14,22 @@ Woking pipeline:
 4. Uppmax+Local+Alvis: send answered track to and Alvis
 
 
-5. Alvis: sh word_equation_submit_generate_train_data.sh #generate train data (.eq + .json)
+5. Alvis: sh word_equation_submit_generate_train_data.sh #generate train data (.eq)
 
 
-6. Alvis: sh word_equation_submit_multiple_train.sh #train, select and send back good model
+6. Alvis: sh word_equation_submit_draw_eq_graph_for_train_data.sh #draw graphs for train data (.json)
 
 
-7. Alvis+Local: select and send back good model
+7. Alvis: sh word_equation_submit_multiple_train.sh #train
 
 
-8. Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate tack with good model
+8. Alvis+Local: select and send back good models
+
+
+9. Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
 
 
 
-9. Local: merge_summary_folders.py
+10. Local: merge_summary_folders.py
 Local: summary_solutions.py
 

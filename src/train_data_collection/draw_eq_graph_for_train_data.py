@@ -17,6 +17,7 @@ from typing import List, Tuple, Dict, Union, Optional, Callable
 from src.solver.Constants import project_folder,bench_folder
 from src.train_data_collection.utils import output_one_eq_graph
 import shutil
+import argparse
 def main():
     sys.setrecursionlimit(1000000)
 
@@ -32,31 +33,37 @@ def main():
     #     output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=True)
     #
 
-    #/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/01_track_generated_train_data_sat_from_solver
-    benchmark="example_graphs"
 
-    for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
-
-        file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
-        for file_path in file_list:
-            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
-
-    # # draw graphs
-    # train_eq_folder = bench_folder + "/" + benchmark + "/train"
-    # for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
-    #     # prepare folder
-    #     graph_folder = bench_folder + "/" + benchmark + "/" + graph_type
+    # benchmark="example_graphs"
     #
-    #     if os.path.exists(graph_folder):
-    #         shutil.rmtree(graph_folder)
-    #     print(f"- copy train to {graph_type} -")
-    #     shutil.copytree(train_eq_folder, graph_folder)
+    # for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
     #
-    #     # draw one type graphs
-    #     print(f"- draw {graph_type} -")
-    #     file_list = glob.glob(graph_folder + "/*.eq")
+    #     file_list = glob.glob(bench_folder +"/"+benchmark+"/"+graph_type+"/*.eq")
     #     for file_path in file_list:
-    #         output_one_eq_graph(file_path=file_path, graph_func=graph_func_map[graph_type], visualize=False)
+    #         output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
+
+    # draw graphs from train folder
+
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('graph_type', type=str, help='graph_type')
+    args = arg_parser.parse_args()
+
+    benchmark = "test_track"
+    train_eq_folder = bench_folder + "/" + benchmark + "/train"
+    for graph_type in [args.graph_type]:
+        # prepare folder
+        graph_folder = bench_folder + "/" + benchmark + "/" + graph_type
+
+        if os.path.exists(graph_folder):
+            shutil.rmtree(graph_folder)
+        print(f"- copy train to {graph_type} -")
+        shutil.copytree(train_eq_folder, graph_folder)
+
+        # draw one type graphs
+        print(f"- draw {graph_type} -")
+        file_list = glob.glob(graph_folder + "/*.eq")
+        for file_path in file_list:
+            output_one_eq_graph(file_path=file_path, graph_func=graph_func_map[graph_type], visualize=False)
 
 
 

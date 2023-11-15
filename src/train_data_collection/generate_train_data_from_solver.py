@@ -25,7 +25,7 @@ from src.solver.independent_utils import strip_file_name_suffix
 from src.train_data_collection.utils import output_one_eq_graph
 def main():
 
-    benchmark="01_track_generated_SAT_train_1_1000"#"01_track_generated_SAT_train"
+    benchmark="test_track"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_1"} #extract_branching_data_task_2
 
     #prepare train folder
@@ -60,23 +60,6 @@ def main():
             result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
             #print_results(result_dict)
-
-    #draw graphs
-    for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
-        #prepare folder
-        graph_folder=bench_folder+"/"+benchmark+"/"+graph_type
-
-
-        if os.path.exists(graph_folder):
-            shutil.rmtree(graph_folder)
-        print(f"- copy train to {graph_type} -")
-        shutil.copytree(train_eq_folder, graph_folder)
-
-        #draw one type graphs
-        print(f"- draw {graph_type} -")
-        file_list = glob.glob(graph_folder+"/*.eq")
-        for file_path in file_list:
-            output_one_eq_graph(file_path=file_path,graph_func=graph_func_map[graph_type],visualize=False)
 
 
 if __name__ == '__main__':
