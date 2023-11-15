@@ -43,7 +43,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
-        self.record_and_close_branch = self._record_and_close_branch_with_file if "extract_branching_data" in parameters["branch_method"] else self._record_and_close_branch_without_file
+        self.record_and_close_branch = self._record_and_close_branch_with_file if parameters["branch_method"]=="extract_branching_data_task_1"  else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
@@ -325,29 +325,75 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         ################################ branching ################################
         satisfiability_list = []
         back_track_count_list=[]
+        branch_eq_list=[]
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
+            branch_eq=Equation(l,r)
 
-            satisfiability, branch_variables,back_track_count = self.explore_paths(Equation(l, r),
+            satisfiability, branch_variables,back_track_count = self.explore_paths(branch_eq,
                                                                   {"node_number": current_node_number,
                                                                    "label": edge_label})
+
             satisfiability_list.append(satisfiability)
             back_track_count_list.append(sum(back_track_count))
+            branch_eq_list.append(branch_eq)
 
 
         ################################ output train data ################################
+        #draw two eq graphs
 
-
-
-        back_track_count_list=[x+1 for x in back_track_count_list]
-
-        # if there is an element in satisfiability_list is SAT, return SAT
+        #get current eq satisfiability
         if SAT in satisfiability_list:
-            return self.record_and_close_branch_and_output_eq(SAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=SAT
         elif UNKNOWN in satisfiability_list:
-            return self.record_and_close_branch_and_output_eq(UNKNOWN, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=UNKNOWN
         else:
-            return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=UNSAT
+
+        # output current node to eq file
+
+        middle_eq_file_name = f"{self.file_name}_{node_info[0]}"
+        self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
+
+        #output splited nodes to eq files
+        if self.output_train_data == True:
+            for branch_index,(branch_eq,satisfiability) in enumerate(zip(branch_eq_list,satisfiability_list)):
+                middle_branch_eq_file_name = f"{self.file_name}_{node_info[0]}:{branch_index}"
+                branch_eq.output_eq_file(middle_branch_eq_file_name, satisfiability)
+
+
+
+        #return result
+        back_track_count_list = [x + 1 for x in back_track_count_list]
+        return self.record_and_close_branch(current_eq_satisfiability, eq.variable_list, node_info, eq,
+                                                          back_track_count=back_track_count_list)
+
+
+        # eq pairs and their labels
+
+        # two branches 2 (positions) x 3 (conditions) = 6 situations
+        ## SAT SAT
+        ## SAT UNSAT
+        ## SAT UNKNOWN
+        ## UNSAT UNSAT
+        ## UNSAT UNKNOWN
+        ## UNKNOWN UNKNWON
+
+        #three branches 3 (positions) x 3 (conditions) = 9 situations
+        ## 3 SAT
+        ## 3 UNSAT
+        ## 3 UNKNOWN
+        ##
+        ## SAT SAT SAT
+        ## SAT SAT UNSAT
+        ## SAT SAT UNKNOWN
+        ## SAT UNSAT UNSAT
+        ## SAT UNSAT UNKNOWN
+        ## SAT UUNKNOWN UNKNOWN
+        ## UNSAT UNSAT UNKNOWN
+        ## UNSAT UNSAT UNSAT
+        ## UNKNOWN UNKNWON UNKNWON
+
 
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
 
@@ -417,11 +463,20 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         back_track_count_list=[x+1 for x in back_track_count_list]
         # if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
-            return self.record_and_close_branch_and_output_eq(SAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=SAT
         elif UNKNOWN in satisfiability_list:
-            return self.record_and_close_branch_and_output_eq(UNKNOWN, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=UNKNOWN
         else:
-            return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+            current_eq_satisfiability=UNSAT
+
+        return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, branch_variables, node_info, eq,
+                                                          back_track_count=back_track_count_list)
+        # if SAT in satisfiability_list:
+        #     return self.record_and_close_branch_and_output_eq(SAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+        # elif UNKNOWN in satisfiability_list:
+        #     return self.record_and_close_branch_and_output_eq(UNKNOWN, branch_variables, node_info, eq,back_track_count=back_track_count_list)
+        # else:
+        #     return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info, eq,back_track_count=back_track_count_list)
 
     def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation,back_track_count): #non-leaf node
         if satisfiability != UNKNOWN:

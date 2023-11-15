@@ -21,9 +21,10 @@ def main():
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
-    file_path= bench_folder +"/examples/01_track_4.eq"
+    file_path = bench_folder +"/examples/2/01_track_2.eq"
+    #file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/03_track_11.eq"
-    #file_path = bench_folder+"/examples/01_track_43.eq"
+    #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
     #file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"
@@ -66,7 +67,7 @@ def main():
 
     graph_type="graph_1"
 
-    algorithm_parameters = {"branch_method":"extract_branching_data_task_1","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"extract_branching_data_task_2","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GIN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
@@ -74,7 +75,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=True)
 
     print_results(result_dict)
 
