@@ -17,11 +17,11 @@ from src.solver.DataTypes import Equation
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
     #debug
-    file_path=bench_folder +"/debug/g_01_track_SAT_1.eq"
+    #file_path=bench_folder +"/debug/g_01_track_SAT_1.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
-    #file_path= bench_folder +"/examples/01_track_4.eq"
+    file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
@@ -67,7 +67,7 @@ def main():
     graph_type="graph_1"
 
     algorithm_parameters = {"branch_method":"extract_branching_data_task_1","graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
+                            "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GIN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
