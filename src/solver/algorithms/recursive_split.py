@@ -386,25 +386,27 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         else:
             return self.record_and_close_branch_and_output_eq(UNSAT, branch_variables, node_info, eq)
 
-    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation):
+    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation): #non-leaf node
         if satisfiability != UNKNOWN:
             middle_eq_file_name = self.file_name + "_" + str(node_info[0])
             self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info, "diamond")
 
-        node_info[1]["status"] = satisfiability
-        return satisfiability, variables
+        return self._record_and_close_branch_without_file(satisfiability, variables, eq)
+        # node_info[1]["status"] = satisfiability
+        # return satisfiability, variables
 
-    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation):
+    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation): #leaf node
         if satisfiability != UNKNOWN:
             if random.random() < OUTPUT_LEAF_NODE_PERCENTAGE:  # random.random() generates a float between 0.0 and 1.0
                 middle_eq_file_name = self.file_name + "_" + str(node_info[0])
                 self._output_train_data(middle_eq_file_name, eq, satisfiability, node_info, "box")
             else:
                 pass
-        node_info[1]["status"] = satisfiability
-        return satisfiability, variables
+        return self._record_and_close_branch_without_file(satisfiability,variables,eq)
+        # node_info[1]["status"] = satisfiability
+        # return satisfiability, variables
 
-    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation):
+    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation): #leaf node
         node_info[1]["status"] = satisfiability
         return satisfiability, variables
 
