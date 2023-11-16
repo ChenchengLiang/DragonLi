@@ -9,6 +9,7 @@ import shutil
 import json
 from src.solver.Constants import satisfiability_to_int_label
 from src.solver.DataTypes import Equation
+from src.solver.visualize_util import draw_graph
 
 def dvivde_track_for_cluster(benchmark,chunk_size=50):
     folder = benchmark+"/ALL"
@@ -35,7 +36,7 @@ def dvivde_track_for_cluster(benchmark,chunk_size=50):
 def output_pair_eq_graphs(graph_folder:str,graph_func:Callable,visualize:bool=False):
     parser_type = EqParser()
     parser = Parser(parser_type)
-    
+
     for f in glob.glob(graph_folder+"/*.label.json"):
         print("---")
         #f="g_01_track_SAT_1@2.label.json"
@@ -51,16 +52,39 @@ def output_pair_eq_graphs(graph_folder:str,graph_func:Callable,visualize:bool=Fa
 
 
 
-
-
         eq:Equation = parser.parse(eq_file)["equation_list"][0]
+        eq_nodes, eq_edges = graph_func(eq.left_terms, eq.right_terms)
         split_eq_list:List[Equation]=[parser.parse(split_eq_file)["equation_list"][0] for split_eq_file in split_eq_file_list]
         print("eq",eq.eq_str)
-        for split_eq in split_eq_list:
+        for split_eq,split_file in zip(split_eq_list,split_eq_file_list):
             print("split_eq",split_eq.eq_str)
+            split_eq_odes,split_eq_edges=graph_func(split_eq.left_terms, split_eq.right_terms)
+            merged_nodes,merged_edges=merge_graphs(eq_nodes,eq_edges,split_eq_odes,split_eq_edges)
+            if visualize==True:
+                draw_graph(nodes=merged_nodes,edges=merged_edges,filename=split_file)
 
 
+def merge_graphs(node_list_1, edge_list_1, node_list_2, edge_list_2):
+    # Find the maximum ID in the first graph
+    max_id = max(node.id for node in node_list_1)+1
 
+    # Shift the IDs in the second graph's nodes
+    id_shift_map = {}
+    for node in node_list_2:
+        old_id = node.id
+        node.id += max_id
+        id_shift_map[old_id] = node.id
+
+    # Update the edges in the second graph
+    for edge in edge_list_2:
+        edge.source = id_shift_map[edge.source]
+        edge.target = id_shift_map[edge.target]
+
+    # Merge the nodes and edges
+    merged_node_list = node_list_1 + node_list_2
+    merged_edge_list = edge_list_1 + edge_list_2
+
+    return merged_node_list, merged_edge_list
 
 def output_one_eq_graph(file_path:str,graph_func:Callable,visualize:bool=False):
 

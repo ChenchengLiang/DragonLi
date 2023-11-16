@@ -41,7 +41,7 @@ def main():
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        output_pair_eq_graphs(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
+        output_pair_eq_graphs(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=True)
 
 
 
