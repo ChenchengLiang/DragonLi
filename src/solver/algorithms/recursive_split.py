@@ -1,3 +1,4 @@
+import os.path
 import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
@@ -364,14 +365,16 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             current_eq_satisfiability = UNSAT
 
         # output current node to eq file
-        middle_eq_file_name = f"{self.file_name}_{node_info[0]}"
+        middle_eq_file_name = f"{self.file_name}@{node_info[0]}"
         self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
 
         if self.output_train_data == True:
             # output splited nodes to eq files
+            middle_branch_eq_file_name_list = []
             for branch_index, (branch_eq, satisfiability) in enumerate(zip(branch_eq_list, satisfiability_list)):
-                middle_branch_eq_file_name = f"{self.file_name}_{node_info[0]}:{branch_index}"
+                middle_branch_eq_file_name = f"{self.file_name}@{node_info[0]}:{branch_index}"
                 branch_eq.output_eq_file(middle_branch_eq_file_name, satisfiability)
+                middle_branch_eq_file_name_list.append(os.path.basename(middle_branch_eq_file_name+".eq"))
 
             # output pairs' labels to file
             if len(back_track_count_list) == 2:
@@ -448,7 +451,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # write label_list to file
             label_json_file_name = middle_eq_file_name + ".label.json"
             label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
-                          "label_list": label_list}
+                          "label_list": label_list,"middle_branch_eq_file_name_list":middle_branch_eq_file_name_list}
             dump_to_json_with_format(label_dict, label_json_file_name)
 
         # return result

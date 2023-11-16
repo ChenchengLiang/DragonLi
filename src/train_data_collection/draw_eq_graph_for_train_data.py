@@ -61,8 +61,8 @@ def main():
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        file_list = glob.glob(graph_folder + "/*.eq")
-        for file_path in file_list:
+        eq_file_list = glob.glob(graph_folder + "/*.eq")
+        for file_path in eq_file_list:
             output_one_eq_graph(file_path=file_path, graph_func=graph_func_map[graph_type], visualize=False)
 
 

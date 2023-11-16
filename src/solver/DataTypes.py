@@ -275,7 +275,7 @@ class Equation:
         else:
             return UNSAT
 
-    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], satisfiability: str=UNKNOWN):
+    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], label: int=-1):
         '''
         output format:
         {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2],
@@ -285,7 +285,7 @@ class Equation:
         node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2}
         edge_type_to_int_map = {None: 1}
         graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
-                      "label": satisfiability_to_int_label[satisfiability]}
+                      "label": label}
         for node in nodes:
             graph_dict["nodes"].append(node.id)
             graph_dict["node_types"].append(node_type_to_int_map[node.type])

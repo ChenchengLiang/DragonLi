@@ -26,7 +26,7 @@ from src.train_data_collection.utils import output_one_eq_graph
 def main():
 
     benchmark="test_track"#"01_track_generated_SAT_train"
-    algorithm_parameters = {"branch_method": "extract_branching_data_task_1"} #extract_branching_data_task_2
+    algorithm_parameters = {"branch_method": "extract_branching_data_task_2"} #extract_branching_data_task_2
 
     #prepare train folder
     all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"

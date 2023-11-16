@@ -6,6 +6,9 @@ from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
 import os
 import shutil
+import json
+from src.solver.Constants import satisfiability_to_int_label
+from src.solver.DataTypes import Equation
 
 def dvivde_track_for_cluster(benchmark,chunk_size=50):
     folder = benchmark+"/ALL"
@@ -29,7 +32,37 @@ def dvivde_track_for_cluster(benchmark,chunk_size=50):
             shutil.copy(f, divided_folder_name)
 
 
-def output_one_eq_graph(file_path,graph_func:Callable,visualize:bool=False):
+def output_pair_eq_graphs(graph_folder:str,graph_func:Callable,visualize:bool=False):
+    parser_type = EqParser()
+    parser = Parser(parser_type)
+    
+    for f in glob.glob(graph_folder+"/*.label.json"):
+        print("---")
+        #f="g_01_track_SAT_1@2.label.json"
+        with open(f,'r') as json_file:
+            json_dict=json.loads(json_file.read())
+        file_name=f.replace(".label.json","")
+
+        eq_file=file_name+".eq"
+        split_eq_file_list=[graph_folder+"/"+x for x in json_dict["middle_branch_eq_file_name_list"]]
+        print(eq_file)
+        print(split_eq_file_list)
+        print(json_dict)
+
+
+
+
+
+        eq:Equation = parser.parse(eq_file)["equation_list"][0]
+        split_eq_list:List[Equation]=[parser.parse(split_eq_file)["equation_list"][0] for split_eq_file in split_eq_file_list]
+        print("eq",eq.eq_str)
+        for split_eq in split_eq_list:
+            print("split_eq",split_eq.eq_str)
+
+
+
+
+def output_one_eq_graph(file_path:str,graph_func:Callable,visualize:bool=False):
 
     parser_type = EqParser()
     parser = Parser(parser_type)
@@ -47,7 +80,7 @@ def output_one_eq_graph(file_path,graph_func:Callable,visualize:bool=False):
         # get gnn format
         nodes, edges = graph_func(eq.left_terms, eq.right_terms)
         satisfiability = answer
-        graph_dict = eq.graph_to_gnn_format(nodes, edges, satisfiability)
+        graph_dict = eq.graph_to_gnn_format(nodes, edges, label=satisfiability_to_int_label[satisfiability])
         #print(graph_dict)
         # Dumping the dictionary to a JSON file
         json_file=strip_file_name_suffix(file_path) + ".json"
