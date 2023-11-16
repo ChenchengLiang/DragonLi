@@ -88,7 +88,11 @@ class WordEquationDataset(DGLDataset):
                    "label": 1}
         graphs = [graph_1, graph_2]
         '''
-        graph_file_list = glob.glob(self._graph_folder + "/*.json")
+        #todo: change this to .graph.json when last batch is trained
+        if len(glob.glob(self._graph_folder + "/*.graph.json"))!=0:
+            graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+        else:
+            graph_file_list = glob.glob(self._graph_folder + "/*.json")
 
         for graph_file in graph_file_list:
             with open(graph_file, 'r') as f:

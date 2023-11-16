@@ -22,11 +22,10 @@ from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
-from src.train_data_collection.utils import output_one_eq_graph
 def main():
 
-    benchmark="test_track"#"01_track_generated_SAT_train"
-    algorithm_parameters = {"branch_method": "extract_branching_data_task_2"} #extract_branching_data_task_2
+    benchmark="test_track_task_1"#"01_track_generated_SAT_train"
+    algorithm_parameters = {"branch_method": "extract_branching_data_task_1"} #extract_branching_data_task_2
 
     #prepare train folder
     all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"

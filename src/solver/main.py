@@ -17,11 +17,11 @@ from src.solver.DataTypes import Equation
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
     #debug
-    #file_path=bench_folder +"/debug/g_01_track_SAT_1.eq"
+    file_path=bench_folder +"/test_track_task_1/ALL/ALL/g_01_track_SAT_1.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
-    file_path = bench_folder +"/examples/2/01_track_2.eq"
+    #file_path = bench_folder +"/examples/2/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/43/01_track_43.eq"

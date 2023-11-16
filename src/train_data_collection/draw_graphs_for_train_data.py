@@ -5,23 +5,24 @@ import configparser
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
-path = config.get('Path','local')
+path = config.get('Path', 'local')
 sys.path.append(path)
 
-
-from src.solver.independent_utils import strip_file_name_suffix,dump_to_json_with_format
-from src.solver.Parser import Parser,EqParser
+from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format
+from src.solver.Parser import Parser, EqParser
 import glob
 from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
-from src.solver.Constants import project_folder,bench_folder
-from src.train_data_collection.utils import output_one_eq_graph
+from src.solver.Constants import project_folder, bench_folder
+from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs
 import shutil
 import argparse
+
+
 def main():
     sys.setrecursionlimit(1000000)
 
-    #visualize examples
+    # visualize examples
     # file_list = glob.glob(
     #     bench_folder +"/01_track_generated_train_data/graph_1/*.eq")
     # for file_path in file_list:
@@ -32,7 +33,6 @@ def main():
     # for file_path in file_list:
     #     output_one_eq_graph(file_path=file_path, graph_func=Equation.get_graph_2, visualize=True)
     #
-
 
     # benchmark="example_graphs"
     #
@@ -48,7 +48,15 @@ def main():
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
-    benchmark = "test_track"
+    benchmark = "test_track_task_1"
+
+
+
+    if benchmark=="test_track_task_1":
+        draw_func = output_eq_graphs
+    elif benchmark=="test_track_task_2":
+        draw_func = output_pair_eq_graphs
+
     train_eq_folder = bench_folder + "/" + benchmark + "/train"
     for graph_type in [args.graph_type]:
         # prepare folder
@@ -61,18 +69,7 @@ def main():
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        eq_file_list = glob.glob(graph_folder + "/*.eq")
-        for file_path in eq_file_list:
-            output_one_eq_graph(file_path=file_path, graph_func=graph_func_map[graph_type], visualize=False)
-
-
-
-
-
-
-
-
-
+        draw_func(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
 
 
 if __name__ == '__main__':

@@ -17,7 +17,7 @@ Woking pipeline:
 5. Alvis: sh word_equation_submit_generate_train_data.sh #generate train data (.eq)
 
 
-6. Alvis: sh word_equation_submit_draw_eq_graph_for_train_data.sh #draw graphs for train data (.json)
+6. Alvis: sh word_equation_submit_draw_graphs_for_train_data.sh #draw graphs for train data (.json)
 
 
 7. Alvis: sh word_equation_submit_multiple_train.sh #train

@@ -39,7 +39,6 @@ class AbstractAlgorithm(ABC):
         left_side = self.extract_values_from_terms(left_terms, assignment)
         right_side = self.extract_values_from_terms(right_terms, assignment)
 
-        # todo: this need to be improved
         left_str = "".join(left_side)
         right_str = "".join(right_side)
         if left_str == right_str:
