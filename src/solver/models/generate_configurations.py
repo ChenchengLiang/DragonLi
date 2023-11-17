@@ -19,7 +19,7 @@ def main():
     configurations = []
     for benchmark in ["01_track_generated_SAT_train_1_1000"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
-            for gnn_layer_num in [2,4,8]:
+            for gnn_layer_num in [8]:
                 for ffnn_layer_num in [2]:
                     for hidden_dim in [128]:
                         for dropout_rate in [0.5]:

@@ -28,6 +28,8 @@ def main(args):
                         help='Type of graph (optional)')
     arg_parser.add_argument('--gnn_model_path', type=str,  default=None,
                             help='path to .pth file')
+    arg_parser.add_argument('--gnn_task', type=str, default=None,
+                            help='task_1, task_2,...')
 
     args = arg_parser.parse_args()
 
@@ -36,6 +38,7 @@ def main(args):
     branch_method = args.branch_method
     graph_type = args.graph_type
     gnn_model_path = args.gnn_model_path
+    task=args.gnn_task
 
     print(file_path, branch_method, graph_type)
 
@@ -46,7 +49,7 @@ def main(args):
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,
+    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
                             "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path} # branch_method [gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)

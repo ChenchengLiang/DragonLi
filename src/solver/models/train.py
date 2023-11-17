@@ -60,7 +60,7 @@ def main():
     mlflow.set_experiment(today+"-"+train_config["benchmark"])
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     with mlflow.start_run() as mlflow_run:
-        train_config["experiment_id"]=mlflow_run.info.experiment_id
+        train_config["run_id"]=mlflow_run.info.run_id
         mlflow.log_params(train_config)
         train_one_model(train_config,benchmark_folder)
 

@@ -13,7 +13,9 @@ from src.solver.independent_utils import remove_duplicates, flatten_list, strip_
 from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model, load_model_from_mlflow
+from src.solver.algorithms.utils import graph_to_gnn_format
 from src.solver.models.Dataset import WordEquationDataset
+from src.solver.algorithms.utils import merge_graphs
 from dgl.dataloading import GraphDataLoader
 import sys
 import copy
@@ -44,6 +46,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
+        self._task=parameters["task"]
         self.record_and_close_branch = self._record_and_close_branch_with_file if parameters[
                                                                                       "branch_method"] == "extract_branching_data_task_1" else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
@@ -57,10 +60,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # run_id = "feb2e17e68bb4310bb3c539c672fd166"
             # self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
+            if self._task=="task_1":
+                self.draw_graph_func = self._draw_graph_task_1
+            elif self._task=="task_2":
+                self.draw_graph_func = self._draw_graph_task_2
         self.output_train_data = False if self.file_name == "" else True
 
     def run(self):
-        print("branch_method:", self.parameters["branch_method"])
+        print("branch_method:", self.parameters["branch_method"],"task:",self._task)
         first_equation = self.equation_list[0]
 
         try:
@@ -240,6 +247,18 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         else:
             return self._use_fixed_branching(eq, current_node_number, node_info, branch_methods)
 
+    def _draw_graph_task_1(self,split_eq,eq):
+        nodes, edges = self.graph_func(split_eq.left_terms, split_eq.right_terms)
+        return nodes, edges
+
+    def _draw_graph_task_2(self, split_eq, eq):
+        split_nodes, split_edges = self.graph_func(split_eq.left_terms, split_eq.right_terms)
+        eq_nodes,eq_edges = self.graph_func(eq.left_terms,eq.right_terms)
+        merged_nodes,merged_edges=merge_graphs(eq_nodes,eq_edges,split_nodes,split_edges)
+        return merged_nodes,merged_edges
+
+
+
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         # print(self.total_split_call,"gnn branch")
         # Compute branches and prepare data structures
@@ -248,10 +267,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         for method in branch_methods:
             l, r, v, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
-            new_eq = Equation(l, r)
-            nodes, edges = self.graph_func(new_eq.left_terms, new_eq.right_terms)
-            graph_dict = new_eq.graph_to_gnn_format(nodes, edges)
-            tuple_data = (new_eq, v, edge_label)
+            split_eq = Equation(l, r)
+            nodes, edges = self.draw_graph_func(split_eq, eq)
+            graph_dict = graph_to_gnn_format(nodes, edges)
+            tuple_data = (split_eq, v, edge_label)
 
             branches.append(tuple_data)
             graph_list.append(graph_dict)
@@ -492,7 +511,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #     l, r, v, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
         #     new_eq = Equation(l, r)
         #     nodes, edges = self.graph_func(new_eq.left_terms, new_eq.right_terms)
-        #     graph_dict = new_eq.graph_to_gnn_format(nodes, edges)
+        #     graph_dict = graph_to_gnn_format(nodes, edges)
         #     tuple_data = (new_eq, v, edge_label)
         #
         #     branches.append(tuple_data)

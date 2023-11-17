@@ -275,26 +275,6 @@ class Equation:
         else:
             return UNSAT
 
-    def graph_to_gnn_format(self, nodes: List[Node], edges: List[Edge], label: int=-1):
-        '''
-        output format:
-        {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2],
-        "edges": [[1, 2], [2, 3], [3, 0]], "edge_types": [1, 1, 1],
-        "label": 1}
-        '''
-        node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2}
-        edge_type_to_int_map = {None: 1}
-        graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
-                      "label": label}
-        for node in nodes:
-            graph_dict["nodes"].append(node.id)
-            graph_dict["node_types"].append(node_type_to_int_map[node.type])
-        for edge in edges:
-            graph_dict["edges"].append([edge.source, edge.target])
-            graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
-
-        return graph_dict
-
     def visualize_graph(self, file_path,graph_func):
         nodes, edges = graph_func(self.left_terms,self.right_terms)
         draw_graph(nodes, edges, file_path)
@@ -406,6 +386,7 @@ class Equation:
     @staticmethod
     def get_graph_5(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
         return Equation._construct_graph(left_terms, right_terms, graph_type="graph_5")
+
 
     def output_eq_file(self,file_name,satisfiability=UNKNOWN):
         #replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
