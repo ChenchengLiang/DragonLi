@@ -29,7 +29,7 @@ def main():
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
-    benchmark = "03_track_generated_train_1_20000"
+    benchmark = "03_track_generated_train_1_20000_task_2"
 
     #draw_func = output_eq_graphs
     draw_func = output_pair_eq_graphs

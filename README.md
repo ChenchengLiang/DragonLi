@@ -29,7 +29,6 @@ Woking pipeline:
 9. Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
 
 
-
 10. Local: merge_summary_folders.py
 Local: summary_solutions.py
 

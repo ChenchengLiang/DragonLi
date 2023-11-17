@@ -46,7 +46,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
-        self._task=parameters["task"]
         self.record_and_close_branch = self._record_and_close_branch_with_file if parameters[
                                                                                       "branch_method"] == "extract_branching_data_task_1" else self._record_and_close_branch_without_file
         sys.setrecursionlimit(recursion_limit)
@@ -60,14 +59,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # run_id = "feb2e17e68bb4310bb3c539c672fd166"
             # self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
-            if self._task=="task_1":
+            if parameters["task"]=="task_1":
                 self.draw_graph_func = self._draw_graph_task_1
-            elif self._task=="task_2":
+            elif parameters["task"]=="task_2":
                 self.draw_graph_func = self._draw_graph_task_2
         self.output_train_data = False if self.file_name == "" else True
 
     def run(self):
-        print("branch_method:", self.parameters["branch_method"],"task:",self._task)
+        print("branch_method:", self.parameters["branch_method"])
         first_equation = self.equation_list[0]
 
         try:
@@ -479,16 +478,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
 
         ################################ stop branching condition ################################
-        if eq.term_length > MAX_EQ_LENGTH:
+        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
-        self.current_deep += 1
-        if self.current_deep > MAX_DEEP:
-            self.current_deep = 0
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         ################################ branching ################################
         satisfiability_list = []

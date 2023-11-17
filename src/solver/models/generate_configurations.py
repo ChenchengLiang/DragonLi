@@ -9,15 +9,13 @@ path = config.get('Path', 'local')
 sys.path.append(path)
 
 from src.solver.Constants import project_folder
-import json
-import shutil
 from src.solver.independent_utils import write_configurations_to_json_file
 
 
 def main():
     num_epochs=300
     configurations = []
-    for benchmark in ["01_track_generated_SAT_train_1_1000"]:
+    for benchmark in ["03_track_generated_train_1_20000"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
             for gnn_layer_num in [8]:
                 for ffnn_layer_num in [2]:

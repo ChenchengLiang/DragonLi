@@ -35,11 +35,12 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "track_01_generated_SAT_eval_divided_1",
-            "benchmark_folder":bench_folder+"/01_track_generated_SAT_eval/divided_1",
+            "benchmark_name": "test_track_task_2",
+            "benchmark_folder":bench_folder+"/test_track_task_2/ALL/ALL",
             "solver":"this",
-            "parameters_list":["fixed"],#["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GIN.pth"],
-            "summary_folder_name":"track_01_generated_SAT_eval_divided_1_summary"
+            #"parameters_list":["fixed"],
+            "parameters_list": ["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GCN.pth",f"--gnn_task task_2"],
+            "summary_folder_name":"test_track_task_2_summary"
         }
 
     solver_log = False

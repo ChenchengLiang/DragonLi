@@ -20,7 +20,7 @@ def main():
     summary_folder = project_folder+"/src/process_benchmarks/summary"
 
 
-    for track in ["01_track_generated_SAT_eval_10000_11000"]: #["track_01","track_02","track_03",g_track_01_mixed,track_random_eval,track_random_train,track_01_generated_SAT_eval]
+    for track in ["01_track_generated_SAT_train_1_1000"]: #["track_01","track_02","track_03",g_track_01_mixed,track_random_eval,track_random_train,track_01_generated_SAT_eval]
         summary_file_dict={}
         for f in glob.glob(project_folder+"/src/process_benchmarks/summary/to_summary/*.csv"):
             if track in f:

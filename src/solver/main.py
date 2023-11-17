@@ -68,7 +68,7 @@ def main():
     graph_type="graph_1"
     task="task_2"
 
-    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"extract_branching_data_task_2","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
@@ -76,7 +76,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=True)
+    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
 
     print_results(result_dict)
 
