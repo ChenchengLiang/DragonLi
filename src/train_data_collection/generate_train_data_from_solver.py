@@ -24,7 +24,7 @@ from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
 
-    benchmark="03_track_generated_train_1_20000_task_2"#"01_track_generated_SAT_train"
+    benchmark="examples/2_task_2"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_2"} #extract_branching_data_task_2
 
     #prepare train folder

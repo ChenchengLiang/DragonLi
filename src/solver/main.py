@@ -17,13 +17,13 @@ from src.solver.DataTypes import Equation
 from src.solver.independent_utils import strip_file_name_suffix
 def main():
     #debug
-    file_path=bench_folder +"/test_track_task_1/ALL/ALL/g_01_track_SAT_1.eq"
+    #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
     #file_path = bench_folder +"/examples/2/01_track_2.eq"
+    file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
-    #file_path = bench_folder+"/examples/03_track_11.eq"
     #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
@@ -65,10 +65,10 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_1"
-    task="task_2"
+    graph_type="graph_2"
+    task="task_1"
 
-    algorithm_parameters = {"branch_method":"extract_branching_data_task_2","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
@@ -76,7 +76,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
 
     print_results(result_dict)
 

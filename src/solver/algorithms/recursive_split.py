@@ -3,13 +3,15 @@ import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
+import torch
+
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, MAX_DEEP, MAX_SPLIT_CALL, \
     OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_EQ_LENGTH, MAX_ONE_SIDE_LENGTH
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_parsed_content
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals
+    dump_to_json_with_format, identify_available_capitals,get_memory_usage
 from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model, load_model_from_mlflow
@@ -19,6 +21,7 @@ from src.solver.algorithms.utils import merge_graphs
 from dgl.dataloading import GraphDataLoader
 import sys
 import copy
+import gc
 
 sys.path.append(
     project_folder + "/src/solver/models")
@@ -217,7 +220,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         branch_methods = [
             self.two_variables_split_branch_1,
             self.two_variables_split_branch_2,
-            self.two_variables_split_branch_3
+            self.two_variables_split_branch_3 #assume two variables are the same
         ]
         self.total_split_call += 1
         return self._branch_method_func(eq, current_node_number,
@@ -227,7 +230,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                current_node_number, node_info):
         # Define the methods for each branch
         branch_methods = [
-            self.one_variable_one_terminal_split_branch_1,
+            self.one_variable_one_terminal_split_branch_1, # assume the variable is empty
             self.one_variable_one_terminal_split_branch_2
         ]
         self.total_split_call += 1
@@ -259,8 +262,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
-        # print(self.total_split_call,"gnn branch")
+        print(f"- {self.total_split_call} gnn branch -")
+        print(f"Memory usage: {get_memory_usage()}")
         # Compute branches and prepare data structures
+        # if self.total_split_call % 20 ==0:
+        #     gc.collect()
+
         branches = []
         graph_list = []
 
@@ -274,23 +281,30 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             branches.append(tuple_data)
             graph_list.append(graph_dict)
 
+        #print(f"after draw graph Memory usage: {get_memory_usage()}")
         # Load data
         evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", graphs_from_memory=graph_list)
         evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
 
+
+        #print(f"after load data Memory usage: {get_memory_usage()}")
         # Call gnn to predict
-        prediction_list = []
+        with torch.no_grad():
+            prediction_list = []
+            for (batched_graph, labels), eq_tuple in zip(evaluation_dataloader, branches):
+                pred = self.gnn_model(batched_graph, batched_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+                prediction_list.append([pred, eq_tuple])
 
-        for (batched_graph, labels), eq_tuple in zip(evaluation_dataloader, branches):
-            pred = self.gnn_model(batched_graph, batched_graph.ndata["feat"].float())  # pred is a float between 0 and 1
-            prediction_list.append([pred, eq_tuple])
+            sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
 
-        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+
+        #print(f"after predict Memory usage: {get_memory_usage()}")
+
 
         # Perform depth-first search based on the sorted prediction list
         for i, data in enumerate(sorted_prediction_list):
-            eq, v, edge_label = data[1]
-            satisfiability, branch_variables, back_track_count_list = self.explore_paths(eq,
+            split_eq, _, edge_label = data[1]
+            satisfiability, branch_variables, back_track_count_list = self.explore_paths(split_eq,
                                                                                          {
                                                                                              "node_number": current_node_number,
                                                                                              "label": edge_label})
@@ -298,7 +312,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
-                                                           node_info, eq, back_track_count=back_track_count_list)
+                                                           node_info, split_eq, back_track_count=back_track_count_list)
+
             if result == None:
                 pass
             else:
@@ -314,10 +329,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_fixed_branching(self, eq: Equation, current_node_number, node_info,
                              branch_methods):
         # print(self.total_split_call,"fixed branch")
+        # # Print the current memory usage
+        # print(f"Memory usage: {get_memory_usage()}")
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
+            split_eq=Equation(l,r)
 
-            satisfiability, branch_variables, back_track_count_list = self.explore_paths(Equation(l, r),
+            satisfiability, branch_variables, back_track_count_list = self.explore_paths(split_eq,
                                                                                          {
                                                                                              "node_number": current_node_number,
                                                                                              "label": edge_label})
@@ -325,7 +343,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
-                                                           node_info, eq, back_track_count=back_track_count_list)
+                                                           node_info, split_eq, back_track_count=back_track_count_list)
             if result == None:
                 pass
             else:
@@ -345,6 +363,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                 back_track_count=back_track_count)
 
     def _extract_branching_data_task_2(self, eq: Equation, current_node_number, node_info, branch_methods):
+        print(self.total_split_call, "fixed branch")
+        # Print the current memory usage
+        print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
         if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
@@ -396,11 +417,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # output pairs' labels to file
             if len(back_track_count_list) == 2:
                 # two branches 2 (positions) x 3 (conditions) = 6 situations
-                ## 2 SAT
-                ## 1 SAT 1 others
-                ## 2 UNSAT
-                ## 1 UNSAT 1 UNKNOWN
-                ## 2 UNKNOWN
+                ## 2 SAT  label [1,0]
+                ## 1 SAT 1 others [1,0]
+                ## 2 UNSAT [0,0]
+                ## 1 UNSAT 1 UNKNOWN [0,1]
+                ## 2 UNKNOWN []
                 label_list = [0, 0]
                 # if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
                 if satisfiability_list.count(SAT) == 2: # 2 SAT
@@ -476,6 +497,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                             back_track_count=back_track_count_list)
 
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
+        print(self.total_split_call,"fixed branch")
+        # Print the current memory usage
+        print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
         if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:

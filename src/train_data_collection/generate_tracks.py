@@ -20,10 +20,11 @@ import shutil
 
 def main():
     # generate track
-    track_folder = bench_folder + "/01_track_generated_SAT_eval_10000_11000"
-    start_idx = 10000
-    end_idx = 11000
-    save_equations(start_idx, end_idx, track_folder, "01_track_generated_SAT_eval_10000_11000", generate_one_track_1)
+    track_name="03_track_generated_eval_20000_21000"
+    track_folder = bench_folder + "/"+track_name
+    start_idx = 20001
+    end_idx = 21000
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)

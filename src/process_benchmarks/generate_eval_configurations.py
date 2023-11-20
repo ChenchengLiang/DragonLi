@@ -22,22 +22,22 @@ import shutil
 
 def main():
     model_folder = project_folder + "/" + "Models/"
-    task="task_1"
+    task="task_2"
     solver_param_list = [
         ["this", ["fixed"]],
         ["this", ["random"]],
-        ["this", ["gnn", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCN.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn:random", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCN.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn:fixed", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCN.pth", f"--gnn_task {task}"]],
-        ["this",["gnn", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GIN.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GIN.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:fixed","--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GIN.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn","--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:random", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:fixed", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_MultiGNNs.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:random","--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_MultiGNNs.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:fixed", "--graph_type graph_4", "--gnn_model_path " + model_folder + "model_graph_4_MultiGNNs.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCN.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCN.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCN.pth", f"--gnn_task {task}"]],
+        ["this",["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:fixed","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn","--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         # ["woorpje",[]],
         # ["z3",[]],
         # ["ostrich",[]],
@@ -61,7 +61,7 @@ def main():
         #"track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name="01_track_generated_SAT_train_1_1000"
+    benchmark_name="03_track_generated_eval_20000_21000"
     benchmark_folder=benchmark_name+"/ALL"
     folder_number = sum([1 for fo in os.listdir(bench_folder+"/"+benchmark_folder) if "divided" in os.path.basename(fo)])
     for i in range(folder_number):
