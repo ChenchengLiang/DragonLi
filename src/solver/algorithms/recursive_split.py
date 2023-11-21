@@ -362,11 +362,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
-        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
-
-        if self.total_split_call > MAX_SPLIT_CALL:
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        return self._extract_branching_data_termination_condition(eq, node_info)
 
         ################################ branching ################################
         satisfiability_list = []
@@ -386,16 +382,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         ################################ output train data ################################
         back_track_count_list = [x + 1 for x in back_track_count_list]
+        current_eq_satisfiability=self._extract_branching_data_get_current_eq_satisfiability(satisfiability_list)
+
         # draw two eq graphs
-
-        # get current eq satisfiability
-        if SAT in satisfiability_list:
-            current_eq_satisfiability = SAT
-        elif UNKNOWN in satisfiability_list:
-            current_eq_satisfiability = UNKNOWN
-        else:
-            current_eq_satisfiability = UNSAT
-
         # output current node to eq file
         middle_eq_file_name = f"{self.file_name}@{node_info[0]}"
         self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
@@ -496,11 +485,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
-        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
-
-        if self.total_split_call > MAX_SPLIT_CALL:
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        return self._extract_branching_data_termination_condition(eq,node_info)
 
 
         ################################ branching ################################
@@ -521,6 +506,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         ################################ output train data ################################
         back_track_count_list = [x + 1 for x in back_track_count_list]
+        current_eq_satisfiability=self._extract_branching_data_get_current_eq_satisfiability(satisfiability_list)
+
+        return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, branch_variables, node_info, eq,
+                                                          back_track_count=back_track_count_list)
+
+    def _extract_branching_data_termination_condition(self,eq:Equation,node_info):
+        ################################ stop branching condition ################################
+        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
+         return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+
+        if self.total_split_call > MAX_SPLIT_CALL:
+         return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+    def _extract_branching_data_get_current_eq_satisfiability(self,satisfiability_list:List[str])->str:
         # if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
             current_eq_satisfiability = SAT
@@ -528,9 +526,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             current_eq_satisfiability = UNKNOWN
         else:
             current_eq_satisfiability = UNSAT
-
-        return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, branch_variables, node_info, eq,
-                                                          back_track_count=back_track_count_list)
+        return current_eq_satisfiability
 
     def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation,
                                               back_track_count):  # non-leaf node
