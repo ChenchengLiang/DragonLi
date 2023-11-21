@@ -22,7 +22,7 @@ import shutil
 
 def main():
     model_folder = project_folder + "/" + "Models/"
-    task="task_2"
+    task="task_1"
     solver_param_list = [
         ["this", ["fixed"]],
         ["this", ["random"]],

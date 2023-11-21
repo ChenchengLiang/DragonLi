@@ -8,6 +8,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
 from collections import Counter
 from src.solver.Constants import project_folder
+from src.solver.independent_utils import get_memory_usage
 from Dataset import WordEquationDataset
 import mlflow
 import time

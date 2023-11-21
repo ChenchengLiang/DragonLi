@@ -1,12 +1,14 @@
-from .DataTypes import Variable, Terminal, Term, Assignment,Equation
+from .DataTypes import Variable, Terminal, Term, Assignment,Equation,get_eq_graph_1,get_eq_graph_2,get_eq_graph_3,get_eq_graph_4,get_eq_graph_5
 from typing import Dict, List
 from .Constants import INTERNAL_TIMEOUT
 import sys
 
 
-graph_func_map = {None: Equation.get_graph_1, "graph_1": Equation.get_graph_1,
-                      "graph_2": Equation.get_graph_2,"graph_3":Equation.get_graph_3,"graph_4":Equation.get_graph_4,
-                      "graph_5":Equation.get_graph_5}
+graph_func_map = {None: get_eq_graph_1, "graph_1": get_eq_graph_1,
+                      "graph_2": get_eq_graph_2, "graph_3":get_eq_graph_3, "graph_4":get_eq_graph_4,
+                      "graph_5":get_eq_graph_5}
+
+
 
 
 def print_results(result: Dict):

@@ -4,6 +4,7 @@ import torch.nn.functional as F
 import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
+from dgl.nn.pytorch import SumPooling
 
 class BaseWithNFFNN(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, n_ffnn, ffnn_hidden_size,gnn_dropout_rate=0.5,ffnn_dropout_rate=0.5):

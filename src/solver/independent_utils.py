@@ -16,13 +16,13 @@ def get_memory_usage():
 
     if memory_usage_gb >= 1:
         # Format as GB + MB + KB
-        return f"{memory_usage_gb:.2f} GB, {memory_usage_mb % 1024:.2f} MB, {memory_usage_kb % 1024:.2f} KB"
+        return f"{memory_usage_gb:.2f} GB, {memory_usage_mb % 1024:.2f} MB, {memory_usage_kb % 1024:.2f} KB",memory_usage_gb
     elif memory_usage_mb >= 1:
         # Format as MB + KB
-        return f"{memory_usage_mb:.2f} MB, {memory_usage_kb % 1024:.2f} KB"
+        return f"{memory_usage_mb:.2f} MB, {memory_usage_kb % 1024:.2f} KB",memory_usage_gb
     else:
         # Format as KB
-        return f"{memory_usage_kb:.2f} KB"
+        return f"{memory_usage_kb:.2f} KB",memory_usage_gb
 
 def remove_duplicates(lst:Iterable)->List:
     seen = set()

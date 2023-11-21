@@ -7,37 +7,6 @@ import copy
 
 
 
-class Node:
-    def __init__(self, id, type, content, label):
-        self.id = id
-        self.type = type
-        self.content = content
-        self.label = label
-
-    def __repr__(self):
-        return f"Node({self.id}, {self.label}, {self.type},{self.content})"
-
-    def __hash__(self):
-        return hash((self.label, self.type, self.id, self.content))
-
-    def __eq__(self, other):
-        if not isinstance(other, Node):
-            return False
-        return self.label == other.label and self.type == other.type and self.id == other.id and self.content == other.content
-
-
-class Edge:
-    def __init__(self, source, target, type, content, label):
-        self.source = source
-        self.target = target
-        self.type = type
-        self.content = content
-        self.label = label
-
-    def __repr__(self):
-        return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
-
-
 class Operator:
     def __init__(self, value: str):
         self.value = value
@@ -279,114 +248,6 @@ class Equation:
         nodes, edges = graph_func(self.left_terms,self.right_terms)
         draw_graph(nodes, edges, file_path)
 
-    @staticmethod
-    def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type:str):
-        global_node_counter = 0
-        nodes = []
-        edges = []
-        variable_nodes=[]
-        terminal_nodes=[]
-
-        def construct_tree(term_list: Deque[Term], previous_node: Node, global_node_counter):
-            if len(term_list) == 0:
-                return global_node_counter
-            else:
-                current_term = term_list.popleft()
-                current_node = Node(id=global_node_counter, type=current_term.value_type,
-                                    content=current_term.get_value_str, label=None)
-                global_node_counter += 1
-                nodes.append(current_node)
-                edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
-                if graph_type=="graph_2": #add edge back to equation node
-                    edges.append(
-                        Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
-                if graph_type=="graph_3": # add edge to corresponding variable node
-                    if current_node.type==Variable:
-                        for v_node in variable_nodes:
-                            if v_node.content==current_node.content:
-                                edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
-                                break
-                if graph_type=="graph_4":
-                    if current_node.type==Terminal:
-                        for t_node in terminal_nodes:
-                            if t_node.content==current_node.content:
-                                edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
-                                break
-                if graph_type == "graph_5":
-                    if current_node.type==Variable:
-                        for v_node in variable_nodes:
-                            if v_node.content==current_node.content:
-                                edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
-                                break
-                    if current_node.type==Terminal:
-                        for t_node in terminal_nodes:
-                            if t_node.content==current_node.content:
-                                edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
-                                break
-
-
-
-                return construct_tree(term_list, current_node, global_node_counter)
-
-        def add_a_node(global_node_counter,type,content,label):
-            current_node= Node(id=global_node_counter, type=type, content=content, label=label)
-            nodes.append(current_node)
-            global_node_counter += 1
-            return current_node,global_node_counter
-
-        def add_variable_nodes(global_node_counter):
-            for v in Equation(left_terms.copy(),right_terms.copy()).variable_list:
-                v_node,global_node_counter=add_a_node(global_node_counter, type=Variable, content=v.value, label=None)
-                variable_nodes.append(v_node)
-            return global_node_counter
-        def add_terminal_nodes(global_node_counter):
-            for t in Equation(left_terms.copy(), right_terms.copy()).termimal_list_without_empty_terminal:
-                t_node, global_node_counter = add_a_node(global_node_counter, type=Terminal, content=t.value, label=None)
-                terminal_nodes.append(t_node)
-            return global_node_counter
-
-
-
-        # Add "=" node
-        equation_node,global_node_counter = add_a_node(global_node_counter, type=Operator, content="=", label=None)
-
-        if graph_type=="graph_3": # Add variable nodes
-            global_node_counter=add_variable_nodes(global_node_counter)
-        if graph_type == "graph_4": # Add terminal nodes
-            global_node_counter=add_terminal_nodes(global_node_counter)
-        if graph_type == "graph_5": # Add add variable and terminal nodes
-            global_node_counter=add_variable_nodes(global_node_counter)
-            global_node_counter=add_terminal_nodes(global_node_counter)
-
-
-
-        local_left_terms = deque(left_terms.copy())
-        local_right_terms = deque(right_terms.copy())
-
-        global_node_counter = construct_tree(local_left_terms, equation_node, global_node_counter)
-        global_node_counter = construct_tree(local_right_terms, equation_node, global_node_counter)
-
-        return nodes, edges
-
-    @staticmethod
-    def get_graph_1(left_terms: List[Term], right_terms: List[Term]):
-        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_1")
-
-    @staticmethod
-    def get_graph_2(left_terms: List[Term], right_terms: List[Term]): #add edge back to equation node
-        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_2")
-
-    @staticmethod
-    def get_graph_3(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding variable nodes
-        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_3")
-    @staticmethod
-    def get_graph_4(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding terminal nodes
-        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_4")
-
-    @staticmethod
-    def get_graph_5(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
-        return Equation._construct_graph(left_terms, right_terms, graph_type="graph_5")
-
 
     def output_eq_file(self,file_name,satisfiability=UNKNOWN):
         #replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
@@ -472,3 +333,220 @@ class Assignment:
         for key, value in self.assignments.items():
             print(key.value, "=", "".join([v.value for v in value]))
         print("-" * 10)
+
+
+
+
+class Node:
+    def __init__(self, id, type, content, label):
+        self.id = id
+        self.type = type
+        self.content = content
+        self.label = label
+
+    def __repr__(self):
+        return f"Node({self.id}, {self.label}, {self.type},{self.content})"
+
+    def __hash__(self):
+        return hash((self.label, self.type, self.id, self.content))
+
+    def __eq__(self, other):
+        if not isinstance(other, Node):
+            return False
+        return self.label == other.label and self.type == other.type and self.id == other.id and self.content == other.content
+
+
+class Edge:
+    def __init__(self, source, target, type, content, label):
+        self.source = source
+        self.target = target
+        self.type = type
+        self.content = content
+        self.label = label
+
+    def __repr__(self):
+        return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
+
+
+
+
+def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type:str):
+    global_node_counter = 0
+    nodes = []
+    edges = []
+    variable_nodes=[]
+    terminal_nodes=[]
+
+    # def construct_tree(term_list: Deque[Term], previous_node: Node, global_node_counter):
+    #     if len(term_list) == 0:
+    #         return global_node_counter
+    #     else:
+    #         current_term = term_list.popleft()
+    #         current_node = Node(id=global_node_counter, type=current_term.value_type,
+    #                             content=current_term.get_value_str, label=None)
+    #         global_node_counter += 1
+    #         nodes.append(current_node)
+    #         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+    #         if graph_type=="graph_2": #add edge back to equation node
+    #             edges.append(
+    #                 Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
+    #         if graph_type=="graph_3": # add edge to corresponding variable node
+    #             if current_node.type==Variable:
+    #                 for v_node in variable_nodes:
+    #                     if v_node.content==current_node.content:
+    #                         edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+    #                         break
+    #         if graph_type=="graph_4":
+    #             if current_node.type==Terminal:
+    #                 for t_node in terminal_nodes:
+    #                     if t_node.content==current_node.content:
+    #                         edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+    #                         break
+    #         if graph_type == "graph_5":
+    #             if current_node.type==Variable:
+    #                 for v_node in variable_nodes:
+    #                     if v_node.content==current_node.content:
+    #                         edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+    #                         break
+    #             if current_node.type==Terminal:
+    #                 for t_node in terminal_nodes:
+    #                     if t_node.content==current_node.content:
+    #                         edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+    #                         break
+    #
+    #
+    #
+    #         return construct_tree(term_list, current_node, global_node_counter)
+
+    # def add_a_node(global_node_counter,type,content,label):
+    #     current_node= Node(id=global_node_counter, type=type, content=content, label=label)
+    #     nodes.append(current_node)
+    #     global_node_counter += 1
+    #     return current_node,global_node_counter
+
+    # def add_variable_nodes(global_node_counter):
+    #     for v in Equation(left_terms.copy(),right_terms.copy()).variable_list:
+    #         v_node,global_node_counter=add_a_node(global_node_counter, type=Variable, content=v.value, label=None)
+    #         variable_nodes.append(v_node)
+    #     return global_node_counter
+    # def add_terminal_nodes(global_node_counter):
+    #     for t in Equation(left_terms.copy(), right_terms.copy()).termimal_list_without_empty_terminal:
+    #         t_node, global_node_counter = add_a_node(global_node_counter, type=Terminal, content=t.value, label=None)
+    #         terminal_nodes.append(t_node)
+    #     return global_node_counter
+
+
+
+    # Add "=" node
+    equation_node,global_node_counter = add_a_node(nodes,global_node_counter, type=Operator, content="=", label=None)
+
+    if graph_type=="graph_3": # Add variable nodes
+        global_node_counter=add_variable_nodes(left_terms,right_terms,nodes,variable_nodes,global_node_counter)
+    if graph_type == "graph_4": # Add terminal nodes
+        global_node_counter=add_terminal_nodes(left_terms,right_terms,nodes,terminal_nodes,global_node_counter)
+    if graph_type == "graph_5": # Add add variable and terminal nodes
+        global_node_counter=add_variable_nodes(left_terms,right_terms,nodes,variable_nodes,global_node_counter)
+        global_node_counter=add_terminal_nodes(left_terms,right_terms,nodes,terminal_nodes,global_node_counter)
+
+
+
+    local_left_terms = deque(left_terms.copy())
+    local_right_terms = deque(right_terms.copy())
+
+    global_node_counter = construct_tree(nodes,edges,graph_type,equation_node,variable_nodes,terminal_nodes,local_left_terms, equation_node, global_node_counter)
+    global_node_counter = construct_tree(nodes,edges,graph_type,equation_node,variable_nodes,terminal_nodes,local_right_terms, equation_node, global_node_counter)
+
+    return nodes, edges
+
+def add_a_node(nodes, global_node_counter, type, content, label):
+    current_node = Node(id=global_node_counter, type=type, content=content, label=label)
+    nodes.append(current_node)
+    global_node_counter += 1
+    return current_node, global_node_counter
+
+
+
+def add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter):
+    for v in Equation(left_terms.copy(), right_terms.copy()).variable_list:
+        v_node, global_node_counter = add_a_node(nodes, global_node_counter, type=Variable, content=v.value,
+                                                          label=None)
+        variable_nodes.append(v_node)
+    return global_node_counter
+
+
+
+def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter):
+    for t in Equation(left_terms.copy(), right_terms.copy()).termimal_list_without_empty_terminal:
+        t_node, global_node_counter = add_a_node(nodes, global_node_counter, type=Terminal, content=t.value,
+                                                          label=None)
+        terminal_nodes.append(t_node)
+    return global_node_counter
+
+
+
+def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list: Deque[Term],
+                   previous_node: Node, global_node_counter):
+    if len(term_list) == 0:
+        return global_node_counter
+    else:
+        current_term = term_list.popleft()
+        current_node = Node(id=global_node_counter, type=current_term.value_type,
+                            content=current_term.get_value_str, label=None)
+        global_node_counter += 1
+        nodes.append(current_node)
+        edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+        if graph_type == "graph_2":  # add edge back to equation node
+            edges.append(
+                Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
+        if graph_type == "graph_3":  # add edge to corresponding variable node
+            if current_node.type == Variable:
+                for v_node in variable_nodes:
+                    if v_node.content == current_node.content:
+                        edges.append(
+                            Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+                        break
+        if graph_type == "graph_4":
+            if current_node.type == Terminal:
+                for t_node in terminal_nodes:
+                    if t_node.content == current_node.content:
+                        edges.append(
+                            Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+                        break
+        if graph_type == "graph_5":
+            if current_node.type == Variable:
+                for v_node in variable_nodes:
+                    if v_node.content == current_node.content:
+                        edges.append(
+                            Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+                        break
+            if current_node.type == Terminal:
+                for t_node in terminal_nodes:
+                    if t_node.content == current_node.content:
+                        edges.append(
+                            Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+                        break
+
+        return construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
+                                       term_list, current_node, global_node_counter)
+
+
+
+
+
+def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term]):
+    return _construct_graph(left_terms, right_terms, graph_type="graph_1")
+
+
+def get_eq_graph_2(left_terms: List[Term], right_terms: List[Term]): #add edge back to equation node
+    return _construct_graph(left_terms, right_terms, graph_type="graph_2")
+
+
+def get_eq_graph_3(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding variable nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_3")
+
+def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term]): # add edge to corresponding terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_4")
+
+
+def get_eq_graph_5(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_5")
