@@ -44,6 +44,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.edges = []
         self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
                                        "extract_branching_data_task_2": self._extract_branching_data_task_2,
+                                       "extract_branching_data_task_3": self._extract_branching_data_task_3,
                                        "fixed": self._use_fixed_branching, "random": self._use_random_branching,
                                        "gnn": self._use_gnn_branching,
                                        "gnn:random": self._use_gnn_with_random_branching,
@@ -356,29 +357,25 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,
                                                 back_track_count=back_track_count)
 
+
+    def _extract_branching_data_task_3(self, eq: Equation, current_node_number, node_info, branch_methods):
+        ################################ stop branching condition ################################
+        return self._extract_branching_data_termination_condition(eq, node_info)
+
     def _extract_branching_data_task_2(self, eq: Equation, current_node_number, node_info, branch_methods):
         #print(self.total_split_call, "fixed branch")
         # Print the current memory usage
         #print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
-        return self._extract_branching_data_termination_condition(eq, node_info)
+        result = self._extract_branching_data_termination_condition(eq, node_info)
+        if result == None:
+            pass
+        else:
+            return result
 
         ################################ branching ################################
-        satisfiability_list = []
-        back_track_count_list = []
-        branch_eq_list = []
-        for i, branch in enumerate(branch_methods):
-            l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
-            branch_eq = Equation(l, r)
-
-            satisfiability, branch_variables, back_track_count = self.explore_paths(branch_eq,
-                                                                                    {"node_number": current_node_number,
-                                                                                     "label": edge_label})
-
-            satisfiability_list.append(satisfiability)
-            back_track_count_list.append(sum(back_track_count))
-            branch_eq_list.append(branch_eq)
+        satisfiability_list,back_track_count_list,branch_eq_list=self._extract_branching_data_branching(eq, branch_methods, current_node_number)
 
         ################################ output train data ################################
         back_track_count_list = [x + 1 for x in back_track_count_list]
@@ -485,22 +482,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
-        return self._extract_branching_data_termination_condition(eq,node_info)
-
+        result=self._extract_branching_data_termination_condition(eq,node_info)
+        if result==None:
+            pass
+        else:
+            return result
 
         ################################ branching ################################
-        satisfiability_list = []
-        back_track_count_list = []
-
-        for i, branch in enumerate(branch_methods):
-            l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
-            split_eq=Equation(l, r)
-
-            satisfiability, branch_variables, back_track_count = self.explore_paths(split_eq,
-                                                                                    {"node_number": current_node_number,
-                                                                                     "label": edge_label})
-            satisfiability_list.append(satisfiability)
-            back_track_count_list.append(sum(back_track_count))
+        satisfiability_list,back_track_count_list,_=self._extract_branching_data_branching(eq, branch_methods, current_node_number)
 
 
 
@@ -508,9 +497,27 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         back_track_count_list = [x + 1 for x in back_track_count_list]
         current_eq_satisfiability=self._extract_branching_data_get_current_eq_satisfiability(satisfiability_list)
 
-        return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, branch_variables, node_info, eq,
+        return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, eq.variable_list, node_info, eq,
                                                           back_track_count=back_track_count_list)
 
+    def _extract_branching_data_branching(self,eq:Equation,branch_methods,current_node_number):
+        ################################ branching ################################
+        satisfiability_list = []
+        back_track_count_list = []
+        branch_eq_list = []
+        for i, branch in enumerate(branch_methods):
+            l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
+            branch_eq = Equation(l, r)
+
+            satisfiability, branch_variables, back_track_count = self.explore_paths(branch_eq,
+                                                                                    {"node_number": current_node_number,
+                                                                                     "label": edge_label})
+
+            satisfiability_list.append(satisfiability)
+            back_track_count_list.append(sum(back_track_count))
+            branch_eq_list.append(branch_eq)
+
+        return satisfiability_list,back_track_count_list,branch_eq_list
     def _extract_branching_data_termination_condition(self,eq:Equation,node_info):
         ################################ stop branching condition ################################
         if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
@@ -518,6 +525,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         if self.total_split_call > MAX_SPLIT_CALL:
          return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+
+        return None
     def _extract_branching_data_get_current_eq_satisfiability(self,satisfiability_list:List[str])->str:
         # if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:

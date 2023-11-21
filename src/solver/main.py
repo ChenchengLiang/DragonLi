@@ -68,7 +68,7 @@ def main():
     graph_type="graph_2"
     task="task_1"
 
-    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"extract_branching_data_task_2","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GCN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
