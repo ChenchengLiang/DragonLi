@@ -25,6 +25,13 @@ def train_multiple_models(parameters, benchmark_folder):
     node_type=3
     dataset_2=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=2)
     dataset_3=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=3)
+
+    dataset_statistics = dataset_2.statistics()
+    mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")
+    dataset_statistics = dataset_3.statistics()
+    mlflow.log_text(dataset_statistics, artifact_file="dataset_3_statistics.txt")
+
+
     # Shared GNN module
     shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"], gnn_layer_num=parameters["gnn_layer_num"],gnn_dropout_rate=parameters["gnn_dropout_rate"])
 
@@ -40,7 +47,16 @@ def train_multiple_models(parameters, benchmark_folder):
     model_3 = GraphClassifier(shared_gnn, classifier_3)
 
 
-    loss_function = nn.CrossEntropyLoss()
+
+
+
+    parameters["model_save_path"] = os.path.join(project_folder, "Models",
+                             f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
+
+    best_model, metrics = train_multi_classification(dataset_list=[dataset_2,dataset_3], model_list=[model_2,model_3], parameters=parameters)
+
+    mlflow.log_metrics(metrics)
+    mlflow.pytorch.log_model(best_model, "model")
 
 
 def train_one_model(parameters, benchmark_folder):
@@ -63,7 +79,6 @@ def train_one_model(parameters, benchmark_folder):
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GAT":
         model = GATWithNFFNN(input_feature_dim=node_type,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -72,7 +87,6 @@ def train_one_model(parameters, benchmark_folder):
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GIN":
         model = GINWithNFFNN(input_feature_dim=node_type,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -80,7 +94,6 @@ def train_one_model(parameters, benchmark_folder):
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GCNwithGAP":
         model = GCNWithGAPFFNN(input_feature_dim=node_type,
                                gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -89,7 +102,6 @@ def train_one_model(parameters, benchmark_folder):
                                ffnn_layer_num=parameters["ffnn_layer_num"],
                                ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "MultiGNNs":
         model = MultiGNNs(input_feature_dim=node_type,
                           gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -97,8 +109,6 @@ def train_one_model(parameters, benchmark_folder):
                           ffnn_layer_num=parameters["ffnn_layer_num"],
                           ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                           ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-        loss_function = nn.BCELoss()
-
     else:
         raise ValueError("Unsupported model type")
 
@@ -106,18 +116,18 @@ def train_one_model(parameters, benchmark_folder):
                              f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     parameters["model_save_path"] = save_path
 
-    best_model, metrics = train_binary_classification(train_valid_dataset, GNN_model=model, parameters=parameters, loss_function=loss_function)
+    best_model, metrics = train_binary_classification(train_valid_dataset, GNN_model=model, parameters=parameters)
 
     mlflow.log_metrics(metrics)
     mlflow.pytorch.log_model(best_model, "model")
 
 
-def train_multi_classification():
-    pass
+def train_multi_classification(dataset_list,model_list,parameters):
+    loss_function = nn.CrossEntropyLoss()
 
 
 
-def train_binary_classification(dataset, GNN_model, parameters: Dict, loss_function:Callable):
+def train_binary_classification(dataset, GNN_model, parameters: Dict):
     train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
 
     # Create the model with given dimensions
@@ -128,6 +138,8 @@ def train_binary_classification(dataset, GNN_model, parameters: Dict, loss_funct
     best_model = None
     best_valid_loss = float('inf')  # Initialize with a high value
     best_valid_accuracy = float('-inf')  # Initialize with a low value
+
+    loss_function = nn.BCELoss()
 
     epoch_info_log = ""
 
