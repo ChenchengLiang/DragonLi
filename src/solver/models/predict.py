@@ -40,7 +40,7 @@ def main():
 
     # Evaluate the model
     for (batched_graph, label), graph in zip(evaluation_dataloader, evaluation_dataset.get_graph_list_from_folder()):
-        pred = model(batched_graph, batched_graph.ndata["feat"].float())
+        pred = model(batched_graph)
 
         # Interpret the output as a binary label
         binary_label = (pred > 0.5).long().squeeze().item()

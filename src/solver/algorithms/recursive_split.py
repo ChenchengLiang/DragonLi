@@ -196,8 +196,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             ## left side is terminal, right side is variable
             elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
-                return self.left_side_variable_right_side_terminal(current_eq,
-                    #Equation(current_eq.right_terms, current_eq.left_terms),
+                return self.left_side_variable_right_side_terminal(
+                    Equation(current_eq.right_terms, current_eq.left_terms),
                     current_node_number, node_info)
 
             ## both side are different terminals
@@ -292,7 +292,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             #predict
             with torch.no_grad():
                 for bached_graph,_ in evaluation_dataloader:
-                    pred = self.gnn_model(bached_graph, bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+                    #pred = self.gnn_model(bached_graph)  # pred is a float between 0 and 1
+                    pred = self.gnn_model(bached_graph,bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
             prediction_list.append([pred, (split_eq,edge_label)])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
@@ -327,9 +328,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # print(self.total_split_call,"fixed branch")
         # # Print the current memory usage
         # print(f"Memory usage: {get_memory_usage()}")
+
         for i, branch in enumerate(branch_methods):
             l, r, _, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
             split_eq=Equation(l,r)
+
 
             satisfiability, branch_variables, back_track_count_list = self.explore_paths(split_eq,
                                                                                          {
@@ -357,7 +360,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             elif satisfiability == UNKNOWN:
                 node_info[1]["status"] = UNKNOWN
                 return None
-                
+
         else:  # last branch
             return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,
                                                 back_track_count=back_track_count)

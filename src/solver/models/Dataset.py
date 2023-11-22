@@ -7,23 +7,26 @@ from dgl.data import DGLDataset
 import pandas as pd
 import glob
 import json
+from src.solver.Constants import SAT,UNKNOWN,UNSAT
+
+
 
 class WordEquationDataset(DGLDataset):
-    def __init__(self,graph_folder="",data_fold="train",graphs_from_memory=[]):
+    def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[]):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
         self._graphs_from_memory = graphs_from_memory
+        self._node_type=node_type
         super().__init__(name="WordEquation")
 
 
     def process(self):
         self.graphs = []
         self.labels = []
-        self.node_embedding_dim = 3 # equal to number of node types
-        self.gclasses = 2
 
+        graph_generator = self.get_graph_list_from_folder() if len(
+            self._graphs_from_memory) == 0 else self._graphs_from_memory
 
-        graph_generator=self.get_graph_list_from_folder() if len(self._graphs_from_memory) == 0 else self._graphs_from_memory
 
         for g in graph_generator:
             edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
@@ -41,6 +44,7 @@ class WordEquationDataset(DGLDataset):
 
         # Convert the label list to tensor for saving.
         self.labels = torch.LongTensor(self.labels)
+
 
     def __getitem__(self, i):
         return self.graphs[i], self.labels[i]
@@ -63,19 +67,19 @@ class WordEquationDataset(DGLDataset):
                     g[k] = pd.DataFrame(g[k])
 
     def statistics(self):
-        sat_label_number=0
-        unsat_label_number=0
-        unknown_label_number=0
+        sat_label_number = 0
+        unsat_label_number = 0
+        unknown_label_number = 0
         for g in self.get_graph_list_from_folder():
-            if g["label"]==1:
-                sat_label_number+=1
-            elif g["label"]==0:
-                unsat_label_number+=1
+            if g["label"] == 1:
+                sat_label_number += 1
+            elif g["label"] == 0:
+                unsat_label_number += 1
             else:
-                unknown_label_number+=1
-
-        print("sat_label_number",sat_label_number,"unsat_label_number",unsat_label_number,"unknown_label_number",unknown_label_number)
-        #return "sat_label_number:"+str(sat_label_number)+"unsat_label_number:"+str(unsat_label_number)+"unknown_label_number:",str(unknown_label_number)
+                unknown_label_number += 1
+        result_str = f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number}"
+        print(result_str)
+        return result_str
 
 
     def get_graph_list_from_folder(self):
@@ -101,7 +105,77 @@ class WordEquationDataset(DGLDataset):
             else:
                 yield loaded_dict
 
+class WordEquationDatasetMultiModels(WordEquationDataset):
+    def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=2):
+        self._data_fold = data_fold
+        self._graph_folder = graph_folder
+        self._graphs_from_memory = graphs_from_memory
+        self._label_size=label_size
+        self._node_type=node_type
+        super().__init__(graph_folder=graph_folder,data_fold=data_fold,node_type=node_type,graphs_from_memory=graphs_from_memory)
 
+    def process(self):
+        self.graphs = []
+        self.labels = []
+        self.node_embedding_dim = 3  # equal to number of node types
+        graph_generator = self.get_graph_list_from_folder() if len(
+            self._graphs_from_memory) == 0 else self._graphs_from_memory
+
+        for split_graphs in graph_generator:
+            split_graph_list=[]
+            split_graph_labels=[]
+            for g in split_graphs:
+                edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
+                num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
+
+                dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
+                dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
+                # dgl_graph.ndata["label"] = node_labels #node label
+                dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
+                dgl_graph = dgl.add_self_loop(dgl_graph)
+
+                split_graph_list.append(dgl_graph)
+                split_graph_labels.append(g["label"])
+
+            self.graphs.append(split_graph_list)
+            self.labels.append(split_graph_labels)
+
+        # Convert the label list to tensor for saving.
+        self.labels = torch.LongTensor(self.labels)
+
+
+
+    def get_graph_list_from_folder(self):
+        graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+        for graph_file in graph_file_list:
+            with open(graph_file, 'r') as f:
+                loaded_dict = json.load(f)
+                loaded_dict["file_path"] = graph_file
+            if self._data_fold == "train":
+                if len(loaded_dict)==self._label_size+1:
+                    yield loaded_dict
+            else:
+                yield loaded_dict
+
+
+    def statistics(self):
+        sat_label_number = 0
+        unsat_label_number = 0
+        unknown_label_number = 0
+        split_number = 0
+        for graphs in self.get_graph_list_from_folder():
+            split_number += 1
+            for index, g in graphs.items():
+                if isinstance(g, dict):
+                    if g["satisfiability"] == SAT:
+                        sat_label_number += 1
+                    elif g["satisfiability"] == UNSAT:
+                        unsat_label_number += 1
+                    else:
+                        unknown_label_number += 1
+        result_str = f"split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number}"
+        print(result_str)
+        return result_str
 
 class SyntheticDataset(DGLDataset):
     def __init__(self):

@@ -1,7 +1,8 @@
 from typing import List
 from src.solver.DataTypes import Variable,Terminal,Operator,Node,Edge
+from src.solver.Constants import UNKNOWN
 
-def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1):
+def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, satisfiability=UNKNOWN):
     '''
     output format:
     {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2],
@@ -11,7 +12,7 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1):
     node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2}
     edge_type_to_int_map = {None: 1}
     graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
-                  "label": label}
+                  "label": label,"satisfiability":satisfiability}
     for node in nodes:
         graph_dict["nodes"].append(node.id)
         graph_dict["node_types"].append(node_type_to_int_map[node.type])

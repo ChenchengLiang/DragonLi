@@ -14,7 +14,7 @@ import mlflow
 import datetime
 import subprocess
 import signal
-from src.solver.models.train_util import train_one_model,train,create_data_loaders
+from src.solver.models.train_util import train_one_model,train_binary_classification,create_data_loaders
 def main():
     hidden_dimention=32
     train_config_list=[

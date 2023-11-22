@@ -2,16 +2,45 @@ import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs
+from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs,GraphClassifier,SharedGNN,Classifier
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from typing import Dict
+from typing import Dict, Callable
 from collections import Counter
 from src.solver.Constants import project_folder
 from src.solver.independent_utils import get_memory_usage
-from Dataset import WordEquationDataset
+from Dataset import WordEquationDataset,WordEquationDatasetMultiModels
 import mlflow
 import time
+import random
+
+
+def train_multiple_models(parameters, benchmark_folder):
+    print("-" * 10, "train", "-" * 10)
+    print("parameters:", parameters)
+    # benchmark_folder = config['Path']['woorpje_benchmarks']
+
+    print("load dataset")
+    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
+    node_type=3
+    dataset_2=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=2)
+    dataset_3=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=3)
+    # Shared GNN module
+    shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"], gnn_layer_num=parameters["gnn_layer_num"],gnn_dropout_rate=parameters["gnn_dropout_rate"])
+
+    # Classifiers
+    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
+                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+    classifier_3 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"], ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=3,ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+
+
+    # GraphClassifiers
+    model_2 = GraphClassifier(shared_gnn, classifier_2)
+    model_3 = GraphClassifier(shared_gnn, classifier_3)
+
+
+    loss_function = nn.CrossEntropyLoss()
 
 
 def train_one_model(parameters, benchmark_folder):
@@ -20,49 +49,55 @@ def train_one_model(parameters, benchmark_folder):
     # benchmark_folder = config['Path']['woorpje_benchmarks']
 
     print("load dataset")
+    node_type=3
     graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
-    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
-    train_valid_dataset.statistics()
+    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder,node_type=node_type)
+    dataset_statistics=train_valid_dataset.statistics()
+    mlflow.log_text(dataset_statistics , artifact_file="dataset_statistics.txt")
 
     model = None
     if parameters["model_type"] == "GCN":
-        model = GCNWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+        model = GCNWithNFFNN(input_feature_dim=node_type,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
                              gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GAT":
-        model = GATWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+        model = GATWithNFFNN(input_feature_dim=node_type,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
                              gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              num_heads=parameters["num_heads"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GIN":
-        model = GINWithNFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+        model = GINWithNFFNN(input_feature_dim=node_type,
                              gnn_hidden_dim=parameters["gnn_hidden_dim"],
                              gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                              ffnn_layer_num=parameters["ffnn_layer_num"],
                              ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "GCNwithGAP":
-        model = GCNWithGAPFFNN(input_feature_dim=train_valid_dataset.node_embedding_dim,
+        model = GCNWithGAPFFNN(input_feature_dim=node_type,
                                gnn_hidden_dim=parameters["gnn_hidden_dim"],
                                gnn_layer_num=parameters["gnn_layer_num"],
                                gnn_dropout_rate=parameters["gnn_dropout_rate"],
                                ffnn_layer_num=parameters["ffnn_layer_num"],
                                ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+        loss_function = nn.BCELoss()
     elif parameters["model_type"] == "MultiGNNs":
-        model = MultiGNNs(input_feature_dim=train_valid_dataset.node_embedding_dim,
+        model = MultiGNNs(input_feature_dim=node_type,
                           gnn_hidden_dim=parameters["gnn_hidden_dim"],
                           gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"],
                           ffnn_layer_num=parameters["ffnn_layer_num"],
                           ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                           ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-
+        loss_function = nn.BCELoss()
 
     else:
         raise ValueError("Unsupported model type")
@@ -71,19 +106,24 @@ def train_one_model(parameters, benchmark_folder):
                              f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     parameters["model_save_path"] = save_path
 
-    best_model, metrics = train(train_valid_dataset, GNN_model=model, parameters=parameters)
+    best_model, metrics = train_binary_classification(train_valid_dataset, GNN_model=model, parameters=parameters, loss_function=loss_function)
 
     mlflow.log_metrics(metrics)
     mlflow.pytorch.log_model(best_model, "model")
 
 
-def train(dataset, GNN_model, parameters: Dict):
+def train_multi_classification():
+    pass
+
+
+
+def train_binary_classification(dataset, GNN_model, parameters: Dict, loss_function:Callable):
     train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
 
     # Create the model with given dimensions
     model = GNN_model
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-    loss_function = nn.BCELoss()  # Initialize the loss function
+    #loss_function = nn.BCELoss()  # Initialize the loss function
 
     best_model = None
     best_valid_loss = float('inf')  # Initialize with a high value
@@ -97,7 +137,7 @@ def train(dataset, GNN_model, parameters: Dict):
         model.train()
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
-            pred = model(batched_graph, batched_graph.ndata["feat"].float())
+            pred = model(batched_graph)
 
             # Convert labels to float for BCELoss
             labels = labels.float()
@@ -117,7 +157,7 @@ def train(dataset, GNN_model, parameters: Dict):
         num_valids = 0
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
-                pred = model(batched_graph, batched_graph.ndata["feat"].float())
+                pred = model(batched_graph)
 
                 # Convert labels to float for BCELoss
                 labels_float = labels.float()
@@ -192,28 +232,53 @@ def create_data_loaders(dataset, parameters):
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(valid_indices)
 
-    # Count for training data
-    train_labels = [int(dataset[i][1].item()) for i in train_indices]
-    train_label_distribution = Counter(train_labels)
-
-    # Count for validation data
-    valid_labels = [int(dataset[i][1].item()) for i in valid_indices]
-    valid_label_distribution = Counter(valid_labels)
 
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
 
-    train_distribution_str = "Training label distribution: " + str(
-        train_label_distribution) + "\nBase accuracy: " + str(
-        max(train_label_distribution.values()) / sum(train_label_distribution.values()))
-    valid_distribution_str = "Validation label distribution: " + str(
-        valid_label_distribution) + "\nBase accuracy: " + str(
-        max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
+
+    for batched_graph, labels in train_dataloader:
+        print("debug")
+        print(batched_graph)
+
+    if parameters["dataset_task"]=="one_graph":
+        # Count for training data
+        train_labels = [int(dataset[i][1].item()) for i in train_indices]
+        train_label_distribution = Counter(train_labels)
+
+        # Count for validation data
+        valid_labels = [int(dataset[i][1].item()) for i in valid_indices]
+        valid_label_distribution = Counter(valid_labels)
+
+        train_distribution_str = "Training label distribution: " + str(
+            train_label_distribution) + "\nBase accuracy: " + str(
+            max(train_label_distribution.values()) / sum(train_label_distribution.values()))
+        valid_distribution_str = "Validation label distribution: " + str(
+            valid_label_distribution) + "\nBase accuracy: " + str(
+            max(valid_label_distribution.values()) / sum(valid_label_distribution.values()))
+    else:
+        train_distribution_str="multi_graphs"
+        valid_distribution_str="multi_graphs"
+
     print(train_distribution_str)
     print(valid_distribution_str)
 
     mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str, artifact_file="data_distribution.txt")
 
     return train_dataloader, valid_dataloader
+
+
+
+def random_dataloaders(loader1, loader2):
+    iterators = [iter(loader1), iter(loader2)]
+    loaders_exhausted = [False, False]
+
+    while not all(loaders_exhausted):
+        loader_index = random.choice([i for i, exhausted in enumerate(loaders_exhausted) if not exhausted])
+
+        try:
+            yield next(iterators[loader_index]), loader_index + 1
+        except StopIteration:
+            loaders_exhausted[loader_index] = True

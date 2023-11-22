@@ -22,7 +22,7 @@ import shutil
 
 def main():
     model_folder = project_folder + "/" + "Models/"
-    task="task_1"
+    task="task_2"
     solver_param_list = [
         ["this", ["fixed"]],
         ["this", ["random"]],
@@ -32,9 +32,9 @@ def main():
         ["this",["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
         ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
         ["this",["gnn:fixed","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GIN.pth", f"--gnn_task {task}"]],
-        ["this", ["gnn","--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:random", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        ["this",["gnn:fixed", "--graph_type graph_5", "--gnn_model_path " + model_folder + "model_graph_5_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this", ["gnn","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
+        ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
         ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
