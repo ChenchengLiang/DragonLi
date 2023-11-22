@@ -14,26 +14,29 @@ import glob
 from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
 from src.solver.Constants import project_folder, bench_folder
-from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs
+from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs, output_split_eq_graphs
 import shutil
 import argparse
 
 
 def main():
+    # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
+    benchmark = "test_track_task_2"
+    task = "task_2"
 
-    # draw graphs from train folder
-
+    # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
-    benchmark = "examples/2_task_2"
-
-    #draw_func = output_eq_graphs
-    draw_func = output_pair_eq_graphs
-
+    if task == "task_1":
+        draw_func = output_eq_graphs  # task 1
+    elif task == "task_2":
+        draw_func = output_pair_eq_graphs  # task 2
+    elif task == "task_3":
+        draw_func = output_split_eq_graphs  # task 3
 
     train_eq_folder = bench_folder + "/" + benchmark + "/train"
     for graph_type in [args.graph_type]:
@@ -47,7 +50,7 @@ def main():
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        draw_func(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=True)
+        draw_func(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
 
     print("done")
 

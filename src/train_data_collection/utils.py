@@ -34,6 +34,12 @@ def dvivde_track_for_cluster(benchmark, chunk_size=50):
             shutil.copy(f, divided_folder_name)
 
 
+def output_split_eq_graphs(graph_folder: str, graph_func: Callable, visualize: bool = False):
+    parser_type = EqParser()
+    parser = Parser(parser_type)
+
+
+
 def output_pair_eq_graphs(graph_folder: str, graph_func: Callable, visualize: bool = False):
     parser_type = EqParser()
     parser = Parser(parser_type)

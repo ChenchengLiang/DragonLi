@@ -267,11 +267,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         ################################ stop branching condition ################################
-        memory_text,gb=get_memory_usage()
-        if gb>self.gnn_branch_memory_limitation:
-            self.gnn_branch_memory_limitation+=0.5
-            #print(eq.eq_str)
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        if self.total_split_call%50 ==0:
+            memory_text,gb=get_memory_usage()
+            if gb>self.gnn_branch_memory_limitation:
+                self.gnn_branch_memory_limitation+=0.2
+                #print(eq.eq_str)
+                return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         # print(f"- {self.total_split_call} gnn branch -")
         # print(f"Memory usage: {memory_text}")
@@ -327,7 +328,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # # Print the current memory usage
         # print(f"Memory usage: {get_memory_usage()}")
         for i, branch in enumerate(branch_methods):
-            l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
+            l, r, _, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
             split_eq=Equation(l,r)
 
             satisfiability, branch_variables, back_track_count_list = self.explore_paths(split_eq,
@@ -353,14 +354,17 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             elif satisfiability == UNSAT:
                 node_info[1]["status"] = UNSAT
                 return None
+            elif satisfiability == UNKNOWN:
+                node_info[1]["status"] = UNKNOWN
+                return None
+                
         else:  # last branch
             return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,
                                                 back_track_count=back_track_count)
 
 
     def _extract_branching_data_task_3(self, eq: Equation, current_node_number, node_info, branch_methods):
-        ################################ stop branching condition ################################
-        return self._extract_branching_data_termination_condition(eq, node_info)
+        return self._extract_branching_data_task_2(eq,current_node_number,node_info,branch_methods)
 
     def _extract_branching_data_task_2(self, eq: Equation, current_node_number, node_info, branch_methods):
         #print(self.total_split_call, "fixed branch")
