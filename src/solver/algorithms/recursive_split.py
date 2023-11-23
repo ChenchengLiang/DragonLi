@@ -287,13 +287,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             nodes, edges = self.draw_graph_func(split_eq, eq)
             graph_dict = graph_to_gnn_format(nodes, edges)
             # Load data
-            evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", graphs_from_memory=[graph_dict])
+            evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", node_type=3,graphs_from_memory=[graph_dict])
             evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
             #predict
             with torch.no_grad():
                 for bached_graph,_ in evaluation_dataloader:
-                    #pred = self.gnn_model(bached_graph)  # pred is a float between 0 and 1
-                    pred = self.gnn_model(bached_graph,bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+                    pred = self.gnn_model(bached_graph)  # pred is a float between 0 and 1
+                    #pred = self.gnn_model(bached_graph,bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
             prediction_list.append([pred, (split_eq,edge_label)])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)

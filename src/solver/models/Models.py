@@ -37,8 +37,7 @@ class Classifier(nn.Module):
                 x = F.relu(self.dropout(x))
             else:
                 x = F.relu(x)
-
-        return F.softmax(self.final_fc(x), dim=1)
+        return self.final_fc(x)
 
 
 
@@ -50,7 +49,7 @@ class SharedGNN(nn.Module):
 
     def forward(self, graphs):
         embeddings = [self.embedding(g) for g in graphs]
-        concatenated_embedding = torch.cat(embeddings, dim=0)
+        concatenated_embedding = torch.cat(embeddings, dim=2)
         return concatenated_embedding
 
 

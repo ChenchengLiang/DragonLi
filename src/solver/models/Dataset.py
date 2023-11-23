@@ -124,24 +124,25 @@ class WordEquationDatasetMultiModels(WordEquationDataset):
         for split_graphs in graph_generator:
             split_graph_list=[]
             split_graph_labels=[]
-            for g in split_graphs:
-                edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
-                num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
+            for index,g in split_graphs.items():
+                if isinstance(g,dict):
+                    edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
+                    num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
 
-                dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
-                dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
-                # dgl_graph.ndata["label"] = node_labels #node label
-                dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
-                dgl_graph = dgl.add_self_loop(dgl_graph)
+                    dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
+                    dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
+                    # dgl_graph.ndata["label"] = node_labels #node label
+                    dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
+                    dgl_graph = dgl.add_self_loop(dgl_graph)
 
-                split_graph_list.append(dgl_graph)
-                split_graph_labels.append(g["label"])
+                    split_graph_list.append(dgl_graph)
+                    split_graph_labels.append(g["label"])
 
             self.graphs.append(split_graph_list)
             self.labels.append(split_graph_labels)
 
         # Convert the label list to tensor for saving.
-        self.labels = torch.LongTensor(self.labels)
+        self.labels = torch.Tensor(self.labels)
 
 
 
@@ -173,7 +174,7 @@ class WordEquationDatasetMultiModels(WordEquationDataset):
                         unsat_label_number += 1
                     else:
                         unknown_label_number += 1
-        result_str = f"split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number}"
+        result_str = f"label_size {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number}"
         print(result_str)
         return result_str
 

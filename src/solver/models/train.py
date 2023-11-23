@@ -27,7 +27,7 @@ import json
 import datetime
 import subprocess
 import signal
-from src.solver.models.train_util import train_one_model,train_binary_classification,create_data_loaders
+from src.solver.models.train_util import train_one_model,train_binary_classification,create_data_loaders,train_multiple_models
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -65,7 +65,10 @@ def main():
     with mlflow.start_run() as mlflow_run:
         train_config["run_id"]=mlflow_run.info.run_id
         mlflow.log_params(train_config)
-        train_one_model(train_config,benchmark_folder)
+        if train_config["model_type"]=="GCNSplit":
+            train_multiple_models(train_config,benchmark_folder)
+        else:
+            train_one_model(train_config,benchmark_folder)
 
 
     mlflow_ui_process.terminate()
