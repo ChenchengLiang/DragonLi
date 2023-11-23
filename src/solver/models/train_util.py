@@ -26,6 +26,7 @@ def train_multiple_models(parameters, benchmark_folder):
     dataset_2=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=2)
     dataset_3=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=3)
 
+    #todo could draw confusion matrix for each dataset
     dataset_statistics = dataset_2.statistics()
     mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")
     dataset_statistics = dataset_3.statistics()
@@ -124,6 +125,19 @@ def train_one_model(parameters, benchmark_folder):
 
 
 def train_multi_classification(dataset_list,GNN_model_list,parameters):
+    train_sampler_1, valid_sampler_1, _, _ = get_samplers(dataset_list[0])
+    train_sampler_2, valid_sampler_2, _, _ = get_samplers(dataset_list[1])
+
+    train_dataloader_1 = GraphDataLoader(dataset_list[0], sampler=train_sampler_1, batch_size=parameters["batch_size"],
+                                         drop_last=False)
+    valid_dataloader_1 = GraphDataLoader(dataset_list[0], sampler=valid_sampler_1, batch_size=parameters["batch_size"],
+                                         drop_last=False)
+
+    train_dataloader_2 = GraphDataLoader(dataset_list[1], sampler=train_sampler_2, batch_size=parameters["batch_size"],
+                                         drop_last=False)
+    valid_dataloader_2 = GraphDataLoader(dataset_list[1], sampler=valid_sampler_2, batch_size=parameters["batch_size"],
+                                         drop_last=False)
+
     best_models = [None] * len(GNN_model_list)
     best_valid_losses = [float('inf')] * len(GNN_model_list)
     best_valid_accuracies = [float('-inf')] * len(GNN_model_list)
@@ -131,20 +145,23 @@ def train_multi_classification(dataset_list,GNN_model_list,parameters):
     loss_function = nn.CrossEntropyLoss()
     epoch_info_log = ""
     for epoch in range(parameters["num_epochs"]):
+        model_index=random.randint(0, 1)
+
         # Training Phase
         for model in GNN_model_list:
             model.train()
+        train_dataloaders = [train_dataloader_1, train_dataloader_2]
+        train_data_loader=train_dataloaders[model_index]
 
-        train_data_loader = random_dataloaders(dataset_list[0], dataset_list[1], parameters, phase='train')
         train_loss=0.0
         num_train=0
 
-        for (batched_graph, labels), loader_index in train_data_loader:
-            model = GNN_model_list[loader_index - 1]
+        for batched_graph, labels in train_data_loader:
+
+            model = GNN_model_list[model_index]
             optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
 
             pred = model(batched_graph)
-            labels = labels.float()
 
             loss = loss_function(pred.squeeze(), labels)
             train_loss += loss.item()
@@ -157,42 +174,47 @@ def train_multi_classification(dataset_list,GNN_model_list,parameters):
         # Validation Phase
         for model in GNN_model_list:
             model.eval()
-
-        valid_data_loader = random_dataloaders(dataset_list[0], dataset_list[1], parameters, phase='valid')
+        valid_dataloaders = [valid_dataloader_1, valid_dataloader_2]
+        valid_data_loader=valid_dataloaders[model_index]
         valid_loss = 0.0
         num_correct = 0
         num_valids = 0
-        for (batched_graph, labels), loader_index in valid_data_loader:
-            model = GNN_model_list[loader_index - 1]
+
+        for batched_graph, labels in valid_data_loader:
+
+            model = GNN_model_list[model_index]
 
             with torch.no_grad():
                 pred = model(batched_graph)
-                labels_float = labels.float()
-                valid_loss += loss_function(pred.squeeze(), labels_float)
+                predicted_labels=pred.squeeze()
+                valid_loss += loss_function(predicted_labels, labels)
 
-                # Compute accuracy for binary classification
-                predicted_labels = (pred > 0.5).float()
-                num_correct += (predicted_labels.squeeze() == labels_float).sum().item()
+                # Compute accuracy
+                _,predicted_labels= torch.max(predicted_labels, 1)
+                _,labels=torch.max(labels,1)
+
+                num_correct += (predicted_labels == labels).sum().item()
                 num_valids += len(labels)
 
-            avg_valid_loss = valid_loss / num_valids
-            valid_accuracy = num_correct / num_valids
+        avg_valid_loss = valid_loss / num_valids
+        valid_accuracy = num_correct / num_valids
 
-            # Check and save the best model based on validation loss or accuracy
-            if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_losses[
-                loader_index - 1]:
-                best_valid_losses[loader_index - 1] = avg_valid_loss
-                best_models[loader_index - 1] = model  # Deep copy if needed
+        # Check and save the best model based on validation loss or accuracy
+        if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_losses[model_index ]:
+            best_valid_losses[model_index] = avg_valid_loss
+            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss,avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index)
+            best_models[model_index] = best_model  # Deep copy if needed
 
-            elif parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracies[
-                loader_index - 1]:
-                best_valid_accuracies[loader_index - 1] = valid_accuracy
-                best_models[loader_index - 1] = model  # Deep copy if needed>
 
-        # Additional logging, printing, and metric tracking as needed
+        elif parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracies[model_index]:
+            best_valid_accuracies[model_index] = valid_accuracy
+            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index)
+            best_models[model_index] = best_model  # Deep copy if needed>
+
+
         # Print the losses once every ten epochs
         if epoch % 20 == 0:
-            current_epoch_info = f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
+            current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index+2} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
             print(current_epoch_info)
             epoch_info_log = epoch_info_log + "\n" + current_epoch_info
             mlflow.log_text(epoch_info_log, artifact_file="model_log.txt")
@@ -293,11 +315,11 @@ def train_binary_classification(dataset, GNN_model, parameters: Dict):
     best_metrics = {"best_valid_loss": best_valid_loss, "best_valid_accuracy": best_valid_accuracy}
     return best_model, best_metrics
 
-def add_log_and_save_model(parameters,epoch,model,avg_train_loss,avg_valid_loss,valid_accuracy,epoch_info_log):
-    current_epoch_info = f"Epoch {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
+def add_log_and_save_model(parameters,epoch,model,avg_train_loss,avg_valid_loss,valid_accuracy,epoch_info_log,model_index=0):
+    current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index+2} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
     print(current_epoch_info)
     best_model = model
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth")
+    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace("model_",f"model_{model_index+2}_")
     torch.save(best_model, best_model_path)
     mlflow.log_artifact(best_model_path)
     os.remove(best_model_path)
@@ -363,30 +385,3 @@ def create_data_loaders(dataset, parameters):
     return train_dataloader, valid_dataloader
 
 
-def random_dataloaders(dataset_1, dataset_2, parameters, phase='train'):
-    train_sampler_1, valid_sampler_1, _, _ = get_samplers(dataset_1)
-    train_sampler_2, valid_sampler_2, _, _ = get_samplers(dataset_2)
-
-    train_dataloader_1 = GraphDataLoader(dataset_1, sampler=train_sampler_1, batch_size=parameters["batch_size"], drop_last=False)
-    valid_dataloader_1 = GraphDataLoader(dataset_1, sampler=valid_sampler_1, batch_size=parameters["batch_size"], drop_last=False)
-
-    train_dataloader_2 = GraphDataLoader(dataset_2, sampler=train_sampler_2, batch_size=parameters["batch_size"], drop_last=False)
-    valid_dataloader_2 = GraphDataLoader(dataset_2, sampler=valid_sampler_2, batch_size=parameters["batch_size"], drop_last=False)
-
-    if phase == 'train':
-        dataloaders = [train_dataloader_1, train_dataloader_2]
-    elif phase == 'valid':
-        dataloaders = [valid_dataloader_1, valid_dataloader_2]
-    else:
-        raise ValueError("Invalid phase. Choose 'train' or 'valid'.")
-
-    iterators = [iter(dataloader) for dataloader in dataloaders]
-    loaders_exhausted = [False, False]
-
-    while not all(loaders_exhausted):
-        loader_index = random.choice([i for i, exhausted in enumerate(loaders_exhausted) if not exhausted])
-
-        try:
-            yield next(iterators[loader_index]), loader_index + 1
-        except StopIteration:
-            loaders_exhausted[loader_index] = True
