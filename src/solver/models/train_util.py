@@ -26,7 +26,7 @@ def train_multiple_models(parameters, benchmark_folder):
     dataset_2=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=2)
     dataset_3=WordEquationDatasetMultiModels(graph_folder=graph_folder,node_type=node_type,label_size=3)
 
-    #todo could draw confusion matrix for each dataset
+
     dataset_statistics = dataset_2.statistics()
     mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")
     dataset_statistics = dataset_3.statistics()
@@ -145,7 +145,7 @@ def train_multi_classification(dataset_list,GNN_model_list,parameters):
     loss_function = nn.CrossEntropyLoss()
     epoch_info_log = ""
     for epoch in range(parameters["num_epochs"]):
-        model_index=random.randint(0, 1)
+        model_index=epoch%2
 
         # Training Phase
         for model in GNN_model_list:
@@ -202,13 +202,13 @@ def train_multi_classification(dataset_list,GNN_model_list,parameters):
         # Check and save the best model based on validation loss or accuracy
         if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_losses[model_index ]:
             best_valid_losses[model_index] = avg_valid_loss
-            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss,avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index)
+            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss,avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index+2)
             best_models[model_index] = best_model  # Deep copy if needed
 
 
         elif parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracies[model_index]:
             best_valid_accuracies[model_index] = valid_accuracy
-            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index)
+            best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss, valid_accuracy,epoch_info_log,model_index=model_index+2)
             best_models[model_index] = best_model  # Deep copy if needed>
 
 
@@ -316,10 +316,10 @@ def train_binary_classification(dataset, GNN_model, parameters: Dict):
     return best_model, best_metrics
 
 def add_log_and_save_model(parameters,epoch,model,avg_train_loss,avg_valid_loss,valid_accuracy,epoch_info_log,model_index=0):
-    current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index+2} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
+    current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
     print(current_epoch_info)
     best_model = model
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace("model_",f"model_{model_index+2}_")
+    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace("model_",f"model_{model_index}_")
     torch.save(best_model, best_model_path)
     mlflow.log_artifact(best_model_path)
     os.remove(best_model_path)
