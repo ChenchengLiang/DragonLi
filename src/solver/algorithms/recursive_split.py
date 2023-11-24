@@ -286,7 +286,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             prediction_list.append([pred, (split_eq, edge_label)])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
-        print([x[0] for x in sorted_prediction_list])
+        #print([x[0] for x in sorted_prediction_list])
         return sorted_prediction_list
 
 
@@ -309,7 +309,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             prediction_list.append([pred, (split_eq, edge_label)])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
-        print([x[0] for x in sorted_prediction_list])
+        #print([x[0] for x in sorted_prediction_list])
         return sorted_prediction_list
 
     def _draw_graph_task_1(self,split_eq,eq):

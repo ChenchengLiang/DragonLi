@@ -14,13 +14,25 @@ import os
 from src.solver.independent_utils import strip_file_name_suffix
 from src.process_benchmarks.utils import summary_one_track
 from src.solver.Constants import project_folder,bench_folder
-
+import argparse
 
 def main():
+    # parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('--bench_name', type=str, default=None, help='bench name  ')
+
+    args = arg_parser.parse_args()
+
+    # Accessing the arguments
+    bench_name = args.bench_name
+    if bench_name is None:
+        bench_name="01_track_generated_SAT_eval_10000_11000"
+
+
     summary_folder = project_folder+"/src/process_benchmarks/summary"
 
 
-    for track in ["03_track_generated_eval_20000_21000"]: #["track_01","track_02","track_03",g_track_01_mixed,track_random_eval,track_random_train,track_01_generated_SAT_eval]
+    for track in [bench_name]: #["track_01","track_02","track_03",g_track_01_mixed,track_random_eval,track_random_train,track_01_generated_SAT_eval]
         summary_file_dict={}
         for f in glob.glob(project_folder+"/src/process_benchmarks/summary/to_summary/*.csv"):
             if track in f:

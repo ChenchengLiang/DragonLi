@@ -3,10 +3,23 @@ import os
 import glob
 import csv
 import shutil
+import argparse
 def main():
+    # parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('--bench_name', type=str, default=None,
+                            help='bench_name ')
+
+    args = arg_parser.parse_args()
+
+    # Accessing the arguments
+    bench_name = args.bench_name
+
+
     path="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/process_benchmarks/summary/merge_summary"
-    folder_name="03_track_generated_eval_20000_21000"
-    merged_folder_name = os.path.join(path, folder_name + "_summary")
+    if bench_name is None:
+        bench_name="01_track_generated_SAT_eval_10000_11000"
+    merged_folder_name = os.path.join(path, bench_name + "_summary")
     if os.path.exists(merged_folder_name):
         shutil.rmtree(merged_folder_name)
 
