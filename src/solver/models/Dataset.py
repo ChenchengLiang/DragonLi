@@ -10,7 +10,24 @@ import json
 from src.solver.Constants import SAT,UNKNOWN,UNSAT
 from typing import Dict, List
 
+def get_one_dgl_graph(g):
+    edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
+    num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
 
+    dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
+    dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
+    # dgl_graph.ndata["label"] = node_labels #node label
+    dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
+    dgl_graph = dgl.add_self_loop(dgl_graph)
+    return dgl_graph,g["label"]
+
+def get_edge_src_and_dst_list(edges):
+    edges_src = []
+    edges_dst = []
+    for e in edges:
+        edges_src.append(e[0])
+        edges_dst.append(e[1])
+    return pd.DataFrame(edges_src).to_numpy().flatten(), pd.DataFrame(edges_dst).to_numpy().flatten()
 
 class WordEquationDataset(DGLDataset):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[]):
@@ -28,20 +45,10 @@ class WordEquationDataset(DGLDataset):
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
 
-
         for g in graph_generator:
-            edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
-            num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
-
-            dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
-            dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
-            # dgl_graph.ndata["label"] = node_labels #node label
-            dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
-            dgl_graph = dgl.add_self_loop(dgl_graph)
-
-
+            dgl_graph,label=get_one_dgl_graph(g)
             self.graphs.append(dgl_graph)
-            self.labels.append(g["label"])
+            self.labels.append(label)
 
         # Convert the label list to tensor for saving.
         self.labels = torch.LongTensor(self.labels)
@@ -52,14 +59,6 @@ class WordEquationDataset(DGLDataset):
 
     def __len__(self):
         return len(self.graphs)
-
-    def get_edge_src_and_dst_list(self, edges):
-        edges_src = []
-        edges_dst = []
-        for e in edges:
-            edges_src.append(e[0])
-            edges_dst.append(e[1])
-        return pd.DataFrame(edges_src).to_numpy().flatten(), pd.DataFrame(edges_dst).to_numpy().flatten()
 
     def list_to_pandas(self, graphs):
         for g in graphs:
@@ -127,17 +126,9 @@ class WordEquationDatasetMultiModels(WordEquationDataset):
             split_graph_labels=[]
             for index,g in split_graphs.items():
                 if isinstance(g,dict):
-                    edges_src, edges_dst = self.get_edge_src_and_dst_list(g["edges"])
-                    num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
-
-                    dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
-                    dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
-                    # dgl_graph.ndata["label"] = node_labels #node label
-                    dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
-                    dgl_graph = dgl.add_self_loop(dgl_graph)
-
+                    dgl_graph, label = get_one_dgl_graph(g)
                     split_graph_list.append(dgl_graph)
-                    split_graph_labels.append(g["label"])
+                    split_graph_labels.append(label)
 
             self.graphs.append(split_graph_list)
             self.labels.append(split_graph_labels)

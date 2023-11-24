@@ -66,10 +66,11 @@ def main():
     print("parsed_content:", parsed_content)
 
     graph_type="graph_2"
-    task="task_1"
+    task="task_2"
+    gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GIN.pth"
 
     algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":project_folder+"/Models/model_"+graph_type+"_GIN.pth"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
+                            "gnn_model_path":gnn_model_path} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

@@ -16,7 +16,7 @@ from src.solver.visualize_util import visualize_path, visualize_path_html, visua
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model, load_model_from_mlflow
 from src.solver.algorithms.utils import graph_to_gnn_format
-from src.solver.models.Dataset import WordEquationDataset
+from src.solver.models.Dataset import WordEquationDataset,WordEquationDatasetMultiModels,get_one_dgl_graph
 from src.solver.algorithms.utils import merge_graphs
 from dgl.dataloading import GraphDataLoader
 import sys
@@ -58,18 +58,23 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # print("recursion limit number", sys.getrecursionlimit())
 
         if "gnn" in parameters["branch_method"]:
-            # Load the model
-            self.gnn_model_path=parameters["gnn_model_path"]
-            self.gnn_model = load_model(parameters["gnn_model_path"])
             # load the model from mlflow
             # experiment_id = "856005721390468951"
             # run_id = "feb2e17e68bb4310bb3c539c672fd166"
             # self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
             if parameters["task"]=="task_1":
+                self.gnn_model = load_model(parameters["gnn_model_path"])
+                self.branch_prediction_func = self._task_1_and_2_branch_prediction
                 self.draw_graph_func = self._draw_graph_task_1
             elif parameters["task"]=="task_2":
+                self.gnn_model = load_model(parameters["gnn_model_path"])
+                self.branch_prediction_func = self._task_1_and_2_branch_prediction
                 self.draw_graph_func = self._draw_graph_task_2
+            elif parameters["task"]=="task_3":
+                self.gnn_model_2 = load_model(parameters["gnn_model_path"].replace("_0_","_2_"))
+                self.gnn_model_3 = load_model(parameters["gnn_model_path"].replace("_0_","_3_"))
+                self.branch_prediction_func = self._task_3_branch_prediction
         self.output_train_data = False if self.file_name == "" else True
 
     def run(self):
@@ -253,6 +258,60 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         else:
             return self._use_fixed_branching(eq, current_node_number, node_info, branch_methods)
 
+    def _task_3_branch_prediction(self, eq: Equation, branch_methods):
+        split_graph_list=[]
+        split_eq_list=[]
+        edge_label_list=[]
+        for i, method in enumerate(branch_methods):
+            # branch
+            l, r, _, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
+            split_eq_nodes, split_eq_edges = self.graph_func(l, r)
+            graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
+            # Load data
+            dgl_graph, _ = get_one_dgl_graph(graph_dict)
+            split_graph_list.append(dgl_graph)
+            #record
+            split_eq:Equation = Equation(l, r)
+            split_eq_list.append(split_eq)
+            edge_label_list.append(edge_label)
+        # predict
+        with torch.no_grad():
+            if len(branch_methods) == 2:
+                pred_list = self.gnn_model_2(split_graph_list).squeeze()
+            elif len(branch_methods) == 3:
+                pred_list = self.gnn_model_3(split_graph_list).squeeze()
+        # sort
+        prediction_list=[]
+        for pred,split_eq,edge_index in zip(pred_list,split_eq_list,edge_label_list):
+            prediction_list.append([pred, (split_eq, edge_label)])
+
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+        print([x[0] for x in sorted_prediction_list])
+        return sorted_prediction_list
+
+
+    def _task_1_and_2_branch_prediction(self, eq: Equation,branch_methods):
+        prediction_list = []
+        for method in branch_methods:
+            # branch
+            l, r, _, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
+            split_eq = Equation(l, r)
+            # draw graph
+            nodes, edges = self.draw_graph_func(split_eq, eq)
+            graph_dict = graph_to_gnn_format(nodes, edges)
+            # Load data
+            dgl_graph, _ = get_one_dgl_graph(graph_dict)
+            # predict
+            with torch.no_grad():
+                pred = self.gnn_model(dgl_graph).squeeze()  # pred is a float between 0 and 1
+                # pred = self.gnn_model(bached_graph,bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
+
+            prediction_list.append([pred, (split_eq, edge_label)])
+
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+        print([x[0] for x in sorted_prediction_list])
+        return sorted_prediction_list
+
     def _draw_graph_task_1(self,split_eq,eq):
         nodes, edges = self.graph_func(split_eq.left_terms, split_eq.right_terms)
         return nodes, edges
@@ -278,25 +337,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # print(f"Memory usage: {memory_text}")
 
         ################################ prediction ################################
-        prediction_list = []
-        for method in branch_methods:
-            #branch
-            l, r, _, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
-            split_eq = Equation(l, r)
-            #draw graph
-            nodes, edges = self.draw_graph_func(split_eq, eq)
-            graph_dict = graph_to_gnn_format(nodes, edges)
-            # Load data
-            evaluation_dataset = WordEquationDataset(graph_folder="", data_fold="eval", node_type=3,graphs_from_memory=[graph_dict])
-            evaluation_dataloader = GraphDataLoader(evaluation_dataset, batch_size=1, drop_last=False)
-            #predict
-            with torch.no_grad():
-                for bached_graph,_ in evaluation_dataloader:
-                    pred = self.gnn_model(bached_graph)  # pred is a float between 0 and 1
-                    #pred = self.gnn_model(bached_graph,bached_graph.ndata["feat"].float())  # pred is a float between 0 and 1
-            prediction_list.append([pred, (split_eq,edge_label)])
+        sorted_prediction_list=self.branch_prediction_func(eq,branch_methods)
 
-        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
 
         # Perform depth-first search based on the sorted prediction list
         for i, data in enumerate(sorted_prediction_list):
