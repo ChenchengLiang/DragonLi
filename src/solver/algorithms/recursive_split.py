@@ -45,7 +45,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
                                        "extract_branching_data_task_2": self._extract_branching_data_task_2,
                                        "extract_branching_data_task_3": self._extract_branching_data_task_3,
-                                       "fixed": self._use_fixed_branching, "random": self._use_random_branching,
+                                       "fixed": self._use_fixed_branching,
+                                       "random": self._use_random_branching,
                                        "gnn": self._use_gnn_branching,
                                        "gnn:random": self._use_gnn_with_random_branching,
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
@@ -57,6 +58,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
+        if "extract_branching_data" in parameters["branch_method"]:
+            self.extract_algorithm=parameters["extract_algorithm"]
+            print("extract_algorithm:",self.extract_algorithm)
         if "gnn" in parameters["branch_method"]:
             # load the model from mlflow
             # experiment_id = "856005721390468951"
@@ -554,6 +558,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         satisfiability_list = []
         back_track_count_list = []
         branch_eq_list = []
+        if self.extract_algorithm == "random":
+            random.shuffle(branch_methods)
+
+
         for i, branch in enumerate(branch_methods):
             l, r, v, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
             branch_eq = Equation(l, r)
