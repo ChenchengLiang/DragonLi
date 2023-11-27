@@ -15,13 +15,13 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     num_epochs=300
     configurations = []
-    for benchmark in ["03_track_generated_train_1_20000_task_2"]:
+    for benchmark in ["03_track_generated_train_1_20000_task_3"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
-            for gnn_layer_num in [8]:
-                for ffnn_layer_num in [2,8]:
+            for gnn_layer_num in [2,8]:
+                for ffnn_layer_num in [2,8,16]:
                     for hidden_dim in [128]:
                         for dropout_rate in [0.5]:
-                            for model_type in ["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
+                            for model_type in ["GCNSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                 if model_type == "GAT":
                                     for num_heads in [1]:
                                         configurations.append({

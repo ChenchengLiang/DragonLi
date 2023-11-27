@@ -47,10 +47,10 @@ def main():
         with open(configuration_file) as f:
             train_config = json.load(f)
     else:
-        model_type="GCN"#GCNSplit
+        model_type="GCNSplit"#GCNSplit
 
         train_config = {
-                "benchmark":"test_track_task_1","graph_type": "graph_1", "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
+                "benchmark":"test_track_task_3","graph_type": "graph_1", "model_type": model_type, "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 32,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }

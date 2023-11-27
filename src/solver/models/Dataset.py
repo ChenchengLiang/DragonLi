@@ -177,8 +177,11 @@ class WordEquationDatasetMultiModels(WordEquationDataset):
 
         # Count each category
         for label in multi_classification_label_list:
-            category = label.index(1) # return 1's index
-            category_count[category] += 1
+            try: #todo this try, except can be removed when new train data is generated
+                category = label.index(1) # return 1's index
+                category_count[category] += 1
+            except:
+                pass
 
         result_str = f"label size: {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
         result_str+=f"labe distribution: {category_count.__str__()} \n"
