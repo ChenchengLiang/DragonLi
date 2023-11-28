@@ -16,7 +16,7 @@ from src.solver.visualize_util import visualize_path, visualize_path_html, visua
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.models.utils import load_model, load_model_from_mlflow
 from src.solver.algorithms.utils import graph_to_gnn_format
-from src.solver.models.Dataset import WordEquationDataset,WordEquationDatasetMultiModels,get_one_dgl_graph
+from src.solver.models.Dataset import WordEquationDatasetBinaryClassification,WordEquationDatasetMultiModels,get_one_dgl_graph
 from src.solver.algorithms.utils import merge_graphs
 from dgl.dataloading import GraphDataLoader
 import sys

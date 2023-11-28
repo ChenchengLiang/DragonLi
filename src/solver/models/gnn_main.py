@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from dgl.dataloading import GraphDataLoader
 import urllib.request
 import pandas as pd
-from Dataset import KarateClubDataset,SyntheticDataset,WordEquationDataset
+from Dataset import KarateClubDataset,SyntheticDataset,WordEquationDatasetBinaryClassification
 from src.solver.Constants import project_folder,bench_folder
 
 def main():
@@ -24,7 +24,7 @@ def main():
     # print(graph, label)
 
     graph_folder=bench_folder+"/test"
-    train_valid_dataset = WordEquationDataset(graph_folder=graph_folder)
+    train_valid_dataset = WordEquationDatasetBinaryClassification(graph_folder=graph_folder)
     graph, label = train_valid_dataset[0]
     print("train_valid_dataset[0]",graph, label)
 

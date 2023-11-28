@@ -9,7 +9,7 @@ path = config.get('Path','local')
 sys.path.append(path)
 
 from src.solver.Constants import int_label_to_satisfiability,project_folder,bench_folder
-from Dataset import WordEquationDataset
+from Dataset import WordEquationDatasetBinaryClassification
 from dgl.dataloading import GraphDataLoader
 from src.solver.models.utils import load_model,load_model_from_mlflow
 import mlflow
@@ -20,7 +20,7 @@ def main():
 
     # Load the evaluation dataset
     graph_folder = bench_folder+"/"+benchmark+"/"+graph_type
-    evaluation_dataset = WordEquationDataset(graph_folder=graph_folder,data_fold="eval")
+    evaluation_dataset = WordEquationDatasetBinaryClassification(graph_folder=graph_folder, data_fold="eval")
     evaluation_dataset.statistics()
     graph, label = evaluation_dataset[0]
     print("evaluation_dataset[0]", graph, label)

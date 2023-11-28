@@ -20,14 +20,14 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
 from collections import Counter
 from src.solver.Constants import project_folder
-from Dataset import WordEquationDataset
+from Dataset import WordEquationDatasetBinaryClassification
 import mlflow
 import argparse
 import json
 import datetime
 import subprocess
 import signal
-from src.solver.models.train_util import train_one_model,train_binary_classification,create_data_loaders,train_multiple_models
+from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -66,7 +66,8 @@ def main():
         train_config["run_id"]=mlflow_run.info.run_id
         mlflow.log_params(train_config)
         if train_config["model_type"]=="GCNSplit":
-            train_multiple_models(train_config,benchmark_folder)
+            #train_multiple_models(train_config,benchmark_folder)
+            train_multiple_models_separately(train_config,benchmark_folder)
         else:
             train_one_model(train_config,benchmark_folder)
 

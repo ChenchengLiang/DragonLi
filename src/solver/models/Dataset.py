@@ -29,14 +29,13 @@ def get_edge_src_and_dst_list(edges):
         edges_dst.append(e[1])
     return pd.DataFrame(edges_src).to_numpy().flatten(), pd.DataFrame(edges_dst).to_numpy().flatten()
 
-class WordEquationDataset(DGLDataset):
+class WordEquationDatasetBinaryClassification(DGLDataset):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[]):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
         self._graphs_from_memory = graphs_from_memory
         self._node_type=node_type
         super().__init__(name="WordEquation")
-
 
     def process(self):
         self.graphs = []
@@ -77,7 +76,7 @@ class WordEquationDataset(DGLDataset):
                 unsat_label_number += 1
             else:
                 unknown_label_number += 1
-        result_str = f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number}"
+        result_str = f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
         print(result_str)
         return result_str
 
@@ -105,7 +104,89 @@ class WordEquationDataset(DGLDataset):
             else:
                 yield loaded_dict
 
-class WordEquationDatasetMultiModels(WordEquationDataset):
+class WordEquationDatasetMultiClassification(WordEquationDatasetBinaryClassification):
+    def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory=[], label_size=3):
+        self._data_fold = data_fold
+        self._graph_folder = graph_folder
+        self._graphs_from_memory = graphs_from_memory
+        self._label_size = label_size
+        self._node_type = node_type
+        super().__init__(graph_folder=graph_folder, data_fold=data_fold, node_type=node_type,
+                         graphs_from_memory=graphs_from_memory)
+    def process(self):
+        self.graphs = []
+        binary_labels = []
+        ternary_labels = []
+        self.labels = []
+        self.node_embedding_dim = self._node_type
+        graph_generator = self.get_graph_list_from_folder() if len(
+            self._graphs_from_memory) == 0 else self._graphs_from_memory
+
+        for split_graphs in graph_generator:
+            split_graph_list=[]
+            split_graph_labels=[]
+            for index,g in split_graphs.items():
+                if isinstance(g,dict):
+                    dgl_graph, label = get_one_dgl_graph(g)
+                    split_graph_list.append(dgl_graph)
+                    split_graph_labels.append(label)
+            if len(split_graph_list)==self._label_size:
+                self.graphs.append(split_graph_list)
+                self.labels.append(split_graph_labels)
+
+        # Convert the label list to tensor for saving.
+        if self._label_size == 2:
+            self.labels = [1 if label == [1,0] else 0 for label in self.labels]
+            self.labels = torch.LongTensor(self.labels)
+        else:
+            self.labels = torch.Tensor(self.labels)
+
+    def get_graph_list_from_folder(self):
+        graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+        for graph_file in graph_file_list:
+            with open(graph_file, 'r') as f:
+                loaded_dict = json.load(f)
+                loaded_dict["file_path"] = graph_file
+            yield loaded_dict
+
+    def statistics(self):
+        sat_label_number = 0
+        unsat_label_number = 0
+        unknown_label_number = 0
+        split_number = 0
+        multi_classification_label_list=[]
+        for graphs in self.get_graph_list_from_folder():
+            split_number += 1
+            multi_classification_label:List=[]
+            for index, g in graphs.items():
+                if isinstance(g, dict):
+                    multi_classification_label.append(g["label"])
+                    if g["satisfiability"] == SAT:
+                        sat_label_number += 1
+                    elif g["satisfiability"] == UNSAT:
+                        unsat_label_number += 1
+                    else:
+                        unknown_label_number += 1
+            multi_classification_label_list.append(multi_classification_label)
+
+
+        # Initialize a counter for each category
+        category_count = {0: 0, 1: 0, 2: 0}
+
+        # Count each category
+        for label in multi_classification_label_list:
+            category = label.index(1) # return 1's index
+            category_count[category] += 1
+
+
+        result_str = f"label size: {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
+        result_str+=f"labe distribution: {category_count.__str__()} \n"
+        result_str+= f"dominate accuracy: {max(category_count.values())/sum(category_count.values())}"
+        print(result_str)
+        return result_str
+
+
+class WordEquationDatasetMultiModels(WordEquationDatasetBinaryClassification):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=2):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
@@ -117,7 +198,7 @@ class WordEquationDatasetMultiModels(WordEquationDataset):
     def process(self):
         self.graphs = []
         self.labels = []
-        self.node_embedding_dim = 3  # equal to number of node types
+        self.node_embedding_dim = self._node_type
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
 

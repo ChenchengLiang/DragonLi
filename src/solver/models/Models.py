@@ -22,8 +22,12 @@ class GraphClassifier(nn.Module):
 class Classifier(nn.Module):
     def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim, ffnn_dropout_rate=0.5):
         super(Classifier, self).__init__()
+        self.output_dim = output_dim
         self.layers = nn.ModuleList()
-        self.layers.append(nn.Linear(ffnn_hidden_dim*output_dim, ffnn_hidden_dim))
+        if output_dim == 1: #adapt to BCELoss
+            self.layers.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
+        else:
+            self.layers.append(nn.Linear(ffnn_hidden_dim*output_dim, ffnn_hidden_dim))
         for _ in range(ffnn_layer_num):
             self.layers.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
 
@@ -37,7 +41,10 @@ class Classifier(nn.Module):
                 x = F.relu(self.dropout(x))
             else:
                 x = F.relu(x)
-        return self.final_fc(x)
+        if self.output_dim == 1: # adapt to BCELoss
+            return torch.sigmoid(self.final_fc(x))
+        else:
+            return self.final_fc(x)
 
 
 
@@ -81,53 +88,6 @@ class GraphEmbedding(nn.Module):
         g.ndata['h'] = h
         hg = dgl.mean_nodes(g, 'h')  # Aggregating node features
         return hg
-#
-# class GraphClassifier(nn.Module):
-#     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num,ffnn_layer_num ,ffnn_hidden_dim,gnn_dropout_rate=0.5,ffnn_dropout_rate=0.5):
-#         super(GraphClassifier, self).__init__()
-#         self.embedding = GraphEmbedding(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,num_gnn_layers=gnn_layer_num,dropout_rate=gnn_dropout_rate)
-#
-#         # Linear layers for processing 2 graphs
-#         self.linear_layers_2 = nn.ModuleList()
-#         for _ in range(ffnn_layer_num):
-#             self.linear_layers_2.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
-#
-#         # Linear layers for processing 3 graphs
-#         self.linear_layers_3 = nn.ModuleList()
-#         for _ in range(ffnn_layer_num):
-#             self.linear_layers_3.append(nn.Linear(ffnn_hidden_dim * 3, ffnn_hidden_dim))
-#
-#         # Final layers for 2 or 3 graphs
-#         self.final_fc_2 = nn.Linear(ffnn_hidden_dim, 2)  # for 2 graphs
-#         self.final_fc_3 = nn.Linear(ffnn_hidden_dim, 3)  # for 3 graphs
-#         self.dropout = nn.Dropout(ffnn_dropout_rate)
-#
-#     def forward(self, graphs):
-#         embeddings = [self.embedding(g) for g in graphs]
-#         concatenated_embedding = torch.cat(embeddings, dim=0)
-#
-#         if len(graphs) == 2:
-#             for i, linear in enumerate(self.linear_layers_2):
-#                 concatenated_embedding = linear(concatenated_embedding)
-#                 if i < len(self.linear_layers_2) - 1:
-#                     concatenated_embedding = F.relu(self.dropout(concatenated_embedding))
-#                 else:
-#                     concatenated_embedding = F.relu(concatenated_embedding)
-#             out = self.final_fc_2(concatenated_embedding)
-#         elif len(graphs) == 3:
-#             for i, linear in enumerate(self.linear_layers_3):
-#                 concatenated_embedding = linear(concatenated_embedding)
-#                 if i < len(self.linear_layers_3) - 1:
-#                     concatenated_embedding = F.relu(self.dropout(concatenated_embedding))
-#                 else:
-#                     concatenated_embedding = F.relu(concatenated_embedding)
-#             out = self.final_fc_3(concatenated_embedding)
-#         else:
-#             raise ValueError("Unsupported number of graphs")
-#
-#         return F.softmax(out,dim=1)
-#
-
 
 
 
