@@ -30,11 +30,12 @@ def get_edge_src_and_dst_list(edges):
     return pd.DataFrame(edges_src).to_numpy().flatten(), pd.DataFrame(edges_dst).to_numpy().flatten()
 
 class WordEquationDatasetBinaryClassification(DGLDataset):
-    def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[]):
+    def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=1):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
         self._graphs_from_memory = graphs_from_memory
         self._node_type=node_type
+        self._label_size=label_size
         super().__init__(name="WordEquation")
 
     def process(self):
@@ -104,19 +105,23 @@ class WordEquationDatasetBinaryClassification(DGLDataset):
             else:
                 yield loaded_dict
 
-class WordEquationDatasetMultiClassification(WordEquationDatasetBinaryClassification):
+class WordEquationDatasetMultiClassification(DGLDataset):
     def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory=[], label_size=3):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
         self._graphs_from_memory = graphs_from_memory
         self._label_size = label_size
         self._node_type = node_type
-        super().__init__(graph_folder=graph_folder, data_fold=data_fold, node_type=node_type,
-                         graphs_from_memory=graphs_from_memory)
+        super().__init__(name="WordEquation")
+
+    def __getitem__(self, i):
+        return self.graphs[i], self.labels[i]
+
+    def __len__(self):
+        return len(self.graphs)
+
     def process(self):
         self.graphs = []
-        binary_labels = []
-        ternary_labels = []
         self.labels = []
         self.node_embedding_dim = self._node_type
         graph_generator = self.get_graph_list_from_folder() if len(
@@ -130,6 +135,7 @@ class WordEquationDatasetMultiClassification(WordEquationDatasetBinaryClassifica
                     dgl_graph, label = get_one_dgl_graph(g)
                     split_graph_list.append(dgl_graph)
                     split_graph_labels.append(label)
+            #print(len(split_graph_list)==self._label_size, len(split_graph_list),self._label_size)
             if len(split_graph_list)==self._label_size:
                 self.graphs.append(split_graph_list)
                 self.labels.append(split_graph_labels)

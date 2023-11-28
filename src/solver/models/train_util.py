@@ -232,11 +232,10 @@ def train_binary_and_multi_classification(dataset_list, GNN_model_list, paramete
 
 
 def train_multiple_models_separately(parameters, benchmark_folder):
-    print("-" * 10, "train", "-" * 10)
     print("parameters:", parameters)
     # benchmark_folder = config['Path']['woorpje_benchmarks']
+    print("-" * 10, "load dataset", "-" * 10)
 
-    print("load dataset")
     graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
     node_type = 3
     dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type,label_size=2)
@@ -265,7 +264,7 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
-
+    print("-" * 10, "train", "-" * 10)
     best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
     best_model_3, metrics_3 = train_multi_classification(dataset_3, model=model_3, parameters=parameters)
 
@@ -321,7 +320,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
         avg_valid_loss = valid_loss / len(valid_dataloader)
         valid_accuracy = num_correct / num_valids
 
-        best_model,best_valid_loss, best_valid_accuracy = log_and_save_best_model(parameters, epoch, model, "binary", dataset._label_size,
+        best_model,best_valid_loss, best_valid_accuracy,epoch_info_log = log_and_save_best_model(parameters, epoch,best_model, model, "binary", dataset._label_size,
                                                                        avg_train_loss, avg_valid_loss, valid_accuracy,
                                                                        best_valid_loss, best_valid_accuracy,
                                                                        epoch_info_log)
@@ -389,15 +388,14 @@ def train_binary_classification(dataset, model, parameters: Dict):
         valid_accuracy = num_correct / num_valids
 
         # Save based on specified criterion
-        best_model,best_valid_loss,best_valid_accuracy=log_and_save_best_model(parameters, epoch, model,"binary",2, avg_train_loss, avg_valid_loss, valid_accuracy,
+        best_model,best_valid_loss,best_valid_accuracy,epoch_info_log=log_and_save_best_model(parameters, epoch,best_model, model,"binary",2, avg_train_loss, avg_valid_loss, valid_accuracy,
                                 best_valid_loss, best_valid_accuracy, epoch_info_log)
 
     # Return the trained model and the best metrics
     best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
     return best_model, best_metrics
 
-def log_and_save_best_model(parameters, epoch, model ,model_type,label_size,avg_train_loss, avg_valid_loss, valid_accuracy,best_valid_loss,best_valid_accuracy, epoch_info_log):
-
+def log_and_save_best_model(parameters, epoch, best_model,model ,model_type,label_size,avg_train_loss, avg_valid_loss, valid_accuracy,best_valid_loss,best_valid_accuracy, epoch_info_log):
     if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_loss:
         best_valid_loss = avg_valid_loss
         best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss,
@@ -410,16 +408,16 @@ def log_and_save_best_model(parameters, epoch, model ,model_type,label_size,avg_
                                                             valid_accuracy,
                                                             epoch_info_log,model_index=label_size)
 
-    # Print the losses once every ten epochs
+    # Print the losses once every 20 epochs
     if epoch % 20 == 0:
         current_epoch_info = f"Model: {model_type} | Epoch: {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
-        mlflow.log_text(epoch_info_log, artifact_file="model_log.txt")
+        mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{label_size}.txt")
     metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy, "epoch": epoch}
     mlflow.log_metrics(metrics, step=epoch)
-    return best_model,best_valid_loss,best_valid_accuracy
+    return best_model,best_valid_loss,best_valid_accuracy,epoch_info_log
 
 def add_log_and_save_model(parameters,epoch,model,avg_train_loss,avg_valid_loss,valid_accuracy,epoch_info_log,model_index=0):
     current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
@@ -430,7 +428,7 @@ def add_log_and_save_model(parameters,epoch,model,avg_train_loss,avg_valid_loss,
     mlflow.log_artifact(best_model_path)
     os.remove(best_model_path)
     epoch_info_log = epoch_info_log + "\n" + current_epoch_info
-    mlflow.log_text(epoch_info_log, artifact_file="model_log.txt")
+    mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{model_index}.txt")
     return best_model,epoch_info_log
 
 def get_samplers(dataset):
@@ -493,7 +491,7 @@ def create_data_loaders(dataset, parameters):
     print(train_distribution_str)
     print(valid_distribution_str)
 
-    mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str, artifact_file="data_distribution.txt")
+    mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str, artifact_file=f"data_distribution_{dataset._label_size}.txt")
 
     return train_dataloader, valid_dataloader
 
