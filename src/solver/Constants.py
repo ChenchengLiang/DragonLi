@@ -27,6 +27,8 @@ GNN_BRANCH_RATIO=0.5
 UNKNOWN = "UNKNOWN"
 SAT = "SAT"
 UNSAT = "UNSAT"
+SUCCESS="SUCCESS"
+FAIL="FAIL"
 
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}

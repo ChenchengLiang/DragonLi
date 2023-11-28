@@ -21,10 +21,10 @@ def main():
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
-    #file_path = bench_folder +"/examples/2/01_track_2.eq"
+    file_path = bench_folder +"/examples/2/01_track_2.eq"
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
-    file_path = bench_folder+"/examples/43/01_track_43.eq"
+    #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
     #file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"

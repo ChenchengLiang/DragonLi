@@ -350,17 +350,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
         # Perform depth-first search based on the sorted prediction list
+        satisfiability_list=[]
         for i, data in enumerate(sorted_prediction_list):
             split_eq, edge_label = data[1]
             satisfiability, branch_variables, back_track_count_list = self.explore_paths(split_eq,
                                                                                          {
                                                                                              "node_number": current_node_number,
                                                                                              "label": edge_label})
+            satisfiability_list.append(satisfiability)
 
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
-                                                           node_info, split_eq, back_track_count=back_track_count_list)
+                                                           node_info, split_eq, back_track_count=back_track_count_list,satisfiability_list=satisfiability_list)
 
             if result == None:
                 pass
@@ -390,7 +392,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # print(f"Memory usage: {get_memory_usage()}")
 
         #todo: collect three returns
-
+        satisfiability_list=[]
         for i, branch in enumerate(branch_methods):
             l, r, _, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
             split_eq=Equation(l,r)
@@ -400,18 +402,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                          {
                                                                                              "node_number": current_node_number,
                                                                                              "label": edge_label})
+            satisfiability_list.append(satisfiability)
 
             # Handle branch outcome
             back_track_count_list = [x + 1 for x in back_track_count_list]
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
-                                                           node_info, split_eq, back_track_count=back_track_count_list)
+                                                           node_info, split_eq, back_track_count=back_track_count_list,satisfiability_list=satisfiability_list)
             if result == None:
                 pass
             else:
                 return result
 
     def _handle_one_split_branch_outcome(self, i, branch_methods, satisfiability, branch_variables, node_info, eq,
-                                         back_track_count=1):
+                                         back_track_count=1,satisfiability_list=None):
         if i < len(branch_methods) - 1:  # not last branch
             if satisfiability == SAT:
                 return self.record_and_close_branch(SAT, branch_variables, node_info, eq,
@@ -424,6 +427,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return None
 
         else:  # last branch
+            satisfiability=self._get_satisfiability_from_satisfiability_list(satisfiability_list)
             return self.record_and_close_branch(satisfiability, branch_variables, node_info, eq,
                                                 back_track_count=back_track_count)
 
@@ -448,7 +452,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         ################################ output train data ################################
         back_track_count_list = [x + 1 for x in back_track_count_list]
-        current_eq_satisfiability=self._extract_branching_data_get_current_eq_satisfiability(satisfiability_list)
+        current_eq_satisfiability=self._get_satisfiability_from_satisfiability_list(satisfiability_list)
 
         # draw two eq graphs
         # output current node to eq file
@@ -550,7 +554,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         ################################ output train data ################################
         back_track_count_list = [x + 1 for x in back_track_count_list]
-        current_eq_satisfiability=self._extract_branching_data_get_current_eq_satisfiability(satisfiability_list)
+        current_eq_satisfiability=self._get_satisfiability_from_satisfiability_list(satisfiability_list)
 
         return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, eq.variable_list, node_info, eq,
                                                           back_track_count=back_track_count_list)
@@ -596,7 +600,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         return None
-    def _extract_branching_data_get_current_eq_satisfiability(self,satisfiability_list:List[str])->str:
+    def _get_satisfiability_from_satisfiability_list(self, satisfiability_list:List[str])->str:
         # if there is an element in satisfiability_list is SAT, return SAT
         if SAT in satisfiability_list:
             current_eq_satisfiability = SAT
