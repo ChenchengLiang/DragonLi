@@ -24,17 +24,17 @@ def main():
         {"task":"task_1","graph_type":"graph_1","branch_method":"fixed"}
     ]
 
+    # test
     result_list=[]
     for config_dict in configuration_list:
         for file_path in glob.glob(bench_folder+"/regression_test/*.eq"):
             result_str=test_one_file(file_path,config_dict)
             result_list.append(result_str)
 
+    # print results
     print("-"*10,"result list","-"*10)
     for r in result_list:
         print(r)
-
-
 
 
 def test_one_file(file_path,config_dict):
@@ -47,7 +47,7 @@ def test_one_file(file_path,config_dict):
     task = config_dict["task"]
     gnn_model_path = project_folder + "/Models/model_0_" + graph_type + "_GCNSplit.pth"
 
-    algorithm_parameters = {"branch_method": "fixed", "task": task, "graph_type": graph_type,
+    algorithm_parameters = {"branch_method": config_dict["branch_method"], "task": task, "graph_type": graph_type,
                             "graph_func": graph_func_map[graph_type],
                             "gnn_model_path": gnn_model_path,
                             "extract_algorithm": "fixed"}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
@@ -69,14 +69,12 @@ def test_one_file(file_path,config_dict):
     else:
         answer=UNKNOWN
 
-
-    if answer in [SAT,UNSAT]:
-        if result_dict["result"]==answer:
-            return f"{SUCCESS}, satisfiability: {answer}, {os.path.basename(file_path)}"
-        else:
-            return f"{FAIL}, satisfiability: {answer}, {os.path.basename(file_path)}"
+    satisfiability=result_dict["result"]
+    if satisfiability == answer:
+        return f"{SUCCESS}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
     else:
-       return f"answer: {answer}, {os.path.basename(file_path)}"
+        return f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
+
 
 
 if __name__ == '__main__':

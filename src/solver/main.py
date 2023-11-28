@@ -21,8 +21,8 @@ def main():
     # example path
     #file_path=bench_folder +"/examples/test.eq"
     #file_path = bench_folder +"/examples/01_track_2.eq"
-    file_path = bench_folder +"/examples/2/01_track_2.eq"
-    #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
+    #
+    file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
@@ -65,11 +65,11 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_1"
+    graph_type="graph_2"
     task="task_2"
-    gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCNSplit.pth"
+    gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCN.pth"
 
-    algorithm_parameters = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)

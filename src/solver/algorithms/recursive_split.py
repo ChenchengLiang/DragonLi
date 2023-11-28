@@ -110,7 +110,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                       previous_dict) -> Tuple[str, List[Variable], int]:
         self.total_explore_paths_call += 1
         self.current_deep += 1
-        print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
+        #print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
 
         ################################ Record nodes and edges ################################
 
@@ -336,6 +336,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         ################################ stop branching condition ################################
+        result = self._branching_data_termination_condition(eq, node_info)
+        if result == None:
+            pass
+        else:
+            return result
         # if self.total_split_call%50 ==0:
         #     memory_text,gb=get_memory_usage()
         #     if gb>self.gnn_branch_memory_limitation:
@@ -379,11 +384,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_fixed_branching(self, eq: Equation, current_node_number, node_info,
                              branch_methods):
         ################################ stop branching condition ################################
-        # result = self._branching_data_termination_condition(eq, node_info)
-        # if result==None:
-        #     pass
-        # else:
-        #     return result
+        result = self._branching_data_termination_condition(eq, node_info)
+        if result==None:
+            pass
+        else:
+            return result
 
 
 
@@ -391,7 +396,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # # Print the current memory usage
         # print(f"Memory usage: {get_memory_usage()}")
 
-        #todo: collect three returns
         satisfiability_list=[]
         for i, branch in enumerate(branch_methods):
             l, r, _, edge_label = branch(eq.left_terms, eq.right_terms, eq.variable_list)
@@ -586,7 +590,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _branching_data_termination_condition(self,eq:Equation,node_info):
         if self.current_deep>self.max_deep:
             print("max deep reached",self.current_deep)
-            #self.max_deep += MAX_DEEP_STEP
+            self.max_deep += MAX_DEEP_STEP
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         return None
