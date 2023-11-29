@@ -23,8 +23,8 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "test_track_task_3"
-    task = "task_3"
+    benchmark = "test_track_task_1"
+    task = "task_1"
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')

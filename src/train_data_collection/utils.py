@@ -79,22 +79,23 @@ def output_pair_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, 
     parser_type = EqParser()
     parser = Parser(parser_type)
 
-    for f in glob.glob(graph_folder + "/*.label.json"):
+    with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+        for f in zip_file_content.namelist():
+            if fnmatch.fnmatch(f, '*.label.json'):
+                eq_nodes,eq_edges,split_eq_list, split_eq_file_list, label_list,satisfiability_list=_read_label_and_eqs(zip_file_content,f, graph_folder, parser, graph_func)
 
-        eq_nodes,eq_edges,split_eq_list, split_eq_file_list, label_list,satisfiability_list=_read_label_and_eqs(f, graph_folder, parser, graph_func)
+                #print("eq", eq.eq_str)
+                for split_eq, split_file, split_label,split_satisfiability in zip(split_eq_list, split_eq_file_list, label_list,satisfiability_list):
+                    #print("split_eq", split_eq.eq_str)
+                    split_eq_odes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
+                    merged_nodes, merged_edges = merge_graphs(eq_nodes, eq_edges, split_eq_odes, split_eq_edges)
+                    if visualize == True:
+                        draw_graph(nodes=merged_nodes, edges=merged_edges, filename=split_file)
 
-        #print("eq", eq.eq_str)
-        for split_eq, split_file, split_label,split_satisfiability in zip(split_eq_list, split_eq_file_list, label_list,satisfiability_list):
-            #print("split_eq", split_eq.eq_str)
-            split_eq_odes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
-            merged_nodes, merged_edges = merge_graphs(eq_nodes, eq_edges, split_eq_odes, split_eq_edges)
-            if visualize == True:
-                draw_graph(nodes=merged_nodes, edges=merged_edges, filename=split_file)
-
-            graph_dict = graph_to_gnn_format(merged_nodes, merged_edges, label=split_label,satisfiability=split_satisfiability)
-            # Dumping the dictionary to a JSON file
-            json_file = strip_file_name_suffix(split_file) + ".graph.json"
-            dump_to_json_with_format(graph_dict, json_file)
+                    graph_dict = graph_to_gnn_format(merged_nodes, merged_edges, label=split_label,satisfiability=split_satisfiability)
+                    # Dumping the dictionary to a JSON file
+                    json_file = graph_folder+"/"+(strip_file_name_suffix(split_file) + ".graph.json").replace("train/","")
+                    dump_to_json_with_format(graph_dict, json_file)
 
 
 
@@ -102,25 +103,31 @@ def output_pair_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, 
 def output_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):
     parser_type = EqParser()
     parser = Parser(parser_type)
-    eq_file_list = glob.glob(graph_folder + "/*.eq")
-    for file_path in eq_file_list:
+    with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+        for f in zip_file_content.namelist():
+            if fnmatch.fnmatch(f, '*.eq'):
+    #eq_file_list = glob.glob(graph_folder + "/*.eq")
+    #for file_path in eq_file_list:
 
-        parsed_content = parser.parse(file_path)
-        # print("parsed_content:", parsed_content)
+                parsed_content = parser.parse(f,zip_file_content)
+                # print("parsed_content:", parsed_content)
 
-        answer_file = strip_file_name_suffix(file_path) + ".answer"
-        with open(answer_file, 'r') as file:
-            answer = file.read()
+                answer_file = strip_file_name_suffix(f) + ".answer"
+                with zip_file_content.open(answer_file) as file:
+                #with open(answer_file, 'r') as file:
+                    answer = file.read()
+                    answer = answer.decode('utf-8')
 
-        for eq in parsed_content["equation_list"]:
-            if visualize == True:
-                # visualize
-                eq.visualize_graph(file_path, graph_func)
-            # get gnn format
-            nodes, edges = graph_func(eq.left_terms, eq.right_terms)
-            satisfiability = answer
-            graph_dict = graph_to_gnn_format(nodes, edges, label=satisfiability_to_int_label[satisfiability],satisfiability=satisfiability)
-            # print(graph_dict)
-            # Dumping the dictionary to a JSON file
-            json_file = strip_file_name_suffix(file_path) + ".graph.json"
-            dump_to_json_with_format(graph_dict, json_file)
+                for eq in parsed_content["equation_list"]:
+                    if visualize == True:
+                        # visualize
+                        pass # todo adapt to zip file
+                        #eq.visualize_graph(file_path, graph_func)
+                    # get gnn format
+                    nodes, edges = graph_func(eq.left_terms, eq.right_terms)
+                    satisfiability = answer
+                    graph_dict = graph_to_gnn_format(nodes, edges, label=satisfiability_to_int_label[satisfiability],satisfiability=satisfiability)
+                    # print(graph_dict)
+                    # Dumping the dictionary to a JSON file
+                    json_file = graph_folder+"/"+(strip_file_name_suffix(f) + ".graph.json").replace("train/","")
+                    dump_to_json_with_format(graph_dict, json_file)
