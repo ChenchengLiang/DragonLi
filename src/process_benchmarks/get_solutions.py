@@ -36,11 +36,11 @@ def main():
     else:
         config = {
             "benchmark_name": "test",
-            "benchmark_folder":bench_folder+"/test",
-            #"solver":"ostrich",
-            #"parameters_list":[],
-            "solver": "this",
-            "parameters_list":["fixed"],
+            "benchmark_folder":bench_folder+"/test/ALL/ALL",
+            "solver":"ostrich",
+            "parameters_list":[],
+            #"solver": "this",
+            #"parameters_list":["fixed"],
             #"parameters_list": ["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GCN.pth",f"--gnn_task task_2"],
             "summary_folder_name":"test_summary"
         }
