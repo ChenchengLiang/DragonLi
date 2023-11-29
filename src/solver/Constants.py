@@ -8,7 +8,7 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
-algorithm_timeout: int = 300
+algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
 INITIAL_MAX_DEEP=500
 MAX_DEEP_STEP=250
@@ -33,10 +33,10 @@ FAIL="FAIL"
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
-solver_command_map = {"z3": "z3",
+solver_command_map = {"z3": project_folder+"/other_solvers/z3-4.12.2-x64-glibc-2.31/bin/z3",
                       "this": "python3 "+project_folder+"/src/process_benchmarks/main_parameter.py",
                       "woorpje": project_folder+"/other_solvers/woorpje-0_2/bin/woorpje",
-                      "ostrich": "/home/cheli243/Desktop/CodeToGit/ostrich-fork-master/ostrich/ostrich",
+                      "ostrich": project_folder+"/ostrich/ostrich",
                       "cvc5": project_folder+"/other_solvers/cvc5/cvc5-Linux"}
 
 '''

@@ -16,14 +16,15 @@ from src.solver.independent_utils import remove_duplicates, identify_available_c
 from src.train_data_collection.utils import dvivde_track_for_cluster
 import glob
 import shutil
+from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 
 
 def main():
     # generate track
-    track_name="03_track_generated_eval_20000_21000"
+    track_name="03_track_generated_eval_30000_31000"
     track_folder = bench_folder + "/"+track_name
-    start_idx = 20001
-    end_idx = 21000
+    start_idx = 30001
+    end_idx = 31000
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)
 
     # divide tracks
@@ -45,6 +46,8 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
         equation_str, _,_,_,_ = equation_generator(filename, i)
         with open(filename, 'w') as file:
             file.write(equation_str)
+        #generate smt2 file
+        one_eq_file_to_smt2(filename)
 
 
 def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, max_length=300,write_replacement_log=True):

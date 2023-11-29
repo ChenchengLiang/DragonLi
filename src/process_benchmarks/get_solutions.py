@@ -35,16 +35,17 @@ def main():
             config = json.load(f)
     else:
         config = {
-            "benchmark_name": "test_track_task_2",
-            "benchmark_folder":bench_folder+"/test_track_task_2/ALL/ALL",
-            "solver":"this",
+            "benchmark_name": "to_smt",
+            "benchmark_folder":bench_folder+"/to_smt",
+            "solver":"z3",
+            "parameters_list":[],
             #"parameters_list":["fixed"],
-            "parameters_list": ["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GCN.pth",f"--gnn_task task_2"],
-            "summary_folder_name":"test_track_task_2_summary"
+            #"parameters_list": ["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GCN.pth",f"--gnn_task task_2"],
+            "summary_folder_name":"to_smt_summary"
         }
 
     solver_log = False
-    suffix_dict = {"z3": ".smt", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
+    suffix_dict = {"z3": ".smt2", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
     print("config:",config)
 
