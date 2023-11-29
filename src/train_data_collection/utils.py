@@ -47,9 +47,9 @@ def _read_label_and_eqs(zip,f,graph_folder,parser,graph_func):
     #split_eq_file_list = [graph_folder + "/" + x for x in json_dict["middle_branch_eq_file_name_list"]]
     split_eq_file_list = ["train/" + x for x in json_dict["middle_branch_eq_file_name_list"]]
 
-    eq: Equation = parser.parse(zip,eq_file)["equation_list"][0]
+    eq: Equation = parser.parse(eq_file,zip)["equation_list"][0]
     eq_nodes, eq_edges = graph_func(eq.left_terms, eq.right_terms)
-    split_eq_list: List[Equation] = [parser.parse(zip,split_eq_file)["equation_list"][0] for split_eq_file in
+    split_eq_list: List[Equation] = [parser.parse(split_eq_file,zip)["equation_list"][0] for split_eq_file in
                                      split_eq_file_list]
     return eq_nodes,eq_edges,split_eq_list, split_eq_file_list, json_dict["label_list"],json_dict["satisfiability_list"]
 def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):

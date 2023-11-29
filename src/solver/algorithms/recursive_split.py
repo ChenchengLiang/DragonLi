@@ -336,11 +336,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         ################################ stop branching condition ################################
-        result = self._branching_data_termination_condition(eq, node_info)
-        if result == None:
-            pass
-        else:
-            return result
+        # result = self._branching_data_termination_condition(eq, node_info)
+        # if result == None:
+        #     pass
+        # else:
+        #     return result
         # if self.total_split_call%50 ==0:
         #     memory_text,gb=get_memory_usage()
         #     if gb>self.gnn_branch_memory_limitation:
@@ -384,11 +384,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_fixed_branching(self, eq: Equation, current_node_number, node_info,
                              branch_methods):
         ################################ stop branching condition ################################
-        result = self._branching_data_termination_condition(eq, node_info)
-        if result==None:
-            pass
-        else:
-            return result
+        # result = self._branching_data_termination_condition(eq, node_info)
+        # if result==None:
+        #     pass
+        # else:
+        #     return result
 
 
 

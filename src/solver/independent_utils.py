@@ -4,6 +4,7 @@ import re
 import os
 import shutil
 import psutil
+import zipfile
 
 def get_memory_usage():
     process = psutil.Process(os.getpid())
@@ -100,3 +101,13 @@ def mean(l):
     else:
         return sum(l)/len(l)
 
+def zip_folder(folder_path, output_zip_file):
+    # Create a ZIP file in write mode
+    with zipfile.ZipFile(output_zip_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        # Walk through directory
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                # Create a relative path to the file to preserve the folder structure
+                relative_path = os.path.relpath(os.path.join(root, file), os.path.dirname(folder_path))
+                # Add the file to the ZIP file
+                zipf.write(os.path.join(root, file), arcname=relative_path)

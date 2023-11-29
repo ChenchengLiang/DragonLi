@@ -21,10 +21,10 @@ from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsing
 from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.independent_utils import strip_file_name_suffix,zip_folder
 def main():
 
-    benchmark="03_track_generated_train_1_20000_task_3_new"#"01_track_generated_SAT_train"
+    benchmark="test_track_task_3"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed"} #extract_branching_data_task_2
 
     #prepare train folder
@@ -60,7 +60,11 @@ def main():
 
             #print_results(result_dict)
 
-        print("done")
+
+    # compress
+    zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder+".zip")
+    shutil.rmtree(train_eq_folder)
+    print("done")
 
 
 if __name__ == '__main__':
