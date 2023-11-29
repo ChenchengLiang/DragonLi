@@ -90,6 +90,13 @@ class Parser:
         print("file content: ", content)
         return self.parser.parse(content)
 
+    def parse(self, zip,file_path: str) -> Dict:
+        print("-"*10, "Parsing", "-"*10)
+        file_reader = EqReader() if type(self.parser) == EqParser else SMT2Reader()
+        content = file_reader.read(zip,file_path)
+        print("file content: ", content)
+        return self.parser.parse(content)
+
 
 class AbstractFileReader(ABC):
     @abstractmethod
@@ -102,6 +109,27 @@ class EqReader(AbstractFileReader):
         equation_str_list=[]
         with open(file_path, 'r') as f:
             lines = f.readlines()
+
+        variables_str = lines[0].strip().split("{")[1].split("}")[0]
+        terminals_str = lines[1].strip().split("{")[1].split("}")[0]
+        #equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
+        for line in lines[2:]:
+            if line.startswith("Equation"):
+                equation_str_list.append(line.strip().split(": ")[1].replace(" ", ""))
+
+
+
+        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str_list": equation_str_list,"file_path": file_path}
+        return content
+
+    def read(self, zip,file_path: str) -> Dict:
+        equation_str_list=[]
+        lines=[]
+        with zip.open(file_path) as f:
+        #with open(file_path, 'r') as f:
+            for line in f:
+                line = line.decode('utf-8')
+                lines.append(line)
 
         variables_str = lines[0].strip().split("{")[1].split("}")[0]
         terminals_str = lines[1].strip().split("{")[1].split("}")[0]

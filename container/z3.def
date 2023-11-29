@@ -1,0 +1,29 @@
+# build image command: apptainer build image.sif my_recipe.def
+# use image command: apptainer exec  image.sif z3
+BootStrap: docker
+From: continuumio/miniconda3
+#ubuntu:20.04
+
+
+
+
+
+
+%post
+    apt-get -y update
+    apt-get -y install pip
+    conda install pip
+    pip install tqdm
+    apt-get update && apt-get install -y build-essential python python-dev python-setuptools git
+    git clone https://github.com/Z3Prover/z3.git
+    cd z3
+    python scripts/mk_make.py
+    cd build
+    make
+    make install
+
+
+
+
+%labels
+    Chencheng Liang

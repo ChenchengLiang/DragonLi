@@ -36,7 +36,7 @@ int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 solver_command_map = {"z3": project_folder+"/other_solvers/z3-4.12.2-x64-glibc-2.31/bin/z3",
                       "this": "python3 "+project_folder+"/src/process_benchmarks/main_parameter.py",
                       "woorpje": project_folder+"/other_solvers/woorpje-0_2/bin/woorpje",
-                      "ostrich": project_folder+"/ostrich/ostrich",
+                      "ostrich": project_folder+"/other_solvers/ostrich/ostrich",
                       "cvc5": project_folder+"/other_solvers/cvc5/cvc5-Linux"}
 
 '''

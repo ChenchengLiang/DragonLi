@@ -83,9 +83,9 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
             csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],
                                 track_result_list[0][3]] + list(summary_dict.values()))
         else:
-            csvwriter.writerow(["File Name", "Result", "Used Time", "", ] + list(summary_dict.keys()))
+            csvwriter.writerow(["File Name", "Result", "Used Time", "split_number", ] + list(summary_dict.keys()))
             csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],
-                                ""] + list(summary_dict.values()))
+                                "0"] + list(summary_dict.values()))
 
         # Writing the following rows
         csvwriter.writerows(track_result_list[1:])
@@ -235,6 +235,9 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
         print("solver",solver)
         print(reconstructed_list)
         for f, r in zip(first_summary_data_rows, reconstructed_list):
+            for i,x in enumerate(r):
+                if x=="":
+                   r[i]=0
             if len(f)==0:
                 f.extend(r)
             else:

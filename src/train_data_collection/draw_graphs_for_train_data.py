@@ -23,7 +23,7 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "test_track_task_3"
+    benchmark = "03_track_generated_train_1_20000_task_3_new"
     task = "task_3"
 
     # read graph type from command line
@@ -39,18 +39,21 @@ def main():
         draw_func = output_split_eq_graphs  # task 3
 
     train_eq_folder = bench_folder + "/" + benchmark + "/train"
+    train_zip_file=train_eq_folder+".zip"
     for graph_type in [args.graph_type]:
         # prepare folder
         graph_folder = bench_folder + "/" + benchmark + "/" + graph_type
 
         if os.path.exists(graph_folder):
             shutil.rmtree(graph_folder)
-        print(f"- copy train to {graph_type} -")
-        shutil.copytree(train_eq_folder, graph_folder)
+        # print(f"- copy train to {graph_type} -")
+        # shutil.copytree(train_eq_folder, graph_folder)
+        if not os.path.exists(graph_folder):
+            os.mkdir(graph_folder)
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        draw_func(graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
+        draw_func(zip_file=train_zip_file,graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
 
     print("done")
 

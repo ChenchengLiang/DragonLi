@@ -26,6 +26,20 @@ From: continuumio/miniconda3
     pip install mlflow torch
 
 
+    #install z3
+    apt-get -y update
+    apt-get -y install pip
+    conda install pip
+    pip install tqdm
+    apt-get update && apt-get install -y build-essential python python-dev python-setuptools git
+    git clone https://github.com/Z3Prover/z3.git
+    cd z3
+    python scripts/mk_make.py
+    cd build
+    make
+    make install
+
+
 %environment
     export LC_ALL=C.UTF-8
     export LANG=C.UTF-8
