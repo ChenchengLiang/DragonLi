@@ -8,10 +8,10 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
-algorithm_timeout: int = 30
+algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
-INITIAL_MAX_DEEP=20
-MAX_DEEP_STEP=20
+INITIAL_MAX_DEEP=500
+MAX_DEEP_STEP=250
 MAX_SPLIT_CALL=1000
 MAX_EQ_LENGTH=300
 MAX_ONE_SIDE_LENGTH=150
