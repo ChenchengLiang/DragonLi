@@ -94,10 +94,12 @@ class GINEmbedding(BaseEmbedding):
         super(GINEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
         self._build_layers(hidden_feats, num_gnn_layers)
     def _build_layers(self, hidden_feats, num_gnn_layers):
-        mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU(),
-                            nn.Linear(hidden_feats, hidden_feats))
+        # mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU(),
+        #                     nn.Linear(hidden_feats, hidden_feats))
+        mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
         self.gnn_layers.append(GINConv(mlp, learn_eps=True))
         for _ in range(num_gnn_layers - 1):
+            mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
             self.gnn_layers.append(GINConv(mlp, learn_eps=True))
 
 
@@ -177,8 +179,16 @@ class GATWithNFFNN(BaseWithNFFNN):
 class GINWithNFFNN(BaseWithNFFNN):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, ffnn_layer_num, ffnn_hidden_dim, gnn_dropout_rate=0.5,ffnn_dropout_rate=0.5):
         super(GINWithNFFNN, self).__init__(input_feature_dim, gnn_hidden_dim, ffnn_layer_num, ffnn_hidden_dim, gnn_dropout_rate=gnn_dropout_rate,ffnn_dropout_rate=ffnn_dropout_rate)
-        mlp = nn.Sequential(nn.Linear(gnn_hidden_dim, gnn_hidden_dim), nn.ReLU(), nn.Linear(gnn_hidden_dim, gnn_hidden_dim))
-        self.gin_layers = nn.ModuleList([GINConv(mlp, learn_eps=True) for _ in range(gnn_layer_num)])
+        # mlp = nn.Sequential(nn.Linear(gnn_hidden_dim, gnn_hidden_dim), nn.ReLU(), nn.Linear(gnn_hidden_dim, gnn_hidden_dim))
+        # self.gin_layers = nn.ModuleList([GINConv(mlp, learn_eps=True) for _ in range(gnn_layer_num)])
+        self.gin_layers = nn.ModuleList()
+        for _ in range(gnn_layer_num):
+            # mlp = nn.Sequential(nn.Linear(gnn_hidden_dim, gnn_hidden_dim), nn.ReLU(),
+            #                     nn.Linear(gnn_hidden_dim, gnn_hidden_dim))
+            mlp = nn.Sequential(nn.Linear(gnn_hidden_dim, gnn_hidden_dim), nn.ReLU())
+            self.gin_layers.append(GINConv(mlp, learn_eps=True))
+
+
 
     def gnn_forward(self, g, h):
         for i, layer in enumerate(self.gin_layers):
