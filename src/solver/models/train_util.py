@@ -248,14 +248,18 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
     #todo expand GNN categories
     if parameters["model_type"]=="GCNSplit":
-        pass
+        shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                               gnn_layer_num=parameters["gnn_layer_num"],
+                               gnn_dropout_rate=parameters["gnn_dropout_rate"],embedding_type="GCN")
     elif parameters["model_type"]=="GINSplit":
-        pass
+        shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+                               gnn_layer_num=parameters["gnn_layer_num"],
+                               gnn_dropout_rate=parameters["gnn_dropout_rate"], embedding_type="GIN")
     else:
         raise ValueError("Unsupported model type")
-    # Shared GNN module
-    shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                           gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"])
+    # # Shared GNN module
+    # shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+    #                        gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"])
 
     # Classifiers
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],

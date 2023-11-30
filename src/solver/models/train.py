@@ -51,7 +51,7 @@ def main():
         model_type="GCNSplit"#GCNSplit
 
         train_config = {
-                "benchmark":"test_track_task_2","graph_type": "graph_1", "model_type": model_type,"task":task,
+                "benchmark":"test_track_task_3","graph_type": "graph_1", "model_type": model_type,"task":task,
             "num_epochs": 10, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 32,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5

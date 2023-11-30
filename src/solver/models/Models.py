@@ -7,6 +7,7 @@ from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
 
 
+############################################# Task 3 #############################################
 
 class GraphClassifier(nn.Module):
     def __init__(self, shared_gnn, classifier):
@@ -47,12 +48,65 @@ class Classifier(nn.Module):
             return self.final_fc(x)
 
 
+class BaseEmbedding(nn.Module):
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
+        super(BaseEmbedding, self).__init__()
+        self.node_embedding = nn.Embedding(num_node_types, hidden_feats)
+        self.dropout = nn.Dropout(dropout_rate)
+        self.gnn_layers = nn.ModuleList()
+        self._build_layers(hidden_feats, num_gnn_layers)
+
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        # To be implemented in the subclasses
+        raise NotImplementedError
+
+    def forward(self, g):
+        h = self.node_embedding(g.ndata['feat'])
+
+        for i, layer in enumerate(self.gnn_layers):
+            h = self.apply_layer(g, h, layer, i)
+
+        g.ndata['h'] = h
+        hg = dgl.mean_nodes(g, 'h')
+        return hg
+
+    def apply_layer(self, g, h, layer, layer_idx):
+        h = layer(g, h)
+        if layer_idx < len(self.gnn_layers) - 1:
+            h = F.relu(self.dropout(h))
+        else:
+            h = F.relu(h)
+        return h
+
+class GCNEmbedding(BaseEmbedding):
+    def __init__(self,num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
+        super(GCNEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
+        self._build_layers(hidden_feats, num_gnn_layers)
+
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        self.gnn_layers.append(GraphConv(hidden_feats, hidden_feats))
+        for _ in range(num_gnn_layers - 1):
+            self.gnn_layers.append(GraphConv(hidden_feats, hidden_feats))
+
+
+class GINEmbedding(BaseEmbedding):
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
+        super(GINEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
+        self._build_layers(hidden_feats, num_gnn_layers)
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU(),
+                            nn.Linear(hidden_feats, hidden_feats))
+        self.gnn_layers.append(GINConv(mlp, learn_eps=True))
+        for _ in range(num_gnn_layers - 1):
+            self.gnn_layers.append(GINConv(mlp, learn_eps=True))
+
 
 class SharedGNN(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
         super(SharedGNN, self).__init__()
-        self.embedding = GraphEmbedding(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                        num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
 
     def forward(self, graphs):
         embeddings = [self.embedding(g) for g in graphs]
@@ -60,36 +114,7 @@ class SharedGNN(nn.Module):
         return concatenated_embedding
 
 
-class GraphEmbedding(nn.Module):
-    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
-        super(GraphEmbedding, self).__init__()
-        self.node_embedding = nn.Embedding(num_node_types, hidden_feats)
-        self.gnn_layers = nn.ModuleList()
-        self.dropout = nn.Dropout(dropout_rate)
-
-        # First GNN layer
-        self.gnn_layers.append(GraphConv(hidden_feats, hidden_feats))
-        # Additional GNN layers
-        for _ in range(num_gnn_layers - 1):
-            self.gnn_layers.append(GraphConv(hidden_feats, hidden_feats))
-
-    def forward(self, g):
-        # Embedding each node
-        h = self.node_embedding(g.ndata['feat'])
-
-        # Passing through GNN layers
-        for i, layer in enumerate(self.gnn_layers):
-            h = layer(g, h)
-            if i < len(self.gnn_layers) - 1:  # Apply dropout after each layer except the last
-                h = F.relu(self.dropout(h))
-            else:
-                h = F.relu(h)  # No dropout after the last layer
-
-        g.ndata['h'] = h
-        hg = dgl.mean_nodes(g, 'h')  # Aggregating node features
-        return hg
-
-
+############################################# Task 1, 2 #############################################
 
 
 class BaseWithNFFNN(nn.Module):
