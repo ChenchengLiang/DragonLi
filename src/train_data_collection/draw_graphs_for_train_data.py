@@ -8,7 +8,7 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format
+from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format,zip_folder
 from src.solver.Parser import Parser, EqParser
 import glob
 from src.solver.utils import graph_func_map
@@ -23,8 +23,8 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "test_track_task_1"
-    task = "task_1"
+    benchmark = "test_track_task_2"
+    task = "task_2"
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -46,14 +46,17 @@ def main():
 
         if os.path.exists(graph_folder):
             shutil.rmtree(graph_folder)
-        # print(f"- copy train to {graph_type} -")
-        # shutil.copytree(train_eq_folder, graph_folder)
-        if not os.path.exists(graph_folder):
+            os.mkdir(graph_folder)
+        else:
             os.mkdir(graph_folder)
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
         draw_func(zip_file=train_zip_file,graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
+
+        # compress
+        zip_folder(folder_path=graph_folder, output_zip_file=graph_folder + ".zip")
+        shutil.rmtree(graph_folder)
 
     print("done")
 

@@ -1,4 +1,6 @@
+import fnmatch
 import os
+import zipfile
 
 os.environ["DGLBACKEND"] = "pytorch"
 import dgl
@@ -92,18 +94,34 @@ class WordEquationDatasetBinaryClassification(DGLDataset):
                    "label": 1}
         graphs = [graph_1, graph_2]
         '''
-
-        graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
-
-        for graph_file in graph_file_list:
-            with open(graph_file, 'r') as f:
-                loaded_dict = json.load(f)
-                loaded_dict["file_path"] =  graph_file
-            if self._data_fold == "train":
-                if loaded_dict["label"] !=-1:
+        zip_file = self._graph_folder + ".zip"
+        if os.path.exists(zip_file):  # read from zip file
+            with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+                for graph_file in zip_file_content.namelist():
+                    if fnmatch.fnmatch(graph_file, "*.graph.json"):
+                        with zip_file_content.open(graph_file) as json_file:
+                            loaded_dict = json.load(json_file)
+                            loaded_dict["file_path"] = self._graph_folder + "/" + os.path.basename(graph_file)
+                        if self._data_fold == "train":
+                            if loaded_dict["label"] != -1:
+                                yield loaded_dict
+                        else:
+                            yield loaded_dict
+        elif os.path.exists(self._graph_folder):
+            graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+            for graph_file in graph_file_list:
+                with open(graph_file, 'r') as f:
+                    loaded_dict = json.load(f)
+                    loaded_dict["file_path"] = graph_file
+                if self._data_fold == "train":
+                    if loaded_dict["label"] != -1:
+                        yield loaded_dict
+                else:
                     yield loaded_dict
-            else:
-                yield loaded_dict
+        else:
+            print(f"folde not existed: {self._graph_folder}")
+
+
 
 class WordEquationDatasetMultiClassification(DGLDataset):
     def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory=[], label_size=3):
@@ -147,13 +165,27 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         else:
             self.labels = torch.Tensor(self.labels)
 
+
     def get_graph_list_from_folder(self):
-        graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
-        for graph_file in graph_file_list:
-            with open(graph_file, 'r') as f:
-                loaded_dict = json.load(f)
-                loaded_dict["file_path"] = graph_file
-            yield loaded_dict
+        zip_file=self._graph_folder+".zip"
+        if os.path.exists(zip_file): #read from zip file
+            with zipfile.ZipFile(zip_file,'r') as zip_file_content:
+                for graph_file in zip_file_content.namelist():
+                    if fnmatch.fnmatch(graph_file,"*.graph.json"):
+                        with zip_file_content.open(graph_file) as json_file:
+                            loaded_dict = json.load(json_file)
+                            loaded_dict["file_path"] = self._graph_folder+"/"+os.path.basename(graph_file)
+                        yield loaded_dict
+        elif os.path.exists(self._graph_folder):
+            graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+            for graph_file in graph_file_list:
+                with open(graph_file, 'r') as f:
+                    loaded_dict = json.load(f)
+                    loaded_dict["file_path"] = graph_file
+                yield loaded_dict
+        else:
+            print(f"folde not existed: {self._graph_folder}")
+
 
     def statistics(self):
         sat_label_number = 0
@@ -225,17 +257,35 @@ class WordEquationDatasetMultiModels(WordEquationDatasetBinaryClassification):
 
 
 
+
     def get_graph_list_from_folder(self):
-        graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
-        for graph_file in graph_file_list:
-            with open(graph_file, 'r') as f:
-                loaded_dict = json.load(f)
-                loaded_dict["file_path"] = graph_file
-            if self._data_fold == "train":
-                if len(loaded_dict)==self._label_size+1:
+        zip_file=self._graph_folder+".zip"
+        if os.path.exists(zip_file): #read from zip file
+            with zipfile.ZipFile(zip_file,'r') as zip_file_content:
+                for graph_file in zip_file_content.namelist():
+                    if fnmatch.fnmatch(graph_file,"*.graph.json"):
+                        with zip_file_content.open(graph_file) as json_file:
+                            loaded_dict = json.load(json_file)
+                            loaded_dict["file_path"] = self._graph_folder+"/"+os.path.basename(graph_file)
+                        if self._data_fold == "train":
+                            if len(loaded_dict) == self._label_size + 1:
+                                yield loaded_dict
+                        else:
+                            yield loaded_dict
+        elif os.path.exists(self._graph_folder):
+            graph_file_list = glob.glob(self._graph_folder + "/*.graph.json")
+            for graph_file in graph_file_list:
+                with open(graph_file, 'r') as f:
+                    loaded_dict = json.load(f)
+                    loaded_dict["file_path"] = graph_file
+                if self._data_fold == "train":
+                    if len(loaded_dict) == self._label_size + 1:
+                        yield loaded_dict
+                else:
                     yield loaded_dict
-            else:
-                yield loaded_dict
+        else:
+            print(f"folde not existed: {self._graph_folder}")
+
 
 
     def statistics(self):
@@ -264,11 +314,9 @@ class WordEquationDatasetMultiModels(WordEquationDatasetBinaryClassification):
 
         # Count each category
         for label in multi_classification_label_list:
-            try: #todo this try, except can be removed when new train data is generated
-                category = label.index(1) # return 1's index
-                category_count[category] += 1
-            except:
-                pass
+            category = label.index(1) # return 1's index
+            category_count[category] += 1
+
 
         result_str = f"label size: {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
         result_str+=f"labe distribution: {category_count.__str__()} \n"
