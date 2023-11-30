@@ -320,7 +320,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
         avg_valid_loss = valid_loss / len(valid_dataloader)
         valid_accuracy = num_correct / num_valids
 
-        best_model,best_valid_loss, best_valid_accuracy,epoch_info_log = log_and_save_best_model(parameters, epoch,best_model, model, "binary", dataset._label_size,
+        best_model,best_valid_loss, best_valid_accuracy,epoch_info_log = log_and_save_best_model(parameters, epoch,best_model, model, "multi_class", dataset._label_size,
                                                                        avg_train_loss, avg_valid_loss, valid_accuracy,
                                                                        best_valid_loss, best_valid_accuracy,
                                                                        epoch_info_log)

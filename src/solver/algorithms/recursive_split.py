@@ -110,6 +110,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                       previous_dict) -> Tuple[str, List[Variable], int]:
         self.total_explore_paths_call += 1
         self.current_deep += 1
+        #print(f"explore_paths call: {self.total_explore_paths_call}")
         #print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
 
         ################################ Record nodes and edges ################################
@@ -285,11 +286,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         with torch.no_grad():
             #todo this can be improved by passing functions
             if len(branch_methods) == 2:
-                #pred_list = self.gnn_model_2(split_graph_list).squeeze()
-                pred_list=[1,0]#this make it use fixed branching
+                pred_list = self.gnn_model_2(split_graph_list).squeeze()
+                #pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
+                # pred_list=[1,0.5,0]#this make it use fixed branching
         # sort
         prediction_list=[]
         for pred,split_eq,edge_index in zip(pred_list,split_eq_list,edge_label_list):

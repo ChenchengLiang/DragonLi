@@ -38,7 +38,7 @@ def main():
         ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
-
+        #when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
         # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
         # ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
         # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],

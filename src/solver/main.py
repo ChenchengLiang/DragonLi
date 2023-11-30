@@ -20,9 +20,13 @@ def main():
     #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
-    #file_path = bench_folder +"/examples/01_track_2.eq"
+    file_path = bench_folder + "/examples/30853/g_03_track_generated_eval_30000_31000_30853.eq"
+    #file_path = bench_folder +"/examples/30435/g_03_track_generated_eval_30000_31000_30435.eq"
+    #file_path = bench_folder + "/examples/30678/g_03_track_generated_eval_30000_31000_30678.eq"
+    #file_path = bench_folder + "/examples/30751/g_03_track_generated_eval_30000_31000_30751.eq"
+    #file_path = bench_folder + "/examples/30196/g_03_track_generated_eval_30000_31000_30196.eq"
     #
-    file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
+    #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
@@ -77,7 +81,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
 
     print_results(result_dict)
 
