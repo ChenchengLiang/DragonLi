@@ -14,6 +14,7 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 def main():
     num_epochs=300
+    task="task_3"
     configurations = []
     for benchmark in ["03_track_generated_train_1_20000_task_3"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
@@ -25,7 +26,7 @@ def main():
                                 if model_type == "GAT":
                                     for num_heads in [1]:
                                         configurations.append({
-                                            "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,
+                                            "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,"task":task,
                                             "num_epochs": num_epochs, "learning_rate": 0.001,
                                             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,
                                             "gnn_layer_num": gnn_layer_num, "num_heads": num_heads, "gnn_dropout_rate": dropout_rate,
@@ -33,7 +34,7 @@ def main():
                                         })
                                 else:
                                     configurations.append({
-                                        "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,
+                                        "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,"task":task,
                                         "num_epochs": num_epochs,
                                         "learning_rate": 0.001,
                                         "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,

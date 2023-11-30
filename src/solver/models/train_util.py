@@ -246,6 +246,13 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     dataset_statistics = dataset_3.statistics()
     mlflow.log_text(dataset_statistics, artifact_file="dataset_3_statistics.txt")
 
+    #todo expand GNN categories
+    if parameters["model_type"]=="GCNSplit":
+        pass
+    elif parameters["model_type"]=="GINSplit":
+        pass
+    else:
+        raise ValueError("Unsupported model type")
     # Shared GNN module
     shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
                            gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"])

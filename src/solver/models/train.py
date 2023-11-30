@@ -47,10 +47,12 @@ def main():
         with open(configuration_file) as f:
             train_config = json.load(f)
     else:
-        model_type="GCN"#GCNSplit
+        task="task_3"
+        model_type="GCNSplit"#GCNSplit
 
         train_config = {
-                "benchmark":"test_track_task_2","graph_type": "graph_1", "model_type": model_type, "num_epochs": 10, "learning_rate": 0.001,
+                "benchmark":"test_track_task_2","graph_type": "graph_1", "model_type": model_type,"task":task,
+            "num_epochs": 10, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 32,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 32, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5
         }
@@ -65,7 +67,7 @@ def main():
     with mlflow.start_run() as mlflow_run:
         train_config["run_id"]=mlflow_run.info.run_id
         mlflow.log_params(train_config)
-        if train_config["model_type"]=="GCNSplit":
+        if train_config["task"]=="task_3":
             #train_multiple_models(train_config,benchmark_folder)
             train_multiple_models_separately(train_config,benchmark_folder)
         else:
