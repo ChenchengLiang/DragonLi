@@ -34,15 +34,16 @@ def main():
         with open(configuration_file) as f:
             config = json.load(f)
     else:
+        benchmark_name = "test_track_task_3"
         config = {
-            "benchmark_name": "test",
-            "benchmark_folder":bench_folder+"/test/ALL/ALL",
-            "solver":"ostrich",
-            "parameters_list":[],
-            #"solver": "this",
+            "benchmark_name": benchmark_name,
+            "benchmark_folder":bench_folder+"/"+benchmark_name+"/ALL/ALL",
+            #"solver":"ostrich",
+            #"parameters_list":[],
+            "solver": "this",
             #"parameters_list":["fixed"],
-            #"parameters_list": ["gnn","--graph_type graph_1","--gnn_model_path "+project_folder+"/Models/model_graph_1_GCN.pth",f"--gnn_task task_2"],
-            "summary_folder_name":"test_summary"
+            "parameters_list": ["gnn","--graph_type graph_3","--gnn_model_path "+project_folder+"/Models/model_0_graph_3_GINSplit.pth",f"--gnn_task task_3"],
+            "summary_folder_name":f"{benchmark_name}_summary"
         }
 
     solver_log = False

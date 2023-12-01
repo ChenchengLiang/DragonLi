@@ -286,12 +286,18 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         with torch.no_grad():
             #todo this can be improved by passing functions
             if len(branch_methods) == 2:
-                pred_list = self.gnn_model_2(split_graph_list).squeeze()
+                pred_list = self.gnn_model_2(split_graph_list).squeeze() #separate model returns a float number
+                #[1 if label == [1,0] else 0 for label in self.labels]
+                if pred_list>0.5:
+                    pred_list=[1,0]
+                else:
+                    pred_list=[0,1]
                 #pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
                 # pred_list=[1,0.5,0]#this make it use fixed branching
+
         # sort
         prediction_list=[]
         for pred,split_eq,edge_index in zip(pred_list,split_eq_list,edge_label_list):

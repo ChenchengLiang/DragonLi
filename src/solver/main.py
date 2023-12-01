@@ -20,14 +20,14 @@ def main():
     #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
     #file_path=bench_folder +"/examples/test.eq"
-    file_path = bench_folder + "/examples/30853/g_03_track_generated_eval_30000_31000_30853.eq"
+    #file_path = bench_folder + "/examples/30853/g_03_track_generated_eval_30000_31000_30853.eq"
     #file_path = bench_folder +"/examples/30435/g_03_track_generated_eval_30000_31000_30435.eq"
     #file_path = bench_folder + "/examples/30678/g_03_track_generated_eval_30000_31000_30678.eq"
     #file_path = bench_folder + "/examples/30751/g_03_track_generated_eval_30000_31000_30751.eq"
     #file_path = bench_folder + "/examples/30196/g_03_track_generated_eval_30000_31000_30196.eq"
     #
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
-    #file_path= bench_folder +"/examples/01_track_4.eq"
+    file_path= bench_folder +"/examples/01_track_4.eq"
     #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
@@ -69,9 +69,9 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_2"
-    task="task_2"
-    gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCN.pth"
+    graph_type="graph_3"
+    task="task_3"
+    gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GINSplit.pth"
 
     algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]

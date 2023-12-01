@@ -78,10 +78,8 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
 
         # Writing the column headers and first row with summary_dict
         if solver == "this":
-
             csvwriter.writerow(["File Name", "Result", "Used Time", "split_number"] + list(summary_dict.keys()))
-            csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],
-                                track_result_list[0][3]] + list(summary_dict.values()))
+            csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],track_result_list[0][3]] + list(summary_dict.values()))
         else:
             csvwriter.writerow(["File Name", "Result", "Used Time", "split_number", ] + list(summary_dict.keys()))
             csvwriter.writerow([track_result_list[0][0], track_result_list[0][1], track_result_list[0][2],"0"] + list(summary_dict.values()))
@@ -134,8 +132,8 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,lo
     # eld.wait()
     end = time.time()
     used_time = end - start
-    #print(completed_process)
-    #print("Output from script:", completed_process.stdout)
+    # print(completed_process)
+    # print("Output from script:", completed_process.stdout)
     result_dict = process_solver_output(completed_process.stdout, problem_file_path, solver,log=log)
     result_dict["used_time"] = used_time
     print("Finished", "use time: ", used_time)
