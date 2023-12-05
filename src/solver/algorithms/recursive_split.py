@@ -1,27 +1,25 @@
+import copy
 import os.path
 import random
+import sys
 from collections import deque
-from typing import List, Dict, Tuple, Deque, Union, Callable
+from typing import List, Dict, Tuple, Deque, Union, Optional,Callable
 
 import torch
 
-from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP,MAX_DEEP_STEP, MAX_SPLIT_CALL, \
-    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_EQ_LENGTH, MAX_ONE_SIDE_LENGTH
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL,get_eq_graph_1
-from src.solver.utils import assemble_parsed_content
-from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals,get_memory_usage
-from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
+from src.solver.Constants import recursion_limit, \
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
+    MAX_SPLIT_CALL, \
+    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
-from src.solver.models.utils import load_model, load_model_from_mlflow
 from src.solver.algorithms.utils import graph_to_gnn_format
-from src.solver.models.Dataset import WordEquationDatasetBinaryClassification,WordEquationDatasetMultiModels,get_one_dgl_graph
 from src.solver.algorithms.utils import merge_graphs
-from dgl.dataloading import GraphDataLoader
-import sys
-import copy
-import gc
+from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
+    dump_to_json_with_format, identify_available_capitals
+from src.solver.models.Dataset import get_one_dgl_graph
+from src.solver.models.utils import load_model
+from src.solver.visualize_util import visualize_path_html, visualize_path_png
 
 sys.path.append(
     project_folder + "/src/solver/models")
@@ -53,7 +51,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                        "gnn:fixed": self._use_gnn_with_fixed_branching}
         self._branch_method = parameters["branch_method"]
         self._branch_method_func = self.branch_method_func_map[parameters["branch_method"]]
-        self.record_and_close_branch = self._record_and_close_branch_with_file if parameters[
+        self.record_and_close_branch:Callable= self._record_and_close_branch_with_file if parameters[
                                                                                       "branch_method"] == "extract_branching_data_task_1" else self._record_and_close_branch_without_file
         self.graph_func=get_eq_graph_1
         sys.setrecursionlimit(recursion_limit)
@@ -107,7 +105,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return result_dict
 
     def explore_paths(self, current_eq: Equation,
-                      previous_dict) -> Tuple[str, List[Variable], int]:
+                      previous_dict:Dict) -> Tuple[str, List[Variable], List[int]]:
         self.total_explore_paths_call += 1
         self.current_deep += 1
         #print(f"explore_paths call: {self.total_explore_paths_call}")
@@ -168,8 +166,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if len(left_leading_terminals) > 0 and len(right_leading_terminals) > 0 and len(left_leading_terminals) == len(
                 right_leading_terminals) and left_first_variable != None and right_first_variable != None and left_leading_terminals != right_leading_terminals and left_first_variable == right_first_variable:
             return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-        left_tailing_terminals, left_first_variable = self.get_leading_terminals(reversed(current_eq.left_terms))
-        right_tailing_terminals, right_first_variable = self.get_leading_terminals(reversed(current_eq.right_terms))
+        left_tailing_terminals, left_first_variable = self.get_leading_terminals(list(reversed(current_eq.left_terms)))
+        right_tailing_terminals, right_first_variable = self.get_leading_terminals(list(reversed(current_eq.right_terms)))
         if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and len(left_tailing_terminals) == len(
                 right_tailing_terminals) and left_first_variable != None and right_first_variable != None and left_tailing_terminals != right_tailing_terminals and left_first_variable == right_first_variable:
             return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
@@ -217,11 +215,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             elif type(left_term.value) == Terminal and type(right_term.value) == Terminal:
                 return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
 
-    def both_side_same_terms(self, eq: Equation, variables,
+    def both_side_same_terms(self, eq: Equation, variables:List[Variable],
                              current_node_number, node_info):
         left_poped_list_str, right_poped_list_str, l, r = self.pop_both_same_terms(eq.left_terms, eq.right_terms,
                                                                                    eq.variable_list)
-        new_eq = Equation(l, r)
+        new_eq = Equation(list(l), list(r))
         # updated_variables = self.update_variables(eq.left_terms, eq.right_terms)
         branch_satisfiability, branch_variables, back_track_count_list = self.explore_paths(new_eq,
                                                                                             {
@@ -300,7 +298,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         # sort
         prediction_list=[]
-        for pred,split_eq,edge_index in zip(pred_list,split_eq_list,edge_label_list):
+        for pred,split_eq,edge_label in zip(pred_list,split_eq_list,edge_label_list):
             prediction_list.append([pred, (split_eq, edge_label)])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
@@ -426,7 +424,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return result
 
     def _handle_one_split_branch_outcome(self, i, branch_methods, satisfiability, branch_variables, node_info, eq,
-                                         back_track_count=1,satisfiability_list=None):
+                                         back_track_count:List[int],satisfiability_list=None):
         if i < len(branch_methods) - 1:  # not last branch
             if satisfiability == SAT:
                 return self.record_and_close_branch(SAT, branch_variables, node_info, eq,
@@ -536,6 +534,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
                 elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
                     label_list[satisfiability_list.index(UNKNOWN)] = 1
+            else:
+                label_list = [0, 0, 0]
 
             # write label_list to file
             label_json_file_name = middle_eq_file_name + ".label.json"
@@ -622,7 +622,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             current_eq_satisfiability = UNSAT
         return current_eq_satisfiability
 
-    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info, eq: Equation,
+    def record_and_close_branch_and_output_eq(self, satisfiability: str, variables, node_info:Tuple[int,Dict], eq: Equation,
                                               back_track_count):  # non-leaf node
         if satisfiability != UNKNOWN:
             middle_eq_file_name = self.file_name + "_" + str(node_info[0])
@@ -631,8 +631,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self._record_and_close_branch_without_file(satisfiability, variables, node_info, eq,
                                                           back_track_count=back_track_count)
 
-    def _record_and_close_branch_with_file(self, satisfiability: str, variables, node_info, eq: Equation,
-                                           back_track_count=[0]):  # leaf node
+    def _record_and_close_branch_with_file(self, satisfiability: str, variables:List[Variable], node_info:Tuple[int,Dict], eq: Equation,
+                                           back_track_count:List[int]=[0])->Tuple[str,List[Variable],List[int]]:  # leaf node
         if satisfiability != UNKNOWN:
             if random.random() < OUTPUT_LEAF_NODE_PERCENTAGE:  # random.random() generates a float between 0.0 and 1.0
                 middle_eq_file_name = self.file_name + "_" + str(node_info[0])
@@ -642,8 +642,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self._record_and_close_branch_without_file(satisfiability, variables, node_info, eq,
                                                           back_track_count=back_track_count)
 
-    def _record_and_close_branch_without_file(self, satisfiability: str, variables, node_info, eq: Equation,
-                                              back_track_count=[0]):  # leaf node
+    def _record_and_close_branch_without_file(self, satisfiability: str, variables:List[Variable], node_info:Tuple[int,Dict], eq: Equation,
+                                              back_track_count:List[int]=[0])->Tuple[str,List[Variable],List[int]]:  # leaf node
         node_info[1]["status"] = satisfiability
         node_info[1]["back_track_count"] = back_track_count
         self.current_deep -= 1
@@ -810,7 +810,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         fresh_variable_term = Term(Variable(available_caps.pop()))  # a capital rather than V1
         return fresh_variable_term
 
-    def replace_a_term(self, old_term: Term, new_term: Term, terms_queue: Deque[Term]):
+    def replace_a_term(self, old_term: Term, new_term: Union[List[List[Term]],Term], terms_queue: Deque[Term]):
         for i, t in enumerate(terms_queue):
             if t.value == old_term.value:
                 terms_queue[i] = new_term
@@ -829,7 +829,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         return remove_duplicates(new_variables)
 
-    def get_leading_terminals(self, term_list: Deque[Term]) -> List[Term]:
+    def get_leading_terminals(self, term_list: List[Term]) -> Tuple[List[Term], Optional[Term]]:
         leading_terminal_list = []
         first_variable = None
         for t in term_list:
@@ -840,7 +840,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 leading_terminal_list.append(t)
         return leading_terminal_list, first_variable
 
-    def visualize(self, file_path, graph_func):
+    def visualize(self, file_path:str, graph_func:Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
         visualize_path_png(self.nodes, self.edges, file_path)
 

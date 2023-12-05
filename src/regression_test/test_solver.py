@@ -1,7 +1,7 @@
+import configparser
 import glob
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -9,13 +9,14 @@ config.read("config.ini")
 path = config.get('Path','local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder,project_folder,SAT,UNSAT,UNKNOWN,SUCCESS,FAIL
+from src.solver.Constants import bench_folder,project_folder, UNKNOWN,SUCCESS,FAIL,RED,COLORRESET
 from src.solver.Parser import Parser, EqParser,SMT2Parser
 from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
-from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
-from src.solver.DataTypes import Equation
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.algorithms import ElimilateVariablesRecursive
+from src.solver.independent_utils import strip_file_name_suffix,check_list_consistence
+from src.process_benchmarks.utils import run_on_one_problem
+from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 
 
 
@@ -58,9 +59,43 @@ def test_one_file(file_path,config_dict):
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
-
     print_results(result_dict)
 
+
+    print("-"*10,"check consistence between solvers","-"*10)
+    for sh_file in glob.glob(bench_folder+"/src/process_benchmarks/temp_shell/*"):
+        os.remove(sh_file)
+    if not os.path.exists(strip_file_name_suffix(file_path)+".smt2"):
+        one_eq_file_to_smt2(file_path)
+
+
+    satisfiability_list=[]
+    if result_dict["result"] != UNKNOWN:
+        satisfiability_list.append(result_dict["result"])
+
+
+    for solver in ["z3","cvc5","ostrich","woorpje"]:
+        if solver == "woorpje":
+            file = strip_file_name_suffix(file_path)+".eq"
+        else:
+            file = strip_file_name_suffix(file_path)+".smt2"
+        other_solver_result_dict = run_on_one_problem(file_path=file, parameters_list=[], solver=solver, solver_log=False)
+        if other_solver_result_dict["result"] != UNKNOWN:
+            satisfiability_list.append(other_solver_result_dict["result"])
+
+    if len(satisfiability_list)==0:
+        print("consistance", UNKNOWN)
+        consistance=True
+    else:
+        consistance=check_list_consistence(satisfiability_list)
+        if consistance==True:
+            print("consistance")
+        else:
+            print(RED,"inconsistance",COLORRESET)
+
+    print("-" * 10, "check consistence between solvers done", "-" * 10)
+
+    print("-" * 10, "check .answer file", "-" * 10)
     # read answer file
     answer_file = strip_file_name_suffix(file_path) + ".answer"
     if os.path.exists(answer_file):
@@ -71,11 +106,11 @@ def test_one_file(file_path,config_dict):
 
     satisfiability=result_dict["result"]
     if satisfiability == answer:
-        return f"{SUCCESS}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
+        return f"{SUCCESS}, satisfiability: {satisfiability}, answer: {answer}, consistence: {consistance}, {os.path.basename(file_path)}"
     else:
-        return f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
+        return f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, consistence: {consistance}, {os.path.basename(file_path)}"
 
-
+ 
 
 if __name__ == '__main__':
     main()

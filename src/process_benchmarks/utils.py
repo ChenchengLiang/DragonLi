@@ -7,9 +7,9 @@ from src.solver.independent_utils import strip_file_name_suffix
 import csv
 from typing import List, Dict, Tuple
 import glob
-from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR
+from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR,RED,GREEN,COLORRESET
 import random
-from src.solver.independent_utils import mean
+from src.solver.independent_utils import mean,check_list_consistence
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict, summary_folder_name,
@@ -20,7 +20,7 @@ def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list
     file_list_num = len(file_list)
     for i, file in enumerate(file_list):
         print("processing progress:", i, "/", file_list_num)
-        result_dict = run_on_one_benchmark(file, parameters_list, solver, solver_log=solver_log)
+        result_dict = run_on_one_problem(file, parameters_list, solver, solver_log=solver_log)
         track_result_list.append(
             (os.path.basename(file), result_dict["result"], result_dict["used_time"], result_dict["split_number"]))
 
@@ -28,7 +28,7 @@ def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list
     write_to_cvs_file(track_result_list, result_summary_dict, benchmark_name, solver, parameters_list,summary_folder_name)
 
 
-def result_summary(track_result_list: List[Tuple[str, str, float]]):
+def result_summary(track_result_list: List[Tuple[str, str, float,float]]):
     SAT_count = [entry[1] for entry in track_result_list].count("SAT")
     UNSAT_count = [entry[1] for entry in track_result_list].count("UNSAT")
     UNKNOWN_count = [entry[1] for entry in track_result_list].count("UNKNOWN")
@@ -48,7 +48,7 @@ def result_summary(track_result_list: List[Tuple[str, str, float]]):
             "Total": len(track_result_list)}
 
 
-def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_dict: Dict, benchmark_name: str,
+def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], summary_dict: Dict, benchmark_name: str,
                       solver: str, parameters_list: List[str],summary_folder_name):
     summary_folder = project_folder + "/src/process_benchmarks/summary/"+summary_folder_name
     if os.path.exists(summary_folder) == False:
@@ -89,7 +89,7 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float]], summary_d
 
 
 
-def run_on_one_benchmark(file_path:str, parameters_list:List[str], solver:str,solver_log:bool=False):
+def run_on_one_problem(file_path:str, parameters_list:List[str], solver:str, solver_log:bool=False):
     # create a shell file to run the main_parameter.py
     shell_file_path = create_a_shell_file(file_path, parameters_list, solver)
 
@@ -145,7 +145,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver:str
     split_number = 0
 
     if solver == "this":
-        lines = solver_output.split('\n')
+        lines:List[str] = solver_output.split('\n')
         for line in lines:
             if "result:" in line:
                 result = line.split("result:")[1].strip(" ")
@@ -220,6 +220,8 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     second_summary_title_row = ["solver"]
     second_summary_data_rows = []
 
+    satisfiability_dict = {}
+
     for solver, summary_file in summary_file_dict.items():
         #first_summary_solver_row.extend([solver, solver])
 
@@ -230,14 +232,16 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
             first_summary_data_rows = [[] for x in reconstructed_list]
 
 
-        print("solver",solver)
-        print(reconstructed_list)
+        #print("solver",solver)
+        #print(reconstructed_list)
         for f, r in zip(first_summary_data_rows, reconstructed_list):
             for i,x in enumerate(r):
                 if x=="":
                    r[i]=0
             if len(f)==0:
                 f.extend(r)
+                satisfiability_dict[strip_file_name_suffix(r[0])] = []
+                satisfiability_dict[strip_file_name_suffix(r[0])].append((solver, r[1]))
             else:
                 file_name_1 = strip_file_name_suffix(f[0])
                 for rr in reconstructed_list:
@@ -245,6 +249,7 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
                     file_name_2 = strip_file_name_suffix(rr[0])
                     if file_name_1 == file_name_2:
                         f.extend(rr[1:])
+                        satisfiability_dict[strip_file_name_suffix(rr[0])].append((solver, rr[1]))
 
 
 
@@ -260,7 +265,43 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
                                                     first_summary_solver_row, second_summary_title_row,
                                                     second_summary_data_rows)
 
+    ################### check satisfiability consistensy between solvers########################
 
+    print("----------------------- check satisfiability consistensy ----------------------------")
+
+
+    print(f"row numebr: {len(satisfiability_dict)}")
+    consistent_list=[]
+    inconsistent_list=[]
+
+    for k, v in satisfiability_dict.items():
+        #print(k, v)
+        solved = []
+        for vv in v:
+            if vv[1]!=UNKNOWN:
+                solved.append(vv)
+        if len(solved) > 1:
+            satisfiability_list=[]
+            for s in solved:
+                satisfiability_list.append(s[1])
+
+            consistence=check_list_consistence(satisfiability_list)
+
+            if consistence==False:
+                #print(RED,"inconsitensy",COLORRESET,k,solved)
+                inconsistent_list.append((k,solved))
+            else:
+                #print(GREEN,"consitensy",COLORRESET,k,solved)
+                consistent_list.append((k,solved))
+
+    print(f"number of consistent problems: {len(consistent_list)}")
+    print(f"number of inconsistent problems: {len(inconsistent_list)}")
+    if len(inconsistent_list)>0:
+        print("inconsistent problems:")
+        for i in inconsistent_list:
+            print(i)
+
+    print("----------------------- check satisfiability consistensy done ----------------------------")
 
 
 

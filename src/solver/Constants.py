@@ -1,4 +1,3 @@
-from typing import Dict, List, Set
 import configparser
 
 
@@ -8,7 +7,7 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
-algorithm_timeout: int = 300
+algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
 INITIAL_MAX_DEEP=500
 MAX_DEEP_STEP=250
@@ -24,11 +23,11 @@ RECURSION_ERROR: str = "RECURSION_ERROR"
 recursion_limit: int = 10000000
 OUTPUT_LEAF_NODE_PERCENTAGE=0.01
 GNN_BRANCH_RATIO=0.5
-UNKNOWN = "UNKNOWN"
-SAT = "SAT"
-UNSAT = "UNSAT"
-SUCCESS="SUCCESS"
-FAIL="FAIL"
+UNKNOWN:str = "UNKNOWN"
+SAT:str = "SAT"
+UNSAT:str = "UNSAT"
+SUCCESS:str ="SUCCESS"
+FAIL:str="FAIL"
 
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
@@ -39,6 +38,12 @@ solver_command_map = {"z3": "z3",
                       "ostrich": project_folder+"/other_solvers/ostrich/ostrich",
                       "cvc5": project_folder+"/other_solvers/cvc5/cvc5-Linux"}
 
+
+
+# ANSI escape code for red color
+RED = "\033[31m"
+GREEN = "\033[32m"
+COLORRESET = "\033[0m"  # Resets the color to default
 '''
 Syntax:
 Formula : Equation | Formula ∧ Formula

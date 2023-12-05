@@ -39,8 +39,8 @@ def main():
                 f=f[f.rfind("/")+1:]
                 solver=f[:f.find("_")]
                 parameter_str=f[f.find("_")+1:f.find(track)-1]
-                print(solver)
-                print(parameter_str)
+                #print(solver)
+                #print(parameter_str)
                 if solver == "this":
                     summary_file_dict[solver+":"+parameter_str]=solver+"_"+parameter_str+"_"+track+"_summary.csv"
                 else:

@@ -10,7 +10,7 @@ path = config.get('Path', 'local')
 
 sys.path.append(path)
 from typing import List, Tuple, Dict
-from src.process_benchmarks.utils import run_on_one_benchmark, run_on_one_track, result_summary
+from src.process_benchmarks.utils import  run_on_one_track, result_summary
 from src.solver.Constants import bench_folder, BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, \
     RECURSION_DEPTH_EXCEEDED, \
     RECURSION_ERROR, project_folder
@@ -38,6 +38,7 @@ def main():
         # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         # ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
         # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
+
         #when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
         ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
         ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],

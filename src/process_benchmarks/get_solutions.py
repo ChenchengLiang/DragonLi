@@ -9,7 +9,7 @@ path = config.get('Path','local')
 
 sys.path.append(path)
 from typing import List, Tuple, Dict
-from src.process_benchmarks.utils import run_on_one_benchmark,run_on_one_track,result_summary,write_to_cvs_file
+from src.process_benchmarks.utils import run_on_one_track,result_summary,write_to_cvs_file
 import csv
 from src.solver.Constants import bench_folder, BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, RECURSION_DEPTH_EXCEEDED, \
     RECURSION_ERROR, project_folder

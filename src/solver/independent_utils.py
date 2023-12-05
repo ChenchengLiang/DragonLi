@@ -6,6 +6,12 @@ import shutil
 import psutil
 import zipfile
 
+def check_list_consistence(target_list):
+    consitence_list = []
+    for one_answer in target_list:
+        consitence_list.append(all(element == one_answer for element in target_list))
+    return all(consitence_list)
+
 def get_memory_usage():
     process = psutil.Process(os.getpid())
     memory_usage_bytes = process.memory_info().rss

@@ -1,10 +1,10 @@
-from typing import Union, List, Tuple, Deque
-from src.solver.Constants import UNKNOWN, SAT, UNSAT, satisfiability_to_int_label
-from src.solver.independent_utils import remove_duplicates,strip_file_name_suffix,replace_primed_vars
-from collections import deque
-from src.solver.visualize_util import draw_graph
 import copy
+from collections import deque
+from typing import Union, List, Tuple, Deque, Callable,Optional
 
+from src.solver.Constants import UNKNOWN, SAT, UNSAT
+from src.solver.independent_utils import remove_duplicates
+from src.solver.visualize_util import draw_graph
 
 
 class Operator:
@@ -29,7 +29,7 @@ class Operator:
 class Variable:
     def __init__(self, value: str):
         self.value = value
-        self.assignment: List[Terminal] = None
+        self.assignment: Optional[List[Terminal]] = None
     def __str__(self):
         return "Variable"
 
@@ -244,7 +244,7 @@ class Equation:
         else:
             return UNSAT
 
-    def visualize_graph(self, file_path,graph_func):
+    def visualize_graph(self, file_path,graph_func:Callable):
         nodes, edges = graph_func(self.left_terms,self.right_terms)
         draw_graph(nodes, edges, file_path)
 
