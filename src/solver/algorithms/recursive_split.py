@@ -10,7 +10,7 @@ import torch
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
     MAX_SPLIT_CALL, \
-    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH
+    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH,MAX_DEEP
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format
@@ -54,6 +54,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.record_and_close_branch:Callable= self._record_and_close_branch_with_file if parameters[
                                                                                       "branch_method"] == "extract_branching_data_task_1" else self._record_and_close_branch_without_file
         self.graph_func=get_eq_graph_1
+        self.termination_condition=parameters["termination_condition"]
+        self.termination_condition_map={"execute_termination_condition_0":self._execute_branching_data_termination_condition_0,
+                                        "execute_termination_condition_1":self._execute_branching_data_termination_condition_1,
+                                        "execute_termination_condition_2":self._execute_branching_data_termination_condition_2,}
+        self._execute_branching_data_termination_condition = self.termination_condition_map[self.termination_condition]
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
 
@@ -85,12 +90,29 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         first_equation = self.equation_list[0]
 
         try:
-            node_info = (
-            0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
-            self.nodes.append(node_info)
-            satisfiability, variables, back_track_count = self.explore_paths(first_equation,
-                                                                             {"node_number": node_info[0],
-                                                                              "label": node_info[1]["label"]})
+            if self.termination_condition=="execute_termination_condition_2":
+                while True:
+                    self.nodes=[]
+                    self.edges=[]
+                    node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
+                    self.nodes.append(node_info)
+                    satisfiability, variables, back_track_count = self.explore_paths(first_equation,
+                                                                                     {"node_number": node_info[0],
+                                                                                      "label": node_info[1]["label"]})
+                    if satisfiability == SAT or satisfiability==UNSAT:
+                        break
+                    if self.max_deep>=MAX_DEEP:
+                        break
+                    self.max_deep += MAX_DEEP_STEP
+                    print("max_deep extended", self.max_deep)
+            else:
+                node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                                 "back_track_count": 0})
+                self.nodes.append(node_info)
+                satisfiability, variables, back_track_count = self.explore_paths(first_equation,
+                                                                                 {"node_number": node_info[0],
+                                                                                  "label": node_info[1]["label"]})
+
         except RecursionError as e:
             if "maximum recursion depth exceeded" in str(e):
                 satisfiability = RECURSION_DEPTH_EXCEEDED
@@ -342,11 +364,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         ################################ stop branching condition ################################
-        # result = self._execute_branching_data_termination_condition(eq, node_info)
-        # if result == None:
-        #     pass
-        # else:
-        #     return result
+        result = self._execute_branching_data_termination_condition(eq, node_info)
+        if result == None:
+            pass
+        else:
+            return result
+
         # if self.total_split_call%50 ==0:
         #     memory_text,gb=get_memory_usage()
         #     if gb>self.gnn_branch_memory_limitation:
@@ -390,11 +413,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_fixed_branching(self, eq: Equation, current_node_number, node_info,
                              branch_methods):
         ################################ stop branching condition ################################
-        # result = self._execute_branching_data_termination_condition(eq, node_info)
-        # if result==None:
-        #     pass
-        # else:
-        #     return result
+        result = self._execute_branching_data_termination_condition(eq, node_info)
+        if result==None:
+            pass
+        else:
+            return result
 
 
 
@@ -571,7 +594,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, eq.variable_list, node_info, eq,
                                                           back_track_count=back_track_count_list)
 
-    def _extract_branching_data_branching(self,eq:Equation,branch_methods,current_node_number):
+    def _extract_branching_data_branching_0(self,eq:Equation,branch_methods,current_node_number):
         ################################ branching ################################
         satisfiability_list = []
         back_track_count_list = []
@@ -594,11 +617,20 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         return satisfiability_list,back_track_count_list,branch_eq_list
 
+    def _execute_branching_data_termination_condition_0(self, eq: Equation, node_info):
+        return None
 
-    def _execute_branching_data_termination_condition(self, eq:Equation, node_info):
+    def _execute_branching_data_termination_condition_1(self, eq:Equation, node_info):
         if self.current_deep>self.max_deep:
             print("max deep reached",self.current_deep)
             self.max_deep += MAX_DEEP_STEP
+            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+
+        return None
+
+    def _execute_branching_data_termination_condition_2(self, eq:Equation, node_info):
+        if self.current_deep>=self.max_deep:
+            print("max deep reached",self.current_deep)
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         return None

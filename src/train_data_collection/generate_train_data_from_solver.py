@@ -25,7 +25,8 @@ from src.solver.independent_utils import strip_file_name_suffix,zip_folder
 def main():
 
     benchmark="02_track_generated"#"01_track_generated_SAT_train"
-    algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed"} #extract_branching_data_task_2
+    algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
+                            "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
     #prepare train folder
     all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"

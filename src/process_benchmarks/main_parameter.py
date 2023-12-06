@@ -30,6 +30,9 @@ def main(args):
                             help='path to .pth file')
     arg_parser.add_argument('--gnn_task', type=str, default=None,
                             help='task_1, task_2,...')
+    arg_parser.add_argument('--termination_condition', type=str, default="execute_termination_condition_0",
+                            help='execute_termination_condition_0,execute_termination_condition_1,execute_termination_condition_2,...')
+
 
     args = arg_parser.parse_args()
 
@@ -39,6 +42,7 @@ def main(args):
     graph_type = args.graph_type
     gnn_model_path = args.gnn_model_path
     task=args.gnn_task
+    termination_condition=args.termination_condition
 
     print(file_path, branch_method, graph_type)
 
@@ -50,7 +54,8 @@ def main(args):
     print("parsed_content:", parsed_content)
 
     algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
-                            "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path} # branch_method [gnn,random,fixed]
+                            "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path,
+                            "termination_condition":termination_condition} # branch_method [gnn,random,fixed]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)

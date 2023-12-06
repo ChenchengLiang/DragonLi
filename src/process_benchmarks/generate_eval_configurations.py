@@ -23,26 +23,27 @@ import shutil
 def main():
     model_folder = project_folder + "/" + "Models/"
     task="task_3"
+    termination_condition="execute_termination_condition_0"
     solver_param_list = [
-        ["this", ["fixed"]],
-        ["this", ["random"]],
-        # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}"]],
-        # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}"]],
-        # ["this", ["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}"]],
-        # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn:fixed","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}"]],
-        # ["this", ["gnn","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}"]],
-        # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
-        # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}"]],
+        ["this", ["fixed",f"--termination_condition {termination_condition}"]],
+        ["this", ["random",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn:fixed","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GIN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNwithGAP.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
 
         #when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
-        ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
-        ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
-        ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}"]],
+        ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        ["this",["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
+        ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
 
         ["woorpje",[]],
         ["z3",[]],

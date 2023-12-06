@@ -27,8 +27,8 @@ def main():
     #file_path = bench_folder + "/examples/30196/g_03_track_generated_eval_30000_31000_30196.eq"
     #
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
-    file_path= bench_folder +"/examples/01_track_4.eq"
-    #file_path = bench_folder+"/examples/43/01_track_43.eq"
+    #file_path= bench_folder +"/examples/01_track_4.eq"
+    file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
     #file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"
@@ -69,19 +69,20 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_3"
+    graph_type="graph_1"
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GINSplit.pth"
 
-    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-                            "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
+    algorithm_parameters = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+                            "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
+                            "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
     solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
 
     print_results(result_dict)
 
