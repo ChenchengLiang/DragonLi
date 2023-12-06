@@ -43,6 +43,8 @@ def print_results(result: Dict):
 
         if "total_explore_paths_call" in result:
             print(f'Total explore_paths call: {result["total_explore_paths_call"]}')
+        if "explored_deep" in result:
+            print(f'Deep: {result["explored_deep"]}')
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 

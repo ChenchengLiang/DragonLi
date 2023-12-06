@@ -35,6 +35,7 @@ def main():
             config = json.load(f)
     else:
         benchmark_name = "test_track_task_3"
+        termination_condition = "execute_termination_condition_0"
         config = {
             "benchmark_name": benchmark_name,
             "benchmark_folder":bench_folder+"/"+benchmark_name+"/ALL/ALL",
@@ -42,7 +43,9 @@ def main():
             #"parameters_list":[],
             "solver": "this",
             #"parameters_list":["fixed"],
-            "parameters_list": ["gnn","--graph_type graph_3","--gnn_model_path "+project_folder+"/Models/model_0_graph_3_GINSplit.pth",f"--gnn_task task_3"],
+            "parameters_list": ["gnn","--graph_type graph_3",
+                                "--gnn_model_path "+project_folder+"/Models/model_0_graph_3_GINSplit.pth",
+                                f"--gnn_task task_3",f"--termination_condition {termination_condition}"],
             "summary_folder_name":f"{benchmark_name}_summary"
         }
 

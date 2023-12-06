@@ -7,11 +7,15 @@ config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
+
 algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
-INITIAL_MAX_DEEP=20#500
-MAX_DEEP_STEP=20#250
-MAX_DEEP=1000
+
+#control termination when executing algorithm
+INITIAL_MAX_DEEP=10#500
+MAX_DEEP_STEP=10#250
+MAX_DEEP=20
+
 MAX_SPLIT_CALL=1000
 MAX_EQ_LENGTH=300
 MAX_ONE_SIDE_LENGTH=150
@@ -29,6 +33,7 @@ SAT:str = "SAT"
 UNSAT:str = "UNSAT"
 SUCCESS:str ="SUCCESS"
 FAIL:str="FAIL"
+compress_image=False
 
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
@@ -44,6 +49,7 @@ solver_command_map = {"z3": "z3",
 # ANSI escape code for red color
 RED = "\033[31m"
 GREEN = "\033[32m"
+YELLOW = "\033[33m"
 COLORRESET = "\033[0m"  # Resets the color to default
 '''
 Syntax:

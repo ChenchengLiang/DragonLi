@@ -3,6 +3,10 @@ import matplotlib.pyplot as plt
 from pyvis.network import Network
 import plotly.graph_objects as go
 from graphviz import Digraph
+from PIL import Image,ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+Image.MAX_IMAGE_PIXELS = None  # Removes the limit on image size
 
 show_limited_html_nodes=True
 show_html_nodes=20
@@ -50,7 +54,7 @@ def visualize_path(nodes, edges, file_path):
 
     plt.savefig(file_path + ".png")
 
-def visualize_path_png(nodes, edges, file_path):
+def visualize_path_png(nodes, edges, file_path,compress=False):
     dot = Digraph(comment='The Graph')
 
     # Add nodes
@@ -70,7 +74,31 @@ def visualize_path_png(nodes, edges, file_path):
     # Save the dot file and render as a PNG
     file_name=file_path.replace(".eq","")
     dot.render(file_name, format='jpg', cleanup=True)
+    if compress==True:
+        compress_image(file_name + '.jpg', file_name + '_low_quality.jpg', quality=5, resize_factor=0.5)
+
     print("Graph saved to", file_name + '.jpg')
+
+
+def compress_image(input_path, output_path, quality=85, resize_factor=1):
+    """
+    Compresses an image.
+
+    :param input_path: Path to the input image.
+    :param output_path: Path to save the compressed image.
+    :param quality: Quality for the output image (1-100). Lower means more compression.
+    :param resize_factor: Factor to resize the image. 1 means no resize, less than 1 to reduce size.
+    """
+    # Open the image
+    with Image.open(input_path) as img:
+        # Optionally resize the image
+        if resize_factor != 1:
+            new_size = (int(img.width * resize_factor), int(img.height * resize_factor))
+            img = img.resize(new_size, Image.ANTIALIAS)
+
+        # Save the image with reduced quality
+        img.save(output_path, 'JPEG', quality=quality, optimize=True)
+
 
 def visualize_path_html(nodes, edges, file_path):
     '''

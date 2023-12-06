@@ -9,7 +9,7 @@ config.read("config.ini")
 path = config.get('Path','local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder,project_folder, UNKNOWN,SUCCESS,FAIL,RED,COLORRESET
+from src.solver.Constants import bench_folder,project_folder, UNKNOWN,SUCCESS,FAIL,RED,GREEN,YELLOW,COLORRESET
 from src.solver.Parser import Parser, EqParser,SMT2Parser
 from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
@@ -44,14 +44,14 @@ def main():
             if satisfiability != UNKNOWN:
                 satisfiability_list.append(satisfiability)
 
-        consistance = check_list_consistence(satisfiability_list)
+        consistance = check_satisfiability_list_consistence(satisfiability_list)
         consistance_list.append((os.path.basename(file_path),consistance))
 
     # print results
     print("-"*10,"result list","-"*10)
     for r in result_list:
         print(r)
-
+    print("-" * 10, "consistance", "-" * 10)
     for x in consistance_list:
         print(x)
 
@@ -60,7 +60,7 @@ def test_one_file(file_path,config_dict):
     parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
-    print("parsed_content:", parsed_content)
+    #print("parsed_content:", parsed_content)
 
     graph_type = config_dict["graph_type"]
     task = config_dict["task"]
@@ -77,19 +77,8 @@ def test_one_file(file_path,config_dict):
     # solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
-    print_results(result_dict)
-
-
-    # print("-"*10,"check consistence between solvers","-"*10)
-    #
-    # satisfiability_list=other_solver_results(file_path)
-    # if result_dict["result"] != UNKNOWN:
-    #     satisfiability_list.append(result_dict["result"])
-    #
-    # consistance=check_list_consistence(satisfiability_list)
-    #
-    # print("-" * 10, "check consistence between solvers done", "-" * 10)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
+    #print_results(result_dict)
 
 
     print("-" * 10, "check .answer file", "-" * 10)
@@ -103,19 +92,19 @@ def test_one_file(file_path,config_dict):
 
     satisfiability=result_dict["result"]
     if satisfiability == answer:
-        return satisfiability,f"{SUCCESS}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
+        return satisfiability,f"{SUCCESS}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}, config: {config_dict}"
     else:
-        return satisfiability,f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}"
+        return satisfiability,f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, {os.path.basename(file_path)}, config: {config_dict}"
 
 
-def check_list_consistence(satisfiability_list):
+def check_satisfiability_list_consistence(satisfiability_list):
     if len(satisfiability_list)==0:
-        print("consistance", UNKNOWN)
+        print(YELLOW,"consistance", UNKNOWN,COLORRESET)
         consistance=True
     else:
         consistance=check_list_consistence(satisfiability_list)
         if consistance==True:
-            print("consistance")
+            print(GREEN,"consistance",COLORRESET)
         else:
             print(RED,"inconsistance",COLORRESET)
     return consistance

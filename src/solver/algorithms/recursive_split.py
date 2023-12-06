@@ -10,7 +10,7 @@ import torch
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
     MAX_SPLIT_CALL, \
-    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH,MAX_DEEP
+    OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH,MAX_DEEP,compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format
@@ -37,6 +37,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.total_explore_paths_call = 0
         self.total_split_call = 0
         self.current_deep = 0
+        self.explored_deep=0
         self.gnn_branch_memory_limitation=1.0
         self.max_deep=INITIAL_MAX_DEEP
         self.nodes = []
@@ -123,13 +124,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         result_dict = {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                        "variables": self.variables, "terminals": self.terminals,
-                       "total_explore_paths_call": self.total_explore_paths_call}
+                       "total_explore_paths_call": self.total_explore_paths_call,"explored_deep":self.explored_deep}
         return result_dict
 
     def explore_paths(self, current_eq: Equation,
                       previous_dict:Dict) -> Tuple[str, List[Variable], List[int]]:
         self.total_explore_paths_call += 1
         self.current_deep += 1
+        if self.explored_deep< self.current_deep:
+            self.explored_deep=self.current_deep
         #print(f"explore_paths call: {self.total_explore_paths_call}")
         #print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
 
@@ -622,7 +625,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _execute_branching_data_termination_condition_1(self, eq:Equation, node_info):
         if self.current_deep>self.max_deep:
-            print("max deep reached",self.current_deep)
+            #print("max deep reached",self.current_deep)
             self.max_deep += MAX_DEEP_STEP
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
@@ -630,7 +633,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _execute_branching_data_termination_condition_2(self, eq:Equation, node_info):
         if self.current_deep>=self.max_deep:
-            print("max deep reached",self.current_deep)
+            #print("max deep reached",self.current_deep)
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         return None
@@ -874,6 +877,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def visualize(self, file_path:str, graph_func:Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
-        visualize_path_png(self.nodes, self.edges, file_path)
+        visualize_path_png(self.nodes, self.edges, file_path,compress=compress_image)
 
         self.equation_list[0].visualize_graph(file_path, graph_func)

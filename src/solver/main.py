@@ -19,16 +19,11 @@ def main():
     #debug
     #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
-    #file_path=bench_folder +"/examples/test.eq"
-    #file_path = bench_folder + "/examples/30853/g_03_track_generated_eval_30000_31000_30853.eq"
-    #file_path = bench_folder +"/examples/30435/g_03_track_generated_eval_30000_31000_30435.eq"
-    #file_path = bench_folder + "/examples/30678/g_03_track_generated_eval_30000_31000_30678.eq"
-    #file_path = bench_folder + "/examples/30751/g_03_track_generated_eval_30000_31000_30751.eq"
-    #file_path = bench_folder + "/examples/30196/g_03_track_generated_eval_30000_31000_30196.eq"
-    #
+    file_path=bench_folder +"/regression_test/g_03_track_27.eq"
+
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
-    file_path = bench_folder+"/examples/43/01_track_43.eq"
+    #file_path = bench_folder+"/examples/43/01_track_43.eq"
     #file_path = bench_folder+"/examples/g_01_track_85.eq"
     #file_path = bench_folder + "/examples/32/g_01_track_32.eq"
     #file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"
