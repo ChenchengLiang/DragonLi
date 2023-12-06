@@ -342,7 +342,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
         ################################ stop branching condition ################################
-        # result = self._branching_data_termination_condition(eq, node_info)
+        # result = self._execute_branching_data_termination_condition(eq, node_info)
         # if result == None:
         #     pass
         # else:
@@ -390,7 +390,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def _use_fixed_branching(self, eq: Equation, current_node_number, node_info,
                              branch_methods):
         ################################ stop branching condition ################################
-        # result = self._branching_data_termination_condition(eq, node_info)
+        # result = self._execute_branching_data_termination_condition(eq, node_info)
         # if result==None:
         #     pass
         # else:
@@ -595,7 +595,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return satisfiability_list,back_track_count_list,branch_eq_list
 
 
-    def _branching_data_termination_condition(self,eq:Equation,node_info):
+    def _execute_branching_data_termination_condition(self, eq:Equation, node_info):
         if self.current_deep>self.max_deep:
             print("max deep reached",self.current_deep)
             self.max_deep += MAX_DEEP_STEP

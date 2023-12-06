@@ -21,11 +21,11 @@ from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 
 def main():
     # generate track
-    track_name="test"
+    track_name="02_track_generated"
     track_folder = bench_folder + "/"+track_name
     start_idx = 1
-    end_idx = 5
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1)
+    end_idx = 20
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_2)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)

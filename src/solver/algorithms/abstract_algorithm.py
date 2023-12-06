@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import List, Union, Deque, Dict
-from src.solver.utils import assemble_parsed_content, assemble_one_equation, get_variable_string, get_terminal_string
+from typing import List, Union, Deque
 
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
+from src.solver.utils import assemble_one_equation, get_variable_string, get_terminal_string
 
 
 class AbstractAlgorithm(ABC):

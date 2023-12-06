@@ -110,7 +110,7 @@ def test_one_file(file_path,config_dict):
     else:
         return f"{FAIL}, satisfiability: {satisfiability}, answer: {answer}, consistence: {consistance}, {os.path.basename(file_path)}"
 
- 
+
 
 if __name__ == '__main__':
     main()
