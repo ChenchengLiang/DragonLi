@@ -12,9 +12,13 @@ algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
 
 #control termination when executing algorithm
-INITIAL_MAX_DEEP=15 #500
-MAX_DEEP_STEP=30 #250
-MAX_DEEP=15 #10000
+INITIAL_MAX_DEEP=500 #500
+MAX_DEEP_STEP=250 #250
+MAX_DEEP=1000000
+
+INITIAL_MAX_DEEP_BOUND_2=20
+MAX_DEEP_STEP_BOUND_2=1
+
 
 MAX_SPLIT_CALL=1000
 MAX_EQ_LENGTH=300

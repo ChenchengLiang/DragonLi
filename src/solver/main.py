@@ -52,8 +52,10 @@ def main():
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
     #multiple equations
-    file_path=bench_folder +"/examples/multi_eqs/test2.eq"
-    #file_path=bench_folder +"/04_track/04_track_10.eq"
+    #file_path = bench_folder + "/examples/multi_eqs/test1.eq"
+    #file_path=bench_folder +"/examples/multi_eqs/test2.eq"
+    file_path=bench_folder +"/examples/multi_eqs/test3.eq"
+    #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq"
 
     #smt format
     #file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"

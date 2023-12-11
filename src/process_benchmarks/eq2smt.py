@@ -23,7 +23,7 @@ def main():
     #         one_eq_file_to_smt2(file_path)
 
     #transform one file
-    one_eq_file_to_smt2("/home/cheli243/Desktop/CodeToGit/string-equation-solver/Woorpje_benchmarks/examples/multi_eqs/test1.eq")
+    one_eq_file_to_smt2("/home/cheli243/Desktop/CodeToGit/string-equation-solver/Woorpje_benchmarks/examples/multi_eqs/test3.eq")
 
 
 if __name__ == '__main__':
