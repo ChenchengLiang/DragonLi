@@ -154,6 +154,8 @@ class Equation:
         terminals = remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Terminal)])
         if len(terminals) == 0:
             return [EMPTY_TERMINAL]
+        elif EMPTY_TERMINAL in terminals:
+            return terminals
         else:
             return terminals + [EMPTY_TERMINAL]
     @property

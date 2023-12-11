@@ -19,7 +19,7 @@ def main():
     #debug
     #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
-    file_path=bench_folder +"/regression_test/g_03_track_27.eq"
+    #file_path=bench_folder +"/regression_test/g_03_track_27.eq"
 
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
@@ -52,7 +52,7 @@ def main():
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
     #multiple equations
-    #file_path=bench_folder +"/examples/test2.eq"
+    file_path=bench_folder +"/examples/multi_eqs/test2.eq"
     #file_path=bench_folder +"/04_track/04_track_10.eq"
 
     #smt format

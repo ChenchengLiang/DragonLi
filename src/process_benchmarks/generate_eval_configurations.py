@@ -25,8 +25,8 @@ def main():
     task="task_3"
     termination_condition="execute_termination_condition_0"
     solver_param_list = [
-        ["this", ["fixed",f"--termination_condition {termination_condition}"]],
-        ["this", ["random",f"--termination_condition {termination_condition}"]],
+        ["this", ["fixed", f"--termination_condition {termination_condition}"]],
+        ["this", ["random", f"--termination_condition {termination_condition}"]],
         # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # ["this", ["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
@@ -68,7 +68,7 @@ def main():
         #"track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name="02_track_generated"
+    benchmark_name="03_track_generated_eval_30000_31000"
     benchmark_folder=benchmark_name+"/ALL"
     folder_number = sum([1 for fo in os.listdir(bench_folder+"/"+benchmark_folder) if "divided" in os.path.basename(fo)])
     for i in range(folder_number):

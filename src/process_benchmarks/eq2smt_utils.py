@@ -2,6 +2,8 @@
 from src.solver.Parser import Parser, EqParser, SMT2Parser
 from src.solver.DataTypes import Equation, Variable, Terminal
 from src.solver.independent_utils import strip_file_name_suffix,remove_duplicates
+from typing import List, Dict
+from src.solver.DataTypes import Term
 
 def one_eq_file_to_smt2(file_path):
     # parse .eq
@@ -36,14 +38,20 @@ def one_eq_file_to_smt2(file_path):
 def assert_one_eq(eq: Equation):
     lhs = handle_one_side(eq.left_terms)
     rhs = handle_one_side(eq.right_terms)
-    lhs = add_parentheses(f"str.++ {lhs}")
-    rhs = add_parentheses(f"str.++ {rhs}")
+    if len(eq.left_terms)>1:
+        lhs = add_parentheses(f"str.++ {lhs}")
+    else:
+        lhs = f"{lhs}"
+    if len(eq.right_terms)>1:
+        rhs = add_parentheses(f"str.++ {rhs}")
+    else:
+        rhs = f"{rhs}"
     eq_str = add_parentheses(f"= {lhs} {rhs}")
     assert_str = add_parentheses(f"assert {eq_str}")
     return assert_str
 
 
-def handle_one_side(one_side):
+def handle_one_side(one_side:List[Term]):
     first_element = one_side[0]
     concatenated = first_element.get_value_str if first_element.value_type == Variable else add_quote(
         first_element.get_value_str)

@@ -89,6 +89,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def run(self):
         print("branch_method:", self.parameters["branch_method"])
         first_equation = self.equation_list[0]
+        concatenated_eqs = self.concatenate_eqs(self.equation_list)
+        print("concatenated_eqs:", concatenated_eqs.eq_str)
+        target_eqs = concatenated_eqs
+
 
         try:
             if self.termination_condition=="execute_termination_condition_2":
@@ -97,7 +101,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     self.edges=[]
                     node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
                     self.nodes.append(node_info)
-                    satisfiability, variables, back_track_count = self.explore_paths(first_equation,
+                    satisfiability, variables, back_track_count = self.explore_paths(target_eqs,
                                                                                      {"node_number": node_info[0],
                                                                                       "label": node_info[1]["label"]})
                     if satisfiability == SAT or satisfiability==UNSAT:
@@ -110,7 +114,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                                  "back_track_count": 0})
                 self.nodes.append(node_info)
-                satisfiability, variables, back_track_count = self.explore_paths(first_equation,
+                satisfiability, variables, back_track_count = self.explore_paths(target_eqs,
                                                                                  {"node_number": node_info[0],
                                                                                   "label": node_info[1]["label"]})
 
@@ -126,6 +130,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                        "variables": self.variables, "terminals": self.terminals,
                        "total_explore_paths_call": self.total_explore_paths_call,"explored_deep":self.explored_deep}
         return result_dict
+
+    def concatenate_eqs(self,eq_list:List[Equation]):
+        left_terms = []
+        right_terms = []
+        for eq in eq_list:
+            left_terms.extend(eq.left_terms+[Term(Terminal("#"))])
+            right_terms.extend(eq.right_terms+[Term(Terminal("#"))])
+        return Equation(left_terms[:-1], right_terms[:-1])
 
     def explore_paths(self, current_eq: Equation,
                       previous_dict:Dict) -> Tuple[str, List[Variable], List[int]]:

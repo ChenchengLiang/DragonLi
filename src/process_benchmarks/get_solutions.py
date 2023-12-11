@@ -42,10 +42,10 @@ def main():
             #"solver":"ostrich",
             #"parameters_list":[],
             "solver": "this",
-            #"parameters_list":["fixed"],
-            "parameters_list": ["gnn","--graph_type graph_3",
-                                "--gnn_model_path "+project_folder+"/Models/model_0_graph_3_GINSplit.pth",
-                                f"--gnn_task task_3",f"--termination_condition {termination_condition}"],
+            "parameters_list":["fixed",f"--termination_condition {termination_condition}"],
+            # "parameters_list": ["gnn","--graph_type graph_3",
+            #                     "--gnn_model_path "+project_folder+"/Models/model_0_graph_3_GINSplit.pth",
+            #                     f"--gnn_task task_3",f"--termination_condition {termination_condition}"],
             "summary_folder_name":f"{benchmark_name}_summary"
         }
 
