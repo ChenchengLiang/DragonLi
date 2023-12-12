@@ -17,15 +17,16 @@ from src.train_data_collection.utils import dvivde_track_for_cluster
 import glob
 import shutil
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
+from typing import List, Tuple, Dict
 
 
 def main():
     # generate track
-    track_name="02_track_generated"
+    track_name="04_track_generated"
     track_folder = bench_folder + "/"+track_name
     start_idx = 1
     end_idx = 20
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_2)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
@@ -43,7 +44,7 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         print("---", str(i), "----")
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
-        equation_str, _,_,_,_ = equation_generator(filename, i)
+        equation_str = equation_generator(filename, i)
         with open(filename, 'w') as file:
             file.write(equation_str)
         #generate smt2 file
@@ -74,9 +75,9 @@ def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, m
             file.write(replacement_log)
 
     # Format the result
-    result = formatting_results(''.join(variables), ''.join(terminals), replaced_left, replaced_right)
+    result = formatting_results(''.join(variables), ''.join(terminals), [(replaced_left, replaced_right)])
 
-    return result, variables, terminals, replaced_left, replaced_right
+    return result
 
 
 def replace_substring_with_new_variables(left, right, replacement_log):
@@ -156,15 +157,17 @@ def generate_random_variables(available_variables, max_random_variables_length=5
     return random_variables
 
 
-def generate_one_random(file_name, index, max_variables=15, max_terminals=10, max_length=50):
+def generate_one_random(max_variables=15, max_terminals=10, max_length=50):
     variables, terminals = get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
+    left_side_length=random.randint(1, max_length)
+    right_side_length=random.randint(1, max_length)
     # Create a random string of the terminals
-    random_left_string = ''.join(random.choice(terminals + variables) for _ in range(max_length))
-    random_right_string = ''.join(random.choice(terminals + variables) for _ in range(max_length))
+    random_left_string = ''.join(random.choice(terminals + variables) for _ in range(left_side_length))
+    random_right_string = ''.join(random.choice(terminals + variables) for _ in range(right_side_length))
 
     # Format the result
-    result = formatting_results(''.join(variables), ''.join(terminals), random_left_string, random_right_string)
+    result = formatting_results(''.join(variables), ''.join(terminals), [(random_left_string, random_right_string)])
 
     return result, variables, terminals, random_left_string, random_right_string
 
@@ -190,9 +193,9 @@ def generate_one_track_2(file_name, index):
     equation_right = "".join(right_terms)
 
     # Format the result
-    result = formatting_results(''.join(variables), ''.join(terminals), equation_left, equation_right)
+    result = formatting_results(''.join(variables), ''.join(terminals), [(equation_left, equation_right)])
 
-    return result, variables, terminals, equation_left, equation_right
+    return result
 
 
 def generate_one_track_3(file_name, index):
@@ -220,16 +223,34 @@ def generate_one_track_3(file_name, index):
     terminals = remove_duplicates([x for x in new_equation_left_str + new_equation_right_str if x.islower()])
 
 
-    result = formatting_results(''.join(variables), ''.join(terminals), new_equation_left_str, new_equation_right_str)
+    result = formatting_results(''.join(variables), ''.join(terminals), [(new_equation_left_str,new_equation_right_str)])
 
-    return result, variables, terminals, equation_left, equation_right
+    return result
 
 
-def formatting_results(variables, terminals, left_str, right_str):
+def generate_one_track_4(file_name, index):
+    eq_number=random.randint(1,100)
+    eq_list=[]
+    variable_list=[]
+    terminal_list=[]
+    for i in range(eq_number):
+        result, variables, terminals, random_left_string, random_right_string=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
+        variable_list.extend(variables)
+        terminal_list.extend(terminals)
+        variable_list=remove_duplicates(variable_list)
+        terminal_list=remove_duplicates(terminal_list)
+        eq_list.append((random_left_string,random_right_string))
+    result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
+    return result
+
+
+
+def formatting_results(variables:List[str], terminals:List[str], eq_list:List[Tuple[str,str]])->str:
     # Format the result
     result = f"Variables {{{''.join(variables)}}}\n"
     result += f"Terminals {{{''.join(terminals)}}}\n"
-    result += f"Equation: {left_str} = {right_str}\n"
+    for eq in eq_list:
+        result += f"Equation: {eq[0]} = {eq[1]}\n"
     result += "SatGlucose(100)"
     return result
 

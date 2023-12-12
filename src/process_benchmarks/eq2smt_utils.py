@@ -10,7 +10,8 @@ def one_eq_file_to_smt2(file_path):
     parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
-    print(parsed_content)
+    print("parsed_content:",parsed_content)
+
 
     # get smt string
     smt_str = "(set-logic QF_S) \n"

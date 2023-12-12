@@ -471,9 +471,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                                                                          {
                                                                                              "node_number": current_node_number,
                                                                                              "label": edge_label})
-            print(satisfiability, edge_label)
-            print(eq.eq_left_str)
-            print(eq.eq_right_str)
+            # print(satisfiability, edge_label)
+            # print(eq.eq_left_str)
+            # print(eq.eq_right_str)
             satisfiability_list.append(satisfiability)
 
             # Handle branch outcome
