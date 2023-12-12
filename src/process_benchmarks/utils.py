@@ -306,7 +306,7 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     if len(inconsistent_list)>0:
         print("inconsistent problems:")
         for i in inconsistent_list:
-            print(i)
+            print(RED,i,COLORRESET)
 
     print("----------------------- check satisfiability consistensy done ----------------------------")
 
