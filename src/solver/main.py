@@ -52,10 +52,11 @@ def main():
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
     #multiple equations
-    #file_path = bench_folder + "/examples/multi_eqs/test1.eq"
-    #file_path=bench_folder +"/examples/multi_eqs/test2.eq"
-    file_path=bench_folder +"/examples/multi_eqs/test3.eq"
-    #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq"
+    #file_path = bench_folder + "/examples/multi_eqs/test1.eq" #SAT
+    #file_path=bench_folder +"/examples/multi_eqs/test2.eq" #UNSAT
+    #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
+    file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
+    #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
 
     #smt format
     #file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"

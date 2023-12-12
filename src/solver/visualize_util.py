@@ -234,8 +234,8 @@ def visualize_path_html(nodes, edges, file_path):
 
 
 def draw_graph(nodes, edges,filename="/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/Woorpje_benchmarks/examples/visualize"):
-    from src.solver.DataTypes import Variable, Terminal, Operator
-    equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black"}
+    from src.solver.DataTypes import Variable, Terminal, Operator,SeparateSymbol
+    equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black",SeparateSymbol:"yellow"}
     dot = Digraph()
     # Set newrank to true for more control over ranking
     dot.attr(newrank='true')

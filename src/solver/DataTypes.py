@@ -63,12 +63,30 @@ class Terminal:
             return False
         return self.value == other.value
 
+class SeparateSymbol:
+    def __init__(self, value: str):
+        self.value = value
+
+    def __str__(self):
+        return "SeparateSymbol"
+
+    def __repr__(self):
+        return f"SeparateSymbol({self.value})"
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, SeparateSymbol):
+            return False
+        return self.value == other.value
+
 
 EMPTY_TERMINAL: Terminal = Terminal("\"\"")
 
 
 class Term:
-    def __init__(self, value: Union[Variable, Terminal, List['Term']]):
+    def __init__(self, value: Union[Variable, Terminal, SeparateSymbol,List['Term']]):
         self.value = value
 
     def __repr__(self):
@@ -90,6 +108,8 @@ class Term:
             return Terminal
         elif isinstance(self.value, list):
             return list
+        elif isinstance(self.value, SeparateSymbol):
+            return SeparateSymbol
         else:
             raise Exception("unknown type")
 
@@ -101,6 +121,8 @@ class Term:
             return self.value.value
         elif isinstance(self.value, list):
             return "".join([t.get_value_str() for t in self.value])
+        elif isinstance(self.value, SeparateSymbol):
+            return self.value.value
         else:
             raise Exception("unknown type")
 
@@ -170,13 +192,22 @@ class Equation:
         return len(self.terminal_list)
 
     @property
-    def terminal_numers_without_empty_terminal(self):
+    def terminal_numbers_without_empty_terminal(self):
         return len(self.termimal_list_without_empty_terminal)
 
     @property
     def eq_str(self) -> str:
         return "".join([t.get_value_str for t in self.left_terms]) + " = " + "".join(
             [t.get_value_str for t in self.right_terms])
+    @property
+    def eq_left_str(self) -> str:
+        return "".join([t.get_value_str for t in self.left_terms])
+    @property
+    def eq_right_str(self) -> str:
+        return "".join([t.get_value_str for t in self.right_terms])
+    @property
+    def number_of_special_symbols(self) -> int:
+        return self.eq_str.count("#")
 
     def is_fact(self) -> (bool, List[Tuple[Variable, List[Terminal]]]):
 

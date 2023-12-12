@@ -56,12 +56,15 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], sum
     # Name of the CSV file to write to
     if len(parameters_list)>2:
         parameters_str_list=([parameters_list[0]] +
-                             [parameters_list[1].replace("--graph_type ", "")] +
-                             [parameters_list[2][parameters_list[2].rfind("_")+1:parameters_list[2].rfind(".")]])
+                             [parameters_list[1].replace("--termination_condition ", "")] +
+                             [parameters_list[2].replace("--graph_type ", "")] +
+                             [parameters_list[3][parameters_list[3].rfind("_")+1:parameters_list[3].rfind(".")]]
+                             )
     elif len(parameters_list)==2:
-        parameters_str_list = [parameters_list[0]]
+        parameters_str_list = [parameters_list[0]] +[ [parameters_list[1].replace("--termination_condition ", "")] ]
     else:
         parameters_str_list=[]
+    #join parameters by _
     parameters_list_str = "_".join(parameters_str_list)
 
 
