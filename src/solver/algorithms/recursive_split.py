@@ -474,6 +474,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # print(satisfiability, edge_label)
             # print(eq.eq_left_str)
             # print(eq.eq_right_str)
+
             satisfiability_list.append(satisfiability)
 
             # Handle branch outcome
@@ -762,7 +763,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         left_poped_list_str = "".join([term.get_value_str for term in left_poped_list])
         right_poped_list_str = "".join([term.get_value_str for term in right_poped_list])
 
-        return left_poped_list_str, right_poped_list_str, list(local_left_terms_queue), list(local_right_terms_queue)
+        return left_poped_list_str, right_poped_list_str, local_left_terms_queue, local_right_terms_queue
 
     def two_variables_split_branch_1(self, left_terms: List[Term], right_terms: List[Term], variables):
         '''
@@ -795,7 +796,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         edge_label = f"{left_term.get_value_str}>{right_term.get_value_str}: {left_term.get_value_str}={right_term.get_value_str}{fresh_variable_term.get_value_str}"
 
-        return list(local_left_terms_queue), list(local_right_terms_queue), updated_variables, edge_label
+        return local_left_terms_queue, local_right_terms_queue, updated_variables, edge_label
 
     def two_variables_split_branch_2(self, left_terms: List[Term], right_terms: List[Term], variables):
         '''
@@ -832,7 +833,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         edge_label = f"{left_term.get_value_str}={right_term.get_value_str}: {left_term.get_value_str}={right_term.get_value_str}"
 
-        return list(local_left_terms_queue), list(local_left_terms_queue), updated_variables, edge_label
+        return local_left_terms_queue, local_right_terms_queue, updated_variables, edge_label
 
     def one_variable_one_terminal_split_branch_1(self, left_terms: List[Term], right_terms: List[Term], variables):
         '''
@@ -858,7 +859,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         edge_label = left_term.get_value_str + "=\"\""
 
-        return list(new_left_terms_queue), list(new_right_terms_queue), updated_variables, edge_label
+        return new_left_terms_queue, new_right_terms_queue, updated_variables, edge_label
 
     def one_variable_one_terminal_split_branch_2(self, left_terms: List[Term], right_terms: List[Term], variables):
         '''
@@ -893,7 +894,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         edge_label = f"{left_term.get_value_str}={right_term.get_value_str}{fresh_variable_term.get_value_str}"
 
-        return list(local_left_terms_queue), list(local_right_terms_queue), updated_variables, edge_label
+        return local_left_terms_queue, local_right_terms_queue, updated_variables, edge_label
 
     def _create_fresh_variables(self, variables: List[Variable]) -> Term:
         # fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'

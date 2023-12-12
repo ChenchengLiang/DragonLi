@@ -61,7 +61,9 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], sum
                              [parameters_list[3][parameters_list[3].rfind("_")+1:parameters_list[3].rfind(".")]]
                              )
     elif len(parameters_list)==2:
-        parameters_str_list = [parameters_list[0]] +[ [parameters_list[1].replace("--termination_condition ", "")] ]
+        parameters_str_list = ([parameters_list[0]] +
+                               [parameters_list[1].replace("--termination_condition ", "")]
+                               )
     else:
         parameters_str_list=[]
     #join parameters by _

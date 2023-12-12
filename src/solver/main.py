@@ -47,7 +47,7 @@ def main():
 
     #UNSAT
     #file_path = bench_folder +"/03_track/03_track_14.eq"
-    #file_path = bench_folder +"/03_track/03_track_7.eq"
+    file_path = bench_folder +"/03_track/03_track_7.eq"
     #file_path = bench_folder +"/03_track/03_track_11.eq"
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
@@ -58,7 +58,11 @@ def main():
     #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
-    file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_80.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_183.eq"  # UNSAT
 
     #smt format
     #file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
@@ -82,7 +86,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
 
     print_results(result_dict)
 
