@@ -16,7 +16,7 @@ import glob
 def main():
 
     #collect answers from divided folders
-    benchmark="03_track_generated_train_1_20000"
+    benchmark="test_track_04_task_3"
     benchmark_folder = bench_folder + "/"+benchmark+"/ALL"
 
     folder_number = sum([1 for fo in os.listdir(benchmark_folder) if "divided" in os.path.basename(fo)])

@@ -1,6 +1,15 @@
 from typing import List
-from src.solver.DataTypes import Variable,Terminal,Operator,Node,Edge
+from src.solver.DataTypes import Variable,Terminal,Operator,Node,Edge,Equation,Term,SeparateSymbol
 from src.solver.Constants import UNKNOWN
+
+
+def concatenate_eqs(eq_list: List[Equation]):
+    left_terms = []
+    right_terms = []
+    for eq in eq_list:
+        left_terms.extend(eq.left_terms + [Term(SeparateSymbol("#"))])
+        right_terms.extend(eq.right_terms + [Term(SeparateSymbol("#"))])
+    return Equation(left_terms[:-1], right_terms[:-1])
 
 def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, satisfiability=UNKNOWN):
     '''
@@ -9,7 +18,7 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, s
     "edges": [[1, 2], [2, 3], [3, 0]], "edge_types": [1, 1, 1],
     "label": 1}
     '''
-    node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2}
+    node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2, SeparateSymbol:3}
     edge_type_to_int_map = {None: 1}
     graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
                   "label": label,"satisfiability":satisfiability}

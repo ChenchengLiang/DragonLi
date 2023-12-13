@@ -284,10 +284,15 @@ class Equation:
 
     def output_eq_file(self,file_name,satisfiability=UNKNOWN):
         #replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
+        eq=self.eq_str.split("=")
+        left_str_list:List[str]=eq[0].split("#")
+        right_str_list:List[str]=eq[1].split("#")
+
         # Format the content of the file
         content = f"Variables {{{''.join(self.variable_str)}}}\n"
         content += f"Terminals {{{''.join(self.terminal_str)}}}\n"
-        content += f"Equation: {self.eq_str}\n"
+        for l_str,r_str in zip(left_str_list,right_str_list):
+            content += f"Equation: {l_str.strip()} = {r_str.strip()}\n"
         content += "SatGlucose(100)"
         with open(file_name+".eq", "w") as f:
             f.write(content)
@@ -522,7 +527,7 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
     if len(term_list) == 0:
         return global_node_counter
     else:
-        current_term = term_list.popleft()
+        current_term:Term = term_list.popleft()
         current_node = Node(id=global_node_counter, type=current_term.value_type,
                             content=current_term.get_value_str, label=None)
         global_node_counter += 1

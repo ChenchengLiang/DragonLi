@@ -24,7 +24,7 @@ from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix,zip_folder
 def main():
 
-    benchmark="02_track_generated"#"01_track_generated_SAT_train"
+    benchmark="test_track_04_task_3"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
@@ -47,7 +47,7 @@ def main():
 
         # read file answer
         with open(file_name + ".answer", "r") as f:
-            satisfiability = f.read()
+            satisfiability = f.read().strip("\n")
         if satisfiability == SAT or satisfiability == UNSAT:
             parser_type = EqParser()
             parser = Parser(parser_type)

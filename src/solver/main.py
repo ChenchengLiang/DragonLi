@@ -52,8 +52,8 @@ def main():
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
     #multiple equations
-    #file_path = bench_folder + "/examples/multi_eqs/test1.eq" #SAT
-    #file_path=bench_folder +"/examples/multi_eqs/test2.eq" #UNSAT
+    file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
+    #file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
@@ -61,7 +61,7 @@ def main():
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_80.eq"  # UNSAT
-    file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_183.eq"  # UNSAT
 
     #smt format
@@ -73,11 +73,11 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_1"
+    graph_type="graph_3"
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GINSplit.pth"
 
-    algorithm_parameters = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 

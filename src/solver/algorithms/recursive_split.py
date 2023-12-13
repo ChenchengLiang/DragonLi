@@ -13,8 +13,7 @@ from src.solver.Constants import recursion_limit, \
     INITIAL_MAX_DEEP_BOUND_2, MAX_DEEP_STEP_BOUND_2
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1, SeparateSymbol
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
-from src.solver.algorithms.utils import graph_to_gnn_format
-from src.solver.algorithms.utils import merge_graphs
+from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
     dump_to_json_with_format, identify_available_capitals
 from src.solver.models.Dataset import get_one_dgl_graph
@@ -90,7 +89,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def run(self):
         print("branch_method:", self.parameters["branch_method"])
         first_equation = self.equation_list[0]
-        concatenated_eqs = self.concatenate_eqs(self.equation_list)
+        concatenated_eqs = concatenate_eqs(self.equation_list)
         print("concatenated_eqs:", concatenated_eqs.eq_str)
         target_eqs = concatenated_eqs
 
@@ -133,13 +132,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                        "total_explore_paths_call": self.total_explore_paths_call, "explored_deep": self.explored_deep}
         return result_dict
 
-    def concatenate_eqs(self, eq_list: List[Equation]):
-        left_terms = []
-        right_terms = []
-        for eq in eq_list:
-            left_terms.extend(eq.left_terms + [Term(SeparateSymbol("#"))])
-            right_terms.extend(eq.right_terms + [Term(SeparateSymbol("#"))])
-        return Equation(left_terms[:-1], right_terms[:-1])
+
 
     def explore_paths(self, current_eq: Equation,
                       previous_dict: Dict) -> Tuple[str, List[Variable], List[int]]:
@@ -642,7 +635,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self.record_and_close_branch_and_output_eq(current_eq_satisfiability, eq.variable_list, node_info, eq,
                                                           back_track_count=back_track_count_list)
 
-    def _extract_branching_data_branching_0(self, eq: Equation, branch_methods, current_node_number):
+    def _extract_branching_data_branching(self, eq: Equation, branch_methods, current_node_number):
         ################################ branching ################################
         satisfiability_list = []
         back_track_count_list = []
@@ -935,5 +928,5 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
         visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image)
-        concatenated_eqs = self.concatenate_eqs(self.equation_list)
+        concatenated_eqs = concatenate_eqs(self.equation_list)
         concatenated_eqs.visualize_graph(file_path, graph_func)

@@ -8,7 +8,7 @@ project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 30
+algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
 
 #control termination when executing algorithm
