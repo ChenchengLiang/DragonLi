@@ -160,8 +160,8 @@ def generate_random_variables(available_variables, max_random_variables_length=5
 def generate_one_random(max_variables=15, max_terminals=10, max_length=50):
     variables, terminals = get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
-    left_side_length=random.randint(1, max_length)
-    right_side_length=random.randint(1, max_length)
+    left_side_length=random.randint(1, max_length/2)
+    right_side_length=random.randint(1, max_length/2)
     # Create a random string of the terminals
     random_left_string = ''.join(random.choice(terminals + variables) for _ in range(left_side_length))
     random_right_string = ''.join(random.choice(terminals + variables) for _ in range(right_side_length))

@@ -15,7 +15,7 @@ from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation,
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals
+    dump_to_json_with_format, identify_available_capitals,get_memory_usage
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
@@ -91,8 +91,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #first_equation = self.equation_list[0]
         concatenated_eqs = concatenate_eqs(self.equation_list)
         print("concatenated_eqs:")
-        print(concatenated_eqs.eq_left_str)
-        print(concatenated_eqs.eq_right_str)
+        print(len(concatenated_eqs.eq_left_str),concatenated_eqs.eq_left_str)
+        print(len(concatenated_eqs.eq_right_str),concatenated_eqs.eq_right_str)
         target_eqs = concatenated_eqs
 
         try:
@@ -143,6 +143,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if self.explored_deep < self.current_deep:
             self.explored_deep = self.current_deep
         #print(f"explore_paths call: {self.total_explore_paths_call}")
+        # print(previous_dict)
+        # print(len(current_eq.eq_left_str),current_eq.eq_left_str)
+        # print(len(current_eq.eq_right_str),current_eq.eq_right_str)
         # print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
 
 
@@ -372,6 +375,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
                 # pred_list=[1,0.5,0]#this make it use fixed branching
 
+
         # sort
         prediction_list = []
         for pred, split_eq, edge_label in zip(pred_list, split_eq_list, edge_label_list):
@@ -420,6 +424,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             pass
         else:
             return result
+
 
         # if self.total_split_call%50 ==0:
         #     memory_text,gb=get_memory_usage()
@@ -695,8 +700,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return None
 
     def _extract_branching_data_termination_condition(self, eq: Equation, node_info):
-        # if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
-        #     return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
+            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)

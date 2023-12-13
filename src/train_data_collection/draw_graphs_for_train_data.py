@@ -31,6 +31,8 @@ def main():
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
+    sys.setrecursionlimit(10000000)
+
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
     elif task == "task_2":
