@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Union, Deque
+from typing import List, Union, Deque,Callable
 
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
 from src.solver.utils import assemble_one_equation, get_variable_string, get_terminal_string
@@ -15,7 +15,7 @@ class AbstractAlgorithm(ABC):
     def run(self):
         pass
 
-    def visualize(self, file_path: str):
+    def visualize(self, file_path: str, graph_func: Callable):
         pass
 
     def output_train_data(self, file_path: str):

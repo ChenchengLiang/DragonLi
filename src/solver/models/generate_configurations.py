@@ -15,6 +15,7 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     num_epochs=300
     task="task_3"
+    node_type=4
     configurations = []
     for benchmark in ["03_track_generated_train_1_20000_task_3"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
@@ -30,7 +31,7 @@ def main():
                                             "num_epochs": num_epochs, "learning_rate": 0.001,
                                             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,
                                             "gnn_layer_num": gnn_layer_num, "num_heads": num_heads, "gnn_dropout_rate": dropout_rate,
-                                            "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate
+                                            "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate,"node_type":node_type
                                         })
                                 else:
                                     configurations.append({
@@ -39,7 +40,7 @@ def main():
                                         "learning_rate": 0.001,
                                         "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,
                                         "gnn_layer_num": gnn_layer_num, "num_heads": 0, "gnn_dropout_rate": dropout_rate,
-                                        "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate
+                                        "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate,"node_type":node_type
                                     })
 
     # Writing the dictionary to a JSON file

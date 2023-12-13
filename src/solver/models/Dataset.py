@@ -184,7 +184,7 @@ class WordEquationDatasetMultiClassification(DGLDataset):
                     loaded_dict["file_path"] = graph_file
                 yield loaded_dict
         else:
-            print(f"folde not existed: {self._graph_folder}")
+            print(f"folder not existed: {self._graph_folder}")
 
 
     def statistics(self):

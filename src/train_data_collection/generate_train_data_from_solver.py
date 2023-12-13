@@ -22,6 +22,8 @@ from src.solver.Constants import max_variable_length, algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix,zip_folder
+from src.process_benchmarks.utils import run_on_one_problem
+
 def main():
 
     benchmark="test_track_04_task_3"#"01_track_generated_SAT_train"
@@ -32,6 +34,16 @@ def main():
     all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"
     train_eq_folder=bench_folder + "/" + benchmark+"/train"
 
+    # copy answers from divide folder
+    divided_folder = benchmark + "/ALL"
+    folder_number = sum(
+        [1 for fo in os.listdir(bench_folder + "/" + divided_folder) if "divided" in os.path.basename(fo)])
+    for i in range(folder_number):
+        divided_folder_index = i + 1
+        for answer_file in glob.glob(
+                bench_folder + "/" + divided_folder + "/divided_" + str(divided_folder_index) + "/*.answer"):
+            shutil.copy(answer_file, all_eq_folder)
+
     if not os.path.exists(train_eq_folder):
         os.mkdir(train_eq_folder)
     else:
@@ -40,14 +52,26 @@ def main():
     for f in glob.glob(all_eq_folder + "/*.eq") + glob.glob(all_eq_folder + "/*.answer"):
         shutil.copy(f, train_eq_folder)
 
+
     # extract train data
     for i, file_path in enumerate(glob.glob(train_eq_folder + "/*.eq")):
         file_name = strip_file_name_suffix(file_path)
         print(i, file_path)
 
-        # read file answer
-        with open(file_name + ".answer", "r") as f:
-            satisfiability = f.read().strip("\n")
+        #get satisfiability
+        answer_file_path = file_name + ".answer"
+        if os.path.exists(answer_file_path): # read file answer
+            print("read answer from file")
+            with open(answer_file_path, "r") as f:
+                satisfiability = f.read().strip("\n")
+        else:
+            result_dict = run_on_one_problem(file_path=file_path,
+                                             parameters_list=["fixed", f"--termination_condition execute_termination_condition_0"],
+                                             solver="this", solver_log=False)
+            satisfiability=result_dict["result"]
+
+        print("satisfiability:",satisfiability)
+
         if satisfiability == SAT or satisfiability == UNSAT:
             parser_type = EqParser()
             parser = Parser(parser_type)

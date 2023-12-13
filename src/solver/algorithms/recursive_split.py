@@ -88,9 +88,11 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def run(self):
         print("branch_method:", self.parameters["branch_method"])
-        first_equation = self.equation_list[0]
+        #first_equation = self.equation_list[0]
         concatenated_eqs = concatenate_eqs(self.equation_list)
-        print("concatenated_eqs:", concatenated_eqs.eq_str)
+        print("concatenated_eqs:")
+        print(concatenated_eqs.eq_left_str)
+        print(concatenated_eqs.eq_right_str)
         target_eqs = concatenated_eqs
 
         try:
@@ -140,8 +142,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep += 1
         if self.explored_deep < self.current_deep:
             self.explored_deep = self.current_deep
-        # print(f"explore_paths call: {self.total_explore_paths_call}")
+        #print(f"explore_paths call: {self.total_explore_paths_call}")
         # print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
+
+
 
         ################################ Record nodes and edges ################################
 
@@ -303,10 +307,25 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self._branch_method_func(eq, current_node_number,
                                         node_info, branch_methods)
     def left_side_vairable_right_side_special_symbol(self, eq: Equation,current_node_number, node_info):
-        branch_methods=[self.one_variable_one_terminal_split_branch_1]
-        self.total_split_call += 1
-        return self._branch_method_func(eq, current_node_number,
-                                        node_info, branch_methods)
+
+        #
+        # branch_methods=[self.one_variable_one_terminal_split_branch_1]
+        # self.total_split_call += 1
+        # return self._branch_method_func(eq, current_node_number,
+        #                                 node_info, branch_methods)
+
+
+        l, r, updated_variables, edge_label=self.one_variable_one_terminal_split_branch_1(eq.left_terms, eq.right_terms, eq.variable_list)
+        new_eq = Equation(list(l), list(r))
+        # updated_variables = self.update_variables(eq.left_terms, eq.right_terms)
+        branch_satisfiability, branch_variables, back_track_count_list = self.explore_paths(new_eq,
+                                                                                            {"node_number": current_node_number,
+                                                                                                "label": edge_label})
+        back_track_count_list = [x + 1 for x in back_track_count_list]
+        return self.record_and_close_branch(branch_satisfiability, branch_variables, node_info, eq,
+                                            back_track_count=back_track_count_list)
+
+
 
 
     def _use_gnn_with_random_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
@@ -504,7 +523,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return self._extract_branching_data_task_2(eq, current_node_number, node_info, branch_methods)
 
     def _extract_branching_data_task_2(self, eq: Equation, current_node_number, node_info, branch_methods):
-        # print(self.total_split_call, "fixed branch")
+        #print(self.total_split_call, "fixed branch")
         # Print the current memory usage
         # print(f"Memory usage: {get_memory_usage()}")
 
@@ -613,7 +632,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                                             back_track_count=back_track_count_list)
 
     def _extract_branching_data_task_1(self, eq: Equation, current_node_number, node_info, branch_methods):
-        # print(self.total_split_call,"fixed branch")
+        #print(self.total_split_call,"fixed branch")
         # Print the current memory usage
         # print(f"Memory usage: {get_memory_usage()}")
 
@@ -676,8 +695,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return None
 
     def _extract_branching_data_termination_condition(self, eq: Equation, node_info):
-        if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
-            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        # if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
+        #     return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
@@ -828,7 +847,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         return local_left_terms_queue, local_right_terms_queue, updated_variables, edge_label
 
-    def one_variable_one_terminal_split_branch_1(self, left_terms: List[Term], right_terms: List[Term], variables):
+    def one_variable_one_terminal_split_branch_1(self, left_terms: List[Term], right_terms: List[Term], variables:List[Variable])->Tuple[Deque[Term],Deque[Term],List[Variable],str]:
         '''
         Equation: V1 [Terms] = a [Terms]
         Assume V1 = ""

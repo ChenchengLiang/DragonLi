@@ -22,10 +22,10 @@ from typing import List, Tuple, Dict
 
 def main():
     # generate track
-    track_name="04_track_generated_eval_1_100"
+    track_name="04_track_generated_train_1_1000"
     track_folder = bench_folder + "/"+track_name
     start_idx = 1
-    end_idx = 100
+    end_idx = 1000
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
 
     # divide tracks
