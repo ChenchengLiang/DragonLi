@@ -16,6 +16,8 @@ def main():
     num_epochs=300
     task="task_3"
     node_type=4
+    batch_size=10
+    learning_rate=0.001
     configurations = []
     for benchmark in ["03_track_generated_train_1_20000_task_3"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
@@ -28,8 +30,8 @@ def main():
                                     for num_heads in [1]:
                                         configurations.append({
                                             "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,"task":task,
-                                            "num_epochs": num_epochs, "learning_rate": 0.001,
-                                            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,
+                                            "num_epochs": num_epochs, "learning_rate": learning_rate,
+                                            "save_criterion": "valid_accuracy", "batch_size": batch_size, "gnn_hidden_dim": hidden_dim,
                                             "gnn_layer_num": gnn_layer_num, "num_heads": num_heads, "gnn_dropout_rate": dropout_rate,
                                             "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate,"node_type":node_type
                                         })
@@ -37,8 +39,8 @@ def main():
                                     configurations.append({
                                         "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type,"task":task,
                                         "num_epochs": num_epochs,
-                                        "learning_rate": 0.001,
-                                        "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dim,
+                                        "learning_rate": learning_rate,
+                                        "save_criterion": "valid_accuracy", "batch_size": batch_size, "gnn_hidden_dim": hidden_dim,
                                         "gnn_layer_num": gnn_layer_num, "num_heads": 0, "gnn_dropout_rate": dropout_rate,
                                         "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num, "ffnn_dropout_rate": dropout_rate,"node_type":node_type
                                     })

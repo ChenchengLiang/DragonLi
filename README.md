@@ -2,7 +2,7 @@
 
 Woking pipeline:
 
-1. Uppmax: sh word_equation_generate_tracks.sh #gnerate and divide tracks
+1. Uppmax: sh word_equation_submit_generate_tracks.sh #gnerate and divide tracks
 
 
 2. Uppmax: sh word_equation_submit_multiple_eval.sh #get .answer and summary

@@ -22,10 +22,10 @@ from typing import List, Tuple, Dict
 
 def main():
     # generate track
-    track_name="04_track_generated_train_1_1000"
+    track_name="01_track_multi_word_equations_generated_train_1_40000"
     track_folder = bench_folder + "/"+track_name
     start_idx = 1
-    end_idx = 1000
+    end_idx = 40000
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
 
     # divide tracks
@@ -44,7 +44,7 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         print("---", str(i), "----")
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
-        equation_str = equation_generator(filename, i)
+        equation_str,_,_,_ = equation_generator(filename, i)
         with open(filename, 'w') as file:
             file.write(equation_str)
         #generate smt2 file
@@ -77,7 +77,7 @@ def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, m
     # Format the result
     result = formatting_results(''.join(variables), ''.join(terminals), [(replaced_left, replaced_right)])
 
-    return result
+    return result,variables,terminals,[(replaced_left, replaced_right)]
 
 
 def replace_substring_with_new_variables(left, right, replacement_log):
@@ -169,7 +169,7 @@ def generate_one_random(max_variables=15, max_terminals=10, max_length=50):
     # Format the result
     result = formatting_results(''.join(variables), ''.join(terminals), [(random_left_string, random_right_string)])
 
-    return result, variables, terminals, random_left_string, random_right_string
+    return result, variables, terminals, [(random_left_string, random_right_string)]
 
 
 def generate_one_track_2(file_name, index):
@@ -195,19 +195,22 @@ def generate_one_track_2(file_name, index):
     # Format the result
     result = formatting_results(''.join(variables), ''.join(terminals), [(equation_left, equation_right)])
 
-    return result
+    return result,variables,terminals,[(equation_left, equation_right)]
 
 
 def generate_one_track_3(file_name, index):
-    track_2_eq, variables, terminals, equation_left, equation_right = generate_one_track_2(file_name, random.randint(2,15))
-
+    track_2_eq, variables, terminals, eqs = generate_one_track_2(file_name, random.randint(2,15))
+    equation_left=eqs[0][0]
+    equation_right=eqs[0][1]
 
     def process_one_hand_side(one_hand_side_str):
         new_one_hand_side_list=[]
         # replace each b with lhs or rhs of eq from track 1
         for item in one_hand_side_str:
             if item == "b":
-                _, _, _, l, r = generate_one_track_1(file_name, index,write_replacement_log=False)
+                _, _, _, eqs = generate_one_track_1(file_name, index,write_replacement_log=False)
+                l=eqs[0][0]
+                r=eqs[0][1]
                 replaced_item = random.choice([l, r])
                 new_one_hand_side_list.append(replaced_item)
             else:
@@ -225,7 +228,7 @@ def generate_one_track_3(file_name, index):
 
     result = formatting_results(''.join(variables), ''.join(terminals), [(new_equation_left_str,new_equation_right_str)])
 
-    return result
+    return result,variables,terminals,[(new_equation_left_str,new_equation_right_str)]
 
 
 def generate_one_track_4(file_name, index):
@@ -234,14 +237,18 @@ def generate_one_track_4(file_name, index):
     variable_list=[]
     terminal_list=[]
     for i in range(eq_number):
-        result, variables, terminals, random_left_string, random_right_string=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
+        #result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
+        #result, variables, terminals, eqs = generate_one_track_3(file_name,index)
+        result, variables, terminals, eqs =generate_one_track_1(file_name, index,max_variables=10, max_terminals=6, max_length=60,write_replacement_log=False)
+        left_str=eqs[0][0]
+        right_str=eqs[0][1]
         variable_list.extend(variables)
         terminal_list.extend(terminals)
         variable_list=remove_duplicates(variable_list)
         terminal_list=remove_duplicates(terminal_list)
-        eq_list.append((random_left_string,random_right_string))
+        eq_list.append((left_str,right_str))
     result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
-    return result
+    return result,variable_list,terminal_list,eq_list
 
 
 
