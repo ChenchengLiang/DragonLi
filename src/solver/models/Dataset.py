@@ -192,12 +192,15 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         unsat_label_number = 0
         unknown_label_number = 0
         split_number = 0
+        max_node_number=0
         multi_classification_label_list=[]
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
             multi_classification_label:List=[]
             for index, g in graphs.items():
                 if isinstance(g, dict):
+                    if max_node_number<len(g["nodes"]):
+                        max_node_number=len(g["nodes"])
                     multi_classification_label.append(g["label"])
                     if g["satisfiability"] == SAT:
                         sat_label_number += 1
@@ -219,7 +222,8 @@ class WordEquationDatasetMultiClassification(DGLDataset):
 
         result_str = f"label size: {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
         result_str+=f"labe distribution: {category_count.__str__()} \n"
-        result_str+= f"dominate accuracy: {max(category_count.values())/sum(category_count.values())}"
+        result_str+= f"dominate accuracy: {max(category_count.values())/sum(category_count.values())} \n"
+        result_str+= f"max node number: {max_node_number}"
         print(result_str)
         return result_str
 
