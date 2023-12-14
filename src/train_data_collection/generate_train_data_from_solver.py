@@ -31,7 +31,7 @@ def main():
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
     #prepare train folder
-    all_eq_folder = bench_folder + "/" + benchmark + "/ALL/ALL"
+    all_eq_folder = bench_folder + "/" + benchmark + "/SAT"
     train_eq_folder=bench_folder + "/" + benchmark+"/train"
 
     # copy answers from divide folder
