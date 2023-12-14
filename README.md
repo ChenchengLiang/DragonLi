@@ -8,7 +8,7 @@ Woking pipeline:
 2. Uppmax: sh word_equation_submit_multiple_eval.sh #get .answer and summary
 
 
-3. Uppmax: sh word_equation_collect_answers.sh
+3. Uppmax: sh word_equation_submit_collect_answers.sh
 
 
 4. Uppmax+Local+Alvis: send answered track to and Alvis
