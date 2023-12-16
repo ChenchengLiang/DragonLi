@@ -8,7 +8,7 @@ project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 30
+algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
 
 #control termination when executing algorithm
@@ -20,7 +20,7 @@ INITIAL_MAX_DEEP_BOUND_2=20
 MAX_DEEP_STEP_BOUND_2=1
 
 
-MAX_SPLIT_CALL=50
+MAX_SPLIT_CALL=1000
 MAX_ONE_SIDE_LENGTH=10000
 MAX_EQ_LENGTH=MAX_ONE_SIDE_LENGTH*2
 
@@ -32,7 +32,7 @@ INTERNAL_TIMEOUT: str = "INTERNAL_TIMEOUT"
 RECURSION_DEPTH_EXCEEDED: str = "RECURSION_DEPTH_EXCEEDED"
 RECURSION_ERROR: str = "RECURSION_ERROR"
 recursion_limit: int = 10000000
-OUTPUT_LEAF_NODE_PERCENTAGE=0.01
+OUTPUT_LEAF_NODE_PERCENTAGE=0.001
 GNN_BRANCH_RATIO=0.5
 UNKNOWN:str = "UNKNOWN"
 SAT:str = "SAT"

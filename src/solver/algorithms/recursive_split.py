@@ -39,6 +39,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.explored_deep = 0
         self.gnn_branch_memory_limitation = 1.0
         self.max_deep = INITIAL_MAX_DEEP
+        self.fresh_variable_counter=0
         self.nodes = []
         self.edges = []
         self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
@@ -915,8 +916,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
     def _create_fresh_variables(self, variables: List[Variable]) -> Term:
         # fresh_variable_term = Term(Variable(left_term.value.value + "'"))  # V1'
-        available_caps = identify_available_capitals("".join([v.value for v in variables]))
-        fresh_variable_term = Term(Variable(available_caps.pop()))  # a capital rather than V1
+        # available_caps = identify_available_capitals("".join([v.value for v in variables]))
+        # fresh_variable_term = Term(Variable(available_caps.pop()))  # a capital rather than V1
+        fresh_variable_term = Term(Variable(f"V{self.fresh_variable_counter}"))  # V1, V2, V3, ...
+        self.fresh_variable_counter += 1
         return fresh_variable_term
 
     def replace_a_term(self, old_term: Term, new_term: Union[List[List[Term]], Term], terms_queue: Deque[Term]):

@@ -9,7 +9,8 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict, Callable
 from collections import Counter
 from src.solver.Constants import project_folder
-from src.solver.independent_utils import get_memory_usage
+from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
+    load_from_pickle_within_zip, compress_to_zip
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification
 import mlflow
@@ -237,12 +238,44 @@ def train_binary_and_multi_classification(dataset_list, GNN_model_list, paramete
 def train_multiple_models_separately(parameters, benchmark_folder):
     print("parameters:", parameters)
     # benchmark_folder = config['Path']['woorpje_benchmarks']
-    print("-" * 10, "load dataset", "-" * 10)
 
     graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
+    bench_folder=os.path.join(benchmark_folder, parameters["benchmark"])
     node_type = parameters["node_type"]
-    dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=2)
-    dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=3)
+    graph_type=parameters["graph_type"]
+
+    # Filenames for the ZIP files
+    zip_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl.zip")
+    zip_file_3 = os.path.join(bench_folder, f"dataset_3_{graph_type}.pkl.zip")
+
+    # Names of the pickle files inside ZIP archives
+    pickle_name_2 = f"dataset_2_{graph_type}.pkl"
+    pickle_name_3 = f"dataset_3_{graph_type}.pkl"
+
+    if os.path.exists(zip_file_2) and os.path.exists(zip_file_3):
+        print("-" * 10, "load dataset from zipped pickle:",parameters["benchmark"], "-" * 10)
+    else:
+        print("-" * 10, "load dataset:", parameters["benchmark"], "-" * 10)
+
+    # Load the datasets directly from ZIP files
+    dataset_2 = load_from_pickle_within_zip(zip_file_2, pickle_name_2)
+    dataset_3 = load_from_pickle_within_zip(zip_file_3, pickle_name_3)
+
+    # If datasets are not found in pickle files, create and save them
+    if dataset_2 is None:
+        dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=2)
+        pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
+        save_to_pickle(dataset_2, pickle_file_2)
+        compress_to_zip(pickle_file_2)
+
+    if dataset_3 is None:
+        dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=3)
+        pickle_file_3 = os.path.join(bench_folder, f"dataset_3_{graph_type}.pkl")
+        save_to_pickle(dataset_3, pickle_file_3)
+        compress_to_zip(pickle_file_3)
+
+    # dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=2)
+    # dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=3)
 
     dataset_statistics = dataset_2.statistics()
     mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")

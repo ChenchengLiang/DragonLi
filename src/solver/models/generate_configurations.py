@@ -13,13 +13,13 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 
 def main():
-    num_epochs=300
+    num_epochs=200
     task="task_3"
     node_type=4
-    batch_size=10
+    batch_size=1
     learning_rate=0.001
     configurations = []
-    for benchmark in ["03_track_generated_train_1_20000_task_3"]:
+    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
             for gnn_layer_num in [2,8]:
                 for ffnn_layer_num in [2,8]:

@@ -5,6 +5,7 @@ import os
 import shutil
 import psutil
 import zipfile
+import pickle
 
 def check_list_consistence(target_list):
     consitence_list = []
@@ -107,6 +108,13 @@ def mean(l):
     else:
         return sum(l)/len(l)
 
+def compress_to_zip(pickle_file):
+    zip_file = pickle_file + '.zip'
+    with zipfile.ZipFile(zip_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        zipf.write(pickle_file, os.path.basename(pickle_file))
+    os.remove(pickle_file)  # Optionally remove the original pickle file
+
+
 def zip_folder(folder_path, output_zip_file):
     # Create a ZIP file in write mode
     with zipfile.ZipFile(output_zip_file, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -117,3 +125,32 @@ def zip_folder(folder_path, output_zip_file):
                 relative_path = os.path.relpath(os.path.join(root, file), os.path.dirname(folder_path))
                 # Add the file to the ZIP file
                 zipf.write(os.path.join(root, file), arcname=relative_path)
+
+
+def save_to_pickle(dataset, file_path):
+    """
+    Save a dataset to a pickle file.
+
+    :param dataset: The dataset to be saved.
+    :param file_path: Path to the pickle file where the dataset will be stored.
+    """
+    with open(file_path, 'wb') as file:
+        pickle.dump(dataset, file)
+
+def load_from_pickle(file_path):
+    """
+    Load a dataset from a pickle file.
+
+    :param file_path: Path to the pickle file to be loaded.
+    :return: Loaded dataset or None if file does not exist.
+    """
+    if os.path.exists(file_path):
+        with open(file_path, 'rb') as file:
+            return pickle.load(file)
+    else:
+        return None
+
+def load_from_pickle_within_zip(zip_file_path, pickle_file_name):
+    with zipfile.ZipFile(zip_file_path, 'r') as z:
+        with z.open(pickle_file_name, 'r') as file:
+            return pickle.load(file)

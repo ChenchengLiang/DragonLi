@@ -52,16 +52,17 @@ def main():
 
         train_config = {
                 "benchmark":"test_track_04_task_3","graph_type": "graph_1", "model_type": model_type,"task":task,
-            "num_epochs": 50, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 10, "gnn_hidden_dim": 16,
-            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
+            "num_epochs": 200, "learning_rate": 0.001,
+            "save_criterion": "valid_accuracy", "batch_size": 10, "gnn_hidden_dim": 128,
+            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 128, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
             "node_type":4
         }
 
-    mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
 
     benchmark_folder = config['Path']['woorpje_benchmarks']
     today = datetime.date.today().strftime("%Y-%m-%d")
+
+    mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
     mlflow.set_experiment(today+"-"+train_config["benchmark"])
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
