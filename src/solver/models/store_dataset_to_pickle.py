@@ -22,7 +22,7 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "test_track_04_task_3"
+    benchmark = "03_track_generated_train_1_20000_task_3"#"01_track_multi_word_equations_generated_train_1_40000"
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -32,7 +32,12 @@ def main():
     parameters={}
     parameters["benchmark"] = benchmark
     parameters["graph_type"] = args.graph_type
+
+
+
     prepare_and_save_datasets_task_3(parameters)
+
+    print("Done")
 
 
 def prepare_and_save_datasets_task_3(parameters):

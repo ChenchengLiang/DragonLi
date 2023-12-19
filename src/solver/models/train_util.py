@@ -257,6 +257,7 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     else:
         print("-" * 10, "load dataset:", parameters["benchmark"], "-" * 10)
 
+    start_time = time.time()
     # Load the datasets directly from ZIP files
     dataset_2 = load_from_pickle_within_zip(zip_file_2, pickle_name_2)
     dataset_3 = load_from_pickle_within_zip(zip_file_3, pickle_name_3)
@@ -276,6 +277,10 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
     # dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=2)
     # dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=3)
+
+    end_time = time.time()  # End time
+    elapsed_time = end_time - start_time  # Calculate elapsed time
+    print("-" * 10, "load dataset finished", "use time (s):",str(elapsed_time), "-" * 10)
 
     dataset_statistics = dataset_2.statistics()
     mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")
@@ -319,6 +324,8 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     mlflow.log_metrics(metrics)
     mlflow.pytorch.log_model(best_model_2, "model_2")
     mlflow.pytorch.log_model(best_model_3, "model_3")
+
+    print("-" * 10, "train finished", "-" * 10)
 
 
 def train_multi_classification(dataset, model, parameters: Dict):

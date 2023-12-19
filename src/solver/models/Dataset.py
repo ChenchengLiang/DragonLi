@@ -1,5 +1,6 @@
 import fnmatch
 import os
+import sys
 import zipfile
 
 os.environ["DGLBACKEND"] = "pytorch"
@@ -11,6 +12,7 @@ import glob
 import json
 from src.solver.Constants import SAT,UNKNOWN,UNSAT
 from typing import Dict, List
+from tqdm import tqdm
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
@@ -145,7 +147,7 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
 
-        for split_graphs in graph_generator:
+        for split_graphs in tqdm(graph_generator, desc="Processing graphs"):
             split_graph_list=[]
             split_graph_labels=[]
             for index,g in split_graphs.items():
@@ -162,6 +164,7 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         if self._label_size == 2:
             self.labels = [1 if label == [1,0] else 0 for label in self.labels]
             self.labels = torch.LongTensor(self.labels)
+
         else:
             self.labels = torch.Tensor(self.labels)
 
@@ -193,14 +196,21 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         unknown_label_number = 0
         split_number = 0
         max_node_number=0
+        graph_number=0
+        total_graph_node=0
+        min_node_number=sys.maxsize
         multi_classification_label_list=[]
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
             multi_classification_label:List=[]
             for index, g in graphs.items():
                 if isinstance(g, dict):
+                    total_graph_node+=len(g["nodes"])
+                    graph_number+=1
                     if max_node_number<len(g["nodes"]):
                         max_node_number=len(g["nodes"])
+                    if min_node_number>len(g["nodes"]):
+                        min_node_number=len(g["nodes"])
                     multi_classification_label.append(g["label"])
                     if g["satisfiability"] == SAT:
                         sat_label_number += 1
@@ -220,10 +230,13 @@ class WordEquationDatasetMultiClassification(DGLDataset):
             category_count[category] += 1
 
 
-        result_str = f"label size: {self._label_size}, split_number: {split_number}, sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n"
+        result_str = (f"label size: {self._label_size}, split_number: {split_number}, \n "
+                      f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n")
         result_str+=f"labe distribution: {category_count.__str__()} \n"
         result_str+= f"dominate accuracy: {max(category_count.values())/sum(category_count.values())} \n"
-        result_str+= f"max node number: {max_node_number}"
+        result_str+= f"max node number: {max_node_number} \n"
+        result_str+= f"min node number: {min_node_number} \n"
+        result_str+= f"average node number: {total_graph_node/graph_number}"
         print(result_str)
         return result_str
 
