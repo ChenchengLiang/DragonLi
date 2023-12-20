@@ -241,6 +241,56 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         return result_str
 
 
+class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassification):
+    def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory=[], label_size=3):
+        self._data_fold = data_fold
+        self._graph_folder = graph_folder
+        self._graphs_from_memory = graphs_from_memory
+        self._label_size = label_size
+        self._node_type = node_type
+        super().__init__(name="WordEquation")
+
+    def __getitem__(self, i):
+        # Load and process the graph when it's accessed
+        graph_name = self.graph_file_names[i]
+        graph_data = self.load_graph(graph_name)
+        dgl_graph, label = get_one_dgl_graph(graph_data)
+
+        # Convert the label list to tensor for saving.
+        if self._label_size == 2:
+            label = 1 if label == [1, 0] else 0
+            label = torch.LongTensor(label)
+
+        else:
+            label= torch.Tensor(label)
+        return dgl_graph, label
+
+    def __len__(self):
+        return len(self.graph_file_names)
+
+    def load_graph(self, graph_file):
+        zip_file = self._graph_folder + ".zip"
+        with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+            with zip_file_content.open(graph_file) as json_file:
+                loaded_dict = json.load(json_file)
+                loaded_dict["file_path"] = self._graph_folder + "/" + os.path.basename(graph_file)
+
+
+        return loaded_dict
+
+    def process(self):
+        # Instead of loading all graphs, just store the file paths
+        self.graph_file_names = []
+
+        zip_file = self._graph_folder + ".zip"
+        with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+            for graph_file in zip_file_content.namelist():
+                if fnmatch.fnmatch(graph_file, "*.graph.json"):
+                    self.graph_file_names.append(graph_file)
+
+
+
+
 class WordEquationDatasetMultiModels(WordEquationDatasetBinaryClassification):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=2):
         self._data_fold = data_fold
