@@ -578,6 +578,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
                     for min_value_index in min_value_indeces:
                         label_list[min_value_index] = 1
+                        break
                 elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
                     label_list[satisfiability_list.index(SAT)] = 1
                 elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(

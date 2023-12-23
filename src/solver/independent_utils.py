@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable, List,Callable
 import json
 import re
 import os
@@ -6,6 +6,7 @@ import shutil
 import psutil
 import zipfile
 import pickle
+import time
 
 def check_list_consistence(target_list):
     consitence_list = []
@@ -154,3 +155,33 @@ def load_from_pickle_within_zip(zip_file_path, pickle_file_name):
     with zipfile.ZipFile(zip_file_path, 'r') as z:
         with z.open(pickle_file_name, 'r') as file:
             return pickle.load(file)
+
+def time_it(func:Callable):
+    def wrapper(*args, **kwargs):
+        print(f"----- Function {func.__name__} starts -----")
+        start_time = time.time()  # Record the start time
+        result = func(*args, **kwargs)  # Call the function
+        end_time = time.time()  # Record the end time
+        print(f"----- Function {func.__name__} finished, took {end_time - start_time} seconds to run -----")
+        return result
+    return wrapper
+
+def color_print(text,color):
+    if color=="red":
+        print("\033[31m"+text+"\033[0m")
+    elif color=="green":
+        print("\033[32m"+text+"\033[0m")
+    elif color=="yellow":
+        print("\033[33m"+text+"\033[0m")
+    elif color=="blue":
+        print("\033[34m"+text+"\033[0m")
+    elif color=="purple":
+        print("\033[35m"+text+"\033[0m")
+    elif color=="cyan":
+        print("\033[36m"+text+"\033[0m")
+    elif color=="white":
+        print("\033[37m"+text+"\033[0m")
+    elif color=="black":
+        print("\033[30m"+text+"\033[0m")
+    else:
+        print(text)

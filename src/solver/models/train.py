@@ -48,7 +48,7 @@ def main():
             train_config = json.load(f)
     else:
         task="task_3"
-        model_type="GCNSplit"#GCNSplit
+        model_type="GCNSplit"#GINSplit
 
         train_config = {
                 "benchmark":"test_track_04_task_3","graph_type": "graph_1", "model_type": model_type,"task":task,

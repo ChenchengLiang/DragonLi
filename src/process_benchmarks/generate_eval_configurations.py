@@ -71,10 +71,10 @@ def main():
         #  ["gnn:fixed", f"--termination_condition execute_termination_condition_2", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCNSplit.pth",
         #   f"--gnn_task {task}"]],
 
-        ["woorpje", []],
-        ["z3", []],
-        ["ostrich", []],
-        ["cvc5", []],
+        # ["woorpje", []],
+        # ["z3", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
     ]
 
     benchmark_dict = {
@@ -94,7 +94,7 @@ def main():
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name = "01_track_multi_word_equations_generated_train_1_40000"
+    benchmark_name = "01_track_multi_word_equations_generated_train_1_40000_new"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])

@@ -18,7 +18,7 @@ from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
-from src.solver.Constants import max_variable_length, algorithm_timeout
+from src.solver.Constants import algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
 from src.solver.independent_utils import strip_file_name_suffix,zip_folder
@@ -26,7 +26,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
 
-    benchmark="01_track_multi_word_equations_generated_train_1_40000_new"#"01_track_generated_SAT_train"
+    benchmark="test_track_04_task_3"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
@@ -39,7 +39,7 @@ def main():
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + divided_folder) if "divided" in os.path.basename(fo)])
     for i in range(folder_number):
-        divided_folder_index = i + 1
+        divided_folder_index = i + 17
         for answer_file in glob.glob(
                 bench_folder + "/" + divided_folder + "/divided_" + str(divided_folder_index) + "/*.answer"):
             shutil.copy(answer_file, all_eq_folder)
@@ -54,9 +54,12 @@ def main():
 
 
     # extract train data
-    for i, file_path in enumerate(glob.glob(train_eq_folder + "/*.eq")):
+    eq_file_list=glob.glob(train_eq_folder + "/*.eq")
+    eq_file_list_len=len(eq_file_list)
+    for i, file_path in enumerate(eq_file_list):
         file_name = strip_file_name_suffix(file_path)
-        print(i, file_path)
+        print(f"-- {i}/{eq_file_list_len} --")
+        print(file_path)
 
         #get satisfiability
         answer_file_path = file_name + ".answer"

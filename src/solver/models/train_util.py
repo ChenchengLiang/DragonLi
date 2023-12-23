@@ -10,9 +10,9 @@ from typing import Dict, Callable
 from collections import Counter
 from src.solver.Constants import project_folder
 from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
-    load_from_pickle_within_zip, compress_to_zip
+    load_from_pickle_within_zip, compress_to_zip,time_it
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
-    WordEquationDatasetMultiClassification
+    WordEquationDatasetMultiClassification,WordEquationDatasetMultiClassificationLazy
 import mlflow
 import time
 import random
@@ -245,40 +245,6 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     graph_type=parameters["graph_type"]
 
 
-    #
-    # start_time = time.time()
-    # # Filenames for the ZIP files
-    # zip_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl.zip")
-    # zip_file_3 = os.path.join(bench_folder, f"dataset_3_{graph_type}.pkl.zip")
-    # if os.path.exists(zip_file_2) and os.path.exists(zip_file_3):
-    #     print("-" * 10, "load dataset from zipped pickle:",parameters["benchmark"], "-" * 10)
-    #     # Names of the pickle files inside ZIP archives
-    #     pickle_name_2 = f"dataset_2_{graph_type}.pkl"
-    #     pickle_name_3 = f"dataset_3_{graph_type}.pkl"
-    #     # Load the datasets directly from ZIP files
-    #     dataset_2 = load_from_pickle_within_zip(zip_file_2, pickle_name_2)
-    #     dataset_3 = load_from_pickle_within_zip(zip_file_3, pickle_name_3)
-    # else:
-    #     print("-" * 10, "load dataset from zipped file:", parameters["benchmark"], "-" * 10)
-    #     dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=2)
-    #     #pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
-    #     #save_to_pickle(dataset_2, pickle_file_2)
-    #     #compress_to_zip(pickle_file_2)
-    #     dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=3)
-    #     # pickle_file_3 = os.path.join(bench_folder, f"dataset_3_{graph_type}.pkl")
-    #     # save_to_pickle(dataset_3, pickle_file_3)
-    #     # compress_to_zip(pickle_file_3)
-    #
-    #
-    # end_time = time.time()  # End time
-    # elapsed_time = end_time - start_time  # Calculate elapsed time
-    # print("-" * 10, "load dataset finished", "use time (s):",str(elapsed_time), "-" * 10)
-    #
-    # dataset_statistics = dataset_2.statistics()
-    # mlflow.log_text(dataset_statistics, artifact_file="dataset_2_statistics.txt")
-    # dataset_statistics = dataset_3.statistics()
-    # mlflow.log_text(dataset_statistics, artifact_file="dataset_3_statistics.txt")
-
     # todo expand GNN categories
     if parameters["model_type"] == "GCNSplit":
         shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
@@ -320,7 +286,7 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
     print("-" * 10, "train finished", "-" * 10)
 
-
+@time_it
 def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,label_size):
     start_time = time.time()
     # Filenames for the ZIP files
@@ -335,7 +301,8 @@ def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,l
 
     else:
         print("-" * 10, "load dataset from zipped file:", parameters["benchmark"], "-" * 10)
-        dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=label_size)
+        #dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=label_size)
+        dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
         # pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
         # save_to_pickle(dataset_2, pickle_file_2)
         # compress_to_zip(pickle_file_2)
@@ -367,9 +334,9 @@ def train_multi_classification(dataset, model, parameters: Dict):
         model.train()
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
-            pred = model(batched_graph).squeeze()  # Squeeze to remove the extra dimension
-
-            loss = loss_function(pred, labels)  # labels are not squeezed
+            pred = model(batched_graph)  # Squeeze to remove the extra dimension
+            final_pred,labels=squeeze_labels(pred,labels)
+            loss = loss_function(final_pred, labels)  # labels are not squeezed
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -383,14 +350,15 @@ def train_multi_classification(dataset, model, parameters: Dict):
         num_valids = 0
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
-                pred = model(batched_graph).squeeze()
-
-                loss = loss_function(pred, labels)
+                pred = model(batched_graph)
+                final_pred, labels = squeeze_labels(pred, labels)
+                loss = loss_function(final_pred, labels)
                 valid_loss += loss.item()
 
                 # Accuracy calculation for multi-class
-                predicted_labels = torch.argmax(pred, dim=1)
+                predicted_labels = torch.argmax(final_pred, dim=1)
                 true_labels = torch.argmax(labels, dim=1)
+
                 num_correct += (predicted_labels == true_labels).sum().item()
                 num_valids += len(predicted_labels)
 
@@ -434,7 +402,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
             pred = model(batched_graph)
-            pred_final,labels=squeeze_labels(labels, pred)
+            pred_final,labels=squeeze_labels(pred,labels)
 
             loss = loss_function(pred_final, labels)
             optimizer.zero_grad()
@@ -452,7 +420,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
                 pred = model(batched_graph)
-                pred_final, labels = squeeze_labels(labels, pred)
+                pred_final, labels = squeeze_labels(pred,labels)
 
                 loss = loss_function(pred_final, labels)
                 valid_loss += loss.item()
@@ -480,7 +448,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
     best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
     return best_model, best_metrics
 
-def squeeze_labels(labels,pred):
+def squeeze_labels(pred,labels):
     # Convert labels to float for BCELoss
     labels = labels.float()
     pred_squeezed = torch.squeeze(pred)
@@ -565,6 +533,9 @@ def create_data_loaders(dataset, parameters):
 
     # Check if the dataset is for binary classification or multi-class classification
     first_label = dataset[0][1]
+    print("print(dataset[0])")
+    print(dataset[0])
+
     is_binary_classification = len(first_label.shape) == 0 or (
             len(first_label.shape) == 1 and first_label.shape[0] == 1)
 

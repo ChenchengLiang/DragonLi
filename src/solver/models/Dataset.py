@@ -3,6 +3,8 @@ import os
 import sys
 import zipfile
 
+from src.solver.independent_utils import color_print
+
 os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import torch
@@ -10,9 +12,11 @@ from dgl.data import DGLDataset
 import pandas as pd
 import glob
 import json
-from src.solver.Constants import SAT,UNKNOWN,UNSAT
+from src.solver.Constants import SAT,UNKNOWN,UNSAT,RED,COLORRESET
 from typing import Dict, List
 from tqdm import tqdm
+import time
+
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
@@ -167,6 +171,7 @@ class WordEquationDatasetMultiClassification(DGLDataset):
 
         else:
             self.labels = torch.Tensor(self.labels)
+        print(self.labels)
 
 
     def get_graph_list_from_folder(self):
@@ -191,6 +196,9 @@ class WordEquationDatasetMultiClassification(DGLDataset):
 
 
     def statistics(self):
+
+        start_time = time.time()
+        print("-- get statistics --")
         sat_label_number = 0
         unsat_label_number = 0
         unknown_label_number = 0
@@ -237,6 +245,9 @@ class WordEquationDatasetMultiClassification(DGLDataset):
         result_str+= f"max node number: {max_node_number} \n"
         result_str+= f"min node number: {min_node_number} \n"
         result_str+= f"average node number: {total_graph_node/graph_number}"
+        end_time = time.time()  # End time
+        elapsed_time = end_time - start_time  # Calculate elapsed time
+        print(f"-- get statistics finished, used time (s) {elapsed_time} --")
         print(result_str)
         return result_str
 
@@ -248,22 +259,39 @@ class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassif
         self._graphs_from_memory = graphs_from_memory
         self._label_size = label_size
         self._node_type = node_type
-        super().__init__(name="WordEquation")
+        super().__init__(graph_folder=graph_folder,data_fold=data_fold,node_type=node_type,graphs_from_memory=graphs_from_memory,label_size=label_size)
 
     def __getitem__(self, i):
         # Load and process the graph when it's accessed
         graph_name = self.graph_file_names[i]
-        graph_data = self.load_graph(graph_name)
-        dgl_graph, label = get_one_dgl_graph(graph_data)
+        split_graphs = self.load_graph(graph_name)
+        split_graph_list = []
+        split_graph_labels = []
+        for index, g in split_graphs.items():
+            if isinstance(g, dict):
+                dgl_graph, label = get_one_dgl_graph(g)
+                split_graph_list.append(dgl_graph)
+                split_graph_labels.append(label)
 
         # Convert the label list to tensor for saving.
+        processed_label=None
         if self._label_size == 2:
-            label = 1 if label == [1, 0] else 0
-            label = torch.LongTensor(label)
+            if split_graph_labels == [1, 0]:
+                processed_label = torch.LongTensor([1]).squeeze()
 
+            elif split_graph_labels == [0, 1]:
+                processed_label = torch.LongTensor([0]).squeeze()
+            else:
+                color_print(text=f"label error: label={processed_label}", color="red")
+                print(split_graphs)
+
+        elif self._label_size == 3:
+            processed_label = torch.Tensor(split_graph_labels)
         else:
-            label= torch.Tensor(label)
-        return dgl_graph, label
+            color_print(text=f"label size error: label_size={self._label_size}", color="red")
+
+
+        return split_graph_list, processed_label
 
     def __len__(self):
         return len(self.graph_file_names)
@@ -286,7 +314,10 @@ class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassif
         with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
             for graph_file in zip_file_content.namelist():
                 if fnmatch.fnmatch(graph_file, "*.graph.json"):
-                    self.graph_file_names.append(graph_file)
+                    split_graphs = self.load_graph(graph_file)
+
+                    if self._label_size+1==len(split_graphs): #self._label_size+1 because split_graphs has a additional file_path key
+                        self.graph_file_names.append(graph_file)
 
 
 
