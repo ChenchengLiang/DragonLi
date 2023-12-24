@@ -14,7 +14,7 @@ import json
 import datetime
 from src.solver.independent_utils import save_to_pickle, compress_to_zip
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
-    WordEquationDatasetMultiClassification
+    WordEquationDatasetMultiClassification,WordEquationDatasetMultiClassificationLazy
 from src.solver.Constants import project_folder, bench_folder
 
 
@@ -52,9 +52,9 @@ def prepare_and_save_datasets_task_3(parameters):
     pickle_file_3 = os.path.join(benchmark_folder, f"dataset_3_{graph_type}.pkl")
 
     # Prepare datasets
-    dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+    dataset_2 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
                                                        label_size=2)
-    dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+    dataset_3 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
                                                        label_size=3)
 
     # Save the datasets to pickle files
