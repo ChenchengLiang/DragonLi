@@ -263,8 +263,10 @@ class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassif
 
     def __getitem__(self, i):
         # Load and process the graph when it's accessed
+        zip_file = self._graph_folder + ".zip"
         graph_name = self.graph_file_names[i]
-        split_graphs = self.load_graph(graph_name)
+        with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+            split_graphs = self.load_graph(graph_name,zip_file_content)
         split_graph_list = []
         split_graph_labels = []
         for index, g in split_graphs.items():
@@ -296,12 +298,12 @@ class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassif
     def __len__(self):
         return len(self.graph_file_names)
 
-    def load_graph(self, graph_file):
+    def load_graph(self, graph_file,zip_file_content):
         zip_file = self._graph_folder + ".zip"
-        with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
-            with zip_file_content.open(graph_file) as json_file:
-                loaded_dict = json.load(json_file)
-                loaded_dict["file_path"] = self._graph_folder + "/" + os.path.basename(graph_file)
+        #with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+        with zip_file_content.open(graph_file) as json_file:
+            loaded_dict = json.load(json_file)
+            loaded_dict["file_path"] = self._graph_folder + "/" + os.path.basename(graph_file)
 
 
         return loaded_dict
@@ -312,9 +314,9 @@ class WordEquationDatasetMultiClassificationLazy(WordEquationDatasetMultiClassif
 
         zip_file = self._graph_folder + ".zip"
         with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
-            for graph_file in zip_file_content.namelist():
+            for graph_file in tqdm(zip_file_content.namelist(), desc="Processing zip_file_content.namelist()"):
                 if fnmatch.fnmatch(graph_file, "*.graph.json"):
-                    split_graphs = self.load_graph(graph_file)
+                    split_graphs = self.load_graph(graph_file,zip_file_content)
 
                     if self._label_size+1==len(split_graphs): #self._label_size+1 because split_graphs has a additional file_path key
                         self.graph_file_names.append(graph_file)
