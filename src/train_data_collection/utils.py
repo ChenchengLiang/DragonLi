@@ -15,8 +15,8 @@ import fnmatch
 
 
 
-def dvivde_track_for_cluster(benchmark, chunk_size=50):
-    folder = benchmark + "/ALL"
+def dvivde_track_for_cluster(benchmark, file_folder="ALL",chunk_size=50):
+    folder = benchmark + "/"+file_folder
     chunk_size = chunk_size
 
     folder_counter = 0

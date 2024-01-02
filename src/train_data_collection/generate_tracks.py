@@ -24,9 +24,9 @@ def main():
     # generate track
     track_name="01_track_multi_word_equations_generated_train_1_40000_new"
     track_folder = bench_folder + "/"+track_name
-    # start_idx = 1
-    # end_idx = 40000
-    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    start_idx = 1
+    end_idx = 40000
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)

@@ -171,7 +171,8 @@ class WordEquationDatasetMultiClassification(DGLDataset):
 
         else:
             self.labels = torch.Tensor(self.labels)
-        print(self.labels)
+
+        #print(self.labels)
 
 
     def get_graph_list_from_folder(self):

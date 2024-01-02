@@ -26,7 +26,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
 
-    benchmark="01_track_multi_word_equations_generated_train_1_40000_new"#"01_track_generated_SAT_train"
+    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
@@ -35,14 +35,14 @@ def main():
     train_eq_folder=bench_folder + "/" + benchmark+"/train"
 
     # copy answers from divide folder
-    divided_folder = benchmark + "/ALL"
-    folder_number = sum(
-        [1 for fo in os.listdir(bench_folder + "/" + divided_folder) if "divided" in os.path.basename(fo)])
-    for i in range(folder_number):
-        divided_folder_index = i + 17
-        for answer_file in glob.glob(
-                bench_folder + "/" + divided_folder + "/divided_" + str(divided_folder_index) + "/*.answer"):
-            shutil.copy(answer_file, all_eq_folder)
+    # divided_folder = benchmark + "/ALL"
+    # folder_number = sum(
+    #     [1 for fo in os.listdir(bench_folder + "/" + divided_folder) if "divided" in os.path.basename(fo)])
+    # for i in range(folder_number):
+    #     divided_folder_index = i + 17
+    #     for answer_file in glob.glob(
+    #             bench_folder + "/" + divided_folder + "/divided_" + str(divided_folder_index) + "/*.answer"):
+    #         shutil.copy(answer_file, all_eq_folder)
 
     if not os.path.exists(train_eq_folder):
         os.mkdir(train_eq_folder)

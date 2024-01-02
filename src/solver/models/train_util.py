@@ -301,8 +301,8 @@ def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,l
 
     else:
         print("-" * 10, "load dataset from zipped file:", parameters["benchmark"], "-" * 10)
-        #dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=label_size)
-        dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
+        dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=label_size)
+        #dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
         # pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
         # save_to_pickle(dataset_2, pickle_file_2)
         # compress_to_zip(pickle_file_2)
@@ -426,8 +426,8 @@ def train_binary_classification(dataset, model, parameters: Dict):
                 valid_loss += loss.item()
 
                 # Compute accuracy for binary classification
-                predicted_labels = (pred > 0.5).float()
-                num_correct += (pred_final== labels).sum().item()
+                predicted_labels = (pred_final > 0.5).float()
+                num_correct += (predicted_labels== labels).sum().item()
                 num_valids += len(labels)
 
         avg_valid_loss = valid_loss / len(valid_dataloader)
@@ -472,8 +472,8 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
                                                             valid_accuracy,
                                                             epoch_info_log, model_index=label_size)
 
-    # Print the losses once every 20 epochs
-    if epoch % 20 == 0:
+    # Print the losses once every 5 epochs
+    if epoch % 5 == 0:
         current_epoch_info = f"Model: {model_type} | Epoch: {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
@@ -522,14 +522,14 @@ def get_samplers(dataset):
     valid_sampler = SubsetRandomSampler(valid_indices)
     return train_sampler, valid_sampler, train_indices, valid_indices
 
-
+@time_it
 def create_data_loaders(dataset, parameters):
     train_sampler, valid_sampler, train_indices, valid_indices = get_samplers(dataset)
 
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
-    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],
-                                       drop_last=False)
+    #valid_dataloader=train_dataloader
+    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],drop_last=False)
 
     # Check if the dataset is for binary classification or multi-class classification
     first_label = dataset[0][1]

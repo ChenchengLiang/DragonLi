@@ -51,7 +51,7 @@ def main():
         model_type="GCNSplit"#GINSplit
 
         train_config = {
-                "benchmark":"01_track_multi_word_equations_generated_train_1_40000_new","graph_type": "graph_1", "model_type": model_type,"task":task,
+                "benchmark":"01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1","graph_type": "graph_1", "model_type": model_type,"task":task,
             "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,

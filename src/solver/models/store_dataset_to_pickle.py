@@ -22,7 +22,7 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new"#"01_track_multi_word_equations_generated_train_1_40000"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"#"01_track_multi_word_equations_generated_train_1_40000"
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
