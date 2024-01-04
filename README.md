@@ -26,12 +26,17 @@ Woking pipeline:
 8. Alvis: sh word_equation_submit_multiple_train.sh #train
 
 
-9. Alvis+Local: select and send back good models
+9. Alvis+Local+Uppmax: select and send back good models
+    Local: cd /usr/local/bin; run_server_8888;
+    Local: browser visit http://0.0.0.0:8888 select good models and find it in /home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns
+    change name: such as "model_2_graph_2_GINSplit_8ac6ff7a3b614c5d95e3492216142366.pth" to "model_2_graph_2_GINSplit.pth"
+    send good models to Uppmax path /home/cheli243/boosting-string-equation-solving-by-GNNs/Models
 
 
-10. Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
+10. Local: configurate evaluation parameters in generate_eval_configurations.py
+    Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
+    Uppmax: sh send_summary_back.sh
 
 
-11. Local: merge_summary_folders.py
-Local: summary_solutions.py
+11. sh merge_and_summary.sh $benchmark_name # this will call merge_summary_folders.py and summary_solutions.py
 

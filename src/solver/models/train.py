@@ -51,9 +51,9 @@ def main():
         model_type="GCNSplit"#GINSplit
 
         train_config = {
-                "benchmark":"01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1","graph_type": "graph_1", "model_type": model_type,"task":task,
+                "benchmark":"test_track_04_task_3","graph_type": "graph_1", "model_type": model_type,"task":task,
             "num_epochs": 50, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 16,
+            "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
             "node_type":4
         }
@@ -68,6 +68,7 @@ def main():
     torch.autograd.set_detect_anomaly(True)
     with mlflow.start_run() as mlflow_run:
         train_config["run_id"]=mlflow_run.info.run_id
+        train_config["experiment_id"] = mlflow_run.info.experiment_id
         mlflow.log_params(train_config)
         if train_config["task"]=="task_3":
             #train_multiple_models(train_config,benchmark_folder)

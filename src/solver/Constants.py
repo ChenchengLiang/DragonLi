@@ -6,9 +6,11 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
+mlflow_folder = config['Path']['mlflow_folder']
+checkpoint_folder = config['Path']['checkpoint_folder']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 300
+algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
 
 #control termination when executing algorithm

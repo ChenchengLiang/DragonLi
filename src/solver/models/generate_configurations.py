@@ -13,18 +13,18 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 
 def main():
-    num_epochs=200
+    num_epochs=300
     task="task_3"
     node_type=4
     learning_rate=0.001
     configurations = []
     for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:#["01_track_multi_word_equations_generated_train_1_40000"]:
         for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
-            for gnn_layer_num in [2]:
-                for ffnn_layer_num in [2,8]:
-                    for hidden_dim in [128]:
+            for gnn_layer_num in [2,8]:
+                for ffnn_layer_num in [2]:
+                    for hidden_dim in [128,256]:
                         for dropout_rate in [0.5]:
-                            for batch_size in [1000,10000]:
+                            for batch_size in [10000]:
                                 for model_type in ["GCNSplit","GINSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                     if model_type == "GAT":
                                         for num_heads in [1]:

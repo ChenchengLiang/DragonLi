@@ -8,7 +8,7 @@ from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict, Callable
 from collections import Counter
-from src.solver.Constants import project_folder
+from src.solver.Constants import project_folder,mlflow_folder,checkpoint_folder
 from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
     load_from_pickle_within_zip, compress_to_zip,time_it
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
@@ -375,6 +375,11 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
+        if epoch%10==0:
+            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
+                            filename='model_checkpoint_model_3.pth')
+            break
+
     # Return the trained model and the best metrics
     best_metrics = {"best_valid_loss_multi_class": best_valid_loss,
                     "best_valid_accuracy_multi_class": best_valid_accuracy}
@@ -386,13 +391,13 @@ def train_binary_classification(dataset, model, parameters: Dict):
     train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-    # loss_function = nn.BCELoss()  # Initialize the loss function
+    loss_function = nn.BCELoss()  # Initialize the loss function
 
     best_model = None
     best_valid_loss = float('inf')  # Initialize with a high value
     best_valid_accuracy = float('-inf')  # Initialize with a low value
 
-    loss_function = nn.BCELoss()
+
     epoch_info_log = ""
 
     for epoch in range(parameters["num_epochs"]):
@@ -443,10 +448,43 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
+        if epoch%10==0:
+            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
+                            filename='model_checkpoint_model_2.pth')
+            break
 
     # Return the trained model and the best metrics
     best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
     return best_model, best_metrics
+
+def save_checkpoint(model, optimizer, epoch, best_valid_loss,best_valid_accuracy,parameters, filename='model_checkpoint.pth'):
+    checkpoint = {
+        'epoch': epoch + 1,  # next epoch
+        'state_dict': model.state_dict(),
+        'optimizer': optimizer.state_dict(),
+        'best_valid_loss': best_valid_loss,
+        'best_valid_accuracy': best_valid_accuracy,
+        # Add other metrics or variables necessary for resuming training
+    }
+    run_id=parameters["run_id"]
+    torch.save(checkpoint, f"{checkpoint_folder}/{run_id}_{filename}")
+    mlflow.log_artifact(filename)
+    print(f"Checkpoint saved: {filename}")
+
+def load_checkpoint(model, optimizer, filename='model_checkpoint.pth'):
+    try:
+        checkpoint = torch.load(filename)
+        model.load_state_dict(checkpoint['state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer'])
+        start_epoch = checkpoint['epoch']
+        best_valid_loss = checkpoint['best_valid_loss']
+        best_valid_accuracy = checkpoint['best_valid_accuracy']
+        print(f"Resuming from epoch {start_epoch} with best validation loss {best_valid_loss}, best_valid_accuracy {best_valid_accuracy}")
+        return model, optimizer, start_epoch, best_valid_loss,best_valid_accuracy
+    except FileNotFoundError:
+        print("No checkpoint found, starting from scratch.")
+        return model, optimizer, 0, float('inf'),float('-inf')   # Assuming you want to start with high loss
+
 
 def squeeze_labels(pred,labels):
     # Convert labels to float for BCELoss
@@ -473,7 +511,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
                                                             epoch_info_log, model_index=label_size)
 
     # Print the losses once every 5 epochs
-    if epoch % 5 == 0:
+    if epoch % 2 == 0:
         current_epoch_info = f"Model: {model_type} | Epoch: {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
