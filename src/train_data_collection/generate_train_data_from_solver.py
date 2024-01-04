@@ -26,7 +26,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
 
-    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"#"01_track_generated_SAT_train"
+    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"#"01_track_generated_SAT_train"
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 

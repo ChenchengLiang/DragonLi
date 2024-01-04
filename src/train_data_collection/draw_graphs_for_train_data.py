@@ -23,7 +23,7 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"
     task = "task_3"
 
     # read graph type from command line

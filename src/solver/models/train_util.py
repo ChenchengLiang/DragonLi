@@ -281,8 +281,8 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
     metrics = {**metrics_2, **metrics_3}
     mlflow.log_metrics(metrics)
-    mlflow.pytorch.log_model(best_model_2, "model_2")
-    mlflow.pytorch.log_model(best_model_3, "model_3")
+    #mlflow.pytorch.log_model(best_model_2, "model_2")
+    #mlflow.pytorch.log_model(best_model_3, "model_3")
 
     print("-" * 10, "train finished", "-" * 10)
 
@@ -330,7 +330,10 @@ def train_multi_classification(dataset, model, parameters: Dict):
     loss_function = nn.CrossEntropyLoss()  # Change to CrossEntropyLoss for multi-class
     epoch_info_log = ""
 
-    for epoch in range(parameters["num_epochs"]):
+    model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
+                                                                                          filename='model_checkpoint_model_3.pth')
+
+    for index,epoch in enumerate(range(start_epoch,parameters["num_epochs"])):
         model.train()
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
@@ -375,7 +378,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if epoch%10==0:
+        if index==10:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
                             filename='model_checkpoint_model_3.pth')
             break
@@ -397,10 +400,11 @@ def train_binary_classification(dataset, model, parameters: Dict):
     best_valid_loss = float('inf')  # Initialize with a high value
     best_valid_accuracy = float('-inf')  # Initialize with a low value
 
-
     epoch_info_log = ""
 
-    for epoch in range(parameters["num_epochs"]):
+    model, optimizer, start_epoch, best_valid_loss,best_valid_accuracy=load_checkpoint(model, optimizer, parameters, filename='model_checkpoint_model_2.pth')
+
+    for index,epoch in enumerate(range(start_epoch,parameters["num_epochs"])):
         # time.sleep(10)
         # Training Phase
         model.train()
@@ -448,7 +452,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if epoch%10==0:
+        if index==10:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
                             filename='model_checkpoint_model_2.pth')
             break
@@ -467,13 +471,16 @@ def save_checkpoint(model, optimizer, epoch, best_valid_loss,best_valid_accuracy
         # Add other metrics or variables necessary for resuming training
     }
     run_id=parameters["run_id"]
-    torch.save(checkpoint, f"{checkpoint_folder}/{run_id}_{filename}")
-    mlflow.log_artifact(filename)
+    checkpoint_path=f"{checkpoint_folder}/{run_id}_{filename}"
+    torch.save(checkpoint, checkpoint_path)
+    mlflow.log_artifact(checkpoint_path)
     print(f"Checkpoint saved: {filename}")
 
-def load_checkpoint(model, optimizer, filename='model_checkpoint.pth'):
+def load_checkpoint(model, optimizer, parameters,filename='model_checkpoint.pth'):
     try:
-        checkpoint = torch.load(filename)
+        run_id = parameters["run_id"]
+        checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
+        checkpoint = torch.load(checkpoint_path)
         model.load_state_dict(checkpoint['state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer'])
         start_epoch = checkpoint['epoch']

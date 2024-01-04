@@ -51,7 +51,7 @@ def main():
         model_type="GCNSplit"#GINSplit
 
         train_config = {
-                "benchmark":"test_track_04_task_3","graph_type": "graph_1", "model_type": model_type,"task":task,
+                "benchmark":"01_track_multi_word_equations_generated_train_1_40000_new_small_test","graph_type": "graph_1", "model_type": model_type,"task":task,
             "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
@@ -66,7 +66,8 @@ def main():
     mlflow.set_experiment(today+"-"+train_config["benchmark"])
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
-    with mlflow.start_run() as mlflow_run:
+    #with mlflow.start_run() as mlflow_run:
+    with mlflow.start_run(run_id="f2b02315610e46ab938e89e3deed8293") as mlflow_run:
         train_config["run_id"]=mlflow_run.info.run_id
         train_config["experiment_id"] = mlflow_run.info.experiment_id
         mlflow.log_params(train_config)
