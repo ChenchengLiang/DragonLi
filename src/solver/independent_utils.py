@@ -188,7 +188,7 @@ def color_print(text,color):
         print(text)
 
 @time_it
-def delete_duplicate_files(directory):
+def delete_duplicate_files(directory,log=False):
     """
     Delete duplicate files in the specified directory, print the number of deletions,
     and return a list of deleted file paths.
@@ -213,18 +213,20 @@ def delete_duplicate_files(directory):
         if os.path.isfile(filepath):
             filehash = file_hash(filepath)
             if filehash in hashes:
-                print(f"Deleting duplicate file: {filepath}")
+                original_files = ", ".join(hashes[filehash])
+                if log==True:
+                    print(f"Deleting duplicate file: {filepath} (duplicates: {original_files})")
                 os.remove(filepath)
                 deleted_files.append(filepath)
             else:
-                hashes[filehash] = filename
+                hashes[filehash] = hashes.get(filehash, []) + [filepath]
 
     # Print the total number of duplicate files deleted
     print(f"Total duplicate files deleted: {len(deleted_files)}")
 
     return deleted_files
 @time_it
-def delete_files_with_content(directory, target_string):
+def delete_files_with_content(directory, target_string,log=False):
     """
     Delete files in the specified directory that contain the given target string, print the number of deletions,
     and return a list of deleted file paths.
@@ -244,7 +246,8 @@ def delete_files_with_content(directory, target_string):
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path) and contains_target(file_path, target_string):
-            print(f"Deleting file: {filename}")
+            if log == True:
+                print(f"Deleting file: {filename}")
             os.remove(file_path)
             deleted_files.append(file_path)
 
@@ -261,11 +264,12 @@ def apply_to_all_files(directory, operation_function):
     :param directory: Path to the directory.
     :param operation_function: Function that defines the operation to be applied to each file.
     """
+    print(f"Applying operation {operation_function.__name__} to all files in {directory}")
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path):
             operation_function(file_path)
-            print(f"Processed file: {filename}")
+            #print(f"Processed file: {filename}")
 
 def delete_duplicate_lines(file_path):
     """Remove duplicate lines from a file while preserving the original order."""
