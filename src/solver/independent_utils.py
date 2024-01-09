@@ -7,7 +7,8 @@ import psutil
 import zipfile
 import pickle
 import time
-
+import hashlib
+from collections import OrderedDict
 def check_list_consistence(target_list):
     consitence_list = []
     for one_answer in target_list:
@@ -185,3 +186,95 @@ def color_print(text,color):
         print("\033[30m"+text+"\033[0m")
     else:
         print(text)
+
+@time_it
+def delete_duplicate_files(directory):
+    """
+    Delete duplicate files in the specified directory, print the number of deletions,
+    and return a list of deleted file paths.
+
+    :param directory: Path to the directory to search for duplicate files.
+    :return: List of paths of the deleted duplicate files.
+    """
+
+    def file_hash(filepath):
+        """Compute hash of a file."""
+        hash_func = hashlib.md5()
+        with open(filepath, 'rb') as file:
+            for chunk in iter(lambda: file.read(4096), b""):
+                hash_func.update(chunk)
+        return hash_func.hexdigest()
+
+    hashes = {}
+    deleted_files = []
+
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath):
+            filehash = file_hash(filepath)
+            if filehash in hashes:
+                print(f"Deleting duplicate file: {filepath}")
+                os.remove(filepath)
+                deleted_files.append(filepath)
+            else:
+                hashes[filehash] = filename
+
+    # Print the total number of duplicate files deleted
+    print(f"Total duplicate files deleted: {len(deleted_files)}")
+
+    return deleted_files
+@time_it
+def delete_files_with_content(directory, target_string):
+    """
+    Delete files in the specified directory that contain the given target string, print the number of deletions,
+    and return a list of deleted file paths.
+
+    :param directory: Path to the directory to search in.
+    :param target_string: The content to search for within the files.
+    :return: List of paths of the deleted files.
+    """
+
+    def contains_target(file_path, target):
+        """Check if a file contains the target string."""
+        with open(file_path, 'r') as file:
+            return target in file.read()
+
+    deleted_files = []
+
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path) and contains_target(file_path, target_string):
+            print(f"Deleting file: {filename}")
+            os.remove(file_path)
+            deleted_files.append(file_path)
+
+    # Print the total number of files deleted
+    print(f"Total files deleted: {len(deleted_files)}\nTarget content:\n{target_string}")
+
+
+    return deleted_files
+
+def apply_to_all_files(directory, operation_function):
+    """
+    Apply a given operation to all files in a specified directory.
+
+    :param directory: Path to the directory.
+    :param operation_function: Function that defines the operation to be applied to each file.
+    """
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+        if os.path.isfile(file_path):
+            operation_function(file_path)
+            print(f"Processed file: {filename}")
+
+def delete_duplicate_lines(file_path):
+    """Remove duplicate lines from a file while preserving the original order."""
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+
+    # Using OrderedDict to preserve order and remove duplicates
+    unique_lines = list(OrderedDict.fromkeys(lines))
+
+    with open(file_path, 'w') as file:
+        file.writelines(unique_lines)
+
