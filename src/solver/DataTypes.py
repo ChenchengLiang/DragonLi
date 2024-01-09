@@ -142,7 +142,7 @@ class Equation:
     def __eq__(self, other):
         if not isinstance(other, Equation):
             return False
-        return self.left_terms == other.left_terms and self.right_terms == other.right_terms
+        return (self.left_terms == other.left_terms and self.right_terms == other.right_terms) or (self.left_terms==other.right_terms and self.right_terms==other.left_terms)
 
     def copy(self):
         return copy.copy(self)

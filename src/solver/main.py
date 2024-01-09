@@ -21,7 +21,9 @@ def main():
     # example path
     #file_path=bench_folder +"/regression_test/g_03_track_27.eq"
     #file_path=bench_folder +"/temp/output.eq"
-    file_path=bench_folder +"/debug/UNSAT/1533/g_01_track_multi_word_equations_generated_eval_1001_2000_1533.eq"
+    #file_path=bench_folder +"/debug/UNSAT/1533/g_01_track_multi_word_equations_generated_eval_1001_2000_1533.eq"
+    file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
+    #file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
 
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
@@ -82,7 +84,7 @@ def main():
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCNSplit.pth"
 
-    algorithm_parameters = {"branch_method":"gnn","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
