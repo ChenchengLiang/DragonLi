@@ -24,7 +24,7 @@ def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
     graph_type = "graph_2"
-    model_type= "GINSplit"
+    model_type= "GCNSplit"
     solver_param_list = [
         ["this", ["fixed", f"--termination_condition execute_termination_condition_0"]],
         ["this", ["fixed", f"--termination_condition execute_termination_condition_1"]],

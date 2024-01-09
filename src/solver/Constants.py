@@ -10,7 +10,7 @@ mlflow_folder = config['Path']['mlflow_folder']
 checkpoint_folder = config['Path']['checkpoint_folder']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 30
+algorithm_timeout: int = 3000
 shell_timeout: int = algorithm_timeout
 
 #control termination when executing algorithm

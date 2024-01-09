@@ -15,7 +15,7 @@ from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation,
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals,get_memory_usage
+    dump_to_json_with_format, identify_available_capitals,get_memory_usage,time_it
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
@@ -87,6 +87,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 self.branch_prediction_func = self._task_3_branch_prediction
         self.output_train_data = False if self.file_name == "" else True
 
+    @time_it
     def run(self):
         print("branch_method:", self.parameters["branch_method"])
         #first_equation = self.equation_list[0]

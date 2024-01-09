@@ -9,7 +9,7 @@ from typing import List, Dict, Tuple
 import glob
 from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR,RED,GREEN,COLORRESET
 import random
-from src.solver.independent_utils import mean,check_list_consistence
+from src.solver.independent_utils import mean,check_list_consistence,time_it
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict, summary_folder_name,
@@ -126,7 +126,6 @@ def create_a_shell_file(file_path, parameter_list="", solver=""):
         file.write(timeout_command + " " + solver_command + " " + file_path + " " + parameter_str + "\n")
         print("run command:",timeout_command + " " + solver_command + " " + file_path + " " + parameter_str)
     return shell_file_path
-
 
 def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,log:bool=False):
     print("-" * 10)
