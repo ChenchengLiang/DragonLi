@@ -50,6 +50,7 @@ solver_command_map = {"z3": "z3",
                       "this": "python3 "+project_folder+"/src/process_benchmarks/main_parameter.py",
                       "woorpje": project_folder+"/other_solvers/woorpje-0_2/bin/woorpje",
                       "ostrich": project_folder+"/other_solvers/ostrich/ostrich",
+                      "ostrich_export": project_folder+"/other_solvers/ostrich_export/ostrich",
                       "cvc5": project_folder+"/other_solvers/cvc5/cvc5-Linux"}
 
 
