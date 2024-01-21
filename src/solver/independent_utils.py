@@ -188,7 +188,7 @@ def color_print(text,color):
         print(text)
 
 @time_it
-def delete_duplicate_files(directory,log=False):
+def handle_duplicate_files(directory, log=False):
     """
     Delete duplicate files in the specified directory, print the number of deletions,
     and return a list of deleted file paths.
@@ -208,6 +208,11 @@ def delete_duplicate_files(directory,log=False):
     hashes = {}
     deleted_files = []
 
+    duplicate_folder=os.path.dirname(directory)+"/duplicated_eqs"
+    if os.path.exists(duplicate_folder):
+        shutil.rmtree(duplicate_folder)
+    os.mkdir(duplicate_folder)
+
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath):
@@ -215,18 +220,19 @@ def delete_duplicate_files(directory,log=False):
             if filehash in hashes:
                 original_files = ", ".join(hashes[filehash])
                 if log==True:
-                    print(f"Deleting duplicate file: {filepath} (duplicates: {original_files})")
-                os.remove(filepath)
+                    print(f"Move duplicate file: {filepath} to {duplicate_folder} (duplicates: {original_files})")
+                #os.remove(filepath)
+                shutil.move(filepath,duplicate_folder)
                 deleted_files.append(filepath)
             else:
                 hashes[filehash] = hashes.get(filehash, []) + [filepath]
 
     # Print the total number of duplicate files deleted
-    print(f"Total duplicate files deleted: {len(deleted_files)}")
+    print(f"Total duplicate files: {len(deleted_files)}")
 
     return deleted_files
 @time_it
-def delete_files_with_content(directory, target_string,log=False):
+def handle_files_with_target_string(directory, target_string,move_to_folder_name="empty_eq", log=False):
     """
     Delete files in the specified directory that contain the given target string, print the number of deletions,
     and return a list of deleted file paths.
@@ -243,16 +249,23 @@ def delete_files_with_content(directory, target_string,log=False):
 
     deleted_files = []
 
+    target_folder=os.path.dirname(directory)+"/"+move_to_folder_name
+    if os.path.exists(target_folder):
+        shutil.rmtree(target_folder)
+    os.mkdir(target_folder)
+
+
     for filename in os.listdir(directory):
         file_path = os.path.join(directory, filename)
         if os.path.isfile(file_path) and contains_target(file_path, target_string):
             if log == True:
-                print(f"Deleting file: {filename}")
-            os.remove(file_path)
+                print(f"Move file: {filename} to {target_folder}")
+            #os.remove(file_path)
+            shutil.move(file_path,target_folder)
             deleted_files.append(file_path)
 
     # Print the total number of files deleted
-    print(f"Total files deleted: {len(deleted_files)}\nTarget content:\n{target_string}")
+    print(f"Total files moved: {len(deleted_files)}\nTarget string:\n{target_string}")
 
 
     return deleted_files

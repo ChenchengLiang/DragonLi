@@ -5,8 +5,9 @@ import glob
 import os
 import shutil
 import subprocess
+from tqdm import tqdm
 def main():
-    benchmark="kaluza/kaluzaSmallSatExtracted"
+    benchmark="kaluza/SmallUnsat"
     smt_file_folder=bench_folder+f"/{benchmark}/smt2"
     eq_file_folder=bench_folder+f"/{benchmark}/eq"
     exception_file_folder=bench_folder+f"/{benchmark}/exceptions"
@@ -14,12 +15,17 @@ def main():
     solver="ostrich_export"
 
     update_ostrich()
+    if not os.path.exists(eq_file_folder):
+        os.mkdir(eq_file_folder)
+    if not os.path.exists(exception_file_folder):
+        os.mkdir(exception_file_folder)
 
+    #delete answer files
     for answer_file in glob.glob(smt_file_folder+"/*.answer"):
         os.remove(answer_file)
 
     exception_list=[]
-    for smt_file in glob.glob(smt_file_folder+"/*.smt2"):
+    for smt_file in tqdm(glob.glob(smt_file_folder+"/*.smt2"),desc="progress"):
         if os.path.exists(ostrich_output_file):
             os.remove(ostrich_output_file)
 
@@ -33,6 +39,10 @@ def main():
             exception_list.append(smt_file_path)
             shutil.copy(smt_file,exception_file_folder)
     print("exception_list:",exception_list)
+
+    # delete answer files
+    for answer_file in glob.glob(smt_file_folder+"/*.answer"):
+        os.remove(answer_file)
 
 
 
