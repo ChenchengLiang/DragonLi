@@ -96,7 +96,7 @@ def main():
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
+    benchmark_name = "kaluza_eqs"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])

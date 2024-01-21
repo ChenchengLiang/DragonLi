@@ -16,12 +16,12 @@ from src.train_data_collection.utils import dvivde_track_for_cluster
 
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_generated_train_1_40000_new"
+    track_name="kaluza_eqs"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 
     # divide tracks
-    dvivde_track_for_cluster(track_folder,file_folder="SAT_divided", chunk_size=300)
+    dvivde_track_for_cluster(track_folder,file_folder="ALL", chunk_size=50)
 
 
 if __name__ == '__main__':

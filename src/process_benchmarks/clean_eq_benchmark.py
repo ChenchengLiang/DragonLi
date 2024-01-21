@@ -6,17 +6,19 @@ from src.solver.Constants import project_folder,bench_folder
 
 
 def main():
-    benchmark="test"
 
-    eq_folder=f"{bench_folder}/kaluza/{benchmark}/eq"
-    directory_path = f"{bench_folder}/kaluza/{benchmark}/eq_cleaned"
-    if os.path.exists(eq_folder) and not os.path.exists(directory_path):
-        clean_eq_files(eq_folder,directory_path)
-    elif os.path.exists(eq_folder) and os.path.exists(directory_path):
-        shutil.rmtree(directory_path)
-        clean_eq_files(eq_folder, directory_path)
-    else:
-        print("eq_folder not exists")
+    benchmark_list=["all","BigSat","BigUnsat","SmallSat","SmallUnsat","kaluzaSmallSatExtracted","kaluzaWoorpje"]
+
+    for benchmark in benchmark_list:
+        eq_folder=f"{bench_folder}/kaluza/{benchmark}/eq"
+        directory_path = f"{bench_folder}/kaluza/{benchmark}/eq_cleaned"
+        if os.path.exists(eq_folder) and not os.path.exists(directory_path):
+            clean_eq_files(eq_folder,directory_path)
+        elif os.path.exists(eq_folder) and os.path.exists(directory_path):
+            shutil.rmtree(directory_path)
+            clean_eq_files(eq_folder, directory_path)
+        else:
+            print("eq_folder not exists")
 
 
 def clean_eq_files(eq_folder,directory_path):
