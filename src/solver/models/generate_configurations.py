@@ -11,6 +11,7 @@ sys.path.append(path)
 from src.solver.Constants import project_folder
 from src.solver.independent_utils import write_configurations_to_json_file
 from src.solver.models.train_util import initialize_model_structure,load_one_dataset
+from typing import Dict
 import mlflow
 import datetime
 import subprocess
@@ -97,13 +98,20 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     dataset_2 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 2)
-    best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
+    best_model_2, metrics_2 = train_binary_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
     dataset_3 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 3)
-    best_model_3, metrics_3 = train_multi_classification(dataset_3, model=model_3, parameters=parameters)
+    best_model_3, metrics_3 = train_multi_classification_get_run_id(dataset_3, model=model_3, parameters=parameters)
 
     metrics = {**metrics_2, **metrics_3}
     mlflow.log_metrics(metrics)
     print("-" * 10, "train finished", "-" * 10)
+
+def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
+
+    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+        dataset, parameters, model,model_type="multi_classification")
+def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
+    pass
 
 
 

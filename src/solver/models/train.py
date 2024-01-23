@@ -67,7 +67,6 @@ def main():
     mlflow.set_experiment(today+"-"+train_config["benchmark"])
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
-    print("check_run_exists",check_run_exists(train_config["run_id"]))
     if check_run_exists(train_config["run_id"]):
         with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
             color_print(text=f"use the existing run id {mlflow_run.info.run_id}",color="yellow")

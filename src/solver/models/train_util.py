@@ -322,6 +322,21 @@ def load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_ty
     mlflow.log_text(dataset_statistics, artifact_file=f"dataset_{label_size}_statistics.txt")
     return dataset
 
+def training_phase(model,train_dataloader,loss_function,optimizer):
+    # Training Phase
+    model.train()
+    train_loss = 0.0
+    for batched_graph, labels in train_dataloader:
+        pred = model(batched_graph)  # Squeeze to remove the extra dimension
+        pred_final, labels = squeeze_labels(pred, labels)
+        loss = loss_function(pred_final, labels)  # labels are not squeezed
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+
+    avg_train_loss = train_loss / len(train_dataloader)
+    return model,avg_train_loss
 
 def train_multi_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_multi_classification", "-" * 10)
@@ -333,18 +348,8 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                           filename=check_point_model_path)
 
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
-        model.train()
-        train_loss = 0.0
-        for batched_graph, labels in train_dataloader:
-            pred = model(batched_graph)  # Squeeze to remove the extra dimension
-            final_pred, labels = squeeze_labels(pred, labels)
-            loss = loss_function(final_pred, labels)  # labels are not squeezed
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            train_loss += loss.item()
-
-        avg_train_loss = train_loss / len(train_dataloader)
+        # Training Phase
+        model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer)
 
         model.eval()
         valid_loss = 0.0
@@ -353,16 +358,20 @@ def train_multi_classification(dataset, model, parameters: Dict):
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
                 pred = model(batched_graph)
-                final_pred, labels = squeeze_labels(pred, labels)
-                loss = loss_function(final_pred, labels)
+                pred_final, labels = squeeze_labels(pred, labels)
+                loss = loss_function(pred_final, labels)
                 valid_loss += loss.item()
 
                 # Accuracy calculation for multi-class
-                predicted_labels = torch.argmax(final_pred, dim=1)
-                true_labels = torch.argmax(labels, dim=1)
 
-                num_correct += (predicted_labels == true_labels).sum().item()
-                num_valids += len(predicted_labels)
+                num_correct, num_valids = compute_num_correct(pred_final, num_correct, num_valids, labels,
+                                                              model_type="multi_classification")
+
+
+                # predicted_labels = torch.argmax(pred_final, dim=1)
+                # true_labels = torch.argmax(labels, dim=1)
+                # num_correct += (predicted_labels == true_labels).sum().item()
+                # num_valids += len(predicted_labels)
 
         avg_valid_loss = valid_loss / len(valid_dataloader)
         valid_accuracy = num_correct / num_valids
@@ -377,7 +386,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == parameters["train_step"]:
+        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -398,21 +407,8 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                           filename=check_point_model_path)
 
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
-        # time.sleep(10)
         # Training Phase
-        model.train()
-        train_loss = 0.0
-        for batched_graph, labels in train_dataloader:
-            pred = model(batched_graph)
-            pred_final, labels = squeeze_labels(pred, labels)
-
-            loss = loss_function(pred_final, labels)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            train_loss += loss.item()
-
-        avg_train_loss = train_loss / len(train_dataloader)
+        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
 
         # Validation Phase
         model.eval()
@@ -428,9 +424,10 @@ def train_binary_classification(dataset, model, parameters: Dict):
                 valid_loss += loss.item()
 
                 # Compute accuracy for binary classification
-                predicted_labels = (pred_final > 0.5).float()
-                num_correct += (predicted_labels == labels).sum().item()
-                num_valids += len(labels)
+                num_correct,num_valids=compute_num_correct(pred_final, num_correct, num_valids, labels, model_type="binary_classification")
+                # predicted_labels = (pred_final > 0.5).float()
+                # num_correct += (predicted_labels == labels).sum().item()
+                # num_valids += len(labels)
 
         avg_valid_loss = valid_loss / len(valid_dataloader)
         valid_accuracy = num_correct / num_valids
@@ -445,7 +442,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == parameters["train_step"]:
+        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -473,6 +470,19 @@ def initialize_train_objects(dataset, parameters, model, model_type="binary_clas
     epoch_info_log = ""
 
     return train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path
+
+def compute_num_correct(pred_final,num_correct,num_valids,labels,model_type="binary_classification"):
+
+    if model_type=="binary_classification":
+        predicted_labels = (pred_final > 0.5).float()
+        num_correct += (predicted_labels == labels).sum().item()
+        num_valids += len(labels)
+    elif model_type=="multi_classification":
+        predicted_labels = torch.argmax(pred_final, dim=1)
+        true_labels = torch.argmax(labels, dim=1)
+        num_correct += (predicted_labels == true_labels).sum().item()
+        num_valids += len(predicted_labels)
+    return num_correct,num_valids
 
 
 def save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
