@@ -28,7 +28,7 @@ import datetime
 import subprocess
 from src.solver.independent_utils import color_print
 import signal
-from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately,check_run_exists
+from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately,check_run_exists,check_experiment_exists
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -64,7 +64,15 @@ def main():
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    mlflow.set_experiment(today+"-"+train_config["benchmark"])
+    if "/divided" in train_config["benchmark"]:
+        experiment_name = today + "-" + train_config["benchmark"].split("/")[0]
+    else:
+        experiment_name = today + "-" + train_config["benchmark"]
+    if check_experiment_exists(train_config["experiment_id"]):
+        mlflow.set_experiment(experiment_id=train_config["experiment_id"])
+    else:
+        mlflow.set_experiment(experiment_name)
+
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
     if check_run_exists(train_config["run_id"]):

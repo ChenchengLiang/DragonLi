@@ -58,7 +58,11 @@ def initiate_run_id_for_a_configuration(train_config):
     today = datetime.date.today().strftime("%Y-%m-%d")
 
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    mlflow.set_experiment(today + "-" + train_config["benchmark"])
+    if "/divided" in train_config["benchmark"]:
+        experiment_name = today + "-" + train_config["benchmark"].split("/")[0]
+    else:
+        experiment_name = today + "-" + train_config["benchmark"]
+    mlflow.set_experiment(experiment_name)
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
     with mlflow.start_run() as mlflow_run:

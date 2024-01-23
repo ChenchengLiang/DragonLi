@@ -641,3 +641,13 @@ def check_run_exists(run_id):
         # If an exception occurs, it likely means the run_id does not exist
         print(f"Run ID not found: {e}")
         return False
+
+def check_experiment_exists(experiment_id):
+    try:
+        # Attempt to retrieve the experiment using the experiment_id
+        experiment = mlflow.get_experiment(experiment_id)
+        return True if experiment else False
+    except Exception as e:
+        # If an exception occurs, it likely means the experiment_id does not exist
+        print(f"Experiment ID not found: {e}")
+        return False
