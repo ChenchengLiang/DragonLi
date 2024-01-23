@@ -22,7 +22,8 @@ def main():
     #file_path=bench_folder +"/regression_test/g_03_track_27.eq"
     #file_path=bench_folder +"/temp/output.eq"
     #file_path=bench_folder +"/debug/UNSAT/1533/g_01_track_multi_word_equations_generated_eval_1001_2000_1533.eq"
-    file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
+    #file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
+    file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
     #file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
 
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"

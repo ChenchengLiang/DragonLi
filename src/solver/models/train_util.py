@@ -8,11 +8,11 @@ from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict, Callable
 from collections import Counter
-from src.solver.Constants import project_folder,mlflow_folder,checkpoint_folder
+from src.solver.Constants import project_folder, mlflow_folder, checkpoint_folder
 from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
-    load_from_pickle_within_zip, compress_to_zip,time_it
+    load_from_pickle_within_zip, compress_to_zip, time_it
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
-    WordEquationDatasetMultiClassification,WordEquationDatasetMultiClassificationLazy
+    WordEquationDatasetMultiClassification, WordEquationDatasetMultiClassificationLazy
 import mlflow
 import time
 import random
@@ -235,23 +235,14 @@ def train_binary_and_multi_classification(dataset_list, GNN_model_list, paramete
     return best_models, best_metrics
 
 
-def train_multiple_models_separately(parameters, benchmark_folder):
-    print("parameters:", parameters)
-    # benchmark_folder = config['Path']['woorpje_benchmarks']
-
-    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
-    bench_folder=os.path.join(benchmark_folder, parameters["benchmark"])
-    node_type = parameters["node_type"]
-    graph_type=parameters["graph_type"]
-
-
+def initialize_model_structure(parameters):
     # todo expand GNN categories
     if parameters["model_type"] == "GCNSplit":
-        shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+        shared_gnn = SharedGNN(input_feature_dim=parameters["node_type"], gnn_hidden_dim=parameters["gnn_hidden_dim"],
                                gnn_layer_num=parameters["gnn_layer_num"],
                                gnn_dropout_rate=parameters["gnn_dropout_rate"], embedding_type="GCN")
     elif parameters["model_type"] == "GINSplit":
-        shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
+        shared_gnn = SharedGNN(input_feature_dim=parameters["node_type"], gnn_hidden_dim=parameters["gnn_hidden_dim"],
                                gnn_layer_num=parameters["gnn_layer_num"],
                                gnn_dropout_rate=parameters["gnn_dropout_rate"], embedding_type="GIN")
     else:
@@ -272,22 +263,37 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     model_2 = GraphClassifier(shared_gnn, classifier_2)
     model_3 = GraphClassifier(shared_gnn, classifier_3)
 
+    return shared_gnn, classifier_2, classifier_3, model_2, model_3
+
+
+def train_multiple_models_separately(parameters, benchmark_folder):
+    print("parameters:", parameters)
+    # benchmark_folder = config['Path']['woorpje_benchmarks']
+
+    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
+    bench_folder = os.path.join(benchmark_folder, parameters["benchmark"])
+    node_type = parameters["node_type"]
+    graph_type = parameters["graph_type"]
+
+    shared_gnn, classifier_2, classifier_3, model_2, model_3 = initialize_model_structure(parameters)
+
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
-    dataset_2=load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 2)
+    dataset_2 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 2)
     best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
     dataset_3 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 3)
     best_model_3, metrics_3 = train_multi_classification(dataset_3, model=model_3, parameters=parameters)
 
     metrics = {**metrics_2, **metrics_3}
     mlflow.log_metrics(metrics)
-    #mlflow.pytorch.log_model(best_model_2, "model_2")
-    #mlflow.pytorch.log_model(best_model_3, "model_3")
+    # mlflow.pytorch.log_model(best_model_2, "model_2")
+    # mlflow.pytorch.log_model(best_model_3, "model_3")
 
     print("-" * 10, "train finished", "-" * 10)
 
+
 @time_it
-def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,label_size):
+def load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, label_size):
     start_time = time.time()
     # Filenames for the ZIP files
     zip_file = os.path.join(bench_folder, f"dataset_{label_size}_{graph_type}.pkl.zip")
@@ -301,12 +307,12 @@ def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,l
 
     else:
         print("-" * 10, "load dataset from zipped file:", parameters["benchmark"], "-" * 10)
-        dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type, label_size=label_size)
-        #dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
+        dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type,
+                                                         label_size=label_size)
+        # dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
         # pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
         # save_to_pickle(dataset_2, pickle_file_2)
         # compress_to_zip(pickle_file_2)
-
 
     end_time = time.time()  # End time
     elapsed_time = end_time - start_time  # Calculate elapsed time
@@ -319,26 +325,19 @@ def load_one_dataset(parameters,bench_folder,graph_folder,node_type,graph_type,l
 
 def train_multi_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_multi_classification", "-" * 10)
-    train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-
-    best_model = None
-    best_valid_loss = float('inf')
-    best_valid_accuracy = float('-inf')
-
-    loss_function = nn.CrossEntropyLoss()  # Change to CrossEntropyLoss for multi-class
-    epoch_info_log = ""
+    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+        dataset, parameters, model,model_type="multi_classification")
 
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
-                                                                                          filename='model_checkpoint_model_3.pth')
+                                                                                          filename=check_point_model_path)
 
-    for index,epoch in enumerate(range(start_epoch,parameters["num_epochs"])):
+    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
         model.train()
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
             pred = model(batched_graph)  # Squeeze to remove the extra dimension
-            final_pred,labels=squeeze_labels(pred,labels)
+            final_pred, labels = squeeze_labels(pred, labels)
             loss = loss_function(final_pred, labels)  # labels are not squeezed
             optimizer.zero_grad()
             loss.backward()
@@ -378,9 +377,9 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index==10:
-            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
-                            filename='model_checkpoint_model_3.pth')
+        if index == 10:
+            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                            filename=check_point_model_path)
             break
 
     # Return the trained model and the best metrics
@@ -391,27 +390,21 @@ def train_multi_classification(dataset, model, parameters: Dict):
 
 def train_binary_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_binary_classification", "-" * 10)
-    train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-    loss_function = nn.BCELoss()  # Initialize the loss function
+    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+        dataset, parameters, model,model_type="binary_classification")
 
-    best_model = None
-    best_valid_loss = float('inf')  # Initialize with a high value
-    best_valid_accuracy = float('-inf')  # Initialize with a low value
+    model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
+                                                                                          filename=check_point_model_path)
 
-    epoch_info_log = ""
-
-    model, optimizer, start_epoch, best_valid_loss,best_valid_accuracy=load_checkpoint(model, optimizer, parameters, filename='model_checkpoint_model_2.pth')
-
-    for index,epoch in enumerate(range(start_epoch,parameters["num_epochs"])):
+    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
         # time.sleep(10)
         # Training Phase
         model.train()
         train_loss = 0.0
         for batched_graph, labels in train_dataloader:
             pred = model(batched_graph)
-            pred_final,labels=squeeze_labels(pred,labels)
+            pred_final, labels = squeeze_labels(pred, labels)
 
             loss = loss_function(pred_final, labels)
             optimizer.zero_grad()
@@ -429,14 +422,14 @@ def train_binary_classification(dataset, model, parameters: Dict):
         with torch.no_grad():
             for batched_graph, labels in valid_dataloader:
                 pred = model(batched_graph)
-                pred_final, labels = squeeze_labels(pred,labels)
+                pred_final, labels = squeeze_labels(pred, labels)
 
                 loss = loss_function(pred_final, labels)
                 valid_loss += loss.item()
 
                 # Compute accuracy for binary classification
                 predicted_labels = (pred_final > 0.5).float()
-                num_correct += (predicted_labels== labels).sum().item()
+                num_correct += (predicted_labels == labels).sum().item()
                 num_valids += len(labels)
 
         avg_valid_loss = valid_loss / len(valid_dataloader)
@@ -452,16 +445,38 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index==10:
-            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy,parameters,
-                            filename='model_checkpoint_model_2.pth')
+        if index == 10:
+            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                            filename=check_point_model_path)
             break
 
     # Return the trained model and the best metrics
     best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
     return best_model, best_metrics
 
-def save_checkpoint(model, optimizer, epoch, best_valid_loss,best_valid_accuracy,parameters, filename='model_checkpoint.pth'):
+
+def initialize_train_objects(dataset, parameters, model, model_type="binary_classification"):
+    train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
+    if model_type == "binary_classification":
+        loss_function = nn.BCELoss()  # Initialize the loss function
+        check_point_model_path = parameters["run_id"] + "_checkpoint_model_2.pth"
+    elif model_type == "multi_classification":
+        loss_function = nn.CrossEntropyLoss()
+        check_point_model_path = parameters["run_id"] + "_checkpoint_model_3.pth"
+
+    best_model = None
+    best_valid_loss = float('inf')  # Initialize with a high value
+    best_valid_accuracy = float('-inf')  # Initialize with a low value
+
+    epoch_info_log = ""
+
+    return train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path
+
+
+def save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                    filename='model_checkpoint.pth'):
     checkpoint = {
         'epoch': epoch + 1,  # next epoch
         'state_dict': model.state_dict(),
@@ -470,13 +485,14 @@ def save_checkpoint(model, optimizer, epoch, best_valid_loss,best_valid_accuracy
         'best_valid_accuracy': best_valid_accuracy,
         # Add other metrics or variables necessary for resuming training
     }
-    run_id=parameters["run_id"]
-    checkpoint_path=f"{checkpoint_folder}/{run_id}_{filename}"
+    run_id = parameters["run_id"]
+    checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
     torch.save(checkpoint, checkpoint_path)
     mlflow.log_artifact(checkpoint_path)
     print(f"Checkpoint saved: {filename}")
 
-def load_checkpoint(model, optimizer, parameters,filename='model_checkpoint.pth'):
+
+def load_checkpoint(model, optimizer, parameters, filename='model_checkpoint.pth'):
     try:
         run_id = parameters["run_id"]
         checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
@@ -486,14 +502,15 @@ def load_checkpoint(model, optimizer, parameters,filename='model_checkpoint.pth'
         start_epoch = checkpoint['epoch']
         best_valid_loss = checkpoint['best_valid_loss']
         best_valid_accuracy = checkpoint['best_valid_accuracy']
-        print(f"Resuming from epoch {start_epoch} with best validation loss {best_valid_loss}, best_valid_accuracy {best_valid_accuracy}")
-        return model, optimizer, start_epoch, best_valid_loss,best_valid_accuracy
+        print(
+            f"Resuming from epoch {start_epoch} with best validation loss {best_valid_loss}, best_valid_accuracy {best_valid_accuracy}")
+        return model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy
     except FileNotFoundError:
         print("No checkpoint found, starting from scratch.")
-        return model, optimizer, 0, float('inf'),float('-inf')   # Assuming you want to start with high loss
+        return model, optimizer, 0, float('inf'), float('-inf')  # Assuming you want to start with high loss
 
 
-def squeeze_labels(pred,labels):
+def squeeze_labels(pred, labels):
     # Convert labels to float for BCELoss
     labels = labels.float()
     pred_squeezed = torch.squeeze(pred)
@@ -501,7 +518,8 @@ def squeeze_labels(pred,labels):
         pred_final = torch.unsqueeze(pred_squeezed, 0)
     else:
         pred_final = pred_squeezed
-    return pred_final,labels
+    return pred_final, labels
+
 
 def log_and_save_best_model(parameters, epoch, best_model, model, model_type, label_size, avg_train_loss,
                             avg_valid_loss, valid_accuracy, best_valid_loss, best_valid_accuracy, epoch_info_log):
@@ -567,14 +585,16 @@ def get_samplers(dataset):
     valid_sampler = SubsetRandomSampler(valid_indices)
     return train_sampler, valid_sampler, train_indices, valid_indices
 
+
 @time_it
 def create_data_loaders(dataset, parameters):
     train_sampler, valid_sampler, train_indices, valid_indices = get_samplers(dataset)
 
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
-    #valid_dataloader=train_dataloader
-    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],drop_last=False)
+    # valid_dataloader=train_dataloader
+    valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],
+                                       drop_last=False)
 
     # Check if the dataset is for binary classification or multi-class classification
     first_label = dataset[0][1]
