@@ -56,7 +56,7 @@ def main():
             "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
-            "node_type":4,"train_step":10,"run_id":"bb0392c88609434db1b55650e4b7923e"
+            "node_type":4,"train_step":10,"run_id":"91b35e83ce2343d7afdd46fddebc1640"
         }
 
 

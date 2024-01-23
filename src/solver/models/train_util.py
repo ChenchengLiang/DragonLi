@@ -338,6 +338,27 @@ def training_phase(model,train_dataloader,loss_function,optimizer):
     avg_train_loss = train_loss / len(train_dataloader)
     return model,avg_train_loss
 
+def validation_phase(model,valid_dataloader,loss_function,model_type):
+    model.eval()
+    valid_loss = 0.0
+    num_correct = 0
+    num_valids = 0
+    with torch.no_grad():
+        for batched_graph, labels in valid_dataloader:
+            pred = model(batched_graph)
+            pred_final, labels = squeeze_labels(pred, labels)
+
+            loss = loss_function(pred_final, labels)
+            valid_loss += loss.item()
+
+            # Compute accuracy for binary classification
+            num_correct, num_valids = compute_num_correct(pred_final, num_correct, num_valids, labels,
+                                                          model_type=model_type)
+
+    avg_valid_loss = valid_loss / len(valid_dataloader)
+    valid_accuracy = num_correct / num_valids
+    return model,avg_valid_loss,valid_accuracy
+
 def train_multi_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_multi_classification", "-" * 10)
 
@@ -351,31 +372,11 @@ def train_multi_classification(dataset, model, parameters: Dict):
         # Training Phase
         model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer)
 
-        model.eval()
-        valid_loss = 0.0
-        num_correct = 0
-        num_valids = 0
-        with torch.no_grad():
-            for batched_graph, labels in valid_dataloader:
-                pred = model(batched_graph)
-                pred_final, labels = squeeze_labels(pred, labels)
-                loss = loss_function(pred_final, labels)
-                valid_loss += loss.item()
+        # Validation Phase
+        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
+                                                                 "multi_classification")
 
-                # Accuracy calculation for multi-class
-
-                num_correct, num_valids = compute_num_correct(pred_final, num_correct, num_valids, labels,
-                                                              model_type="multi_classification")
-
-
-                # predicted_labels = torch.argmax(pred_final, dim=1)
-                # true_labels = torch.argmax(labels, dim=1)
-                # num_correct += (predicted_labels == true_labels).sum().item()
-                # num_valids += len(predicted_labels)
-
-        avg_valid_loss = valid_loss / len(valid_dataloader)
-        valid_accuracy = num_correct / num_valids
-
+        # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
                                                                                                    best_model, model,
                                                                                                    "multi_class",
@@ -411,26 +412,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
         model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
 
         # Validation Phase
-        model.eval()
-        valid_loss = 0.0
-        num_correct = 0
-        num_valids = 0
-        with torch.no_grad():
-            for batched_graph, labels in valid_dataloader:
-                pred = model(batched_graph)
-                pred_final, labels = squeeze_labels(pred, labels)
-
-                loss = loss_function(pred_final, labels)
-                valid_loss += loss.item()
-
-                # Compute accuracy for binary classification
-                num_correct,num_valids=compute_num_correct(pred_final, num_correct, num_valids, labels, model_type="binary_classification")
-                # predicted_labels = (pred_final > 0.5).float()
-                # num_correct += (predicted_labels == labels).sum().item()
-                # num_valids += len(labels)
-
-        avg_valid_loss = valid_loss / len(valid_dataloader)
-        valid_accuracy = num_correct / num_valids
+        model,avg_valid_loss,valid_accuracy=validation_phase(model, valid_dataloader, loss_function, "binary_classification")
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
