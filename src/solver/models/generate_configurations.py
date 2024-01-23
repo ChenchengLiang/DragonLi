@@ -10,7 +10,8 @@ sys.path.append(path)
 
 from src.solver.Constants import project_folder
 from src.solver.independent_utils import write_configurations_to_json_file
-from src.solver.models.train_util import initialize_model_structure,load_one_dataset
+from src.solver.models.train_util import (initialize_model_structure,load_one_dataset,training_phase,validation_phase,
+                                          initialize_train_objects,log_and_save_best_model,save_checkpoint)
 from typing import Dict
 import mlflow
 import datetime
@@ -19,17 +20,17 @@ import torch
 import signal
 
 def main():
-    num_epochs=300
+    num_epochs=30 #300
     task="task_3"
     node_type=4
     learning_rate=0.001
     train_step=10
     configurations = []
-    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:#["01_track_multi_word_equations_generated_train_1_40000"]:
-        for graph_type in ["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
-            for gnn_layer_num in [2,8]:
+    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_new_small_test"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
+        for graph_type in ["graph_1"]:#["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
+            for gnn_layer_num in [2]:#[2,8]:
                 for ffnn_layer_num in [2]:
-                    for hidden_dim in [128,256]:
+                    for hidden_dim in [16]:#[128,256]:
                         for dropout_rate in [0.5]:
                             for batch_size in [10000]:
                                 for model_type in ["GCNSplit","GINSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
@@ -77,13 +78,9 @@ def initiate_run_id_for_a_configuration(train_config):
         train_config["experiment_id"] = mlflow_run.info.experiment_id
         mlflow.log_params(train_config)
         train_multiple_models_separately_get_run_id(train_config, benchmark_folder)
-        train_config["current_epoch"]=1
-
 
     mlflow_ui_process.terminate()
-
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
-
     print("done")
     return train_config
 
@@ -107,11 +104,59 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
     print("-" * 10, "train finished", "-" * 10)
 
 def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
-
+    epoch=1
+    model_type = "binary_classification"
     train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
-        dataset, parameters, model,model_type="multi_classification")
+        dataset, parameters, model, model_type=model_type)
+    # Training Phase
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+    # Validation Phase
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type)
+    # Save based on specified criterion
+    best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
+                                                                                               best_model, model,
+                                                                                               "binary", 2,
+                                                                                               avg_train_loss,
+                                                                                               avg_valid_loss,
+                                                                                               valid_accuracy,
+                                                                                               best_valid_loss,
+                                                                                               best_valid_accuracy,
+                                                                                               epoch_info_log)
+    save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                    filename=check_point_model_path)
+    # Return the trained model and the best metrics
+    best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
+    return best_model, best_metrics
 def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
-    pass
+    epoch=1
+    model_type = "multi_classification"
+    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+        dataset, parameters, model, model_type=model_type)
+
+    # Training Phase
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+
+    # Validation Phase
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type)
+
+    # Save based on specified criterion
+    best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
+                                                                                               best_model, model,
+                                                                                               "multi_class",
+                                                                                               dataset._label_size,
+                                                                                               avg_train_loss,
+                                                                                               avg_valid_loss,
+                                                                                               valid_accuracy,
+                                                                                               best_valid_loss,
+                                                                                               best_valid_accuracy,
+                                                                                               epoch_info_log)
+    save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                    filename=check_point_model_path)
+    # Return the trained model and the best metrics
+    best_metrics = {"best_valid_loss_multi_class": best_valid_loss,
+                    "best_valid_accuracy_multi_class": best_valid_accuracy}
+    return best_model, best_metrics
+
 
 
 

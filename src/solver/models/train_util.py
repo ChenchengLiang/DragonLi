@@ -359,11 +359,50 @@ def validation_phase(model,valid_dataloader,loss_function,model_type):
     valid_accuracy = num_correct / num_valids
     return model,avg_valid_loss,valid_accuracy
 
+
+
+
+def train_binary_classification(dataset, model, parameters: Dict):
+    print("-" * 10, "train_binary_classification", "-" * 10)
+
+    model_type="binary_classification"
+    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+        dataset, parameters, model,model_type=model_type)
+
+    model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
+                                                                                          filename=check_point_model_path)
+
+    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
+        # Training Phase
+        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+
+        # Validation Phase
+        model,avg_valid_loss,valid_accuracy=validation_phase(model, valid_dataloader, loss_function, model_type)
+
+        # Save based on specified criterion
+        best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
+                                                                                                   best_model, model,
+                                                                                                   "binary", 2,
+                                                                                                   avg_train_loss,
+                                                                                                   avg_valid_loss,
+                                                                                                   valid_accuracy,
+                                                                                                   best_valid_loss,
+                                                                                                   best_valid_accuracy,
+                                                                                                   epoch_info_log)
+        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
+            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+                            filename=check_point_model_path)
+            break
+
+    # Return the trained model and the best metrics
+    best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
+    return best_model, best_metrics
+
 def train_multi_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_multi_classification", "-" * 10)
-
+    model_type="multi_classification"
     train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
-        dataset, parameters, model,model_type="multi_classification")
+        dataset, parameters, model,model_type=model_type)
 
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
                                                                                           filename=check_point_model_path)
@@ -373,8 +412,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
         model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer)
 
         # Validation Phase
-        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
-                                                                 "multi_classification")
+        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,model_type)
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
@@ -396,43 +434,6 @@ def train_multi_classification(dataset, model, parameters: Dict):
     best_metrics = {"best_valid_loss_multi_class": best_valid_loss,
                     "best_valid_accuracy_multi_class": best_valid_accuracy}
     return best_model, best_metrics
-
-
-def train_binary_classification(dataset, model, parameters: Dict):
-    print("-" * 10, "train_binary_classification", "-" * 10)
-
-    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
-        dataset, parameters, model,model_type="binary_classification")
-
-    model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
-                                                                                          filename=check_point_model_path)
-
-    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
-        # Training Phase
-        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
-
-        # Validation Phase
-        model,avg_valid_loss,valid_accuracy=validation_phase(model, valid_dataloader, loss_function, "binary_classification")
-
-        # Save based on specified criterion
-        best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
-                                                                                                   best_model, model,
-                                                                                                   "binary", 2,
-                                                                                                   avg_train_loss,
-                                                                                                   avg_valid_loss,
-                                                                                                   valid_accuracy,
-                                                                                                   best_valid_loss,
-                                                                                                   best_valid_accuracy,
-                                                                                                   epoch_info_log)
-        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
-            save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
-                            filename=check_point_model_path)
-            break
-
-    # Return the trained model and the best metrics
-    best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
-    return best_model, best_metrics
-
 
 def initialize_train_objects(dataset, parameters, model, model_type="binary_classification"):
     train_dataloader, valid_dataloader = create_data_loaders(dataset, parameters)
