@@ -78,8 +78,9 @@ def main():
 
 
     mlflow_ui_process.terminate()
-
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
+
+    #todo update configuration file
 
     print("done")
 
