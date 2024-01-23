@@ -26,8 +26,9 @@ import argparse
 import json
 import datetime
 import subprocess
+from src.solver.independent_utils import color_print
 import signal
-from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately
+from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately,check_run_exists
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -55,7 +56,7 @@ def main():
             "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
-            "node_type":4
+            "node_type":4,"train_step":10,"run_id":"bb0392c88609434db1b55650e4b7923e"
         }
 
 
@@ -66,16 +67,15 @@ def main():
     mlflow.set_experiment(today+"-"+train_config["benchmark"])
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
-    #with mlflow.start_run() as mlflow_run:
-    with mlflow.start_run(run_id="f2b02315610e46ab938e89e3deed8293") as mlflow_run:
-        train_config["run_id"]=mlflow_run.info.run_id
-        train_config["experiment_id"] = mlflow_run.info.experiment_id
-        mlflow.log_params(train_config)
-        if train_config["task"]=="task_3":
-            #train_multiple_models(train_config,benchmark_folder)
-            train_multiple_models_separately(train_config,benchmark_folder)
-        else:
-            train_one_model(train_config,benchmark_folder)
+    print("check_run_exists",check_run_exists(train_config["run_id"]))
+    if check_run_exists(train_config["run_id"]):
+        with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
+            color_print(text=f"use the existing run id {mlflow_run.info.run_id}",color="yellow")
+            train_a_model(train_config,mlflow_run,benchmark_folder)
+    else:
+        with mlflow.start_run() as mlflow_run:
+            color_print(text=f"create a new run id {mlflow_run.info.run_id}", color="yellow")
+            train_a_model(train_config, mlflow_run, benchmark_folder)
 
 
     mlflow_ui_process.terminate()
@@ -83,6 +83,17 @@ def main():
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
 
     print("done")
+
+def train_a_model(train_config,mlflow_run,benchmark_folder):
+    train_config["run_id"] = mlflow_run.info.run_id
+    train_config["experiment_id"] = mlflow_run.info.experiment_id
+    mlflow.log_params(train_config)
+    if train_config["task"] == "task_3":
+        # train_multiple_models(train_config,benchmark_folder)
+        train_multiple_models_separately(train_config, benchmark_folder)
+    else:
+        train_one_model(train_config, benchmark_folder)
+
 
 
 

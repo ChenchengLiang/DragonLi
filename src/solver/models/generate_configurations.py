@@ -54,11 +54,14 @@ def main():
                                         })
 
     #todo: train one epoch to get run id and current epochs
-
+    continuous_train_configurations=[]
+    for train_config in configurations:
+        train_config=initiate_run_id_for_a_configuration(train_config)
+        continuous_train_configurations.append(train_config)
 
     # Writing the dictionary to a JSON file
     configuration_folder = project_folder + "/Models/configurations"
-    write_configurations_to_json_file(configuration_folder=configuration_folder, configurations=configurations)
+    write_configurations_to_json_file(configuration_folder=configuration_folder, configurations=continuous_train_configurations)
 
 def initiate_run_id_for_a_configuration(train_config):
     benchmark_folder = config['Path']['woorpje_benchmarks']
@@ -73,6 +76,7 @@ def initiate_run_id_for_a_configuration(train_config):
         train_config["experiment_id"] = mlflow_run.info.experiment_id
         mlflow.log_params(train_config)
         train_multiple_models_separately_get_run_id(train_config, benchmark_folder)
+        train_config["current_epoch"]=1
 
 
     mlflow_ui_process.terminate()
@@ -80,6 +84,7 @@ def initiate_run_id_for_a_configuration(train_config):
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
 
     print("done")
+    return train_config
 
 def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
     graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
@@ -98,8 +103,8 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
 
     metrics = {**metrics_2, **metrics_3}
     mlflow.log_metrics(metrics)
-
     print("-" * 10, "train finished", "-" * 10)
+
 
 
 

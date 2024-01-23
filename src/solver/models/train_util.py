@@ -377,7 +377,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == 10:
+        if index == parameters["train_step"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -445,7 +445,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == 10:
+        if index == parameters["train_step"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -637,3 +637,14 @@ def create_data_loaders(dataset, parameters):
 
 def one_hot_to_class_indices(one_hot_labels):
     return [np.argmax(label_vector) for label_vector in one_hot_labels]
+
+
+def check_run_exists(run_id):
+    try:
+        # Attempt to retrieve the run using the run_id
+        run = mlflow.get_run(run_id)
+        return True
+    except Exception as e:
+        # If an exception occurs, it likely means the run_id does not exist
+        print(f"Run ID not found: {e}")
+        return False
