@@ -389,7 +389,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
+        if index == parameters["train_step"] or epoch >= parameters["num_epochs"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -425,7 +425,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log)
-        if index == parameters["train_step"] or epoch == parameters["num_epochs"] - 1:
+        if index == parameters["train_step"] or epoch >= parameters["num_epochs"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -470,7 +470,11 @@ def compute_num_correct(pred_final,num_correct,num_valids,labels,model_type="bin
 
 def save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                     filename='model_checkpoint.pth'):
+    if epoch >= parameters["num_epochs"]:
+        epoch=0
+
     checkpoint = {
+        "current_train_folder":parameters["current_train_folder"],
         'epoch': epoch + 1,  # next epoch
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict(),
