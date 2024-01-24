@@ -124,7 +124,7 @@ def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
                                                                                                valid_accuracy,
                                                                                                best_valid_loss,
                                                                                                best_valid_accuracy,
-                                                                                               epoch_info_log)
+                                                                                               epoch_info_log,1)
     save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                     filename=check_point_model_path)
     # Return the trained model and the best metrics
@@ -152,7 +152,7 @@ def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
                                                                                                valid_accuracy,
                                                                                                best_valid_loss,
                                                                                                best_valid_accuracy,
-                                                                                               epoch_info_log)
+                                                                                               epoch_info_log,1)
     save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                     filename=check_point_model_path)
     # Return the trained model and the best metrics

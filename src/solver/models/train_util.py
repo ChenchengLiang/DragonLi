@@ -10,7 +10,7 @@ from typing import Dict, Callable
 from collections import Counter
 from src.solver.Constants import project_folder, mlflow_folder, checkpoint_folder
 from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
-    load_from_pickle_within_zip, compress_to_zip, time_it
+    load_from_pickle_within_zip, compress_to_zip, time_it,color_print
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification, WordEquationDatasetMultiClassificationLazy
 import mlflow
@@ -372,7 +372,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
                                                                                           filename=check_point_model_path)
 
-    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
+    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"]+1)):
         # Training Phase
         model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
 
@@ -388,8 +388,8 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    valid_accuracy,
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
-                                                                                                   epoch_info_log)
-        if index == parameters["train_step"] or epoch >= parameters["num_epochs"]:
+                                                                                                   epoch_info_log,index)
+        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -407,7 +407,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
                                                                                           filename=check_point_model_path)
 
-    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"])):
+    for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"]+1)):
         # Training Phase
         model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer)
 
@@ -424,8 +424,8 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    valid_accuracy,
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
-                                                                                                   epoch_info_log)
-        if index == parameters["train_step"] or epoch >= parameters["num_epochs"]:
+                                                                                                   epoch_info_log,index)
+        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"]:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -474,7 +474,6 @@ def save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accurac
         epoch=0
 
     checkpoint = {
-        "current_train_folder":parameters["current_train_folder"],
         'epoch': epoch + 1,  # next epoch
         'state_dict': model.state_dict(),
         'optimizer': optimizer.state_dict(),
@@ -500,7 +499,7 @@ def load_checkpoint(model, optimizer, parameters, filename='model_checkpoint.pth
         best_valid_loss = checkpoint['best_valid_loss']
         best_valid_accuracy = checkpoint['best_valid_accuracy']
         print(
-            f"Resuming from epoch {start_epoch} with best validation loss {best_valid_loss}, best_valid_accuracy {best_valid_accuracy}")
+            f"Resuming from epoch {start_epoch} with best validation loss {best_valid_loss}, best_valid_accuracy {best_valid_accuracy}, current_train_folder {parameters['current_train_folder']}")
         return model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy
     except FileNotFoundError:
         print("No checkpoint found, starting from scratch.")
@@ -519,7 +518,7 @@ def squeeze_labels(pred, labels):
 
 
 def log_and_save_best_model(parameters, epoch, best_model, model, model_type, label_size, avg_train_loss,
-                            avg_valid_loss, valid_accuracy, best_valid_loss, best_valid_accuracy, epoch_info_log):
+                            avg_valid_loss, valid_accuracy, best_valid_loss, best_valid_accuracy, epoch_info_log,index):
     if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_loss:
         best_valid_loss = avg_valid_loss
         best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss,
@@ -534,7 +533,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
 
     # Print the losses once every 5 epochs
     if epoch % 2 == 0:
-        current_epoch_info = f"Model: {model_type} | Epoch: {epoch + 1:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
+        current_epoch_info = f"Model: {model_type} | Epoch: {epoch:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
         mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{label_size}.txt")
@@ -542,16 +541,18 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
         current_folder_number=int(os.path.basename(parameters["current_train_folder"]).split("_")[1])
     else:
         current_folder_number=0
+
+    total_epoch = sum(parameters["train_data_folder_epoch_map"].values())+index
     metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy,
-               "epoch": epoch,"current_folder":current_folder_number}
-    mlflow.log_metrics(metrics, step=epoch)
+               "epoch": epoch,"current_folder":current_folder_number,"total_epoch":total_epoch}
+    mlflow.log_metrics(metrics)
     return best_model, best_valid_loss, best_valid_accuracy, epoch_info_log
 
 
 def add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss, valid_accuracy, epoch_info_log,
                            model_index=0):
-    current_epoch_info = f"Epoch {epoch + 1:05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
+    current_epoch_info = f"Epoch {epoch :05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
     print(current_epoch_info)
     best_model = model
     best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(

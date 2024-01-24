@@ -24,7 +24,7 @@ def main():
     task="task_3"
     node_type=4
     learning_rate=0.001
-    train_step=10
+    train_step=15
     configurations = []
     for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_new_small_test"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
         for graph_type in ["graph_1"]:#["graph_1", "graph_2", "graph_3", "graph_4", "graph_5"]:
