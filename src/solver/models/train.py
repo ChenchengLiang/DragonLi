@@ -32,75 +32,82 @@ from src.solver.models.train_util import train_one_model,create_data_loaders,tra
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
-
     arg_parser.add_argument('--configuration_file', type=str, default=None,
                             help='path to configuration json file ')
-
     args = arg_parser.parse_args()
-
     # Accessing the arguments
     configuration_file = args.configuration_file
-
-
-
     if configuration_file is not None:
         #read json file
         with open(configuration_file) as f:
             train_config = json.load(f)
     else:
+        today = datetime.date.today().strftime("%Y-%m-%d")
         task="task_3"
         model_type="GCNSplit"#GINSplit
+        benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"
 
         train_config = {
-                "benchmark":"01_track_multi_word_equations_generated_train_1_40000_new_small_test","graph_type": "graph_1", "model_type": model_type,"task":task,
+                "benchmark":benchmark,"graph_type": "graph_1", "model_type": model_type,"task":task,
             "num_epochs": 50, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
-            "node_type":4,"train_step":10,"run_id":"91b35e83ce2343d7afdd46fddebc1640"
+            "node_type":4,"train_step":10,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
         }
 
 
-    benchmark_folder = config['Path']['woorpje_benchmarks']
-    today = datetime.date.today().strftime("%Y-%m-%d")
 
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    if "/divided" in train_config["benchmark"]:
-        experiment_name = today + "-" + train_config["benchmark"].split("/")[0]
-    else:
-        experiment_name = today + "-" + train_config["benchmark"]
-    if check_experiment_exists(train_config["experiment_id"]):
-        mlflow.set_experiment(experiment_id=train_config["experiment_id"])
-    else:
-        mlflow.set_experiment(experiment_name)
+    mlflow.set_experiment(train_config["experiment_name"])
+    # if check_experiment_exists(train_config["experiment_id"]):
+    #     mlflow.set_experiment(experiment_name=train_config["experiment_name"],experiment_id=train_config["experiment_id"])
+    # else:
+    #     mlflow.set_experiment(train_config["experiment_name"])
 
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
     if check_run_exists(train_config["run_id"]):
         with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
             color_print(text=f"use the existing run id {mlflow_run.info.run_id}",color="yellow")
-            train_a_model(train_config,mlflow_run,benchmark_folder)
+            # pick one unfinished train
+            train_config["current_train_folder"]=None
+            for key,value in train_config["train_data_folder_epoch_map"].items():
+                if value<train_config["num_epochs"]:
+                    train_config["current_train_folder"]=key
+                    break
+
+            if train_config["current_train_folder"] is None:
+                color_print(text=f"all training folders are done", color="green")
+            else:
+                color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
+                train_config=train_a_model(train_config,mlflow_run)
+                train_config["train_data_folder_epoch_map"][train_config["current_train_folder"]]+=train_config["train_step"]
+                # update configuration file
+                with open(configuration_file, 'w') as f:
+                    json.dump(train_config, f, indent=4)
     else:
         with mlflow.start_run() as mlflow_run:
             color_print(text=f"create a new run id {mlflow_run.info.run_id}", color="yellow")
-            train_a_model(train_config, mlflow_run, benchmark_folder)
-
+            train_a_model(train_config, mlflow_run,)
 
     mlflow_ui_process.terminate()
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
 
-    #todo update configuration file
 
     print("done")
 
-def train_a_model(train_config,mlflow_run,benchmark_folder):
+def train_a_model(train_config,mlflow_run):
+    benchmark_folder = config['Path']['woorpje_benchmarks']
     train_config["run_id"] = mlflow_run.info.run_id
     train_config["experiment_id"] = mlflow_run.info.experiment_id
-    mlflow.log_params(train_config)
+    if len(mlflow_run.data.params)==0:
+        mlflow.log_params(train_config)
     if train_config["task"] == "task_3":
         # train_multiple_models(train_config,benchmark_folder)
         train_multiple_models_separately(train_config, benchmark_folder)
     else:
         train_one_model(train_config, benchmark_folder)
+    return train_config
 
 
 

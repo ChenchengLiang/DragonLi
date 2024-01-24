@@ -270,8 +270,8 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     print("parameters:", parameters)
     # benchmark_folder = config['Path']['woorpje_benchmarks']
 
-    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
-    bench_folder = os.path.join(benchmark_folder, parameters["benchmark"])
+    graph_folder = os.path.join(benchmark_folder, parameters["current_train_folder"], parameters["graph_type"])
+    bench_folder = os.path.join(benchmark_folder, parameters["current_train_folder"])
     node_type = parameters["node_type"]
     graph_type = parameters["graph_type"]
 
@@ -299,14 +299,14 @@ def load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_ty
     zip_file = os.path.join(bench_folder, f"dataset_{label_size}_{graph_type}.pkl.zip")
 
     if os.path.exists(zip_file):
-        print("-" * 10, "load dataset from zipped pickle:", parameters["benchmark"], "-" * 10)
+        print("-" * 10, "load dataset from zipped pickle:", parameters["current_train_folder"], "-" * 10)
         # Names of the pickle files inside ZIP archives
         pickle_name = f"dataset_{label_size}_{graph_type}.pkl"
         # Load the datasets directly from ZIP files
         dataset = load_from_pickle_within_zip(zip_file, pickle_name)
 
     else:
-        print("-" * 10, "load dataset from zipped file:", parameters["benchmark"], "-" * 10)
+        print("-" * 10, "load dataset from zipped file:", parameters["current_train_folder"], "-" * 10)
         dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type,
                                                          label_size=label_size)
         # dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
@@ -534,9 +534,13 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
         mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{label_size}.txt")
+    if "divided" in parameters["current_train_folder"]:
+        current_folder_number=int(os.path.basename(parameters["current_train_folder"]).split("_")[1])
+    else:
+        current_folder_number=0
     metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy,
-               "epoch": epoch}
+               "epoch": epoch,"current_folder":current_folder_number}
     mlflow.log_metrics(metrics, step=epoch)
     return best_model, best_valid_loss, best_valid_accuracy, epoch_info_log
 

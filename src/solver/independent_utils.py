@@ -295,3 +295,11 @@ def delete_duplicate_lines(file_path):
     with open(file_path, 'w') as file:
         file.writelines(unique_lines)
 
+
+def get_folders(path):
+    """
+    Returns a list of folder names found in the given directory path.
+    Only folders will be returned, not files.
+    """
+    folders = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
+    return folders

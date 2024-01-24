@@ -26,7 +26,7 @@ import argparse
 import json
 import datetime
 import subprocess
-from src.solver.independent_utils import color_print
+from src.solver.independent_utils import color_print,get_folders
 import signal
 from src.solver.models.train_util import (initialize_model_structure,load_one_dataset,training_phase,validation_phase,
                                           initialize_train_objects,log_and_save_best_model,save_checkpoint)
@@ -52,33 +52,40 @@ def main():
     with open(configuration_file, 'w') as f:
         json.dump(train_config, f, indent=4)
 
+    print("done")
+
 
 def initiate_run_id_for_a_configuration(train_config):
     benchmark_folder = config['Path']['woorpje_benchmarks']
     today = datetime.date.today().strftime("%Y-%m-%d")
-
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    if "/divided" in train_config["benchmark"]:
-        experiment_name = today + "-" + train_config["benchmark"].split("/")[0]
+
+    benchmark_folder_list=get_folders(benchmark_folder+"/"+train_config["benchmark"])
+    experiment_name = today + "-" + train_config["benchmark"]
+    if "divided_1" in benchmark_folder_list:
+        train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]+"/"+folder: 0 for folder in benchmark_folder_list}
     else:
-        experiment_name = today + "-" + train_config["benchmark"]
+        train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]: 0}
+    train_config["train_data_folder_epoch_map"]=train_data_folder_epoch_map
+    train_config["experiment_name"]=experiment_name
+
     mlflow.set_experiment(experiment_name)
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
     with mlflow.start_run() as mlflow_run:
         train_config["run_id"] = mlflow_run.info.run_id
         train_config["experiment_id"] = mlflow_run.info.experiment_id
+        train_config["current_train_folder"] = list(train_config["train_data_folder_epoch_map"].items())[0][0]
         mlflow.log_params(train_config)
-        train_multiple_models_separately_get_run_id(train_config, benchmark_folder)
+        train_config=train_multiple_models_separately_get_run_id(train_config, benchmark_folder)
 
     mlflow_ui_process.terminate()
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
-    print("done")
     return train_config
 
 def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
-    graph_folder = os.path.join(benchmark_folder, parameters["benchmark"], parameters["graph_type"])
-    bench_folder = os.path.join(benchmark_folder, parameters["benchmark"])
+    graph_folder = os.path.join(benchmark_folder, parameters["current_train_folder"], parameters["graph_type"])
+    bench_folder = os.path.join(benchmark_folder, parameters["current_train_folder"])
     node_type = parameters["node_type"]
     graph_type = parameters["graph_type"]
 
@@ -93,7 +100,11 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
 
     metrics = {**metrics_2, **metrics_3}
     mlflow.log_metrics(metrics)
+
+    #record current training process in configuration file
+    parameters["train_data_folder_epoch_map"][parameters["current_train_folder"]]=1
     print("-" * 10, "train finished", "-" * 10)
+    return parameters
 
 def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
     epoch=1
