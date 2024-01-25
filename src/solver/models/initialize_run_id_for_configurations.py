@@ -28,7 +28,7 @@ import datetime
 import subprocess
 from src.solver.independent_utils import color_print,get_folders
 import signal
-from src.solver.models.train_util import (initialize_model_structure,load_one_dataset,training_phase,validation_phase,
+from src.solver.models.train_util import (initialize_model_structure,load_train_and_valid_dataset,training_phase,validation_phase,
                                           initialize_train_objects,log_and_save_best_model,save_checkpoint)
 def main():
     # parse argument
@@ -61,9 +61,10 @@ def initiate_run_id_for_a_configuration(train_config):
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
 
     benchmark_folder_list=get_folders(benchmark_folder+"/"+train_config["benchmark"])
+    train_folder_list=[folder for folder in benchmark_folder_list if "divided" in folder]
     experiment_name = today + "-" + train_config["benchmark"]
-    if "divided_1" in benchmark_folder_list:
-        train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]+"/"+folder: 0 for folder in benchmark_folder_list}
+    if "divided_1" in train_folder_list:
+        train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]+"/"+folder: 0 for folder in train_folder_list}
     else:
         train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]: 0}
     train_config["train_data_folder_epoch_map"]=train_data_folder_epoch_map
@@ -84,18 +85,15 @@ def initiate_run_id_for_a_configuration(train_config):
     return train_config
 
 def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
-    graph_folder = os.path.join(benchmark_folder, parameters["current_train_folder"], parameters["graph_type"])
-    bench_folder = os.path.join(benchmark_folder, parameters["current_train_folder"])
-    node_type = parameters["node_type"]
-    graph_type = parameters["graph_type"]
+
 
     shared_gnn, classifier_2, classifier_3, model_2, model_3 = initialize_model_structure(parameters)
 
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
-    dataset_2 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 2)
+    dataset_2 = load_train_and_valid_dataset(parameters, benchmark_folder, 2)
     best_model_2, metrics_2 = train_binary_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
-    dataset_3 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 3)
+    dataset_3 = load_train_and_valid_dataset(parameters,benchmark_folder,  3)
     best_model_3, metrics_3 = train_multi_classification_get_run_id(dataset_3, model=model_3, parameters=parameters)
 
     metrics = {**metrics_2, **metrics_3}
@@ -146,7 +144,7 @@ def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
     best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
                                                                                                best_model, model,
                                                                                                "multi_class",
-                                                                                               dataset._label_size,
+                                                                                               parameters["label_size"],
                                                                                                avg_train_loss,
                                                                                                avg_valid_loss,
                                                                                                valid_accuracy,

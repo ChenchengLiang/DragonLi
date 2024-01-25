@@ -6,7 +6,7 @@ from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, G
     GraphClassifier, SharedGNN, Classifier
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from typing import Dict, Callable
+from typing import Dict, Callable,Union
 from collections import Counter
 from src.solver.Constants import project_folder, mlflow_folder, checkpoint_folder
 from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
@@ -270,18 +270,13 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     print("parameters:", parameters)
     # benchmark_folder = config['Path']['woorpje_benchmarks']
 
-    graph_folder = os.path.join(benchmark_folder, parameters["current_train_folder"], parameters["graph_type"])
-    bench_folder = os.path.join(benchmark_folder, parameters["current_train_folder"])
-    node_type = parameters["node_type"]
-    graph_type = parameters["graph_type"]
-
     shared_gnn, classifier_2, classifier_3, model_2, model_3 = initialize_model_structure(parameters)
 
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
-    dataset_2 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 2)
+    dataset_2 = load_train_and_valid_dataset(parameters,benchmark_folder, 2)
     best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
-    dataset_3 = load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, 3)
+    dataset_3 = load_train_and_valid_dataset(parameters,benchmark_folder,  3)
     best_model_3, metrics_3 = train_multi_classification(dataset_3, model=model_3, parameters=parameters)
 
     metrics = {**metrics_2, **metrics_3}
@@ -292,23 +287,42 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     print("-" * 10, "train finished", "-" * 10)
 
 
+def load_train_and_valid_dataset(parameters, benchmark_folder, label_size):
+    if os.path.exists(os.path.join(benchmark_folder,parameters["benchmark"], "valid_data")):
+        color_print(text=f"load from two folders", color="yellow")
+        train_data_folder = parameters["current_train_folder"]
+        train_data=load_one_dataset(parameters, benchmark_folder, label_size,train_data_folder)
+        valid_data_folder = os.path.join(parameters["benchmark"],"valid_data")
+        valid_data=load_one_dataset(parameters, benchmark_folder, label_size, valid_data_folder)
+        return {"train":train_data,"valid":valid_data}
+    else:
+        color_print(text=f"load from one folder", color="yellow")
+        data_folder = parameters["current_train_folder"]
+        return load_one_dataset(parameters, benchmark_folder, label_size, data_folder)
+
 @time_it
-def load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_type, label_size):
+def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
+    graph_folder = os.path.join(benchmark_folder, data_folder, parameters["graph_type"])
+    bench_folder = os.path.join(benchmark_folder, data_folder)
+    node_type = parameters["node_type"]
+    graph_type = parameters["graph_type"]
+
     start_time = time.time()
     # Filenames for the ZIP files
     zip_file = os.path.join(bench_folder, f"dataset_{label_size}_{graph_type}.pkl.zip")
 
     if os.path.exists(zip_file):
-        print("-" * 10, "load dataset from zipped pickle:", parameters["current_train_folder"], "-" * 10)
+        print("-" * 10, "load dataset from zipped pickle:", data_folder, "-" * 10)
         # Names of the pickle files inside ZIP archives
         pickle_name = f"dataset_{label_size}_{graph_type}.pkl"
         # Load the datasets directly from ZIP files
         dataset = load_from_pickle_within_zip(zip_file, pickle_name)
 
     else:
-        print("-" * 10, "load dataset from zipped file:", parameters["current_train_folder"], "-" * 10)
+        print("-" * 10, "load dataset from zipped file:", data_folder, "-" * 10)
         dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type,
                                                          label_size=label_size)
+        parameters["label_size"]=dataset._label_size
         # dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
         # pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
         # save_to_pickle(dataset_2, pickle_file_2)
@@ -319,7 +333,7 @@ def load_one_dataset(parameters, bench_folder, graph_folder, node_type, graph_ty
     print("-" * 10, "load dataset finished", "use time (s):", str(elapsed_time), "-" * 10)
 
     dataset_statistics = dataset.statistics()
-    mlflow.log_text(dataset_statistics, artifact_file=f"dataset_{label_size}_statistics.txt")
+    mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_{label_size}_statistics.txt")
     return dataset
 
 def training_phase(model,train_dataloader,loss_function,optimizer):
@@ -588,8 +602,17 @@ def get_samplers(dataset):
     return train_sampler, valid_sampler, train_indices, valid_indices
 
 
+def create_data_loaders(dataset:Union[WordEquationDatasetMultiClassification,Dict], parameters: Dict):
+    if isinstance(dataset,WordEquationDatasetMultiClassification):
+        train_dataloader, valid_dataloader = data_loader_1(dataset, parameters)
+    elif isinstance(dataset,Dict):
+        train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
+
+    return train_dataloader, valid_dataloader
+
+
 @time_it
-def create_data_loaders(dataset, parameters):
+def data_loader_1(dataset, parameters):
     train_sampler, valid_sampler, train_indices, valid_indices = get_samplers(dataset)
 
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"],
@@ -600,6 +623,7 @@ def create_data_loaders(dataset, parameters):
 
     # Check if the dataset is for binary classification or multi-class classification
     first_label = dataset[0][1]
+    label_size = dataset._label_size
     print("print(dataset[0])")
     print(dataset[0])
 
@@ -616,11 +640,43 @@ def create_data_loaders(dataset, parameters):
         train_labels = one_hot_to_class_indices([dataset[i][1].numpy() for i in train_indices])
         valid_labels = one_hot_to_class_indices([dataset[i][1].numpy() for i in valid_indices])
 
+    get_distribution_strings(label_size,train_labels,valid_labels)
+
+    return train_dataloader, valid_dataloader
+
+
+@time_it
+def data_loader_2(dataset, parameters):
+    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
+    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
+
+    first_label = dataset["train"][0][1]
+    label_size =dataset['train']._label_size
+    print("print(dataset[0])")
+    print(dataset["train"][0])
+    is_binary_classification = len(first_label.shape) == 0 or (
+            len(first_label.shape) == 1 and first_label.shape[0] == 1)
+
+    # Process labels based on the classification type
+    if is_binary_classification:
+        # Binary classification
+        train_labels=[int(row[1].item()) for row in dataset["train"]]
+        valid_labels=[int(row[1].item()) for row in dataset["valid"]]
+
+    else:
+        # Multi-class classification
+        train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
+        valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
+
+    get_distribution_strings(label_size,train_labels,valid_labels)
+
+    return train_dataloader, valid_dataloader
+
+def get_distribution_strings(label_size,train_labels,valid_labels):
     # Calculate label distributions
     train_label_distribution = Counter(train_labels)
     valid_label_distribution = Counter(valid_labels)
 
-    # Calculate distribution strings
     train_distribution_str = "Training label distribution: " + str(
         train_label_distribution) + "\nBase accuracy: " + str(
         max(train_label_distribution.values()) / sum(train_label_distribution.values()))
@@ -632,9 +688,7 @@ def create_data_loaders(dataset, parameters):
     print(valid_distribution_str)
 
     mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str,
-                    artifact_file=f"data_distribution_{dataset._label_size}.txt")
-
-    return train_dataloader, valid_dataloader
+                    artifact_file=f"data_distribution_{label_size}.txt")
 
 
 def one_hot_to_class_indices(one_hot_labels):

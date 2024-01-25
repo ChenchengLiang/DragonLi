@@ -25,7 +25,8 @@ set benchmark in python code src/solver/models/store_dataset_to_pickle.py
 
 8. Alvis:
 sh word_equation_submit_initialize_configurations.sh
-sh word_equation_submit_multiple_train.sh #train
+sh word_equation_submit_multiple_train_continuously.sh #train
+#sh word_equation_submit_multiple_train.sh #train
 
 
 9. Alvis+Local+Uppmax: select and send back good models
