@@ -22,7 +22,7 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test/valid_data"#"01_track_multi_word_equations_generated_train_1_40000"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test/divided_3"#"01_track_multi_word_equations_generated_train_1_40000"
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -52,10 +52,14 @@ def prepare_and_save_datasets_task_3(parameters):
     pickle_file_3 = os.path.join(benchmark_folder, f"dataset_3_{graph_type}.pkl")
 
     # Prepare datasets
-    dataset_2 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
-                                                       label_size=2)
-    dataset_3 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
-                                                       label_size=3)
+    dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+                                                           label_size=2)
+    dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+                                                           label_size=3)
+    # dataset_2 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
+    #                                                    label_size=2)
+    # dataset_3 = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=parameters["node_type"],
+    #                                                    label_size=3)
 
     # Save the datasets to pickle files
     save_to_pickle(dataset_2, pickle_file_2)

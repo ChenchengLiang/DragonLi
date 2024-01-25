@@ -322,12 +322,12 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
         print("-" * 10, "load dataset from zipped file:", data_folder, "-" * 10)
         dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=node_type,
                                                          label_size=label_size)
-        parameters["label_size"]=dataset._label_size
         # dataset = WordEquationDatasetMultiClassificationLazy(graph_folder=graph_folder, node_type=node_type,label_size=label_size)
         # pickle_file_2 = os.path.join(bench_folder, f"dataset_2_{graph_type}.pkl")
         # save_to_pickle(dataset_2, pickle_file_2)
         # compress_to_zip(pickle_file_2)
 
+    parameters["label_size"] = dataset._label_size
     end_time = time.time()  # End time
     elapsed_time = end_time - start_time  # Calculate elapsed time
     print("-" * 10, "load dataset finished", "use time (s):", str(elapsed_time), "-" * 10)
@@ -672,6 +672,7 @@ def data_loader_2(dataset, parameters):
 
     return train_dataloader, valid_dataloader
 
+@time_it
 def get_distribution_strings(label_size,train_labels,valid_labels):
     # Calculate label distributions
     train_label_distribution = Counter(train_labels)
