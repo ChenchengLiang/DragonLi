@@ -12,7 +12,7 @@ os.environ["DGLBACKEND"] = "pytorch"
 import argparse
 import json
 import datetime
-from src.solver.independent_utils import save_to_pickle, compress_to_zip
+from src.solver.independent_utils import save_to_pickle, compress_to_zip,get_folders
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification,WordEquationDatasetMultiClassificationLazy
 from src.solver.Constants import project_folder, bench_folder
@@ -22,18 +22,26 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test/divided_3"#"01_track_multi_word_equations_generated_train_1_40000"
-
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
+    # draw graphs for all folders
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+    folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
+                   "divided" in folder or "valid" in folder]
+    print(folder_list)
+    if len(folder_list) != 0:
+        for folder in folder_list:
+            store_dataset_to_pickle_one_folder(args, benchmark + "/" + folder)
+    else:
+        store_dataset_to_pickle_one_folder(args, benchmark)
+
+def store_dataset_to_pickle_one_folder(args,folder):
     parameters={}
-    parameters["benchmark"] = benchmark
+    parameters["folder"] = folder
     parameters["graph_type"] = args.graph_type
-
-
 
     prepare_and_save_datasets_task_3(parameters)
 
@@ -42,10 +50,10 @@ def main():
 
 def prepare_and_save_datasets_task_3(parameters):
     parameters["node_type"] = 4
-    benchmark_folder = os.path.join(bench_folder, parameters["benchmark"])
+    benchmark_folder = os.path.join(bench_folder, parameters["folder"])
     graph_folder = os.path.join(benchmark_folder, parameters["graph_type"])
     graph_type = parameters["graph_type"]
-    print("benchmark:", parameters["benchmark"])
+    print("folder:", parameters["folder"])
 
     # Filenames for the pickle files
     pickle_file_2 = os.path.join(benchmark_folder, f"dataset_2_{graph_type}.pkl")
