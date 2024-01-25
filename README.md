@@ -11,7 +11,9 @@ Woking pipeline:
 3. Uppmax: sh word_equation_submit_collect_answers.sh
 
 
-4. Uppmax+Local+Alvis: send answered track to and Alvis
+4. Uppmax+Local+Alvis: 
+python3 divide_train_and_valid_data.py
+send answered track to and Alvis
 
 
 5. Alvis: sh word_equation_submit_generate_train_data.sh #generate train data (.eq)

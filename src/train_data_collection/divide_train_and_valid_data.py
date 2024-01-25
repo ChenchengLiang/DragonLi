@@ -16,16 +16,28 @@ import glob
 
 def main():
     # generate track
-    track_name="divide_test"
+    track_name="01_track_multi_word_equations_generated_train_1_40000_new_divided"
     track_folder = bench_folder + "/"+track_name
 
     # divide to train and valid folder
-    split_to_train_valid_set(source_folder=track_folder+"/ALL",train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
+    split_to_train_valid_set(source_folder=track_folder+"/SAT",train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
+    #handle valid folder
+    os.mkdir(track_folder+"/valid_data")
+    shutil.move(track_folder+"/valid",track_folder+"/valid_data/SAT")
+
 
     # divide train to multiple folders
-    #dvivde_track_for_cluster(track_folder,file_folder="ALL", chunk_size=300)
+    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=300)
 
-    #divided_folder_list = get_folders(track_folder + "/ALL")
+    divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
+    print(divided_folder_list)
+
+    for divided_folder in divided_folder_list:
+        os.mkdir(track_folder+"/"+divided_folder)
+    for divided_folder in divided_folder_list:
+        shutil.move(track_folder+"/train/"+divided_folder,track_folder+"/"+divided_folder+"/SAT")
+
+    shutil.rmtree(track_folder+"/train")
 
 
 
@@ -53,8 +65,8 @@ def split_to_train_valid_set(source_folder, train_folder, valid_folder, valid_ra
     # Split files
     valid_files = files[:split_index]
     train_files = files[split_index:]
-    print(len(train_files),train_files[0])
-    print(len(valid_files),valid_files[0])
+    print("train_files",len(train_files))
+    print("valid_files",len(valid_files))
 
 
     # Move files

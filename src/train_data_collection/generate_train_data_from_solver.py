@@ -21,18 +21,25 @@ from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsing
 from src.solver.Constants import algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
-from src.solver.independent_utils import strip_file_name_suffix,zip_folder
+from src.solver.independent_utils import strip_file_name_suffix,zip_folder,get_folders
 from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
 
-    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test/divided_3"#"01_track_generated_SAT_train"
+    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+    folder_list=[folder for folder in get_folders(bench_folder+"/"+benchmark) if "divided" in folder or "valid" in folder]
+    print(folder_list)
+    for folder in folder_list:
+        generate_train_data_in_one_folder(benchmark+"/"+folder)
+
+def generate_train_data_in_one_folder(folder):
+
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
 
     #prepare train folder
-    all_eq_folder = bench_folder + "/" + benchmark + "/SAT"
-    train_eq_folder=bench_folder + "/" + benchmark+"/train"
+    all_eq_folder = bench_folder + "/" + folder + "/SAT"
+    train_eq_folder=bench_folder + "/" + folder+"/train"
 
     # copy answers from divide folder
     # divided_folder = benchmark + "/ALL"

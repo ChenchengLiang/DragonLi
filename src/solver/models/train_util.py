@@ -432,7 +432,7 @@ def train_multi_classification(dataset, model, parameters: Dict):
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
                                                                                                    best_model, model,
                                                                                                    "multi_class",
-                                                                                                   dataset._label_size,
+                                                                                                   parameters["label_size"],
                                                                                                    avg_train_loss,
                                                                                                    avg_valid_loss,
                                                                                                    valid_accuracy,
