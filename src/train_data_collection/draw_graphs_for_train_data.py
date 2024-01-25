@@ -8,7 +8,7 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format,zip_folder
+from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format,zip_folder,get_folders
 from src.solver.Parser import Parser, EqParser
 import glob
 from src.solver.utils import graph_func_map
@@ -23,15 +23,24 @@ def main():
     # draw graphs from train folder
     sys.setrecursionlimit(1000000)
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test/divided_3"
-    task = "task_3"
-
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     args = arg_parser.parse_args()
 
-    sys.setrecursionlimit(10000000)
+    # draw graphs for all folders
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+    folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
+                   "divided" in folder or "valid" in folder]
+    print(folder_list)
+    if len(folder_list) != 0:
+        for folder in folder_list:
+            draw_graph_for_one_folder(args,benchmark + "/" + folder)
+    else:
+        draw_graph_for_one_folder(args,benchmark)
+
+def draw_graph_for_one_folder(args,folder):
+    task = "task_3"
 
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
@@ -40,11 +49,11 @@ def main():
     elif task == "task_3":
         draw_func = output_split_eq_graphs  # task 3
 
-    train_eq_folder = bench_folder + "/" + benchmark + "/train"
+    train_eq_folder = bench_folder + "/" + folder + "/train"
     train_zip_file=train_eq_folder+".zip"
     for graph_type in [args.graph_type]:
         # prepare folder
-        graph_folder = bench_folder + "/" + benchmark + "/" + graph_type
+        graph_folder = bench_folder + "/" + folder + "/" + graph_type
 
         if os.path.exists(graph_folder):
             shutil.rmtree(graph_folder)

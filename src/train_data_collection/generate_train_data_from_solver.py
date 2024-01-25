@@ -29,8 +29,11 @@ def main():
     benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"
     folder_list=[folder for folder in get_folders(bench_folder+"/"+benchmark) if "divided" in folder or "valid" in folder]
     print(folder_list)
-    for folder in folder_list:
-        generate_train_data_in_one_folder(benchmark+"/"+folder)
+    if len(folder_list)!=0:
+        for folder in folder_list:
+            generate_train_data_in_one_folder(benchmark+"/"+folder)
+    else:
+        generate_train_data_in_one_folder(benchmark)
 
 def generate_train_data_in_one_folder(folder):
 
