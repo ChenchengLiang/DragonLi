@@ -27,7 +27,7 @@ def main():
 
 
     # divide train to multiple folders
-    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=300)
+    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=100)
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
     print(divided_folder_list)
