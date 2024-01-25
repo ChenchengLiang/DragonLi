@@ -20,13 +20,13 @@ from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
 from src.solver.Constants import algorithm_timeout
 from src.solver.DataTypes import Equation
-from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT
+from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT,recursion_limit
 from src.solver.independent_utils import strip_file_name_suffix,zip_folder,get_folders
 from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
-
-    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+    sys.setrecursionlimit(recursion_limit)
+    benchmark="01_track_multi_word_equations_generated_train_1_40000_new_divided"
     folder_list=[folder for folder in get_folders(bench_folder+"/"+benchmark) if "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list)!=0:

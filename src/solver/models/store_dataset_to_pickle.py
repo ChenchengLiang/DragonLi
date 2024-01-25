@@ -15,12 +15,12 @@ import datetime
 from src.solver.independent_utils import save_to_pickle, compress_to_zip,get_folders
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification,WordEquationDatasetMultiClassificationLazy
-from src.solver.Constants import project_folder, bench_folder
+from src.solver.Constants import project_folder, bench_folder,recursion_limit
 
 
 def main():
     # draw graphs from train folder
-    sys.setrecursionlimit(1000000)
+    sys.setrecursionlimit(recursion_limit)
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')

@@ -13,7 +13,7 @@ from src.solver.Parser import Parser, EqParser
 import glob
 from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
-from src.solver.Constants import project_folder, bench_folder
+from src.solver.Constants import project_folder, bench_folder,recursion_limit
 from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs, output_split_eq_graphs
 import shutil
 import argparse
@@ -21,7 +21,7 @@ import argparse
 
 def main():
     # draw graphs from train folder
-    sys.setrecursionlimit(1000000)
+    sys.setrecursionlimit(recursion_limit)
 
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -29,7 +29,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_divided"
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)
