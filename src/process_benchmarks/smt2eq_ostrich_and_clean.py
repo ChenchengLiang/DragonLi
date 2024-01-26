@@ -6,7 +6,7 @@ import os
 import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 def main():
-    benchmark="smtlib/test"
+    benchmark="smtlib/2023-05-05_clean"
     leaf_folder_list=find_leaf_folders(bench_folder+"/"+benchmark)
 
     #move smt2 files to smt2 folder
@@ -44,7 +44,7 @@ def main():
         smt2_to_eq_exceptions_too_many_letters+=len(glob.glob(folder+"/exceptions/too_many_letters/*.smt2"))
         total_eq_files+=len(glob.glob(folder+"/eq/*.eq"))
         empty_eq_files+=len(glob.glob(folder+"/empty_eq/*.eq"))
-        duplicated_eqs+=len(glob.glob(folder+"/duplicated_eq/*.eq"))
+        duplicated_eqs+=len(glob.glob(folder+"/duplicated_eqs/*.eq"))
         no_terminals_eqs+=len(glob.glob(folder+"/no_terminals/*.eq"))
         no_variables_eqs+=len(glob.glob(folder+"/no_variables/*.eq"))
         total_eq_cleaned_files+=len(glob.glob(folder+"/eq_cleaned/*.eq"))
