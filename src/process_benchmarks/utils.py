@@ -434,7 +434,7 @@ def smt_to_eq_one_folder(folder):
     eq_file_folder=f"{folder}/eq"
     exception_file_folder=f"{folder}/exceptions"
     exception_file_folder_too_many_variables=f"{exception_file_folder}/too_many_variables"
-    exception_file_folder_too_many_terminals=f"{exception_file_folder}/too_many_terminals"
+    exception_file_folder_too_many_letters=f"{exception_file_folder}/too_many_letters"
     exception_file_folder_others=f"{exception_file_folder}/others"
     ostrich_output_file=f"{bench_folder}/temp/output.eq"
     solver="ostrich_export"
@@ -445,7 +445,7 @@ def smt_to_eq_one_folder(folder):
     if not os.path.exists(exception_file_folder):
         os.mkdir(exception_file_folder)
         os.mkdir(exception_file_folder_too_many_variables)
-        os.mkdir(exception_file_folder_too_many_terminals)
+        os.mkdir(exception_file_folder_too_many_letters)
         os.mkdir(exception_file_folder_others)
 
     #delete answer files
@@ -468,10 +468,14 @@ def smt_to_eq_one_folder(folder):
             exception_list.append(smt_file_path)
             if "too many variables" in result_dict["raw"]:
                 shutil.copy(smt_file,exception_file_folder_too_many_variables)
-            elif "too many terminals" in result_dict["raw"]:
-                shutil.copy(smt_file,exception_file_folder_too_many_terminals)
+            elif "too many letters" in result_dict["raw"]:
+                shutil.copy(smt_file,exception_file_folder_too_many_letters)
             else:
                 shutil.copy(smt_file,exception_file_folder_others)
+                #write error log
+                log_file = f"{exception_file_folder_others}/{os.path.basename(smt_file_path)}.log"
+                with open(log_file, 'w') as file:
+                    file.write(result_dict["raw"])
             #shutil.copy(smt_file,exception_file_folder)
     print("exception_list:",exception_list)
 
