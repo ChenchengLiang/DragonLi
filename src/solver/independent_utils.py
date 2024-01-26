@@ -303,3 +303,20 @@ def get_folders(path):
     """
     folders = [folder for folder in os.listdir(path) if os.path.isdir(os.path.join(path, folder))]
     return folders
+
+
+def find_leaf_folders(root_folder):
+    """
+    Find all leaf folders in the given directory.
+
+    :param root_folder: The root directory to search in.
+    :return: A list of paths to all leaf folders.
+    """
+    leaf_folders = []
+
+    for dirpath, dirnames, filenames in os.walk(root_folder):
+        # If 'dirnames' is empty, this is a leaf folder
+        if not dirnames:
+            leaf_folders.append(dirpath)
+
+    return leaf_folders

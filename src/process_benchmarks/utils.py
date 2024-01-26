@@ -2,14 +2,16 @@ from src.solver.Constants import shell_timeout, solver_command_map,project_folde
 import os
 import time
 import subprocess
-from src.solver.Constants import UNKNOWN, SAT, UNSAT
+from src.solver.Constants import UNKNOWN, SAT, UNSAT,bench_folder
 from src.solver.independent_utils import strip_file_name_suffix
 import csv
 from typing import List, Dict, Tuple
 import glob
 from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR,RED,GREEN,COLORRESET
 import random
-from src.solver.independent_utils import mean,check_list_consistence,time_it
+from src.solver.independent_utils import mean,check_list_consistence,time_it,handle_files_with_target_string,handle_duplicate_files,apply_to_all_files,delete_duplicate_lines
+import shutil
+from tqdm import tqdm
 
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict, summary_folder_name,
@@ -426,3 +428,61 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
 
         return first_summary_solver_row,reconstructed_list_title,reconstructed_list,reconstructed_summary_title,reconstructed_summary_data
 
+
+def smt_to_eq_one_folder(folder):
+    smt_file_folder=f"{folder}/smt2"
+    eq_file_folder=f"{folder}/eq"
+    exception_file_folder=f"{folder}/exceptions"
+    ostrich_output_file="temp/output.eq"
+    solver="ostrich_export"
+
+    update_ostrich()
+    if not os.path.exists(eq_file_folder):
+        os.mkdir(eq_file_folder)
+    if not os.path.exists(exception_file_folder):
+        os.mkdir(exception_file_folder)
+
+    #delete answer files
+    for answer_file in glob.glob(smt_file_folder+"/*.answer"):
+        os.remove(answer_file)
+
+    exception_list=[]
+    for smt_file in tqdm(glob.glob(smt_file_folder+"/*.smt2"),desc="progress"):
+        if os.path.exists(ostrich_output_file):
+            os.remove(ostrich_output_file)
+
+
+        smt_file_path=os.path.join(smt_file_folder,smt_file)
+        result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=0"], solver=solver)
+        file_name=strip_file_name_suffix(os.path.basename(smt_file_path))
+        if os.path.exists(ostrich_output_file):
+            shutil.copy(ostrich_output_file,eq_file_folder+f"/{file_name}.eq")
+        else:
+            exception_list.append(smt_file_path)
+            shutil.copy(smt_file,exception_file_folder)
+    print("exception_list:",exception_list)
+
+    # delete answer files
+    for answer_file in glob.glob(smt_file_folder+"/*.answer"):
+        os.remove(answer_file)
+
+
+@time_it
+def update_ostrich():
+    run_shell_command = ["sh", "/home/cheli243/Desktop/CodeToGit/update_ostrich_export.sh"]
+    completed_process = subprocess.run(run_shell_command, capture_output=True, text=True, shell=False)
+
+
+def clean_eq_files(folder):
+    eq_folder=folder+"/eq"
+    eq_cleaned_folder = eq_folder+"_cleaned"
+    if os.path.exists(eq_cleaned_folder):
+        shutil.rmtree(eq_cleaned_folder)
+    shutil.copytree(eq_folder, eq_cleaned_folder)
+
+    target_content = "Variables {}\nTerminals {}\nSatGlucose(0)"  # no variables
+    empty_file_list = handle_files_with_target_string(eq_cleaned_folder, target_content,move_to_folder_name="empty_eq", log=False)
+
+    duplicated_files_list = handle_duplicate_files(eq_cleaned_folder, log=False)
+
+    apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)

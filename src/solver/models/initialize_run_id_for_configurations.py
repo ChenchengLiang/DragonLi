@@ -64,7 +64,7 @@ def initiate_run_id_for_a_configuration(train_config):
     train_folder_list=[folder for folder in benchmark_folder_list if "divided" in folder]
     experiment_name = today + "-" + train_config["benchmark"]
     if "divided_1" in train_folder_list:
-        train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]+"/"+folder: 0 for folder in train_folder_list}
+        train_data_folder_epoch_map:Dict[str,int]={folder: 0 for folder in train_folder_list}
     else:
         train_data_folder_epoch_map:Dict[str,int]={train_config["benchmark"]: 0}
     train_config["train_data_folder_epoch_map"]=train_data_folder_epoch_map
@@ -76,7 +76,7 @@ def initiate_run_id_for_a_configuration(train_config):
     with mlflow.start_run() as mlflow_run:
         train_config["run_id"] = mlflow_run.info.run_id
         train_config["experiment_id"] = mlflow_run.info.experiment_id
-        train_config["current_train_folder"] = list(train_config["train_data_folder_epoch_map"].items())[0][0]
+        train_config["current_train_folder"] = train_config["benchmark"]+"/"+list(train_config["train_data_folder_epoch_map"].items())[0][0]
         mlflow.log_params(train_config)
         train_config=train_multiple_models_separately_get_run_id(train_config, benchmark_folder)
 
@@ -100,7 +100,7 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
     mlflow.log_metrics(metrics)
 
     #record current training process in configuration file
-    parameters["train_data_folder_epoch_map"][parameters["current_train_folder"]]=1
+    parameters["train_data_folder_epoch_map"][os.path.basename(parameters["current_train_folder"])]=1
     print("-" * 10, "train finished", "-" * 10)
     return parameters
 

@@ -73,7 +73,7 @@ def main():
             train_config["current_train_folder"]=None
             for key,value in train_config["train_data_folder_epoch_map"].items():
                 if value<train_config["num_epochs"]:
-                    train_config["current_train_folder"]=key
+                    train_config["current_train_folder"]=train_config["benchmark"]+"/"+key
                     break
 
             if train_config["current_train_folder"] is None:
@@ -81,7 +81,7 @@ def main():
             else:
                 color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
                 train_config=train_a_model(train_config,mlflow_run)
-                train_config["train_data_folder_epoch_map"][train_config["current_train_folder"]]+=train_config["train_step"]
+                train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])]+=train_config["train_step"]
                 # update configuration file
                 with open(configuration_file, 'w') as f:
                     json.dump(train_config, f, indent=4)
