@@ -7,6 +7,7 @@ import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 def main():
     leaf_folder_list=find_leaf_folders(bench_folder+"/"+"smtlib/test")
+    #leaf_folder_list= [os.path.dirname(f) for f in leaf_folder_list if os.path.basename(f)=="smt2"]
     for folder in leaf_folder_list:
         print(folder)
         if os.path.exists(folder+"/smt2"):

@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 from src.solver.Constants import UNKNOWN, SAT, UNSAT,bench_folder
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.independent_utils import strip_file_name_suffix,color_print
 import csv
 from typing import List, Dict, Tuple
 import glob
@@ -213,7 +213,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver:str
         # create the answer file
         with open(answer_file, 'w') as file:
             file.write(result)
-    result_dict={"result":result,"split_number":split_number,"solver":solver}
+    result_dict={"result":result,"split_number":split_number,"solver":solver,"raw":solver_output}
     return result_dict
 
 
@@ -433,7 +433,10 @@ def smt_to_eq_one_folder(folder):
     smt_file_folder=f"{folder}/smt2"
     eq_file_folder=f"{folder}/eq"
     exception_file_folder=f"{folder}/exceptions"
-    ostrich_output_file="temp/output.eq"
+    exception_file_folder_too_many_variables=f"{exception_file_folder}/too_many_variables"
+    exception_file_folder_too_many_terminals=f"{exception_file_folder}/too_many_terminals"
+    exception_file_folder_others=f"{exception_file_folder}/others"
+    ostrich_output_file=f"{bench_folder}/temp/output.eq"
     solver="ostrich_export"
 
     update_ostrich()
@@ -441,6 +444,9 @@ def smt_to_eq_one_folder(folder):
         os.mkdir(eq_file_folder)
     if not os.path.exists(exception_file_folder):
         os.mkdir(exception_file_folder)
+        os.mkdir(exception_file_folder_too_many_variables)
+        os.mkdir(exception_file_folder_too_many_terminals)
+        os.mkdir(exception_file_folder_others)
 
     #delete answer files
     for answer_file in glob.glob(smt_file_folder+"/*.answer"):
@@ -454,12 +460,19 @@ def smt_to_eq_one_folder(folder):
 
         smt_file_path=os.path.join(smt_file_folder,smt_file)
         result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=0"], solver=solver)
+        color_print(text=f"result_dict:{result_dict}",color="yellow")
         file_name=strip_file_name_suffix(os.path.basename(smt_file_path))
         if os.path.exists(ostrich_output_file):
             shutil.copy(ostrich_output_file,eq_file_folder+f"/{file_name}.eq")
         else:
             exception_list.append(smt_file_path)
-            shutil.copy(smt_file,exception_file_folder)
+            if "too many variables" in result_dict["raw"]:
+                shutil.copy(smt_file,exception_file_folder_too_many_variables)
+            elif "too many terminals" in result_dict["raw"]:
+                shutil.copy(smt_file,exception_file_folder_too_many_terminals)
+            else:
+                shutil.copy(smt_file,exception_file_folder_others)
+            #shutil.copy(smt_file,exception_file_folder)
     print("exception_list:",exception_list)
 
     # delete answer files
@@ -482,6 +495,8 @@ def clean_eq_files(folder):
 
     target_content = "Variables {}\nTerminals {}\nSatGlucose(0)"  # no variables
     empty_file_list = handle_files_with_target_string(eq_cleaned_folder, target_content,move_to_folder_name="empty_eq", log=False)
+    no_variables_file_list = handle_files_with_target_string(eq_cleaned_folder, "Variables {}",move_to_folder_name="no_variables", log=False)
+    no_terminals_file_list = handle_files_with_target_string(eq_cleaned_folder, "Terminals {}",move_to_folder_name="no_terminals", log=False)
 
     duplicated_files_list = handle_duplicate_files(eq_cleaned_folder, log=False)
 
