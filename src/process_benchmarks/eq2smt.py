@@ -23,13 +23,16 @@ def main():
     #     for file_path in glob.glob(bench_folder + "/"+folder+"/divided_"+str(divided_folder_index)+"/*.eq"):
     #         one_eq_file_to_smt2(file_path)
 
+
     #transform one file
-    exception_folder=bench_folder+"/kaluza/all_eq_cleaned/eq_to_smt2_exception"
+    folder="smtlib/2023-05-05_clean/total_cleaned_eq_folder_without_woorpje"
+    exception_folder=f"{bench_folder}/{folder}/eq_to_smt2_exception"
+
     if os.path.exists(exception_folder):
         shutil.rmtree(exception_folder)
     os.mkdir(exception_folder)
 
-    for file in glob.glob(bench_folder+"/kaluza/all_eq_cleaned/eqs/*.eq"):
+    for file in glob.glob(bench_folder+"/"+folder+"/ALL/*.eq"):
         try:
             one_eq_file_to_smt2(file)
         except:

@@ -2,7 +2,8 @@
 
 Woking pipeline:
 
-1. Uppmax: sh word_equation_submit_generate_tracks.sh #gnerate and divide tracks
+1. Uppmax/Local: sh word_equation_submit_generate_tracks.sh #gnerate and divide tracks
+For not generated data, divide eval data: divide_train_and_test_data.py
 
 
 2. Uppmax: sh word_equation_submit_multiple_eval.sh #get .answer and summary
