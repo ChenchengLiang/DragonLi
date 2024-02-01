@@ -566,11 +566,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # output pairs' labels to file
             if len(back_track_count_list) == 2:
                 # two branches 2 (positions) x 3 (conditions) = 6 situations
-                ## 2 SAT  label [1,0]
-                ## 1 SAT 1 others [1,0]
-                ## 2 UNSAT [1,0]
+                ## 2 SAT  label [count children]
+                ## 1 SAT 1 UNSAT [1,0]
+                ## 1 SAT 1 UNKNOWN [1,0]
+                ## 2 UNSAT [count children]
                 ## 1 UNSAT 1 UNKNOWN [0,1]
-                ## 2 UNKNOWN []
+                ## 2 UNKNOWN [count children]
                 label_list = [0, 0]
                 # if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
                 if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
@@ -590,13 +591,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             elif len(back_track_count_list) == 3:
                 # three branches 3 (positions) x 3 (conditions) = 9 situations
-                ## 3 SAT
-                ## 3 UNSAT
-                ## 3 UNKNOWN
-                ## 2 SAT 1 others [UNSAT or UNKNOWN]
-                ## 1 SAT 2 others [UNSAT or UNKNOWN]
-                ## 2 UNKNOWN 1 UNSAT
-                ## 2 UNSAT 1 UNKNWON
+                ## 3 SAT [count children]
+                ## 3 UNSAT [count children]
+                ## 3 UNKNOWN [count children]
+                ## 2 SAT 1 others [UNSAT or UNKNOWN] [count children for two SAT]
+                ## 1 SAT 2 others [UNSAT or UNKNOWN] [1,0,0]
+                ## 2 UNKNOWN 1 UNSAT [count children for two UNKNOWN]
+                ## 2 UNSAT 1 UNKNWON [0,0,1]
 
                 label_list = [0, 0, 0]
                 if satisfiability_list.count(SAT) == 3 or satisfiability_list.count(

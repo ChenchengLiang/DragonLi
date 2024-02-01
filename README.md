@@ -9,7 +9,9 @@ For not generated data, divide eval data: divide_train_and_test_data.py
 2. Uppmax: sh word_equation_submit_multiple_eval.sh #get .answer and summary
 
 
-3. Uppmax: sh word_equation_submit_collect_answers.sh
+3. Uppmax: 
+sh word_equation_collect_answers.sh
+#sh word_equation_submit_collect_answers.sh
 
 
 4. Uppmax+Local+Alvis: 

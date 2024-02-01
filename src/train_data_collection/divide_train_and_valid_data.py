@@ -16,7 +16,7 @@ import glob
 
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_generated_train_1_40000_new_divided"
+    track_name="smtlib/2023-05-05_clean/smtlib_2023-05-05_without_woorpje_train"
     track_folder = bench_folder + "/"+track_name
 
     # divide to train and valid folder

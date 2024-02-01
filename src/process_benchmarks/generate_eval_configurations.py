@@ -23,15 +23,15 @@ import shutil
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_2"
-    model_type= "GINSplit" #"GCNSplit"
+    graph_type = "graph_3"
+    model_type= "GCNSplit" #"GINSplit"
     solver_param_list = [
         ["this", ["fixed", f"--termination_condition execute_termination_condition_0"]],
-        # ["this", ["fixed", f"--termination_condition execute_termination_condition_1"]],
-        # ["this", ["fixed", f"--termination_condition execute_termination_condition_2"]],
-        # ["this", ["random", f"--termination_condition execute_termination_condition_0"]],
-        # ["this", ["random", f"--termination_condition execute_termination_condition_1"]],
-        # ["this", ["random", f"--termination_condition execute_termination_condition_2"]],
+        ["this", ["fixed", f"--termination_condition execute_termination_condition_1"]],
+        ["this", ["fixed", f"--termination_condition execute_termination_condition_2"]],
+        ["this", ["random", f"--termination_condition execute_termination_condition_0"]],
+        ["this", ["random", f"--termination_condition execute_termination_condition_1"]],
+        ["this", ["random", f"--termination_condition execute_termination_condition_2"]],
         # # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # # ["this", ["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
@@ -45,38 +45,38 @@ def main():
         # # ["this",["gnn:random","--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # # ["this",["gnn:fixed", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_MultiGNNs.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         #
-        # # when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
-        # ["this", ["gnn", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
-        # ["this", ["gnn", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
-        # ["this", ["gnn", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
-        #
-        # ["this",
-        #  ["gnn:random", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        # ["this",
-        #  ["gnn:random", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        # ["this",
-        #  ["gnn:random", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        #
-        # ["this",
-        #  ["gnn:fixed", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        # ["this",
-        #  ["gnn:fixed", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        # ["this",
-        #  ["gnn:fixed", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #   f"--gnn_task {task}"]],
-        #
-        # ["woorpje", []],
-        # ["z3", []],
-        # ["ostrich", []],
-        # ["cvc5", []],
+        # when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
+        ["this", ["gnn", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+        ["this", ["gnn", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+        ["this", ["gnn", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+
+        ["this",
+         ["gnn:random", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+        ["this",
+         ["gnn:random", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+        ["this",
+         ["gnn:random", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+
+        ["this",
+         ["gnn:fixed", f"--termination_condition execute_termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+        ["this",
+         ["gnn:fixed", f"--termination_condition execute_termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+        ["this",
+         ["gnn:fixed", f"--termination_condition execute_termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]],
+
+        ["woorpje", []],
+        ["z3", []],
+        ["ostrich", []],
+        ["cvc5", []],
     ]
 
     benchmark_dict = {
@@ -96,7 +96,7 @@ def main():
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name = "smtlib_2023-05-05_without_woorpje_train"
+    benchmark_name = "smtlib_2023-05-05_without_woorpje_eval"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])
