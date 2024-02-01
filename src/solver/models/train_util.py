@@ -556,7 +556,11 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
     else:
         current_folder_number=0
 
-    total_epoch = sum(parameters["train_data_folder_epoch_map"].values())+index
+    if "train_data_folder_epoch_map" in parameters:
+        total_epoch = sum(parameters["train_data_folder_epoch_map"].values())+index
+    else:
+        total_epoch = parameters["num_epochs"]
+
     metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy,
                "epoch": epoch,"current_folder":current_folder_number,"total_epoch":total_epoch}
@@ -569,9 +573,12 @@ def add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_l
     current_epoch_info = f"Epoch {epoch :05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
     print(current_epoch_info)
     best_model = model
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
+    # todo verify if the correct model is logged
+    rounded_valid_accuracy = round(valid_accuracy, 4)
+    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"]+"_"+str(rounded_valid_accuracy) + ".pth").replace(
         "model_", f"model_{model_index}_")
     torch.save(best_model, best_model_path)
+
     mlflow.log_artifact(best_model_path)
     os.remove(best_model_path)
     epoch_info_log = epoch_info_log + "\n" + current_epoch_info

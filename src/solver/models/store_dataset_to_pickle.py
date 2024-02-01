@@ -28,7 +28,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "smtlib_2023-05-05_without_woorpje_train"
+    benchmark = "divided_7"
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)

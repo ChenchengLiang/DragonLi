@@ -23,7 +23,7 @@ import shutil
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_3"
+    graph_type = "graph_5"
     model_type= "GCNSplit" #"GINSplit"
     solver_param_list = [
         ["this", ["fixed", f"--termination_condition execute_termination_condition_0"]],

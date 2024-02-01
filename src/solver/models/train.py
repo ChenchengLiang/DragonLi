@@ -45,11 +45,11 @@ def main():
         today = datetime.date.today().strftime("%Y-%m-%d")
         task="task_3"
         model_type="GCNSplit"#GINSplit
-        benchmark="01_track_multi_word_equations_generated_train_1_40000_new_small_test"
+        benchmark="debug-train"
 
         train_config = {
                 "benchmark":benchmark,"graph_type": "graph_1", "model_type": model_type,"task":task,
-            "num_epochs": 50, "learning_rate": 0.001,
+            "num_epochs": 10, "learning_rate": 0.001,
             "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
             "node_type":4,"train_step":10,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
@@ -87,6 +87,7 @@ def main():
                     json.dump(train_config, f, indent=4)
     else:
         with mlflow.start_run() as mlflow_run:
+            train_config["current_train_folder"] = benchmark
             color_print(text=f"create a new run id {mlflow_run.info.run_id}", color="yellow")
             train_a_model(train_config, mlflow_run,)
 
