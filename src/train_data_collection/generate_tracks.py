@@ -22,12 +22,11 @@ from typing import List, Tuple, Dict
 
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_generated_eval_1001_2000"
+    start_idx = 1
+    end_idx = 1000
+    track_name=f"SAT_multi_word_equations_generated_eval_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/"+track_name
-    start_idx = 1001
-    end_idx = 2000
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
-
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_SAT_multi_word_equation_track)
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
@@ -232,6 +231,7 @@ def generate_one_track_3(file_name, index):
 
 
 def generate_one_track_4(file_name, index):
+    #"01_track_multi_word_equations_generated_eval_1001_2000"
     eq_number=random.randint(1,100)
     eq_list=[]
     variable_list=[]
@@ -250,7 +250,51 @@ def generate_one_track_4(file_name, index):
     result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
     return result,variable_list,terminal_list,eq_list
 
+def generate_one_SAT_multi_word_equation_track(file_name, index):
+    max_one_side_element=10
+    max_assignment_length=10
+    eq_number = random.randint(1, 50)
+    eq_list = []
+    variable_list = []
+    terminal_list = []
 
+    #generate assingments
+    terminals=string.ascii_lowercase
+    variable_to_terminal_map={}
+
+    for index, letter in enumerate(string.ascii_uppercase, start=1):
+        variable_to_terminal_map[letter]=''.join(random.choice(terminals) for _ in range(random.randint(1, max_assignment_length)))
+    terminals_to_variable = {value: key for key, value in variable_to_terminal_map.items()}
+
+    eq_string_list=[]
+    for i in range(eq_number):
+        left_side_length = random.randint(1, max_one_side_element)
+        left_string_list=[random.choice(list(terminals_to_variable.keys())) for _ in range(left_side_length)]
+        right_string_list=left_string_list
+        eq_string_list.append((left_string_list, right_string_list))
+
+
+    for eq in eq_string_list:
+        replaced_left_list=[terminals_to_variable[e] if random.randint(0,10)>=5 else e for e in eq[0]]
+        replaced_right_list=[terminals_to_variable[e] if random.randint(0,10)>=5 else e for e in eq[1]]
+        left_string=''.join(replaced_left_list)
+        right_string=''.join(replaced_right_list)
+        if left_string != right_string:
+            left_variables = [char for char in left_string if char.isupper()]
+            right_variables = [char for char in right_string if char.isupper()]
+            left_terminals = [char for char in left_string if char.islower()]
+            right_terminals = [char for char in right_string if char.islower()]
+            terminal_list.extend(left_terminals)
+            terminal_list.extend(right_terminals)
+            terminal_list = remove_duplicates(terminal_list)
+            variable_list.extend(left_variables)
+            variable_list.extend(right_variables)
+            variable_list = remove_duplicates(variable_list)
+            eq_list.append((left_string, right_string))
+
+
+    result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
+    return result,variable_list,terminal_list,eq_list
 
 def formatting_results(variables:List[str], terminals:List[str], eq_list:List[Tuple[str,str]])->str:
     # Format the result

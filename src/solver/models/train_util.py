@@ -573,10 +573,12 @@ def add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_l
     current_epoch_info = f"Epoch {epoch :05d} | Model {model_index} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}, Save model for highest validation accuracy"
     print(current_epoch_info)
     best_model = model
-    # todo verify if the correct model is logged
-    rounded_valid_accuracy = round(valid_accuracy, 4)
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"]+"_"+str(rounded_valid_accuracy) + ".pth").replace(
+
+    #rounded_valid_accuracy = round(valid_accuracy, 4)
+    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
         "model_", f"model_{model_index}_")
+    if os.path.exists(best_model_path):
+        os.remove(best_model_path)
     torch.save(best_model, best_model_path)
 
     mlflow.log_artifact(best_model_path)
