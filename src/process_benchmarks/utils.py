@@ -233,7 +233,8 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     for solver, summary_file in summary_file_dict.items():
         #first_summary_solver_row.extend([solver, solver])
 
-        first_summary_solver_row,reconstructed_list_title, reconstructed_list, reconstructed_summary_title, reconstructed_summary_data = extract_one_csv_data(summary_folder,
+        (first_summary_solver_row,reconstructed_list_title, reconstructed_list, reconstructed_summary_title,
+         reconstructed_summary_data) = extract_one_csv_data(summary_folder,
             summary_file,first_summary_solver_row,solver)
         first_summary_title_row.extend(reconstructed_list_title[1:])
         if len(first_summary_data_rows) == 0:
@@ -337,7 +338,12 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
     # Writing to csv file
     with open(summary_path, 'w') as csvfile:
         csvwriter = csv.writer(csvfile)
+
+        del second_summary_title_row[4:11] #delete exception columns
         csvwriter.writerow(second_summary_title_row)
+
+        for row in second_summary_data_rows:
+            del row[4:11] #delete exception columns
         csvwriter.writerows(second_summary_data_rows)
 
 
@@ -373,6 +379,23 @@ def compute_split_number_for_common_solved_problems(first_summary_data_rows,firs
         summary_row.append(mean([int(x) for x in sat_average_split_number_common_solved_dict[summary_row[0]]]))
 
 
+
+
+# compute sat_average_solving_time_common_solved
+    sat_average_solving_time_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
+    for row in first_summary_data_rows:
+        file_name = row[0]
+        if file_name in common_problem_list:
+            for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+                if measurement == "Used Time":
+                    sat_average_solving_time_common_solved_dict[solver].append(value)
+
+    # write to summary 2 file
+    second_summary_title_row +=  ["sat_average_solving_time_common_solved " + str(len(common_problem_list))]
+    for summary_row in second_summary_data_rows:
+        summary_row.append(mean([float(x) for x in sat_average_solving_time_common_solved_dict[summary_row[0]]]))
+
+
 def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,solver):
     first_summary_solver_row.extend([solver, solver, solver])
     column_index = 4
@@ -392,8 +415,20 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
         reconstructed_list_title = reader[0][:column_index]
         reconstructed_list = [reconstructed_first_row] + reader[2:]
 
-        reconstructed_summary_title = reader[0][column_index:] + ["sat_average_split_number"]
+        reconstructed_summary_title = reader[0][column_index:] + ["sat_average_split_number"] +["sat_average_solving_time"] + ["unsat_average_solving_time"]
         reconstructed_summary_data = reader[1][column_index:]
+
+        sat_solving_time_list = []
+        for row in reader:
+            if row[1] == "SAT":
+                sat_solving_time_list.append(row[2])
+        sat_avarage_solving_time = mean([float(x) for x in sat_solving_time_list])
+
+        unsat_solving_time_list = []
+        for row in reader:
+            if row[1] == "UNSAT":
+                unsat_solving_time_list.append(row[2])
+        unsat_avarage_solving_time = mean([float(x) for x in unsat_solving_time_list])
 
 
 
@@ -410,7 +445,7 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
         else:
             sat_average_split_number = 0
 
-        reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number]
+        reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number] + [sat_avarage_solving_time] + [unsat_avarage_solving_time]
 
 
 

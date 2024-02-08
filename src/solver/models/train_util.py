@@ -559,7 +559,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
     if "train_data_folder_epoch_map" in parameters:
         total_epoch = sum(parameters["train_data_folder_epoch_map"].values())+index
     else:
-        total_epoch = parameters["num_epochs"]
+        total_epoch = epoch
 
     metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy,

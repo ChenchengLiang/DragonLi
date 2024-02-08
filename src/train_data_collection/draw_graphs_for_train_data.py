@@ -29,7 +29,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "divided_8"
+    benchmark = "01_track_train_task_3_1_2000"
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)

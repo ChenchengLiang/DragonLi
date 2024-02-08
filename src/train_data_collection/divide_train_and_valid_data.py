@@ -16,7 +16,7 @@ import glob
 
 def main():
     # generate track
-    track_name="smtlib/2023-05-05_clean/smtlib_2023-05-05_without_woorpje_train"
+    track_name="01_track_train_task_3_1_2000"
     track_folder = bench_folder + "/"+track_name
 
     # divide to train and valid folder
@@ -27,7 +27,7 @@ def main():
 
 
     # divide train to multiple folders
-    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=100)
+    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=500)
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
     print(divided_folder_list)

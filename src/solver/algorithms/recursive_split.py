@@ -703,6 +703,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         return None
 
+    #todo for random strategy, terminattion condition: start over
+
     def _extract_branching_data_termination_condition(self, eq: Equation, node_info):
         if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)

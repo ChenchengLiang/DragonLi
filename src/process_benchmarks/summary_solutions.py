@@ -26,7 +26,7 @@ def main():
     # Accessing the arguments
     bench_name = args.bench_name
     if bench_name is None:
-        bench_name="03_track_generated_eval_30000_31000"
+        bench_name="03_track_train_task_3_1_5000"
 
 
     summary_folder = project_folder+"/src/process_benchmarks/summary"
