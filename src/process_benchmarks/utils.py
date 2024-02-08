@@ -351,49 +351,82 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
 def compute_split_number_for_common_solved_problems(first_summary_data_rows,first_summary_title_row,first_summary_solver_row,second_summary_title_row,second_summary_data_rows):
     # compute sat_average_split_number for commonly solved problem
     # find common solved problems
-    common_problem_list = []
+    common_sat_problem_list = []
+    common_unsat_problem_list = []
     for row in first_summary_data_rows:
         result_count = 0
         sat_configuration = 0
+        unsat_configuration = 0
         file_name = row[0]
         for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
             if measurement == "Result":
                 result_count += 1
                 if value == SAT:
                     sat_configuration += 1
+                if value == UNSAT:
+                    unsat_configuration += 1
         if result_count == sat_configuration:
-            common_problem_list.append(file_name)
+            common_sat_problem_list.append(file_name)
+        if result_count == unsat_configuration:
+            common_unsat_problem_list.append(file_name)
 
     # compute sat_average_split_number_common_solved
     sat_average_split_number_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
     for row in first_summary_data_rows:
         file_name = row[0]
-        if file_name in common_problem_list:
+        if file_name in common_sat_problem_list:
             for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
                 if measurement == "split_number":
                     sat_average_split_number_common_solved_dict[solver].append(value)
-
     # write to summary 2 file
-    second_summary_title_row +=  ["sat_average_split_number_common_solved " + str(len(common_problem_list))]
+    second_summary_title_row +=  ["sat_average_split_number_common_solved " + str(len(common_sat_problem_list))]
     for summary_row in second_summary_data_rows:
         summary_row.append(mean([int(x) for x in sat_average_split_number_common_solved_dict[summary_row[0]]]))
 
 
-
-
-# compute sat_average_solving_time_common_solved
+    # compute sat_average_solving_time_common_solved
     sat_average_solving_time_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
     for row in first_summary_data_rows:
         file_name = row[0]
-        if file_name in common_problem_list:
+        if file_name in common_sat_problem_list:
             for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
                 if measurement == "Used Time":
                     sat_average_solving_time_common_solved_dict[solver].append(value)
-
     # write to summary 2 file
-    second_summary_title_row +=  ["sat_average_solving_time_common_solved " + str(len(common_problem_list))]
+    second_summary_title_row +=  ["sat_average_solving_time_common_solved " + str(len(common_sat_problem_list))]
     for summary_row in second_summary_data_rows:
         summary_row.append(mean([float(x) for x in sat_average_solving_time_common_solved_dict[summary_row[0]]]))
+
+
+    ########################################
+
+    # compute unsat_average_split_number_common_solved
+    sat_average_split_number_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
+    for row in first_summary_data_rows:
+        file_name = row[0]
+        if file_name in common_unsat_problem_list:
+            for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+                if measurement == "split_number":
+                    sat_average_split_number_common_solved_dict[solver].append(value)
+    # write to summary 2 file
+    second_summary_title_row += ["unsat_average_split_number_common_solved " + str(len(common_unsat_problem_list))]
+    for summary_row in second_summary_data_rows:
+        summary_row.append(mean([int(x) for x in sat_average_split_number_common_solved_dict[summary_row[0]]]))
+
+    # compute unsat_average_solving_time_common_solved
+    sat_average_solving_time_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}
+    for row in first_summary_data_rows:
+        file_name = row[0]
+        if file_name in common_unsat_problem_list:
+            for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+                if measurement == "Used Time":
+                    sat_average_solving_time_common_solved_dict[solver].append(value)
+    # write to summary 2 file
+    second_summary_title_row += ["unsat_average_solving_time_common_solved " + str(len(common_unsat_problem_list))]
+    for summary_row in second_summary_data_rows:
+        summary_row.append(mean([float(x) for x in sat_average_solving_time_common_solved_dict[summary_row[0]]]))
+
+
 
 
 def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,solver):
@@ -415,7 +448,7 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
         reconstructed_list_title = reader[0][:column_index]
         reconstructed_list = [reconstructed_first_row] + reader[2:]
 
-        reconstructed_summary_title = reader[0][column_index:] + ["sat_average_split_number"] +["sat_average_solving_time"] + ["unsat_average_solving_time"]
+        reconstructed_summary_title = reader[0][column_index:] + ["sat_average_split_number"] +["unsat_average_split_number"]+["sat_average_solving_time"] + ["unsat_average_solving_time"]
         reconstructed_summary_data = reader[1][column_index:]
 
         sat_solving_time_list = []
@@ -434,18 +467,27 @@ def extract_one_csv_data(summary_folder,summary_file,first_summary_solver_row,so
 
         if "this" in solver:
             #compute average split number for SAT problems
-            split_number_list = []
+            sat_split_number_list = []
+            unsat_split_number_list = []
             for row in reader:
                 if row[1]=="SAT":
-                    split_number_list.append(row[3])
-            if len(split_number_list)!=0:
-                sat_average_split_number = sum([int(x) for x in split_number_list])/len(split_number_list)
+                    sat_split_number_list.append(row[3])
+                if row[1]=="UNSAT":
+                    unsat_split_number_list.append(row[3])
+
+            if len(sat_split_number_list)!=0:
+                sat_average_split_number = sum([int(x) for x in sat_split_number_list])/len(sat_split_number_list)
             else:
                 sat_average_split_number=0
+            if len(unsat_split_number_list)!=0:
+                unsat_average_split_number = sum([int(x) for x in unsat_split_number_list])/len(unsat_split_number_list)
+            else:
+                unsat_average_split_number=0
         else:
             sat_average_split_number = 0
+            unsat_average_split_number=0
 
-        reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number] + [sat_avarage_solving_time] + [unsat_avarage_solving_time]
+        reconstructed_summary_data=reconstructed_summary_data+[sat_average_split_number] +[unsat_average_split_number]+ [sat_avarage_solving_time] + [unsat_avarage_solving_time]
 
 
 
