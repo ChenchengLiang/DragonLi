@@ -3,7 +3,7 @@ import os
 import time
 import subprocess
 from src.solver.Constants import UNKNOWN, SAT, UNSAT,bench_folder
-from src.solver.independent_utils import strip_file_name_suffix,color_print
+from src.solver.independent_utils import strip_file_name_suffix, color_print, remove_duplicates
 import csv
 from typing import List, Dict, Tuple
 import glob
@@ -270,9 +270,13 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
 
 
 
-    compute_split_number_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
-                                                    first_summary_solver_row, second_summary_title_row,
-                                                    second_summary_data_rows)
+    compute_measurement_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
+                                                   first_summary_solver_row, second_summary_title_row,
+                                                   second_summary_data_rows)
+
+    compute_measurement_for_unique_solved_problems(first_summary_data_rows, first_summary_title_row,
+                                                   first_summary_solver_row, second_summary_title_row,
+                                                   second_summary_data_rows)
 
     ################### check satisfiability consistensy between solvers########################
 
@@ -348,8 +352,54 @@ def summary_one_track(summary_folder,summary_file_dict,track_name):
 
 
 
-def compute_split_number_for_common_solved_problems(first_summary_data_rows,first_summary_title_row,first_summary_solver_row,second_summary_title_row,second_summary_data_rows):
-    # compute sat_average_split_number for commonly solved problem
+def compute_measurement_for_unique_solved_problems(first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows):
+    solver_list = remove_duplicates(first_summary_solver_row)
+    solver_list.remove("file_names")
+    unique_sat_problem_list=[]
+    unique_unsat_problem_list=[]
+
+    for current_solver in solver_list:
+        current_solver_unique_solved_sat_count = 0
+        current_solver_unique_solved_unsat_count=0
+        for row in first_summary_data_rows:
+            file_name = row[0]
+            print("-----------------------")
+            print(file_name)
+            current_solver_solvability = UNKNOWN
+            other_solver_solvability = UNKNOWN
+            for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
+                if solver == current_solver and measurement == "Result" and value != UNKNOWN:
+                    current_solver_solvability=value
+                if solver != current_solver and measurement == "Result" and value != UNKNOWN:
+                    other_solver_solvability=value
+                # print("measurement:", measurement)
+                # print("solver:", solver)
+                # print("value:", value)
+            print(current_solver_solvability,other_solver_solvability)
+            if current_solver_solvability == SAT and other_solver_solvability == UNKNOWN:
+                current_solver_unique_solved_sat_count+=1
+            if current_solver_solvability == UNSAT and other_solver_solvability == UNKNOWN:
+                current_solver_unique_solved_unsat_count+=1
+        unique_sat_problem_list.append(current_solver_unique_solved_sat_count)
+        unique_unsat_problem_list.append(current_solver_unique_solved_unsat_count)
+    print(unique_sat_problem_list)
+    print("--")
+    print(unique_unsat_problem_list)
+
+
+    # write to summary 2 file
+    second_summary_title_row += ["sat_unique_solved"]
+    for unique_solved_number, summary_row in zip(unique_sat_problem_list,second_summary_data_rows):
+        summary_row.append(unique_solved_number)
+
+    second_summary_title_row += ["unsat_unique_solved"]
+    for unique_solved_number, summary_row in zip(unique_unsat_problem_list,second_summary_data_rows):
+        summary_row.append(unique_solved_number)
+
+
+
+def compute_measurement_for_common_solved_problems(first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows):
+    # compute measurements for commonly solved problem
     # find common solved problems
     common_sat_problem_list = []
     common_unsat_problem_list = []

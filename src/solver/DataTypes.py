@@ -517,7 +517,7 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         nodes.append(current_node)
         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
 
-        if graph_type == "graph_2":  # add edge back to equation node
+        if graph_type == "graph_2" and current_node.type!=SeparateSymbol:  # add edge back to equation node
             edges.append(Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
 
         if graph_type in ["graph_3", "graph_5"] and current_node.type == Variable:
