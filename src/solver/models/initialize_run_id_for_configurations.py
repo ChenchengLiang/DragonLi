@@ -87,7 +87,7 @@ def initiate_run_id_for_a_configuration(train_config):
 def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
 
 
-    shared_gnn, classifier_2, classifier_3, model_2, model_3 = initialize_model_structure(parameters)
+    model_2, model_3 = initialize_model_structure(parameters)
 
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
