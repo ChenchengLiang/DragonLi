@@ -236,21 +236,6 @@ def train_binary_and_multi_classification(dataset_list, GNN_model_list, paramete
 
 
 def initialize_model_structure(parameters):
-    # todo expand GNN categories
-    if parameters["model_type"] == "GCNSplit":
-        shared_gnn = SharedGNN(input_feature_dim=parameters["node_type"], gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                               gnn_layer_num=parameters["gnn_layer_num"],
-                               gnn_dropout_rate=parameters["gnn_dropout_rate"], embedding_type="GCN")
-    elif parameters["model_type"] == "GINSplit":
-        shared_gnn = SharedGNN(input_feature_dim=parameters["node_type"], gnn_hidden_dim=parameters["gnn_hidden_dim"],
-                               gnn_layer_num=parameters["gnn_layer_num"],
-                               gnn_dropout_rate=parameters["gnn_dropout_rate"], embedding_type="GIN")
-    else:
-        raise ValueError("Unsupported model type")
-    # # Shared GNN module
-    # shared_gnn = SharedGNN(input_feature_dim=node_type, gnn_hidden_dim=parameters["gnn_hidden_dim"],
-    #                        gnn_layer_num=parameters["gnn_layer_num"], gnn_dropout_rate=parameters["gnn_dropout_rate"])
-
     # Classifiers
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                               ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=1,
@@ -259,9 +244,34 @@ def initialize_model_structure(parameters):
                               ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=3,
                               ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
 
-    # GraphClassifiers
-    model_2 = GraphClassifier(shared_gnn, classifier_2)
-    model_3 = GraphClassifier(shared_gnn, classifier_3)
+    # Function to create SharedGNN based on parameters
+    def create_shared_gnn(embedding_type):
+        return SharedGNN(
+            input_feature_dim=parameters["node_type"],
+            gnn_hidden_dim=parameters["gnn_hidden_dim"],
+            gnn_layer_num=parameters["gnn_layer_num"],
+            gnn_dropout_rate=parameters["gnn_dropout_rate"],
+            embedding_type=embedding_type
+        )
+
+    # Decide on the GNN type based on parameters
+    embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
+    if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
+        raise ValueError("Unsupported model type")
+
+    # Initialize GNN models based on sharing configuration
+    if parameters["share_gnn"]:
+        shared_gnn = create_shared_gnn(embedding_type)
+        gnn_model_2 = gnn_model_3 = shared_gnn
+    else:
+        gnn_model_2 = create_shared_gnn(embedding_type)
+        gnn_model_3 = create_shared_gnn(embedding_type)
+
+    # Initialize GraphClassifiers with the respective GNN models
+    model_2 = GraphClassifier(gnn_model_2, classifier_2)
+    model_3 = GraphClassifier(gnn_model_3, classifier_3)
+
+
 
     return model_2, model_3
     #return shared_gnn, classifier_2, classifier_3, model_2, model_3
