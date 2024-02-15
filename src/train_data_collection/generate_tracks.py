@@ -22,13 +22,15 @@ from typing import List, Tuple, Dict
 
 def main():
     # generate track
-    start_idx = 5001
-    end_idx = 10000
+    start_idx = 30001
+    end_idx = 35000
     track_name = f"03_track_train_task_3_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
+
+    print("done")
 
 
 def save_equations(start_index, end_index, folder, track_name, equation_generator):

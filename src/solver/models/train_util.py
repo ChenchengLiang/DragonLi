@@ -263,14 +263,15 @@ def initialize_model_structure(parameters):
     model_2 = GraphClassifier(shared_gnn, classifier_2)
     model_3 = GraphClassifier(shared_gnn, classifier_3)
 
-    return shared_gnn, classifier_2, classifier_3, model_2, model_3
+    return model_2, model_3
+    #return shared_gnn, classifier_2, classifier_3, model_2, model_3
 
 
 def train_multiple_models_separately(parameters, benchmark_folder):
     print("parameters:", parameters)
     # benchmark_folder = config['Path']['woorpje_benchmarks']
 
-    shared_gnn, classifier_2, classifier_3, model_2, model_3 = initialize_model_structure(parameters)
+    model_2, model_3 = initialize_model_structure(parameters)
 
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
