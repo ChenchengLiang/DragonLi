@@ -18,22 +18,22 @@ import csv
 def main():
     # collect_answers_from_divided_folders(benchmark="03_track_train_task_3_merged_1_40000")
 
-    
 
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_5001_1000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+
+    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_5001_10000",
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_5001_10000_summary.csv")
     collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_10001_15000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_10001_15000_summary.csv")
     collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_15001_20000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_20001_250000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_15001_20000_summary.csv")
+    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_20001_25000",
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_20001_25000_summary.csv")
     collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_25001_30000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_25001_30000_summary.csv")
     collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_30001_35000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_30001_35000_summary.csv")
     collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_35001_40000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_35001_40000_summary.csv")
 
 
 
@@ -43,10 +43,10 @@ def collect_answers_from_summary_cvs(benchmark, cvs_file):
     all_data_folder = bench_folder + "/" + data_folder + "/ALL/ALL"
 
     # collect answers from summary cvs
-    one_solver_cvs = summary_folder + "/" + benchmark + "/" + cvs_file
+    one_solver_cvs = summary_folder + "/" + benchmark+"_summary" + "/" + cvs_file
 
     result_folder = create_folder(
-        bench_folder + "/" + data_folder + "/this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary")
+        bench_folder + "/" + data_folder + "/"+cvs_file.replace(".csv", ""))
     sat_folder = create_folder(result_folder + "/SAT")
     unsat_folder = create_folder(result_folder + "/UNSAT")
     unknown_folder = create_folder(result_folder + "/UNKNOWN")
