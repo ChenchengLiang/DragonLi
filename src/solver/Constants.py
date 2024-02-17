@@ -8,6 +8,7 @@ project_folder = config['Path']['local']
 bench_folder = config['Path']['woorpje_benchmarks']
 mlflow_folder = config['Path']['mlflow_folder']
 checkpoint_folder = config['Path']['checkpoint_folder']
+summary_folder = config['Path']['summary_folder']
 max_variable_length: int = 8
 
 algorithm_timeout: int = 300

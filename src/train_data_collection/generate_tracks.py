@@ -22,8 +22,8 @@ from typing import List, Tuple, Dict
 
 def main():
     # generate track
-    start_idx = 30001
-    end_idx = 35000
+    start_idx = 35001
+    end_idx = 40000
     track_name = f"03_track_train_task_3_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)

@@ -320,3 +320,13 @@ def find_leaf_folders(root_folder):
             leaf_folders.append(dirpath)
 
     return leaf_folders
+
+def create_folder(folder_path):
+    if os.path.exists(folder_path)==False:
+        print("create folder",folder_path)
+        os.mkdir(folder_path)
+    else:
+        print("folder existed, remove and create new one",folder_path)
+        shutil.rmtree(folder_path)
+        os.mkdir(folder_path)
+    return folder_path

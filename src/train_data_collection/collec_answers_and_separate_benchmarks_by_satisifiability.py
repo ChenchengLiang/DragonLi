@@ -8,15 +8,58 @@ config.read("config.ini")
 path = config.get('Path','local')
 sys.path.append(path)
 
-from src.solver.Constants import project_folder,bench_folder,SAT,UNSAT,UNKNOWN
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.Constants import project_folder,bench_folder,SAT,UNSAT,UNKNOWN,summary_folder
+from src.solver.independent_utils import strip_file_name_suffix,create_folder
 import shutil
 import glob
+import csv
 
 def main():
+    #collect_answers_from_divided_folders(benchmark="03_track_train_task_3_merged_1_40000")
+
+    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_1_5000_summary",cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary.csv")
+
+def collect_answers_from_summary_cvs(benchmark,cvs_file):
+    data_folder=benchmark.replace("_summary","")
+    collect_answers_from_divided_folders(benchmark=data_folder)
+    all_data_folder=bench_folder+"/"+data_folder+"/ALL/ALL"
+
+    #collect answers from summary cvs
+    one_solver_cvs=summary_folder+"/"+benchmark+"/"+cvs_file
+
+    result_folder=create_folder(bench_folder+"/"+benchmark+"/this_fixed_execute_termination_condition_0_03_track_train_task_3_1_5000_summary")
+    sat_folder=create_folder(result_folder+"/SAT")
+    unsat_folder = create_folder(result_folder + "/UNSAT")
+    unknown_folder = create_folder(result_folder + "/UNKNOWN")
+
+
+    with open(one_solver_cvs, 'r') as file:
+        reader = csv.reader(file)
+        reader = list(reader)
+        file_name_column_index=0
+        satisifiability_column_index=1
+        for row in reader:
+            file_name=row[file_name_column_index]
+            file_path_without_suffix=strip_file_name_suffix(all_data_folder+"/"+file_name)
+            if row[satisifiability_column_index]=="SAT":
+                shutil.copy(file_path_without_suffix+".eq",sat_folder)
+                shutil.copy(file_path_without_suffix + ".answer", sat_folder)
+                shutil.copy(file_path_without_suffix + ".smt2", sat_folder)
+
+            elif row[satisifiability_column_index]==UNSAT:
+                shutil.copy(file_path_without_suffix + ".eq", unsat_folder)
+                shutil.copy(file_path_without_suffix + ".answer", unsat_folder)
+                shutil.copy(file_path_without_suffix + ".smt2", unsat_folder)
+            else:
+                shutil.copy(file_path_without_suffix + ".eq", unknown_folder)
+                shutil.copy(file_path_without_suffix + ".answer", unknown_folder)
+                shutil.copy(file_path_without_suffix + ".smt2", unknown_folder)
+
+    print("done")
+
+def collect_answers_from_divided_folders(benchmark):
 
     #collect answers from divided folders
-    benchmark="01_track_train_task_3_1_2000"
     benchmark_folder = bench_folder + "/"+benchmark+"/ALL"
 
     folder_number = sum([1 for fo in os.listdir(benchmark_folder) if "divided" in os.path.basename(fo)])
