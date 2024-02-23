@@ -697,7 +697,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return None
 
     def _execute_branching_data_termination_condition_2(self, eq: Equation, node_info):
-        if self.current_deep >= self.maxf_deep:
+        if self.current_deep >= self.max_deep:
             # print("max deep reached",self.current_deep)
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 

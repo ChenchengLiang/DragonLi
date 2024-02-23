@@ -16,7 +16,7 @@ from src.train_data_collection.utils import dvivde_track_for_cluster
 
 def main():
     # generate track
-    track_name="smtlib/2023-05-05_clean/total_cleaned_eq_folder_without_woorpje"
+    track_name="03_track"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 

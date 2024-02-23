@@ -25,12 +25,13 @@ def main():
 
 
     #transform one file
-    folder="smtlib/2023-05-05_clean/total_cleaned_eq_folder_without_woorpje"
+    folder="03_track"
     exception_folder=f"{bench_folder}/{folder}/eq_to_smt2_exception"
 
     if os.path.exists(exception_folder):
         shutil.rmtree(exception_folder)
     os.mkdir(exception_folder)
+
 
     for file in glob.glob(bench_folder+"/"+folder+"/ALL/*.eq"):
         try:

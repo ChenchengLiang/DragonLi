@@ -46,24 +46,42 @@ class SplitEquations(AbstractAlgorithm):
 
     def run(self):
         original_formula = Formula(self.equation_list)
-        satisfiability, new_formula = self.propagate_facts(original_formula,
-                                                           unknown_number=original_formula.unknown_number)
+
+        satisfiability, new_formula  = self.control_propagation_and_split(original_formula)
+
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
-        # if satisfiability != UNKNOWN:
-        #     return {"result": SAT, "assignment": self.assignment, "equation_list": self.equation_list,
-        #             "variables": self.variables, "terminals": self.terminals}
 
-        # todo split equations
+
+    def control_propagation_and_split(self, original_formula: Formula) -> Tuple[str, Formula]:
+        current_formula = original_formula
+        while True:
+            satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
+            if satisfiability != UNKNOWN:
+                return satisfiability, current_formula
+
+            satisfiability, current_formula = self.split_equations(current_formula)
+            if satisfiability != UNKNOWN:
+                return satisfiability, current_formula
 
     def split_equations(self, original_formula: Formula) -> Tuple[str, Formula]:
+        pass
+        #todo choose a random equation to split
+        unknown_eq_index=random.randint(0, len(original_formula.unknown_equations)-1)
+        unknown_eq:Equation=original_formula.unknown_equations[unknown_eq_index]
+        print(unknown_eq.eq_str)
+        #todo split the chosen equation
+
+    def explore_path(self, eq: Equation):
         pass
 
     def propagate_facts(self, original_formula: Formula, unknown_number) -> Tuple[str, Formula]:
         '''
         Propagate facts in equation_list until no more facts can be propagated
         '''
+
+        #todo check conflict between facts
 
         print("propagate", str(original_formula.fact_number), "facts to ", str(unknown_number), "unknown equations")
         # transform facts to assignment
