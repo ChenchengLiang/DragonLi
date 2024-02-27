@@ -23,7 +23,7 @@ def main():
     #file_path=bench_folder +"/temp/output.eq"
     #file_path=bench_folder +"/debug/UNSAT/1533/g_01_track_multi_word_equations_generated_eval_1001_2000_1533.eq"
     #file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
-    file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
+    #file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
     #file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
 
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
@@ -57,7 +57,7 @@ def main():
     #file_path = bench_folder +"/03_track/03_track_17.eq"
 
     #multiple equations
-    #file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
+    file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -89,8 +89,8 @@ def main():
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
-    #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
-    solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
+    solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
+    #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
