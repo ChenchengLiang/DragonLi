@@ -269,7 +269,6 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             ## oneside is # and another side is variable
             elif type(left_term.value)==Variable and type(right_term.value)==SeparateSymbol:
                 return self.left_side_vairable_right_side_special_symbol(current_eq,current_node_number,node_info)
-
             elif type(left_term.value) == SeparateSymbol and type(right_term.value) == Variable:
                 return self.left_side_vairable_right_side_special_symbol(Equation(current_eq.right_terms,current_eq.left_terms),current_node_number,node_info)
 
