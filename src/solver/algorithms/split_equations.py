@@ -67,7 +67,7 @@ class SplitEquations(AbstractAlgorithm):
         unknown_eq_index = random.randint(0, len(original_formula.unknown_equations) - 1)
         unknown_eq: Equation = original_formula.unknown_equations.pop(unknown_eq_index)
 
-        print(f"- explore path for {unknown_eq.eq_str} -")
+        print(f"----------------- explore path for {unknown_eq.eq_str} -----------------")
         # todo split the chosen equation
         (satisfiability, processed_formula) = self.explore_path(eq=unknown_eq, current_formula=original_formula,
                                                                 current_depth=0)
@@ -75,11 +75,12 @@ class SplitEquations(AbstractAlgorithm):
 
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
         # todo add more terminate conditions for differernt backtrack strategies
-        print(f"explore path for {eq.eq_str} at depth {current_depth}")
         # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
         #     return (UNKNOWN, current_formula)
 
         eq_res = eq.check_satisfiability()
+        print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
+        print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
 
         if eq_res == SAT:
             # update the formula
@@ -108,7 +109,7 @@ class SplitEquations(AbstractAlgorithm):
                 return self.branch_for_left_side_variable_right_side_terminal(eq, current_formula, current_depth)
             # left side is terminal, right side is variable
             elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
-                return self.branch_for_left_side_terminal_right_side_variable(Equation(eq.right_terms, eq.left_terms),
+                return self.branch_for_left_side_variable_right_side_terminal(Equation(eq.right_terms, eq.left_terms),
                                                                               current_formula, current_depth)
             # both side are differernt variables
             elif type(left_term.value) == Variable and type(right_term.value) == Variable:
@@ -128,16 +129,19 @@ class SplitEquations(AbstractAlgorithm):
         Delete V1
         Obtain [Terms] [V1/""] = a [Terms] [V1/""]
         '''
-        left_term: Term = eq.left_terms.pop(0)
-        right_term: Term = eq.right_terms.pop(0)
+
+        local_eq = eq.deepcopy()
+        left_term: Term = local_eq.left_terms.pop(0)
+        right_term: Term = local_eq.right_terms.pop(0)
+
 
         # define old and new term
         old_term: Term = left_term
         new_term: List[Term] = []
 
         # update equation
-        new_left_term_list = self._update_term_list(old_term, new_term, eq.left_terms)
-        new_right_term_list = [right_term] + self._update_term_list(old_term, new_term, eq.right_terms)
+        new_left_term_list = self._update_term_list(old_term, new_term, local_eq.left_terms)
+        new_right_term_list = [right_term] + self._update_term_list(old_term, new_term, local_eq.right_terms)
         new_eq = Equation(new_left_term_list, new_right_term_list)
 
         # update formula
@@ -153,8 +157,9 @@ class SplitEquations(AbstractAlgorithm):
         Replace V1 with aV1'
         Obtain V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         '''
-        left_term: Term = eq.left_terms.pop(0)
-        right_term: Term = eq.right_terms.pop(0)
+        local_eq = eq.deepcopy()
+        left_term: Term = local_eq.left_terms.pop(0)
+        right_term: Term = local_eq.right_terms.pop(0)
 
         # create fresh variable
         fresh_variable_term: Term = self._create_fresh_variables()
@@ -163,8 +168,8 @@ class SplitEquations(AbstractAlgorithm):
         new_term: List[Term] = [right_term, fresh_variable_term]
 
         # update equation
-        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, eq.left_terms)
-        new_right_term_list = self._update_term_list(old_term, new_term, eq.right_terms)
+        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, local_eq.left_terms)
+        new_right_term_list = self._update_term_list(old_term, new_term, local_eq.right_terms)
         new_eq = Equation(new_left_term_list, new_right_term_list)
 
         # update formula
@@ -225,8 +230,11 @@ class SplitEquations(AbstractAlgorithm):
         Replace V1 with V2V1'
         Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         '''
-        left_term: Term = eq.left_terms.pop(0)
-        right_term: Term = eq.right_terms.pop(0)
+
+        local_eq=eq.copy()
+        left_term: Term = local_eq.left_terms.pop(0)
+        right_term: Term = local_eq.right_terms.pop(0)
+
 
         # create fresh variable
         fresh_variable_term: Term = self._create_fresh_variables()
@@ -235,8 +243,8 @@ class SplitEquations(AbstractAlgorithm):
         old_term: Term = left_term
 
         # update equation
-        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, eq.left_terms)
-        new_right_term_list = self._update_term_list(old_term, new_term, eq.right_terms)
+        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, local_eq.left_terms)
+        new_right_term_list = self._update_term_list(old_term, new_term, local_eq.right_terms)
         new_eq = Equation(new_left_term_list, new_right_term_list)
 
         # update formula
@@ -260,16 +268,17 @@ class SplitEquations(AbstractAlgorithm):
         Replace V1 with V2
         Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
         '''
-        left_term: Term = eq.left_terms.pop(0)
-        right_term: Term = eq.right_terms.pop(0)
+        local_eq = eq.deepcopy()
+        left_term: Term = local_eq.left_terms.pop(0)
+        right_term: Term = local_eq.right_terms.pop(0)
 
         # define old and new term
         old_term: Term = left_term
         new_term: List[Term] = [right_term]
 
         # update equation
-        new_eq = Equation(self._update_term_list(old_term, new_term, eq.left_terms),
-                          self._update_term_list(old_term, new_term, eq.right_terms))
+        new_eq = Equation(self._update_term_list(old_term, new_term, local_eq.left_terms),
+                          self._update_term_list(old_term, new_term, local_eq.right_terms))
         # update formula
         new_formula:Formula = self._update_formula(current_formula, old_term, new_term)
 
@@ -294,15 +303,9 @@ class SplitEquations(AbstractAlgorithm):
         # transform facts to assignment
         temp_assigment = Assignment()
         if original_formula.fact_number != 0:
-            for f in original_formula.facts:
-                print(f)
-                (e, assignment_list) = f
+            for (e,assignment_list) in original_formula.facts:
                 for (v, t_list) in assignment_list:
                     temp_assigment.set_assignment(v, t_list)
-            #
-            # for f, assignment_list in original_formula.facts:
-            #     for (v, t_list) in assignment_list:
-            #         temp_assigment.set_assignment(v, t_list)
         else:
             pass
 

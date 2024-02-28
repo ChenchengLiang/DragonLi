@@ -303,7 +303,7 @@ class Equation:
 class Formula:
     def __init__(self, eq_list: List[Equation]):
         self.formula = eq_list
-        self.facts:List[Tuple[Equation,Tuple[Variable, List[Terminal]]]] = []
+        self.facts:List[Tuple[Equation,List[Tuple[Variable, List[Terminal]]]]] = []
         self.sat_equations:List[Equation] = []
         self.unsat_equations:List[Equation] = []
         self.unknown_equations:List[Equation] = []
@@ -313,8 +313,9 @@ class Formula:
                 self.sat_equations.append(eq)
                 is_fact, fact_assignment = eq.is_fact()
                 if is_fact:
-                    for f in fact_assignment:
-                        self.facts.append((eq, f))
+                    self.facts.append((eq, fact_assignment))
+                    # for f in fact_assignment:
+                    #     self.facts.append((eq, f))
             elif satisfiability == UNSAT:
                 self.unsat_equations.append(eq)
             else:
