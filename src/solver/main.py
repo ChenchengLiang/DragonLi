@@ -59,11 +59,11 @@ def main():
     #multiple equations
     #file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
-    file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
-    #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
+    file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT

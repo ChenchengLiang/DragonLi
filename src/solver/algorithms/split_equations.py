@@ -10,7 +10,9 @@ from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import _one_variable_one_terminal_branch_1, _one_variable_one_terminal_branch_2,_two_variables_branch_1,_two_variables_branch_2,_two_variables_branch_3
+from src.solver.algorithms.split_equation_utils import _one_variable_one_terminal_branch_1, \
+    _one_variable_one_terminal_branch_2, _two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3, \
+    choose_an_unknown_eqiatons_random, choose_an_unknown_eqiatons_fixed, _update_formula_with_new_eq
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -24,8 +26,8 @@ class SplitEquations(AbstractAlgorithm):
         self.fresh_variable_counter = 0
         self.total_explore_paths_call = 0
 
-        self.choose_unknown_eq_func_map = {"random": self.choose_an_unknown_eqiatons_random,
-                                           "fixed": self.choose_an_unknown_eqiatons_fixed}
+        self.choose_unknown_eq_func_map = {"random": choose_an_unknown_eqiatons_random,
+                                           "fixed": choose_an_unknown_eqiatons_fixed}
         self.choose_unknown_eq_func: Callable = self.choose_unknown_eq_func_map[
             self.parameters["choose_unknown_eq_method"]]
         self.branch_method_func_map = {"fixed": self._fixed_branch,
@@ -45,14 +47,24 @@ class SplitEquations(AbstractAlgorithm):
 
     def control_propagation_and_split(self, original_formula: Formula) -> Tuple[str, Formula]:
         current_formula = original_formula
-        while True:
-            satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
-            if satisfiability != UNKNOWN:
-                return satisfiability, current_formula
 
-            current_formula = self.split_equations(current_formula)
+        satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
+        if satisfiability != UNKNOWN:
+            return satisfiability, current_formula
 
-    def split_equations(self, original_formula: Formula) -> Formula:
+        satisfiability,current_formula = self.split_equations(current_formula)
+
+
+        return satisfiability, current_formula
+        #
+        # while True:
+        #     satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
+        #     if satisfiability != UNKNOWN:
+        #         return satisfiability, current_formula
+        #
+        #     current_formula = self.split_equations(current_formula)
+
+    def split_equations(self, original_formula: Formula) -> Tuple[str,Formula]:
         # choose a equation to split
         unknown_eq, current_formula = self.choose_unknown_eq_func(original_formula)
 
@@ -61,52 +73,54 @@ class SplitEquations(AbstractAlgorithm):
         self.total_explore_paths_call = 0
         (satisfiability, processed_formula) = self.explore_path(eq=unknown_eq, current_formula=current_formula,
                                                                 current_depth=0)
-        return processed_formula
+        return satisfiability,processed_formula
 
-    def choose_an_unknown_eqiatons_random(self, f: Formula) -> (Equation, Formula):
-        unknown_eq_index = random.randint(0, len(f.unknown_equations) - 1)
-        unknown_eq: Equation = f.unknown_equations.pop(unknown_eq_index)
-        return unknown_eq, f
-
-    def choose_an_unknown_eqiatons_fixed(self, f: Formula) -> (Equation, Formula):
-        unknown_eq: Equation = f.unknown_equations.pop(0)
-        return unknown_eq, f
 
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
         self.total_explore_paths_call += 1
         print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
+
         # todo add more terminate conditions for differernt backtrack strategies
         # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
         #     return (UNKNOWN, current_formula)
 
+        eq = self.simplify_equation(eq)  # pop the same prefix
         eq_res = eq.check_satisfiability()
-        # print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
-        # print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
+        #print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
+        #print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
+
+
 
         if eq_res == SAT:
-            # update the formula
-            current_formula.sat_equations.append(eq)
-            is_fact, fact_assignment = eq.is_fact()
-            if is_fact:
-                current_formula.facts.append((eq, fact_assignment))
+            # todo check rest eqs
+            #reconstructed formula don;t know the new eq is SAT
+            new_formula_satisfiability,new_formula=_update_formula_with_new_eq(current_formula,eq,SAT)
 
-            satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
-            return (satisfiability, current_formula)
-        if eq_res == UNSAT:
-            return (UNSAT, current_formula)
-        else:  # eq_res == UNKNOWN
+            if new_formula_satisfiability == SAT:
+                return (SAT, new_formula)
+            elif new_formula_satisfiability == UNSAT:
+                return (UNSAT, new_formula)
+            elif new_formula_satisfiability == UNKNOWN:
+                return self.control_propagation_and_split(new_formula)
+
+
+        elif eq_res == UNSAT:
+            new_formula_satisfiability, new_formula = _update_formula_with_new_eq(current_formula, eq,UNSAT)
+            return (UNSAT, new_formula)
+        elif eq_res == UNKNOWN:
             ################################ Split equation ################################
-            eq = self.simplify_equation(eq)  # pop the same prefix
+
 
             # left_term != right_term
             left_term = eq.left_terms[0]
             right_term = eq.right_terms[0]
 
-            # both side are different terminals
-            if type(left_term.value) == Terminal and type(right_term.value) == Terminal:
-                return (UNSAT, current_formula)
+            # both side are different terminals #this has be done in eq_res = eq.check_satisfiability()
+            # if type(left_term.value) == Terminal and type(right_term.value) == Terminal:
+            #     new_formula_satisfiability, new_formula = _update_formula_with_new_eq(current_formula, eq,UNSAT)
+            #     return (UNSAT, new_formula)
             # left side is variable, right side is terminal
-            elif type(left_term.value) == Variable and type(right_term.value) == Terminal:
+            if type(left_term.value) == Variable and type(right_term.value) == Terminal:
                 return self.branch_for_left_side_variable_right_side_terminal(eq, current_formula, current_depth)
             # left side is terminal, right side is variable
             elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
@@ -122,7 +136,6 @@ class SplitEquations(AbstractAlgorithm):
         branch_method_list = [_one_variable_one_terminal_branch_1,
                               _one_variable_one_terminal_branch_2]
         return self.branch_method_func(branch_method_list, eq, current_formula, current_depth)
-
 
     def branch_for_both_side_different_variables(self, eq: Equation, current_formula: Formula, current_depth) -> Tuple[
         str, Formula]:
@@ -140,8 +153,9 @@ class SplitEquations(AbstractAlgorithm):
         str, Formula]:
         unknow_flag = False
         for branch_method in branch_method_list:
-            (branched_eq, branched_formula,branch_fresh_variable_counter) = branch_method(eq, current_formula,self.fresh_variable_counter)
-            self.fresh_variable_counter=branch_fresh_variable_counter
+            (branched_eq, branched_formula, branch_fresh_variable_counter) = branch_method(eq, current_formula,
+                                                                                           self.fresh_variable_counter)
+            self.fresh_variable_counter = branch_fresh_variable_counter
             satisfiability, result_formula = self.explore_path(branched_eq, branched_formula, current_depth + 1)
             if satisfiability == SAT:
                 return (satisfiability, result_formula)
