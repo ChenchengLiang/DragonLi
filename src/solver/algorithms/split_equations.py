@@ -10,6 +10,7 @@ from ..independent_utils import remove_duplicates, flatten_list
 from src.solver.visualize_util import visualize_path, visualize_path_html
 from .abstract_algorithm import AbstractAlgorithm
 import sys
+from src.solver.algorithms.split_equation_utils import _one_variable_one_terminal_branch_1, _one_variable_one_terminal_branch_2,_two_variables_branch_1,_two_variables_branch_2,_two_variables_branch_3
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -21,29 +22,18 @@ class SplitEquations(AbstractAlgorithm):
         self.nodes = []
         self.edges = []
         self.fresh_variable_counter = 0
+        self.total_explore_paths_call = 0
+
+        self.choose_unknown_eq_func_map = {"random": self.choose_an_unknown_eqiatons_random,
+                                           "fixed": self.choose_an_unknown_eqiatons_fixed}
+        self.choose_unknown_eq_func: Callable = self.choose_unknown_eq_func_map[
+            self.parameters["choose_unknown_eq_method"]]
+        self.branch_method_func_map = {"fixed": self._fixed_branch,
+                                       "random": self._random_branch}
+        self.branch_method_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
         sys.setrecursionlimit(recursion_limit)
         print("recursion limit number", sys.getrecursionlimit())
-
-    def check_satisfiability_for_all_eqs(self, equation_list: List[Equation]) -> str:
-        '''
-        Check satisfiability for all equations in equation_list,
-        if there is a UNSAT equation, then return UNSAT,
-        if all equations are SAT, then return SAT,
-        otherwise return UNKNOWN
-        '''
-        satisfiability_list = []
-        for eq in equation_list:
-            satisfiability = eq.check_satisfiability()
-            # if there is a UNSAT equation, then return UNSAT
-            if satisfiability == UNSAT:
-                return UNSAT
-            satisfiability_list.append(satisfiability)
-
-        # if all elements are SAT, then return SAT
-        if all([s == SAT for s in satisfiability_list]):
-            return SAT
-        return UNKNOWN
 
     def run(self):
         original_formula = Formula(self.equation_list)
@@ -63,24 +53,35 @@ class SplitEquations(AbstractAlgorithm):
             current_formula = self.split_equations(current_formula)
 
     def split_equations(self, original_formula: Formula) -> Formula:
-        # choose a random equation to split
-        unknown_eq_index = random.randint(0, len(original_formula.unknown_equations) - 1)
-        unknown_eq: Equation = original_formula.unknown_equations.pop(unknown_eq_index)
+        # choose a equation to split
+        unknown_eq, current_formula = self.choose_unknown_eq_func(original_formula)
 
         print(f"----------------- explore path for {unknown_eq.eq_str} -----------------")
-        # todo split the chosen equation
-        (satisfiability, processed_formula) = self.explore_path(eq=unknown_eq, current_formula=original_formula,
+        # split the chosen equation
+        self.total_explore_paths_call = 0
+        (satisfiability, processed_formula) = self.explore_path(eq=unknown_eq, current_formula=current_formula,
                                                                 current_depth=0)
         return processed_formula
 
+    def choose_an_unknown_eqiatons_random(self, f: Formula) -> (Equation, Formula):
+        unknown_eq_index = random.randint(0, len(f.unknown_equations) - 1)
+        unknown_eq: Equation = f.unknown_equations.pop(unknown_eq_index)
+        return unknown_eq, f
+
+    def choose_an_unknown_eqiatons_fixed(self, f: Formula) -> (Equation, Formula):
+        unknown_eq: Equation = f.unknown_equations.pop(0)
+        return unknown_eq, f
+
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
+        self.total_explore_paths_call += 1
+        print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
         # todo add more terminate conditions for differernt backtrack strategies
         # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
         #     return (UNKNOWN, current_formula)
 
         eq_res = eq.check_satisfiability()
-        print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
-        print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
+        # print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
+        # print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
 
         if eq_res == SAT:
             # update the formula
@@ -118,85 +119,29 @@ class SplitEquations(AbstractAlgorithm):
     def branch_for_left_side_variable_right_side_terminal(self, eq: Equation, current_formula: Formula,
                                                           current_depth) -> Tuple[
         str, Formula]:
-        branch_method_list = [self._one_variable_one_terminal_branch_1,
-                              self._one_variable_one_terminal_branch_2]
-        return self._fixed_branch(branch_method_list, eq, current_formula, current_depth)
+        branch_method_list = [_one_variable_one_terminal_branch_1,
+                              _one_variable_one_terminal_branch_2]
+        return self.branch_method_func(branch_method_list, eq, current_formula, current_depth)
 
-    def _one_variable_one_terminal_branch_1(self, eq: Equation, current_formula: Formula) -> Tuple[Equation, Formula]:
-        '''
-        Equation: V1 [Terms] = a [Terms]
-        Assume V1 = ""
-        Delete V1
-        Obtain [Terms] [V1/""] = a [Terms] [V1/""]
-        '''
-
-        local_eq = eq.deepcopy()
-        left_term: Term = local_eq.left_terms.pop(0)
-        right_term: Term = local_eq.right_terms.pop(0)
-
-
-        # define old and new term
-        old_term: Term = left_term
-        new_term: List[Term] = []
-
-        # update equation
-        new_left_term_list = self._update_term_list(old_term, new_term, local_eq.left_terms)
-        new_right_term_list = [right_term] + self._update_term_list(old_term, new_term, local_eq.right_terms)
-        new_eq = Equation(new_left_term_list, new_right_term_list)
-
-        # update formula
-        new_formula:Formula = self._update_formula(current_formula, old_term, new_term)
-
-        return new_eq, new_formula
-
-
-    def _one_variable_one_terminal_branch_2(self, eq: Equation, current_formula: Formula) -> Tuple[Equation, Formula]:
-        '''
-        Equation: V1 [Terms] = a [Terms]
-        Assume V1 = aV1'
-        Replace V1 with aV1'
-        Obtain V1' [Terms] [V1/aV1'] = [Terms] [V1/aV1']
-        '''
-        local_eq = eq.deepcopy()
-        left_term: Term = local_eq.left_terms.pop(0)
-        right_term: Term = local_eq.right_terms.pop(0)
-
-        # create fresh variable
-        fresh_variable_term: Term = self._create_fresh_variables()
-        # define old and new term
-        old_term: Term = left_term
-        new_term: List[Term] = [right_term, fresh_variable_term]
-
-        # update equation
-        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, local_eq.left_terms)
-        new_right_term_list = self._update_term_list(old_term, new_term, local_eq.right_terms)
-        new_eq = Equation(new_left_term_list, new_right_term_list)
-
-        # update formula
-        new_formula:Formula = self._update_formula(current_formula, old_term, new_term)
-
-        return new_eq, new_formula
-
-    def _update_formula(self,f:Formula,old_term:Term,new_term:List[Term])->Formula:
-        new_eq_list = []
-        for eq_in_formula in f.formula:
-            new_left = self._update_term_list(old_term, new_term, eq_in_formula.left_terms)
-            new_right = self._update_term_list(old_term, new_term, eq_in_formula.right_terms)
-            new_eq_list.append(Equation(new_left, new_right))
-        return Formula(new_eq_list)
 
     def branch_for_both_side_different_variables(self, eq: Equation, current_formula: Formula, current_depth) -> Tuple[
         str, Formula]:
-        branch_method_list = [self._two_variables_branch_1,
-                              self._two_variables_branch_2,
-                              self._two_variables_branch_3]
+        branch_method_list = [_two_variables_branch_1,
+                              _two_variables_branch_2,
+                              _two_variables_branch_3]
+        return self.branch_method_func(branch_method_list, eq, current_formula, current_depth)
+
+    def _random_branch(self, branch_method_list, eq: Equation, current_formula: Formula, current_depth) -> Tuple[
+        str, Formula]:
+        random.shuffle(branch_method_list)
         return self._fixed_branch(branch_method_list, eq, current_formula, current_depth)
 
     def _fixed_branch(self, branch_method_list, eq: Equation, current_formula: Formula, current_depth) -> Tuple[
         str, Formula]:
         unknow_flag = False
         for branch_method in branch_method_list:
-            (branched_eq, branched_formula) = branch_method(eq, current_formula)
+            (branched_eq, branched_formula,branch_fresh_variable_counter) = branch_method(eq, current_formula,self.fresh_variable_counter)
+            self.fresh_variable_counter=branch_fresh_variable_counter
             satisfiability, result_formula = self.explore_path(branched_eq, branched_formula, current_depth + 1)
             if satisfiability == SAT:
                 return (satisfiability, result_formula)
@@ -207,82 +152,6 @@ class SplitEquations(AbstractAlgorithm):
             return (UNKNOWN, current_formula)
         else:
             return (UNSAT, current_formula)
-
-    def _create_fresh_variables(self) -> Term:
-        fresh_variable_term = Term(Variable(f"V{self.fresh_variable_counter}"))  # V1, V2, V3, ...
-        self.fresh_variable_counter += 1
-        return fresh_variable_term
-
-    def _update_term_list(self, old_term: Term, new_term: List[Term], term_list: List[Term]) -> List[Term]:
-        new_term_list = []
-        for t in term_list:
-            if t == old_term:
-                for new_t in new_term:
-                    new_term_list.append(new_t)
-            else:
-                new_term_list.append(t)
-        return new_term_list
-
-    def _two_variables_branch_1(self, eq: Equation, current_formula: Formula) -> Tuple[Equation, Formula]:
-        '''
-        Equation: V1 [Terms] = V2 [Terms]
-        Assume |V1| > |V2|
-        Replace V1 with V2V1'
-        Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
-        '''
-
-        local_eq=eq.copy()
-        left_term: Term = local_eq.left_terms.pop(0)
-        right_term: Term = local_eq.right_terms.pop(0)
-
-
-        # create fresh variable
-        fresh_variable_term: Term = self._create_fresh_variables()
-        # define old and new term
-        new_term: List[Term] = [right_term, fresh_variable_term]
-        old_term: Term = left_term
-
-        # update equation
-        new_left_term_list = [fresh_variable_term] + self._update_term_list(old_term, new_term, local_eq.left_terms)
-        new_right_term_list = self._update_term_list(old_term, new_term, local_eq.right_terms)
-        new_eq = Equation(new_left_term_list, new_right_term_list)
-
-        # update formula
-        new_formula:Formula = self._update_formula(current_formula, old_term, new_term)
-
-        return new_eq, new_formula
-
-    def _two_variables_branch_2(self, eq: Equation, current_formula: Formula) -> Tuple[Equation, Formula]:
-        '''
-        Equation: V1 [Terms] = V2 [Terms]
-        Assume |V1| < |V2|
-        Replace V2 with V1V2'
-        Obtain [Terms] [V2/V1V2'] = V2' [Terms] [V2/V1V2']
-        '''
-        return self._two_variables_branch_1(Equation(eq.right_terms, eq.left_terms), current_formula)
-
-    def _two_variables_branch_3(self, eq: Equation, current_formula: Formula) -> Tuple[Equation, Formula]:
-        '''
-        Equation: V1 [Terms] = V2 [Terms]
-        Assume |V1| = |V2|
-        Replace V1 with V2
-        Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
-        '''
-        local_eq = eq.deepcopy()
-        left_term: Term = local_eq.left_terms.pop(0)
-        right_term: Term = local_eq.right_terms.pop(0)
-
-        # define old and new term
-        old_term: Term = left_term
-        new_term: List[Term] = [right_term]
-
-        # update equation
-        new_eq = Equation(self._update_term_list(old_term, new_term, local_eq.left_terms),
-                          self._update_term_list(old_term, new_term, local_eq.right_terms))
-        # update formula
-        new_formula:Formula = self._update_formula(current_formula, old_term, new_term)
-
-        return new_eq, new_formula
 
     def simplify_equation(self, eq: Equation) -> Equation:
         # pop the same prefix
@@ -303,7 +172,7 @@ class SplitEquations(AbstractAlgorithm):
         # transform facts to assignment
         temp_assigment = Assignment()
         if original_formula.fact_number != 0:
-            for (e,assignment_list) in original_formula.facts:
+            for (e, assignment_list) in original_formula.facts:
                 for (v, t_list) in assignment_list:
                     temp_assigment.set_assignment(v, t_list)
         else:
