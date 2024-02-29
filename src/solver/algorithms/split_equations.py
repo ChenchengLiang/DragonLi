@@ -52,19 +52,11 @@ class SplitEquations(AbstractAlgorithm):
         if satisfiability != UNKNOWN:
             return satisfiability, current_formula
 
-        satisfiability,current_formula = self.split_equations(current_formula)
-
+        satisfiability, current_formula = self.split_equations(current_formula)
 
         return satisfiability, current_formula
-        #
-        # while True:
-        #     satisfiability, current_formula = self.propagate_facts(current_formula, current_formula.unknown_number)
-        #     if satisfiability != UNKNOWN:
-        #         return satisfiability, current_formula
-        #
-        #     current_formula = self.split_equations(current_formula)
 
-    def split_equations(self, original_formula: Formula) -> Tuple[str,Formula]:
+    def split_equations(self, original_formula: Formula) -> Tuple[str, Formula]:
         # choose a equation to split
         unknown_eq, current_formula = self.choose_unknown_eq_func(original_formula)
 
@@ -73,12 +65,11 @@ class SplitEquations(AbstractAlgorithm):
         self.total_explore_paths_call = 0
         (satisfiability, processed_formula) = self.explore_path(eq=unknown_eq, current_formula=current_formula,
                                                                 current_depth=0)
-        return satisfiability,processed_formula
-
+        return satisfiability, processed_formula
 
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
         self.total_explore_paths_call += 1
-        #print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
+        # print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
 
         # todo add more terminate conditions for differernt backtrack strategies
         # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
@@ -86,15 +77,12 @@ class SplitEquations(AbstractAlgorithm):
 
         eq = self.simplify_equation(eq)  # pop the same prefix
         eq_res = eq.check_satisfiability()
-        #print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
-        #print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
-
-
+        # print(f"** {'-' * current_depth} explore path for {eq.eq_str} at depth {current_depth}")
+        # print(f"** {'-'*current_depth} equation {eq.eq_str} is {eq_res}")
 
         if eq_res == SAT:
-            # todo check rest eqs
-            #reconstructed formula don;t know the new eq is SAT
-            new_formula_satisfiability,new_formula=_update_formula_with_new_eq(current_formula,eq,SAT)
+            #update formula with new eq result
+            new_formula_satisfiability, new_formula = _update_formula_with_new_eq(current_formula, eq, SAT)
 
             if new_formula_satisfiability == SAT:
                 return (SAT, new_formula)
@@ -105,11 +93,10 @@ class SplitEquations(AbstractAlgorithm):
 
 
         elif eq_res == UNSAT:
-            new_formula_satisfiability, new_formula = _update_formula_with_new_eq(current_formula, eq,UNSAT)
+            new_formula_satisfiability, new_formula = _update_formula_with_new_eq(current_formula, eq, UNSAT)
             return (UNSAT, new_formula)
         elif eq_res == UNKNOWN:
             ################################ Split equation ################################
-
 
             # left_term != right_term
             left_term = eq.left_terms[0]

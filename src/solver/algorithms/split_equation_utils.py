@@ -157,6 +157,7 @@ def _update_formula_with_new_eq(f: Formula, new_eq: Equation,new_eq_satisfiabili
             is_fact, fact_assignment = new_eq.is_fact()
             if is_fact:
                 new_formula.facts.append((new_eq, fact_assignment))
+
     if new_eq_satisfiability==UNSAT:
         if new_eq in new_formula.unknown_equations:
             new_formula.unknown_equations.remove(new_eq)
