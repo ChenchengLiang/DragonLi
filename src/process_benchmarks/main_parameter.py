@@ -12,12 +12,15 @@ from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, ElimilateVariables, \
-    ElimilateVariablesRecursive
+    ElimilateVariablesRecursive, SplitEquations
 from src.solver.DataTypes import Equation
 import argparse
 
 
 def main(args):
+    algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
+                     "SplitEquations": SplitEquations}
+
     #parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
 
@@ -32,6 +35,10 @@ def main(args):
                             help='task_1, task_2,...')
     arg_parser.add_argument('--termination_condition', type=str, default="execute_termination_condition_0",
                             help='execute_termination_condition_0,execute_termination_condition_1,execute_termination_condition_2,...')
+    arg_parser.add_argument('--choose_unknown_eq_method', type=str, default="fixed",
+                            help='fixed,random...')
+    arg_parser.add_argument('--algorithm', type=str, default="ElimilateVariablesRecursive",
+                            help='ElimilateVariablesRecursive,SplitEquations...')
 
 
     args = arg_parser.parse_args()
@@ -43,6 +50,8 @@ def main(args):
     gnn_model_path = args.gnn_model_path
     task=args.gnn_task
     termination_condition=args.termination_condition
+    algorithm=algorithm_map[args.algorithm]
+    choose_unknown_eq_method=args.choose_unknown_eq_method
 
     print(file_path, branch_method, graph_type)
 
@@ -55,13 +64,12 @@ def main(args):
 
     algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
                             "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path,
-                            "termination_condition":termination_condition} # branch_method [gnn,random,fixed]
+                            "termination_condition":termination_condition,
+                            "choose_unknown_eq_method":choose_unknown_eq_method} # branch_method [gnn,random,fixed]
 
-    #solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters)
-    solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters)
-    #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
-    #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
+
+    solver = Solver(algorithm=algorithm,algorithm_parameters=algorithm_parameters)
+
     result_dict = solver.solve(parsed_content, visualize=False,output_train_data=False)
 
     print_results(result_dict)

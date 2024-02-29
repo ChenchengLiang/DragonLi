@@ -25,7 +25,7 @@ def main():
 
 
     #transform one file
-    folder="03_track"
+    folder="regression_test"
     exception_folder=f"{bench_folder}/{folder}/eq_to_smt2_exception"
 
     if os.path.exists(exception_folder):

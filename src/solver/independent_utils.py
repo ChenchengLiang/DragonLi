@@ -9,6 +9,7 @@ import pickle
 import time
 import hashlib
 from collections import OrderedDict
+
 def check_list_consistence(target_list):
     consitence_list = []
     for one_answer in target_list:

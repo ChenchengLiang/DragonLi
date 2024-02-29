@@ -58,12 +58,12 @@ def main():
 
     #multiple equations
     #file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
-    #file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
+    file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
-    file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
+    #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
@@ -89,7 +89,7 @@ def main():
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
-    algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"random","branch_method":"random"}
+    algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"fixed","branch_method":"fixed"}
 
     solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters_SplitEquations)
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)

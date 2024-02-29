@@ -78,7 +78,7 @@ class SplitEquations(AbstractAlgorithm):
 
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
         self.total_explore_paths_call += 1
-        print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
+        #print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
 
         # todo add more terminate conditions for differernt backtrack strategies
         # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
