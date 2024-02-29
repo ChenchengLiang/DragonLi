@@ -25,9 +25,9 @@ def main():
     #file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
     #file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
     #file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
-    #file_path = bench_folder + "/debug/04_track_3.eq"
+    file_path = bench_folder + "/debug/04_track_3.eq"
     #file_path = bench_folder + "/debug/04_track_16.eq"
-    file_path = bench_folder + "/debug/test.eq"
+    #file_path = bench_folder + "/debug/test.eq"
 
     #file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"

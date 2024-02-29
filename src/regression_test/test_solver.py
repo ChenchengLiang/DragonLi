@@ -18,6 +18,7 @@ from src.solver.algorithms import ElimilateVariablesRecursive,SplitEquations
 from src.solver.independent_utils import strip_file_name_suffix, check_list_consistence
 from src.process_benchmarks.utils import run_on_one_problem
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
+import csv
 
 
 def main():
@@ -25,8 +26,6 @@ def main():
         (ElimilateVariablesRecursive,["fixed", f"--termination_condition execute_termination_condition_0"]),
         (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed"]),
     ]
-
-
 
 
     # test
@@ -42,6 +41,21 @@ def main():
     for x in consistance_list:
         print(x)
 
+    #write to cvs
+    write_to_csv(consistance_list)
+
+def write_to_csv(consistance_list):
+    # Data to be written to the CSV file
+    row_1 = ['file', 'consistency'] + [x[0] for x in consistance_list[0][2]]
+
+    # Open the CSV file in write mode ('w') and create a writer object
+    with open(bench_folder + "/regression_test/results.csv", 'w', newline='') as file:
+        writer = csv.writer(file)
+
+        # Write the row to the CSV file
+        writer.writerow(row_1)
+        for c in consistance_list:
+            writer.writerow([c[0], c[1]] + [x[1] for x in c[2]])
 
 def check_consistency(satisfiability_list: List[Tuple[str, str]]) -> bool:
 
