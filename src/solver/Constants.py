@@ -37,10 +37,6 @@ recursion_limit: int = 1000000000
 OUTPUT_LEAF_NODE_PERCENTAGE=0.001
 GNN_BRANCH_RATIO=0.5
 
-class Satisfiability(Enum):
-    SAT = "SAT"
-    UNKNOWN = "UNKNOWN"
-    UNSAT = "UNSAT"
 
 
 UNKNOWN:str = "UNKNOWN"

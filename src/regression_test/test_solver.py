@@ -10,8 +10,7 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder, project_folder, UNKNOWN, SUCCESS, FAIL, RED, GREEN, YELLOW, COLORRESET, \
-    Satisfiability
+from src.solver.Constants import bench_folder, project_folder, UNKNOWN, SUCCESS, FAIL, RED, GREEN, YELLOW, COLORRESET
 from src.solver.Parser import Parser, EqParser, SMT2Parser
 from src.solver.Solver import Solver
 from src.solver.utils import print_results, graph_func_map
@@ -44,8 +43,9 @@ def main():
         print(x)
 
 
-def check_consistency(satisfiability_list: List[Tuple[str, Satisfiability]]) -> bool:
-    filtered_statuses = [status for _, status in satisfiability_list if status != Satisfiability.UNKNOWN]
+def check_consistency(satisfiability_list: List[Tuple[str, str]]) -> bool:
+
+    filtered_statuses = [status for _, status in satisfiability_list if status != UNKNOWN]
 
     if not filtered_statuses:
         return True  # List is consistent if there are no SAT or UNSAT values.
@@ -60,7 +60,7 @@ def run_solvers(file_path, algorithm_configuration_list):
     if not os.path.exists(strip_file_name_suffix(file_path) + ".smt2"):
         one_eq_file_to_smt2(file_path)
 
-    satisfiability_list:List[Tuple[str,Satisfiability]] = []
+    satisfiability_list:List[Tuple[str,str]] = []
 
     #other solvers
     for solver in ["z3", "cvc5", "ostrich", "woorpje"]:

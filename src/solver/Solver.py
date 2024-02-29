@@ -36,10 +36,10 @@ class Solver:
         deduplicated_equations: List[Equation] = self.deduplicate_equations(equation_list)
 
         if log == True:
-            print("- before deduplication -")
+            print(f"- before deduplication {len(equation_list)}-")
             for e in equation_list:
                 print(e.eq_str)
-            print("- after deduplication -")
+            print(f"- after deduplication {len(deduplicated_equations)}-")
             for e in deduplicated_equations:
                 print(e.eq_str)
 
@@ -47,16 +47,15 @@ class Solver:
 
     def deduplicate_equations(self, equation_list: List[Equation]) -> List[Equation]:
         unique_equations = []
-        seen_equations = set()
+        seen_equations = []
 
-        for equation in equation_list:
-            # Convert the equation to a tuple of frozensets for hashability
-            equation_tuple = (frozenset(equation.left_terms), frozenset(equation.right_terms))
+        for eq in equation_list:
+            eq_tuple = (eq.left_terms, eq.right_terms)
+            if eq_tuple not in seen_equations:
+                unique_equations.append(eq)
+                seen_equations.append(eq_tuple)
+                seen_equations.append((eq_tuple[1],eq_tuple[0]))
 
-            # Check if either this equation or its reverse is in seen_equations
-            if equation_tuple not in seen_equations and (equation_tuple[1], equation_tuple[0]) not in seen_equations:
-                unique_equations.append(equation)
-                seen_equations.add(equation_tuple)
 
         return unique_equations
 
