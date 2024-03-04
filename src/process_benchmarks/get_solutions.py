@@ -35,7 +35,7 @@ def main():
             config = json.load(f)
     else:
         benchmark_name = "test_track_task_3"
-        termination_condition = "execute_termination_condition_0"
+        termination_condition = "termination_condition_0"
         config = {
             "benchmark_name": benchmark_name,
             "benchmark_folder":bench_folder+"/"+benchmark_name+"/ALL/ALL",

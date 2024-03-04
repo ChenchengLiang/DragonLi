@@ -57,9 +57,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.graph_func = get_eq_graph_1
         self.termination_condition = parameters["termination_condition"]
         self.termination_condition_map = {
-            "execute_termination_condition_0": self._execute_branching_data_termination_condition_0,
-            "execute_termination_condition_1": self._execute_branching_data_termination_condition_1,
-            "execute_termination_condition_2": self._execute_branching_data_termination_condition_2, }
+            "termination_condition_0": self._execute_branching_data_termination_condition_0,
+            "termination_condition_1": self._execute_branching_data_termination_condition_1,
+            "termination_condition_2": self._execute_branching_data_termination_condition_2, }
         self._execute_branching_data_termination_condition = self.termination_condition_map[self.termination_condition]
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -98,7 +98,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         target_eqs = concatenated_eqs
 
         try:
-            if self.termination_condition == "execute_termination_condition_2":
+            if self.termination_condition == "termination_condition_2":
                 self.max_deep = RESTART_INITIAL_MAX_DEEP
                 while True:
                     self.nodes = []

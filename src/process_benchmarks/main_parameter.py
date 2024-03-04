@@ -33,8 +33,8 @@ def main(args):
                             help='path to .pth file')
     arg_parser.add_argument('--gnn_task', type=str, default=None,
                             help='task_1, task_2,...')
-    arg_parser.add_argument('--termination_condition', type=str, default="execute_termination_condition_0",
-                            help='execute_termination_condition_0,execute_termination_condition_1,execute_termination_condition_2,...')
+    arg_parser.add_argument('--termination_condition', type=str, default="termination_condition_0",
+                            help='termination_condition_0,termination_condition_1,termination_condition_2,...')
     arg_parser.add_argument('--choose_unknown_eq_method', type=str, default="fixed",
                             help='fixed,random...')
     arg_parser.add_argument('--algorithm', type=str, default="ElimilateVariablesRecursive",

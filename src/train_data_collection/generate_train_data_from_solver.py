@@ -38,7 +38,7 @@ def main():
 def generate_train_data_in_one_folder(folder):
 
     algorithm_parameters = {"branch_method": "extract_branching_data_task_3","extract_algorithm":"fixed",
-                            "termination_condition":"execute_termination_condition_0"} #extract_branching_data_task_2
+                            "termination_condition":"termination_condition_0"} #extract_branching_data_task_2
 
     #prepare train folder
     all_eq_folder = bench_folder + "/" + folder + "/SAT"
@@ -79,7 +79,7 @@ def generate_train_data_in_one_folder(folder):
                 satisfiability = f.read().strip("\n")
         else:
             result_dict = run_on_one_problem(file_path=file_path,
-                                             parameters_list=["fixed", f"--termination_condition execute_termination_condition_0"],
+                                             parameters_list=["fixed", f"--termination_condition termination_condition_0"],
                                              solver="this", solver_log=False)
             satisfiability=result_dict["result"]
 

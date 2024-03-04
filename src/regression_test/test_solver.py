@@ -23,7 +23,7 @@ import csv
 
 def main():
     algorithm_configuration_list:List[Tuple[str,List[str]]] = [
-        (ElimilateVariablesRecursive,["fixed", f"--termination_condition execute_termination_condition_0"]),
+        (ElimilateVariablesRecursive,["fixed", f"--termination_condition termination_condition_0"]),
         (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed"]),
         (SplitEquations, ["random", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed"]),
     ]

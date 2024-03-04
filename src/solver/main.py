@@ -69,8 +69,8 @@ def main():
     #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
-    #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
-    file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
+    file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
+    #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_80.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_183.eq"  # UNSAT
@@ -88,9 +88,9 @@ def main():
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCNSplit.pth"
 
-    # algorithm_parameters_ElimilateVariablesRecursive = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
-    #                         "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
-    #                         "termination_condition":"execute_termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
+    algorithm_parameters_ElimilateVariablesRecursive = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+                            "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
+                            "termination_condition":"termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"fixed",
                                          "branch_method":"fixed",
