@@ -10,7 +10,7 @@ import torch
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
     MAX_SPLIT_CALL, OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH, MAX_DEEP, compress_image, \
-    INITIAL_MAX_DEEP_BOUND_2, MAX_DEEP_STEP_BOUND_2
+    RESTART_INITIAL_MAX_DEEP, RESTART_MAX_DEEP_STEP
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1, SeparateSymbol
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
@@ -99,7 +99,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         try:
             if self.termination_condition == "execute_termination_condition_2":
-                self.max_deep = INITIAL_MAX_DEEP_BOUND_2
+                self.max_deep = RESTART_INITIAL_MAX_DEEP
                 while True:
                     self.nodes = []
                     self.edges = []
@@ -113,7 +113,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                         break
                     if self.max_deep >= MAX_DEEP:
                         break
-                    self.max_deep += MAX_DEEP_STEP_BOUND_2
+                    self.max_deep += RESTART_MAX_DEEP_STEP
                     print("max_deep extended", self.max_deep)
             else:
                 node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",

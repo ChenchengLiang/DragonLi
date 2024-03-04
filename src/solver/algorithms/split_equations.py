@@ -3,7 +3,7 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, INITIAL_MAX_DEEP_BOUND_2
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP,RESTART_MAX_DEEP_STEP
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list
@@ -25,6 +25,8 @@ class SplitEquations(AbstractAlgorithm):
         self.edges = []
         self.fresh_variable_counter = 0
         self.total_explore_paths_call = 0
+        self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
+
 
         self.choose_unknown_eq_func_map = {"random": choose_an_unknown_eqiatons_random,
                                            "fixed": choose_an_unknown_eqiatons_fixed}
@@ -33,6 +35,9 @@ class SplitEquations(AbstractAlgorithm):
         self.branch_method_func_map = {"fixed": self._fixed_branch,
                                        "random": self._random_branch}
         self.branch_method_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
+        self.check_termination_condition_map={"termination_condition_0":self.early_termination_condition_0,
+                                              "termination_condition_1":self.early_termination_condition_1}
+        self.check_termination_condition_func: Callable = self.check_termination_condition_map[self.parameters["termination_condition"]]
 
         sys.setrecursionlimit(recursion_limit)
         print("recursion limit number", sys.getrecursionlimit())
@@ -52,12 +57,21 @@ class SplitEquations(AbstractAlgorithm):
         if satisfiability != UNKNOWN:
             return satisfiability, current_formula
 
-        satisfiability, current_formula = self.split_equations(current_formula)
+        if self.parameters["termination_condition"] == "termination_condition_1":
+            while True:
+                satisfiability, current_formula = self.split_equations(current_formula)
+                if satisfiability!=UNKNOWN:
+                    break
+
+                self.restart_max_deep += RESTART_MAX_DEEP_STEP
+        else:
+            satisfiability, current_formula = self.split_equations(current_formula)
 
         return satisfiability, current_formula
 
     def split_equations(self, original_formula: Formula) -> Tuple[str, Formula]:
         # choose a equation to split
+        # todo each choice is also a branch?
         unknown_eq, current_formula = self.choose_unknown_eq_func(original_formula)
 
         print(f"----------------- explore path for {unknown_eq.eq_str} -----------------")
@@ -67,13 +81,24 @@ class SplitEquations(AbstractAlgorithm):
                                                                 current_depth=0)
         return satisfiability, processed_formula
 
+
+
+    def early_termination_condition_0(self,current_formula: Formula,current_depth:int):
+        return None
+
+    def early_termination_condition_1(self,current_formula: Formula,current_depth:int):
+        if current_depth> self.restart_max_deep:
+            return (UNKNOWN,current_formula)
     def explore_path(self, eq: Equation, current_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
         self.total_explore_paths_call += 1
         # print(f"current_depth: {current_depth} total explored path: {self.total_explore_paths_call}, {eq.eq_str}")
 
         # todo add more terminate conditions for differernt backtrack strategies
-        # if current_depth > INITIAL_MAX_DEEP_BOUND_2:
-        #     return (UNKNOWN, current_formula)
+        result=self.check_termination_condition_func(current_formula,current_depth)
+        if result == None:
+            pass
+        else:
+            return result
 
         eq = self.simplify_equation(eq)  # pop the same prefix
         eq_res = eq.check_satisfiability()
