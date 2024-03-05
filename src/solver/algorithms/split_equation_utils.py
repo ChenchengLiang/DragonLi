@@ -19,7 +19,7 @@ def choose_an_unknown_eqiatons_fixed(f: Formula) -> (Equation, Formula):
 
 
 
-def _one_variable_one_terminal_branch_1(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+def _left_variable_right_terminal_branch_1(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
     Equation, Formula,int]:
     '''
     Equation: V1 [Terms] = a [Terms]
@@ -47,7 +47,7 @@ def _one_variable_one_terminal_branch_1(eq: Equation, current_formula: Formula, 
     return new_eq, new_formula,fresh_variable_counter
 
 
-def _one_variable_one_terminal_branch_2(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+def _left_variable_right_terminal_branch_2(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
     Equation, Formula,int]:
     '''
     Equation: V1 [Terms] = a [Terms]
@@ -141,7 +141,7 @@ def _two_variables_branch_3(eq: Equation, current_formula: Formula, fresh_variab
 
 def _update_formula(f: Formula, old_term: Term, new_term: List[Term]) -> Formula:
     new_eq_list = []
-    for eq_in_formula in f.formula:
+    for eq_in_formula in f.eq_list:
         new_left = _update_term_list(old_term, new_term, eq_in_formula.left_terms)
         new_right = _update_term_list(old_term, new_term, eq_in_formula.right_terms)
         new_eq_list.append(Equation(new_left, new_right))

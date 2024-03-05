@@ -3,7 +3,7 @@ from collections import deque
 from typing import Union, List, Tuple, Deque, Callable, Optional
 
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
-from src.solver.independent_utils import remove_duplicates
+from src.solver.independent_utils import remove_duplicates, color_print
 from src.solver.visualize_util import draw_graph
 
 
@@ -145,7 +145,7 @@ class Equation:
         if not isinstance(other, Equation):
             return False
         return (self.left_terms == other.left_terms and self.right_terms == other.right_terms) or (
-                    self.left_terms == other.right_terms and self.right_terms == other.left_terms)
+                self.left_terms == other.right_terms and self.right_terms == other.left_terms)
 
     def copy(self):
         return copy.copy(self)
@@ -224,6 +224,14 @@ class Equation:
     def number_of_special_symbols(self) -> int:
         return self.eq_str.count("#")
 
+    def simplify(self):
+        # pop the same prefix
+        for index in range(min(len(self.left_terms), len(self.right_terms))):
+            if self.left_terms[0] == self.right_terms[0]:
+                self.left_terms.pop(0)
+                self.right_terms.pop(0)
+
+
     def is_fact(self) -> (bool, List[Tuple[Variable, List[Terminal]]]):
 
         # Condition: "" = List[Variable]
@@ -275,7 +283,7 @@ class Equation:
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 return UNSAT
             # todo mistmatch suffix terminal
-            #other conditions
+            # other conditions
             else:
                 result, _ = self.is_fact()
                 return SAT if result == True else UNKNOWN
@@ -324,26 +332,58 @@ class Equation:
             f.write(satisfiability)
 
 
+
+
 class Formula:
     def __init__(self, eq_list: List[Equation]):
-        self.formula = eq_list
-        self.facts: List[Tuple[Equation, List[Tuple[Variable, List[Terminal]]]]] = []
+        self.eq_list = eq_list
+
+        self.facts: List[Tuple[Equation, Tuple[Variable, List[Terminal]]]] = []
         self.sat_equations: List[Equation] = []
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
-        for eq in self.formula:
+
+    def categorize_equations(self):
+        # check satisfiability for each equation
+        for eq in self.eq_list:
             satisfiability = eq.check_satisfiability()
+            #color_print(f"{satisfiability},{eq.eq_str}", "green" )
+
             if satisfiability == SAT:
                 self.sat_equations.append(eq)
                 is_fact, fact_assignment = eq.is_fact()
                 if is_fact:
-                    self.facts.append((eq, fact_assignment))
-                    # for f in fact_assignment:
-                    #     self.facts.append((eq, f))
+                    for fact in fact_assignment:
+                        self.facts.append((eq, fact))
+
             elif satisfiability == UNSAT:
                 self.unsat_equations.append(eq)
             else:
                 self.unknown_equations.append(eq)
+
+    def propagate_facts(self):
+        pass
+
+    def check_satisfiability(self) -> str:
+        if self.unknown_number == 0:
+            if self.unsat_number == 0:
+                return SAT
+            else:
+                return UNSAT
+        else:
+            return UNKNOWN
+
+    def simplify_eq_list(self):
+        for eq in self.eq_list:
+            eq.simplify()
+
+    def print_eq_list(self):
+        for index,eq in enumerate(self.eq_list):
+            print(index,eq.eq_str)
+
+    @property
+    def eq_list_length(self):
+        return len(self.eq_list)
 
     @property
     def fact_number(self) -> int:
@@ -358,18 +398,56 @@ class Formula:
         return len(self.unsat_equations)
 
     @property
-    def satisfiability(self) -> str:
-        if self.unknown_number == 0:
-            if self.unsat_number == 0:
-                return SAT
-            else:
-                return UNSAT
-        else:
-            return UNKNOWN
+    def sat_number(self) -> int:
+        return len(self.sat_equations)
 
-    def print_eq_list(self):
-        for eq in self.formula:
-            print(eq.eq_str)
+#
+# class Formula:
+#     def __init__(self, eq_list: List[Equation]):
+#         self.formula = eq_list
+#         self.facts: List[Tuple[Equation, List[Tuple[Variable, List[Terminal]]]]] = []
+#         self.sat_equations: List[Equation] = []
+#         self.unsat_equations: List[Equation] = []
+#         self.unknown_equations: List[Equation] = []
+#         for eq in self.formula:
+#             satisfiability = eq.check_satisfiability()
+#             if satisfiability == SAT:
+#                 self.sat_equations.append(eq)
+#                 is_fact, fact_assignment = eq.is_fact()
+#                 if is_fact:
+#                     self.facts.append((eq, fact_assignment))
+#                     # for f in fact_assignment:
+#                     #     self.facts.append((eq, f))
+#             elif satisfiability == UNSAT:
+#                 self.unsat_equations.append(eq)
+#             else:
+#                 self.unknown_equations.append(eq)
+#
+#     @property
+#     def fact_number(self) -> int:
+#         return len(self.facts)
+#
+#     @property
+#     def unknown_number(self) -> int:
+#         return len(self.unknown_equations)
+#
+#     @property
+#     def unsat_number(self) -> int:
+#         return len(self.unsat_equations)
+#
+#     @property
+#     def satisfiability(self) -> str:
+#         if self.unknown_number == 0:
+#             if self.unsat_number == 0:
+#                 return SAT
+#             else:
+#                 return UNSAT
+#         else:
+#             return UNKNOWN
+#
+#     def print_eq_list(self):
+#         for eq in self.formula:
+#             print(eq.eq_str)
 
 
 class Assignment:
