@@ -230,7 +230,8 @@ class Equation:
             if self.left_terms[0] == self.right_terms[0]:
                 self.left_terms.pop(0)
                 self.right_terms.pop(0)
-
+            else:
+                break
 
     def is_fact(self) -> (bool, List[Tuple[Variable, List[Terminal]]]):
 
@@ -332,8 +333,6 @@ class Equation:
             f.write(satisfiability)
 
 
-
-
 class Formula:
     def __init__(self, eq_list: List[Equation]):
         self.eq_list = eq_list
@@ -344,10 +343,15 @@ class Formula:
         self.unknown_equations: List[Equation] = []
 
     def categorize_equations(self):
+        self.facts = []
+        self.sat_equations = []
+        self.unsat_equations = []
+        self.unknown_equations = []
+
         # check satisfiability for each equation
         for eq in self.eq_list:
             satisfiability = eq.check_satisfiability()
-            #color_print(f"{satisfiability},{eq.eq_str}", "green" )
+            # color_print(f"{satisfiability},{eq.eq_str}", "green" )
 
             if satisfiability == SAT:
                 self.sat_equations.append(eq)
@@ -362,9 +366,40 @@ class Formula:
                 self.unknown_equations.append(eq)
 
     def propagate_facts(self):
-        pass
+        propagate_count = 0
+        while True:
+            previous_fact_eq_list = [ff[0] for ff in self.facts]
+            self.simplify_eq_list()
+            self.categorize_equations()
+            current_fact_eq_list = [ff[0] for ff in self.facts]
 
-    def check_satisfiability(self) -> str:
+            if current_fact_eq_list == previous_fact_eq_list:
+                # print("No new facts are found")
+                break
+
+            # print("Propagate facts")
+            propagate_count += 1
+            current_eq_list = list(self.eq_list)
+
+            for fact in self.facts:
+                fact_eq: Equation = fact[0]
+                fact_variable: Variable = fact[1][0]
+                fact_terminal_list: List[Terminal] = fact[1][1]
+
+                if fact_eq in current_eq_list:
+                    eq_list_without_fact = list(current_eq_list)
+                    eq_list_without_fact.remove(fact_eq)
+
+                    updated_eq_list_without_fact = _update_term_in_eq_list(eq_list_without_fact, Term(fact_variable),
+                                                                           [Term(t) for t in fact_terminal_list])
+                    current_eq_list = updated_eq_list_without_fact + [fact_eq]
+
+            self.eq_list = list(current_eq_list)
+
+        print(f"Propagate facts {propagate_count} times")
+
+    def check_satisfiability(
+            self) -> str:  # todo this require to check the relation between the equations, is done in propagate_facts
         if self.unknown_number == 0:
             if self.unsat_number == 0:
                 return SAT
@@ -378,8 +413,12 @@ class Formula:
             eq.simplify()
 
     def print_eq_list(self):
-        for index,eq in enumerate(self.eq_list):
-            print(index,eq.eq_str)
+        for index, eq in enumerate(self.eq_list):
+            print(index, eq.eq_str)
+
+    @property
+    def eq_list_str(self):
+        return " | ".join([eq.eq_str for eq in self.eq_list])  # they are conjuncted, use | for easy to read
 
     @property
     def eq_list_length(self):
@@ -400,6 +439,7 @@ class Formula:
     @property
     def sat_number(self) -> int:
         return len(self.sat_equations)
+
 
 #
 # class Formula:
@@ -659,3 +699,23 @@ def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term]):  # add edge
 def get_eq_graph_5(left_terms: List[Term],
                    right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
     return _construct_graph(left_terms, right_terms, graph_type="graph_5")
+
+
+def _update_term_in_eq_list(eq_list: List[Equation], old_term: Term, new_term: List[Term]) -> List[Equation]:
+    new_eq_list = []
+    for eq_in_formula in eq_list:
+        new_left = _update_term_list(old_term, new_term, eq_in_formula.left_terms)
+        new_right = _update_term_list(old_term, new_term, eq_in_formula.right_terms)
+        new_eq_list.append(Equation(new_left, new_right))
+    return new_eq_list
+
+
+def _update_term_list(old_term: Term, new_term: List[Term], term_list: List[Term]) -> List[Term]:
+    new_term_list = []
+    for t in term_list:
+        if t == old_term:
+            for new_t in new_term:
+                new_term_list.append(new_t)
+        else:
+            new_term_list.append(t)
+    return new_term_list

@@ -23,8 +23,8 @@ import shutil
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_3"
-    model_type= "GINSplit"#"GINSplit"
+    graph_type = "graph_4"
+    model_type= "GCNSplit"#"GINSplit"
     solver_param_list = [
         ["this", ["random", f"--termination_condition termination_condition_0"]],
         ["this", ["random", f"--termination_condition termination_condition_1"]],
@@ -119,6 +119,8 @@ def main():
     # Writing the dictionary to a JSON file
     configuration_folder = project_folder + "/src/process_benchmarks/configurations"
     write_configurations_to_json_file(configuration_folder=configuration_folder, configurations=configuration_list)
+
+    print("done")
 
 
 

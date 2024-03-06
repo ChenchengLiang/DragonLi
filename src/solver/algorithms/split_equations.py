@@ -4,11 +4,11 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
-    RESTART_MAX_DEEP_STEP
+    RESTART_MAX_DEEP_STEP, compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list, color_print
-from src.solver.visualize_util import visualize_path, visualize_path_html
+from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _left_variable_right_terminal_branch_1, \
@@ -52,20 +52,28 @@ class SplitEquations(AbstractAlgorithm):
 
         if self.parameters["termination_condition"] == "termination_condition_1":
             while True:
-                print("debug",len(self.equation_list))
+                print("debug", len(self.equation_list))
                 satisfiability, new_formula = self.split_eq(original_formula, current_depth=0)
                 if satisfiability != UNKNOWN:
                     break
 
                 self.restart_max_deep += RESTART_MAX_DEEP_STEP
         else:
+            initial_node: Tuple[int, Dict] = (
+                0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                    "back_track_count": 0})
+            self.nodes.append(initial_node)
 
-            satisfiability, new_formula = self.split_eq(original_formula, current_depth=0)
+            satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
+                                                        edge_label="start")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
-    def split_eq(self, original_formula: Formula, current_depth: int) -> Tuple[str, Formula]:
+    def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
+                 edge_label: str) -> Tuple[str, Formula]:
+        self.total_explore_paths_call += 1
+
         print(f"----- current_depth:{current_depth} -----")
         # todo how to not explicitly use return when in some condition return some conditions not return?
         res = self.check_termination_condition_func(current_depth)
@@ -81,14 +89,17 @@ class SplitEquations(AbstractAlgorithm):
         else:
             unknown_eq, separated_formula = self.choose_unknown_eq_func(current_formula)
 
+            current_node = self.record_node_and_edges(unknown_eq, separated_formula, previous_node, edge_label)
+
             children: List[Tuple[Equation, Formula]] = self.apply_rules(unknown_eq, separated_formula)
             children: List[Tuple[Equation, Formula]] = self.order_branches_func(children)
 
             unknown_flag = False
             for c_index, child in enumerate(children):
-                (c_eq, c_formula) = child
+                (c_eq, c_formula,edge_label) = child
                 reconstructed_formula = Formula([c_eq] + c_formula.eq_list)
-                satisfiability, res_formula = self.split_eq(reconstructed_formula, current_depth + 1)
+                satisfiability, res_formula = self.split_eq(reconstructed_formula, current_depth + 1, current_node,
+                                                            edge_label)
                 if satisfiability == SAT:
                     return (SAT, res_formula)
                 elif satisfiability == UNKNOWN:
@@ -100,9 +111,18 @@ class SplitEquations(AbstractAlgorithm):
 
             return satisfiability, processed_formula
 
+    def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
+    Tuple[int, Dict]:
+        current_node_number = self.total_explore_paths_call
+        label = f"{eq.eq_str},{f.eq_list_str}"
+        current_node = (
+            current_node_number,
+            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
+        self.nodes.append(current_node)
+        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        return current_node
+
     def simplify_and_check_formula(self, f: Formula) -> Tuple[str, Formula]:
-        f.simplify_eq_list()
-        f.categorize_equations()
         f.propagate_facts()
         satisfiability = f.check_satisfiability()
 
@@ -110,7 +130,7 @@ class SplitEquations(AbstractAlgorithm):
 
     def _select_one_eq_fixed(self, f: Formula) -> Tuple[Equation, Formula]:
         selected_eq = f.unknown_equations.pop(0)
-        new_eq_list=list(f.eq_list)
+        new_eq_list = list(f.eq_list)
         new_eq_list.remove(selected_eq)
         return selected_eq, Formula(new_eq_list)
 
@@ -132,29 +152,29 @@ class SplitEquations(AbstractAlgorithm):
         # left side is variable, right side is terminal
         if type(left_term.value) == Variable and type(right_term.value) == Terminal:
             rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
-            children: List[Tuple[Equation, Formula]] = self.get_children(eq, f, rule_list)
+            children: List[Tuple[Equation, Formula,str]] = self.get_children(eq, f, rule_list)
             return children
         # left side is terminal, right side is variable
         elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
             rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
-            children: List[Tuple[Equation, Formula]] = self.get_children(Equation(eq.right_terms, eq.left_terms), f,
+            children: List[Tuple[Equation, Formula,str]] = self.get_children(Equation(eq.right_terms, eq.left_terms), f,
                                                                          rule_list)
             return children
         # both side are differernt variables
         elif type(left_term.value) == Variable and type(right_term.value) == Variable:
             rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
-            children: List[Tuple[Equation, Formula]] = self.get_children(eq, f, rule_list)
+            children: List[Tuple[Equation, Formula,str]] = self.get_children(eq, f, rule_list)
             return children
         else:
             color_print(eq.eq_str, "red")
 
-    def get_children(self, eq: Equation, f: Formula, rule_list: Callable) -> List[Tuple[Equation, Formula]]:
-        children: List[Tuple[Equation, Formula]] = []
+    def get_children(self, eq: Equation, f: Formula, rule_list: Callable) -> List[Tuple[Equation, Formula,str]]:
+        children: List[Tuple[Equation, Formula,str]] = []
         for rule in rule_list:
-            new_eq, new_formula, fresh_variable_counter = rule(eq, f,
+            new_eq, new_formula, fresh_variable_counter,label_str = rule(eq, f,
                                                                self.fresh_variable_counter)
             self.fresh_variable_counter = fresh_variable_counter
-            child: Tuple[Equation, Formula] = (new_eq, new_formula)
+            child: Tuple[Equation, Formula,str] = (new_eq, new_formula,label_str)
             children.append(child)
         return children
 
@@ -176,8 +196,9 @@ class SplitEquations(AbstractAlgorithm):
         if current_depth > self.restart_max_deep:
             return UNKNOWN
 
-    def visualize(self, file_path: str):
-        pass
+    def visualize(self, file_path: str, graph_func: Callable):
+        visualize_path_html(self.nodes, self.edges, file_path)
+        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image)
 
 #
 # class SplitEquations(AbstractAlgorithm):

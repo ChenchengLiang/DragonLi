@@ -25,7 +25,7 @@ def main():
     #file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
     #file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
     #file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
-    file_path = bench_folder + "/debug/04_track_3.eq"
+    #file_path = bench_folder + "/debug/04_track_3.eq"
     #file_path = bench_folder + "/debug/04_track_16.eq"
     #file_path = bench_folder + "/debug/test.eq"
 
@@ -67,13 +67,18 @@ def main():
     #file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
-    file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
+    #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_80.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_183.eq"  # UNSAT
+    #file_path=bench_folder +"/debug/19949.corecstrs.readable.eq" #UNSAT
+    #file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
+    #file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
+    file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
+
 
     #smt format
     #file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
@@ -84,7 +89,7 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_2"
+    graph_type="graph_1"
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCNSplit.pth"
 
@@ -92,16 +97,17 @@ def main():
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
-    algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"random",
+    algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"fixed",
                                          "branch_method":"fixed",
-                                         "termination_condition":"termination_condition_0"}
+                                         "termination_condition":"termination_condition_0",
+                                         "graph_type":graph_type,"graph_func":graph_func_map[graph_type]}
 
     solver = Solver(algorithm=SplitEquations,algorithm_parameters=algorithm_parameters_SplitEquations)
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
 
     print_results(result_dict)
 

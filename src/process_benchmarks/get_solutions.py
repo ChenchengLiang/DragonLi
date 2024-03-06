@@ -57,6 +57,8 @@ def main():
     run_on_one_track(config["benchmark_name"], config["benchmark_folder"], config["parameters_list"], config["solver"], suffix_dict,summary_folder_name=config["summary_folder_name"],
                      solver_log=solver_log)
 
+    print("done")
+
 
 
 

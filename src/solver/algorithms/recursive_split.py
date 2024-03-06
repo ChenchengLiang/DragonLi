@@ -103,7 +103,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 while True:
                     self.nodes = []
                     self.edges = []
-                    node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                    node_info:Tuple[int,Dict] = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                                      "back_track_count": 0})
                     self.nodes.append(node_info)
                     satisfiability, variables, back_track_count = self.explore_paths(target_eqs,
@@ -116,7 +116,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     self.max_deep += RESTART_MAX_DEEP_STEP
                     print("max_deep extended", self.max_deep)
             else:
-                node_info = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                node_info:Tuple[int,Dict] = (0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                                  "back_track_count": 0})
                 self.nodes.append(node_info)
                 satisfiability, variables, back_track_count = self.explore_paths(target_eqs,
