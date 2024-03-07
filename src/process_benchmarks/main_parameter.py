@@ -37,6 +37,8 @@ def main(args):
                             help='termination_condition_0,termination_condition_1,termination_condition_2,...')
     arg_parser.add_argument('--choose_unknown_eq_method', type=str, default="fixed",
                             help='fixed,random...')
+    arg_parser.add_argument('--order_equations_method', type=str, default="fixed",
+                            help='fixed,random...')
     arg_parser.add_argument('--algorithm', type=str, default="ElimilateVariablesRecursive",
                             help='ElimilateVariablesRecursive,SplitEquations...')
 
@@ -52,6 +54,7 @@ def main(args):
     termination_condition=args.termination_condition
     algorithm=algorithm_map[args.algorithm]
     choose_unknown_eq_method=args.choose_unknown_eq_method
+    order_equations_method=args.order_equations_method
 
     print(file_path, branch_method, graph_type)
 
@@ -65,7 +68,8 @@ def main(args):
     algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
                             "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path,
                             "termination_condition":termination_condition,
-                            "choose_unknown_eq_method":choose_unknown_eq_method} # branch_method [gnn,random,fixed]
+                            "choose_unknown_eq_method":choose_unknown_eq_method,
+                            "order_equations_method":order_equations_method} # branch_method [gnn,random,fixed]
 
 
     solver = Solver(algorithm=algorithm,algorithm_parameters=algorithm_parameters)

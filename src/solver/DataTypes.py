@@ -259,6 +259,37 @@ class Equation:
         else:
             return False, []
 
+    def check_satisfiability_simple(self) -> str:
+        if len(self.term_list) == 0:  # both sides are empty
+            return SAT
+        elif len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
+            if all(isinstance(term.value, Terminal) for term in self.right_terms):
+                return UNSAT
+            else:
+                return UNKNOWN
+        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
+            if all(isinstance(term.value, Terminal) for term in self.left_terms):
+                return UNSAT
+            else:
+                return UNKNOWN
+        else: # both sides are not empty
+            first_left_term = self.left_terms[0]
+            first_right_term = self.right_terms[0]
+            last_left_term = self.left_terms[-1]
+            last_right_term = self.right_terms[-1]
+            # all terms are terminals
+            if all(isinstance(term.value, Terminal) for term in self.term_list):
+                return self.check_all_terminal_case()
+            # mismatch prefix terminal
+            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
+                return UNSAT
+            #mistmatch suffix terminal
+            elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
+                return UNSAT
+            else:
+                return UNKNOWN
+
+
     def check_satisfiability(self) -> str:
         if len(self.term_list) == 0:  # both sides are empty
             return SAT
@@ -269,6 +300,8 @@ class Equation:
         else:  # both sides are not empty
             first_left_term = self.left_terms[0]
             first_right_term = self.right_terms[0]
+            last_left_term = self.left_terms[-1]
+            last_right_term = self.right_terms[-1]
 
             # both sides are exatcly the same
             if self.left_terms == self.right_terms:
@@ -283,8 +316,10 @@ class Equation:
             # mismatch prefix terminal
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 return UNSAT
-            # todo mistmatch suffix terminal
-            # other conditions
+            # mistmatch suffix terminal
+            elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
+                return UNSAT
+            # todo trivial other conditions
             else:
                 result, _ = self.is_fact()
                 return SAT if result == True else UNKNOWN
@@ -342,6 +377,20 @@ class Formula:
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
 
+    def categorize_equations_1(self):
+        self.sat_equations = []
+        self.unsat_equations = []
+        self.unknown_equations = []
+        for eq in self.eq_list:
+            satisfiability = eq.check_satisfiability_simple()
+            #print(eq.eq_str,satisfiability)
+            if satisfiability == SAT:
+                self.sat_equations.append(eq)
+            elif satisfiability == UNSAT:
+                self.unsat_equations.append(eq)
+            else:
+                self.unknown_equations.append(eq)
+
     def categorize_equations(self):
         self.facts = []
         self.sat_equations = []
@@ -397,6 +446,16 @@ class Formula:
             self.eq_list = list(current_eq_list)
 
         print(f"Propagate facts {propagate_count} times")
+
+    def check_satisfiability_1(self) -> str:
+        if self.eq_list_length==0:
+            return SAT
+        else:
+            if self.unsat_number != 0:
+                return UNSAT
+            else:
+                return UNKNOWN
+
 
     def check_satisfiability(
             self) -> str:  # todo this require to check the relation between the equations, is done in propagate_facts

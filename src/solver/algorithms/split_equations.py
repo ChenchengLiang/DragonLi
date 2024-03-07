@@ -13,7 +13,7 @@ from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _left_variable_right_terminal_branch_1, \
     _left_variable_right_terminal_branch_2, _two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3, \
-    choose_an_unknown_eqiatons_random, choose_an_unknown_eqiatons_fixed, _update_formula_with_new_eq
+    choose_an_unknown_eqiatons_random, choose_an_unknown_eqiatons_fixed, _update_formula_with_new_eq, _update_formula
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -34,6 +34,10 @@ class SplitEquations(AbstractAlgorithm):
         self.choose_unknown_eq_func: Callable = self.choose_unknown_eq_func_map[
             self.parameters["choose_unknown_eq_method"]]
 
+        self.order_equations_func_map = {"fixed": self._order_equations_fixed,
+                                         "random": self._order_equations_random}
+        self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
+
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
                                        "random": self._order_branches_random,
                                        "gnn": self._order_branches_gnn}
@@ -52,8 +56,10 @@ class SplitEquations(AbstractAlgorithm):
 
         if self.parameters["termination_condition"] == "termination_condition_1":
             while True:
-                print("debug", len(self.equation_list))
-                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0)
+                initial_node: Tuple[int, Dict] = (
+                    0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                        "back_track_count": 0})
+                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,previous_node=initial_node,edge_label="start")
                 if satisfiability != UNKNOWN:
                     break
 
@@ -87,18 +93,20 @@ class SplitEquations(AbstractAlgorithm):
         if satisfiability != UNKNOWN:
             return satisfiability, current_formula
         else:
-            unknown_eq, separated_formula = self.choose_unknown_eq_func(current_formula)
+            # unknown_eq, separated_formula = self.choose_unknown_eq_func(current_formula)
+            current_formula = self.order_equations_func(current_formula)
+            current_eq, separated_formula = self.get_first_eq(current_formula)
 
-            current_node = self.record_node_and_edges(unknown_eq, separated_formula, previous_node, edge_label)
+            current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
 
-            children: List[Tuple[Equation, Formula]] = self.apply_rules(unknown_eq, separated_formula)
-            children: List[Tuple[Equation, Formula]] = self.order_branches_func(children)
+            children: List[Tuple[Equation, Formula, str]] = self.apply_rules(current_eq, separated_formula)
+            children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
             unknown_flag = False
             for c_index, child in enumerate(children):
-                (c_eq, c_formula,edge_label) = child
-                reconstructed_formula = Formula([c_eq] + c_formula.eq_list)
-                satisfiability, res_formula = self.split_eq(reconstructed_formula, current_depth + 1, current_node,
+                (c_eq, c_formula, edge_label) = child
+
+                satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
                                                             edge_label)
                 if satisfiability == SAT:
                     return (SAT, res_formula)
@@ -112,7 +120,7 @@ class SplitEquations(AbstractAlgorithm):
             return satisfiability, processed_formula
 
     def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
-    Tuple[int, Dict]:
+            Tuple[int, Dict]:
         current_node_number = self.total_explore_paths_call
         label = f"{eq.eq_str},{f.eq_list_str}"
         current_node = (
@@ -123,10 +131,26 @@ class SplitEquations(AbstractAlgorithm):
         return current_node
 
     def simplify_and_check_formula(self, f: Formula) -> Tuple[str, Formula]:
-        f.propagate_facts()
-        satisfiability = f.check_satisfiability()
+        #f.print_eq_list()
+        f.simplify_eq_list()
+        f.categorize_equations_1()
+        satisfiability = f.check_satisfiability_1()
+
+        # f.propagate_facts()
+        #satisfiability = f.check_satisfiability()
+
 
         return satisfiability, f
+
+    def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
+        return f.eq_list[0], Formula(f.eq_list[1:])
+
+    def _order_equations_fixed(self, f: Formula) -> Formula:
+        return f
+
+    def _order_equations_random(self, f: Formula) -> Formula:
+        random.shuffle(f.eq_list)
+        return f
 
     def _select_one_eq_fixed(self, f: Formula) -> Tuple[Equation, Formula]:
         selected_eq = f.unknown_equations.pop(0)
@@ -146,35 +170,93 @@ class SplitEquations(AbstractAlgorithm):
         return self._select_one_eq_fixed(f)
 
     def apply_rules(self, eq: Equation, f: Formula) -> List[Tuple[Equation, Formula]]:
-        left_term = eq.left_terms[0]
-        right_term = eq.right_terms[0]
+        # handle non-split rules
 
-        # left side is variable, right side is terminal
-        if type(left_term.value) == Variable and type(right_term.value) == Terminal:
-            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
-            children: List[Tuple[Equation, Formula,str]] = self.get_children(eq, f, rule_list)
-            return children
-        # left side is terminal, right side is variable
-        elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
-            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
-            children: List[Tuple[Equation, Formula,str]] = self.get_children(Equation(eq.right_terms, eq.left_terms), f,
-                                                                         rule_list)
-            return children
-        # both side are differernt variables
-        elif type(left_term.value) == Variable and type(right_term.value) == Variable:
-            rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
-            children: List[Tuple[Equation, Formula,str]] = self.get_children(eq, f, rule_list)
-            return children
+        # both sides are empty
+        if len(eq.term_list) == 0:
+            children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
+        # left side is empty
+        elif len(eq.left_terms) == 0 and len(eq.right_terms) > 0:
+            children: List[Tuple[Equation, Formula, str]] = self.left_side_empty(eq, f)
+        # right side is empty
+        elif len(eq.left_terms) > 0 and len(eq.right_terms) == 0:  # right side is empty
+            children: List[Tuple[Equation, Formula, str]] = self.left_side_empty(Equation(eq.right_terms,eq.left_terms), f)
+        # both sides are not empty
         else:
-            color_print(eq.eq_str, "red")
+            first_left_term = eq.left_terms[0]
+            first_right_term = eq.right_terms[0]
+            # \epsilon=\epsilon \wedge \phi case
+            if eq.left_terms == eq.right_terms:
+                children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-    def get_children(self, eq: Equation, f: Formula, rule_list: Callable) -> List[Tuple[Equation, Formula,str]]:
-        children: List[Tuple[Equation, Formula,str]] = []
+            # match prefix terminal
+            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
+                eq.simplify()
+                children: List[Tuple[Equation, Formula, str]] = [
+                    (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+
+            # mismatch prefix terminal
+            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
+                eq.given_satisfiability = UNSAT
+                children: List[Tuple[Equation, Formula, str]] = [
+                    (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+            # split rules
+            else:
+                left_term = eq.left_terms[0]
+                right_term = eq.right_terms[0]
+                # left side is variable, right side is terminal
+                if type(left_term.value) == Variable and type(right_term.value) == Terminal:
+                    rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
+                    children: List[Tuple[Equation, Formula, str]] = self.get_split_children(eq, f, rule_list)
+
+                # left side is terminal, right side is variable
+                elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
+                    rule_list: List[Callable] = [_left_variable_right_terminal_branch_1, _left_variable_right_terminal_branch_2]
+                    children: List[Tuple[Equation, Formula, str]] = self.get_split_children(
+                        Equation(eq.right_terms, eq.left_terms), f,
+                        rule_list)
+
+                # both side are differernt variables
+                elif type(left_term.value) == Variable and type(right_term.value) == Variable:
+                    rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
+                    children: List[Tuple[Equation, Formula, str]] = self.get_split_children(eq, f, rule_list)
+
+                else:
+                    children: List[Tuple[Equation, Formula, str]] = []
+                    color_print(f"error: {eq.eq_str}", "red")
+
+        return children
+
+    def left_side_empty(self, eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
+        '''
+        Assume another side is empty.
+        there are three conditions for one side: (1). terminals + variables (2). only terminals (3). only variables
+        '''
+        # (1) + (2): if there are any Terminal in the not_empty_side, then it is UNSAT
+        not_empty_side=eq.right_terms
+        if any(isinstance(term.value, Terminal) for term in not_empty_side):
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u = \epsilon \wedge \phi")]
+        # (3): if there are only Variables in the not_empty_side
+        else:
+            for variable_term in not_empty_side:
+                f = _update_formula(f, variable_term, [])
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, f, " XYZ = \epsilon \wedge \phi")]
+
+        return children
+
+
+
+    def get_split_children(self, eq: Equation, f: Formula, rule_list: Callable) -> List[Tuple[Equation, Formula, str]]:
+        children: List[Tuple[Equation, Formula, str]] = []
         for rule in rule_list:
-            new_eq, new_formula, fresh_variable_counter,label_str = rule(eq, f,
-                                                               self.fresh_variable_counter)
+            new_eq, new_formula, fresh_variable_counter, label_str = rule(eq, f,
+                                                                          self.fresh_variable_counter)
             self.fresh_variable_counter = fresh_variable_counter
-            child: Tuple[Equation, Formula,str] = (new_eq, new_formula,label_str)
+            reconstructed_formula = Formula([new_eq] + new_formula.eq_list)
+            child: Tuple[Equation, Formula, str] = (new_eq, reconstructed_formula, label_str)
             children.append(child)
         return children
 

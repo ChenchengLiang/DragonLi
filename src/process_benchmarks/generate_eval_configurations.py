@@ -23,15 +23,15 @@ import shutil
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_4"
+    graph_type = "graph_1"
     model_type= "GCNSplit"#"GINSplit"
     solver_param_list = [
-        ["this", ["random", f"--termination_condition termination_condition_0"]],
-        ["this", ["random", f"--termination_condition termination_condition_1"]],
-        ["this", ["random", f"--termination_condition termination_condition_2"]],
-        ["this", ["fixed", f"--termination_condition termination_condition_0"]],
-        ["this", ["fixed", f"--termination_condition termination_condition_1"]],
-        ["this", ["fixed", f"--termination_condition termination_condition_2"]],
+        # ["this", ["random", f"--termination_condition termination_condition_0"]],
+        # ["this", ["random", f"--termination_condition termination_condition_1"]],
+        # ["this", ["random", f"--termination_condition termination_condition_2"]],
+        # ["this", ["fixed", f"--termination_condition termination_condition_0"]],
+        # ["this", ["fixed", f"--termination_condition termination_condition_1"]],
+        # ["this", ["fixed", f"--termination_condition termination_condition_2"]],
 
         # ["this", ["gnn", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
         # ["this", ["gnn:random", "--graph_type graph_2", "--gnn_model_path " + model_folder + "model_0_graph_2_GCN.pth", f"--gnn_task {task}",f"--termination_condition {termination_condition}"]],
@@ -74,10 +74,10 @@ def main():
          ["gnn:fixed", f"--termination_condition termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
           f"--gnn_task {task}"]],
 
-        ["woorpje", []],
-        ["z3", []],
-        ["ostrich", []],
-        ["cvc5", []],
+        # ["woorpje", []],
+        # ["z3", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
     ]
 
     benchmark_dict = {

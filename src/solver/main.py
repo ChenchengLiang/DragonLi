@@ -67,7 +67,7 @@ def main():
     #file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
-    #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
+    file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
@@ -77,7 +77,7 @@ def main():
     #file_path=bench_folder +"/debug/19949.corecstrs.readable.eq" #UNSAT
     #file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
     #file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
-    file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
+    #file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
 
 
     #smt format
@@ -98,6 +98,7 @@ def main():
                             "termination_condition":"termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"fixed",
+                                         "order_equations_method":"fixed",
                                          "branch_method":"fixed",
                                          "termination_condition":"termination_condition_0",
                                          "graph_type":graph_type,"graph_func":graph_func_map[graph_type]}
@@ -107,7 +108,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     #solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     #solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content,visualize=True,output_train_data=False)
+    result_dict = solver.solve(parsed_content,visualize=False,output_train_data=False)
 
     print_results(result_dict)
 
