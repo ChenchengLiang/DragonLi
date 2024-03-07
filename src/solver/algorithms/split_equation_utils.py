@@ -154,12 +154,6 @@ def _two_variables_branch_3(eq: Equation, current_formula: Formula, fresh_variab
 def _update_formula(f: Formula, old_term: Term, new_term: List[Term]) -> Formula:
     return Formula(_update_term_in_eq_list(f.eq_list, old_term, new_term))
 
-    # new_eq_list = []
-    # for eq_in_formula in f.eq_list:
-    #     new_left = _update_term_list(old_term, new_term, eq_in_formula.left_terms)
-    #     new_right = _update_term_list(old_term, new_term, eq_in_formula.right_terms)
-    #     new_eq_list.append(Equation(new_left, new_right))
-    # return Formula(new_eq_list)
 
 
 def _update_formula_with_new_eq(f: Formula, new_eq: Equation, new_eq_satisfiability: str) -> Tuple[str, Formula]:

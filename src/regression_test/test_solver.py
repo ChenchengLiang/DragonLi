@@ -19,6 +19,7 @@ from src.solver.independent_utils import strip_file_name_suffix, check_list_cons
 from src.process_benchmarks.utils import run_on_one_problem
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 import csv
+from collections import defaultdict
 
 
 def main():
@@ -49,18 +50,63 @@ def main():
     #write to cvs
     write_to_csv(consistance_list)
 
+
+
 def write_to_csv(consistance_list):
     # Data to be written to the CSV file
     row_1 = ['file', 'consistency'] + [x[0] for x in consistance_list[0][2]]
 
     # Open the CSV file in write mode ('w') and create a writer object
-    with open(bench_folder + "/regression_test/results.csv", 'w', newline='') as file:
+    csv_file=bench_folder + "/regression_test/results.csv"
+    with open(csv_file, 'w', newline='') as file:
         writer = csv.writer(file)
 
         # Write the row to the CSV file
         writer.writerow(row_1)
         for c in consistance_list:
             writer.writerow([c[0], c[1]] + [x[1] for x in c[2]])
+
+    input_csv_path = csv_file  # Replace with your actual input file path
+    output_csv_path = os.path.dirname(csv_file) + "/summary.csv"  # Replace with your desired output file path
+
+    count_values(input_csv_path, output_csv_path)
+
+
+def count_values(input_file_path, output_file_path):
+    """
+    Count occurrences of 'SAT', 'UNSAT', 'UNKNOWN' in each column of a CSV file and output the results to a new CSV file.
+
+    Parameters:
+    - input_file_path: Path to the input CSV file.
+    - output_file_path: Path to the output CSV file where the summary will be saved.
+    """
+    with open(input_file_path, mode='r', newline='') as file:
+        reader = csv.reader(file)
+        headers = next(reader)  # Extract the first row as headers
+
+        # Initialize a dictionary to store the count of 'SAT', 'UNSAT', 'UNKNOWN' for each column
+        counts = {header: defaultdict(int) for header in headers}
+
+        for row in reader:
+            for header, value in zip(headers, row):
+                if value in ['SAT', 'UNSAT', 'UNKNOWN']:
+                    counts[header][value] += 1
+
+    # Prepare data for output
+    output_data = [['Column', 'SAT', 'UNSAT', 'UNKNOWN']]
+    for header in headers:
+        output_data.append([
+            header,
+            counts[header]['SAT'],
+            counts[header]['UNSAT'],
+            counts[header]['UNKNOWN']
+        ])
+
+    # Write the summary counts to a new CSV file
+    with open(output_file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        output_data=[output_data[0]]+output_data[3:]
+        writer.writerows(output_data)
 
 def check_consistency(satisfiability_list: List[Tuple[str, str]]) -> bool:
 

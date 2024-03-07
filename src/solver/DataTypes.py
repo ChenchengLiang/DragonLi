@@ -447,7 +447,17 @@ class Formula:
 
         print(f"Propagate facts {propagate_count} times")
 
+    def check_satisfiability_2(self) -> str:
+        if self.eq_list_length==0:
+            return SAT
+        else:
+            for eq in self.eq_list:
+                satisfiability=eq.check_satisfiability_simple()
+                if satisfiability==UNSAT:
+                    return UNSAT
+            return UNKNOWN
     def check_satisfiability_1(self) -> str:
+        self.categorize_equations_1()
         if self.eq_list_length==0:
             return SAT
         else:

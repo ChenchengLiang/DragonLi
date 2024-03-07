@@ -81,12 +81,11 @@ class SplitEquations(AbstractAlgorithm):
         self.total_explore_paths_call += 1
 
         print(f"----- current_depth:{current_depth} -----")
-        # todo how to not explicitly use return when in some condition return some conditions not return?
+        # early termination condition
         res = self.check_termination_condition_func(current_depth)
-        if res == None:
-            pass
-        else:
+        if res != None:
             return (res, original_formula)
+
 
         satisfiability, current_formula = self.simplify_and_check_formula(original_formula)
 
@@ -105,7 +104,6 @@ class SplitEquations(AbstractAlgorithm):
             unknown_flag = False
             for c_index, child in enumerate(children):
                 (c_eq, c_formula, edge_label) = child
-
                 satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
                                                             edge_label)
                 if satisfiability == SAT:
@@ -133,8 +131,9 @@ class SplitEquations(AbstractAlgorithm):
     def simplify_and_check_formula(self, f: Formula) -> Tuple[str, Formula]:
         #f.print_eq_list()
         f.simplify_eq_list()
-        f.categorize_equations_1()
-        satisfiability = f.check_satisfiability_1()
+
+        #satisfiability = f.check_satisfiability_1()
+        satisfiability = f.check_satisfiability_2()
 
         # f.propagate_facts()
         #satisfiability = f.check_satisfiability()
