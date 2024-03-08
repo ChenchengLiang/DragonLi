@@ -20,6 +20,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 import csv
 from collections import defaultdict
+from tqdm import tqdm
 
 
 def main():
@@ -36,7 +37,7 @@ def main():
 
     # test
     consistance_list = []
-    for file_path in glob.glob(bench_folder + "/regression_test/ALL/*.eq"):
+    for file_path in tqdm(glob.glob(bench_folder + "/regression_test/ALL/*.eq"),desc="progress"):
         satisfiability_list=run_solvers(file_path, algorithm_configuration_list)
 
 

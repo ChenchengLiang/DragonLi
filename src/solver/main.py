@@ -38,6 +38,8 @@ def main():
     #file_path = bench_folder + "/examples/g_02_SAT/g_01_track_SAT_2.eq"
     #file_path = bench_folder + "/examples/g_01_SAT_464/g_01_track_SAT_464.eq"
     #file_path = bench_folder + "/examples/g_random_track_1144.eq"
+    #file_path = bench_folder + "/examples/g_03_track_generated_eval_30000_31000_30683.eq"
+
 
     #file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -66,8 +68,8 @@ def main():
     #file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
     #file_path=bench_folder +"/examples/multi_eqs/test3.eq" #UNSAT
-    #file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
-    file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
+    file_path=bench_folder +"/examples/multi_eqs/04_track_6.eq" #SAT
+    #file_path=bench_folder +"/examples/multi_eqs/04_track_59.eq" #UNSAT
     #file_path=bench_folder +"/examples/multi_eqs/04_track_172.eq" #SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_189.eq"  # SAT
     #file_path = bench_folder + "/examples/multi_eqs/04_track_19.eq"  # UNSAT
@@ -89,11 +91,12 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type="graph_1"
+    graph_type="graph_2"
     task="task_3"
     gnn_model_path=project_folder+"/Models/model_0_"+graph_type+"_GCNSplit.pth"
 
-    algorithm_parameters_ElimilateVariablesRecursive = {"branch_method":"fixed","task":task,"graph_type":graph_type,"graph_func":graph_func_map[graph_type],
+    algorithm_parameters_ElimilateVariablesRecursive = {"branch_method":"fixed","task":task,"graph_type":graph_type,
+                                                        "graph_func":graph_func_map[graph_type],
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 

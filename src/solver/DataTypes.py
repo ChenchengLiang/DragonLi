@@ -263,12 +263,12 @@ class Equation:
         if len(self.term_list) == 0:  # both sides are empty
             return SAT
         elif len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
-            if all(isinstance(term.value, Terminal) for term in self.right_terms):
+            if any(isinstance(term.value, Terminal) for term in self.right_terms):
                 return UNSAT
             else:
                 return UNKNOWN
         elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
-            if all(isinstance(term.value, Terminal) for term in self.left_terms):
+            if any(isinstance(term.value, Terminal) for term in self.left_terms):
                 return UNSAT
             else:
                 return UNKNOWN
@@ -456,6 +456,8 @@ class Formula:
                 if satisfiability==UNSAT:
                     return UNSAT
             return UNKNOWN
+
+
     def check_satisfiability_1(self) -> str:
         self.categorize_equations_1()
         if self.eq_list_length==0:

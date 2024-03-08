@@ -25,7 +25,7 @@ class SplitEquations(AbstractAlgorithm):
         self.nodes = []
         self.edges = []
         self.fresh_variable_counter = 0
-        self.total_explore_paths_call = 0
+        self.total_split_eq_call = 0
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
         self.choose_unknown_eq_func_map = {"fixed": self._select_one_eq_fixed,
@@ -78,9 +78,11 @@ class SplitEquations(AbstractAlgorithm):
 
     def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
-        self.total_explore_paths_call += 1
+        self.total_split_eq_call += 1
 
-        print(f"----- current_depth:{current_depth} -----")
+        print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+        #print(original_formula.eq_list_str)
+
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
         if res != None:
@@ -95,6 +97,7 @@ class SplitEquations(AbstractAlgorithm):
             # unknown_eq, separated_formula = self.choose_unknown_eq_func(current_formula)
             current_formula = self.order_equations_func(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
+            #print(f"current_eq:{current_eq.eq_str}, separated_formula:{separated_formula.eq_list_str}")
 
             current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
 
@@ -119,7 +122,7 @@ class SplitEquations(AbstractAlgorithm):
 
     def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
             Tuple[int, Dict]:
-        current_node_number = self.total_explore_paths_call
+        current_node_number = self.total_split_eq_call
         label = f"{eq.eq_str},{f.eq_list_str}"
         current_node = (
             current_node_number,
