@@ -189,7 +189,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         ## both side only have terminals
         if current_eq.variable_number == 0:
             # satisfiability = SAT if self.check_equation(current_eq.left_terms,current_eq.right_terms) == True else UNSAT
-            return self.record_and_close_branch(current_eq.check_all_terminal_case(), current_eq.variable_list,
+            return self.record_and_close_branch(current_eq.check_both_side_all_terminal_case(), current_eq.variable_list,
                                                 node_info, current_eq)
 
         ## both side only have variables

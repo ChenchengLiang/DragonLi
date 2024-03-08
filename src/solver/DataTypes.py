@@ -279,7 +279,7 @@ class Equation:
             last_right_term = self.right_terms[-1]
             # all terms are terminals
             if all(isinstance(term.value, Terminal) for term in self.term_list):
-                return self.check_all_terminal_case()
+                return self.check_both_side_all_terminal_case()
             # mismatch prefix terminal
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 return UNSAT
@@ -312,7 +312,7 @@ class Equation:
                 return SAT if result == True else UNKNOWN
             # all terms are terminals
             elif all(isinstance(term.value, Terminal) for term in self.term_list):
-                return self.check_all_terminal_case()
+                return self.check_both_side_all_terminal_case()
             # mismatch prefix terminal
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 return UNSAT
@@ -337,7 +337,7 @@ class Equation:
             result, _ = self.is_fact()
             return SAT if result == True else UNKNOWN
 
-    def check_all_terminal_case(self):
+    def check_both_side_all_terminal_case(self):
         left_str = "".join(
             [t.get_value_str for t in self.left_terms if t.value != EMPTY_TERMINAL])  # ignore empty terminal
         right_str = "".join([t.get_value_str for t in self.right_terms if t.value != EMPTY_TERMINAL])

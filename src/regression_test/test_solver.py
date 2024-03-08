@@ -34,11 +34,12 @@ def main():
                           f"--termination_condition termination_condition_1"]),
     ]
 
+    log=False
 
     # test
     consistance_list = []
     for file_path in tqdm(glob.glob(bench_folder + "/regression_test/ALL/*.eq"),desc="progress"):
-        satisfiability_list=run_solvers(file_path, algorithm_configuration_list)
+        satisfiability_list=run_solvers(file_path, algorithm_configuration_list,log=log)
 
 
         consistance=check_consistency(satisfiability_list)
@@ -120,7 +121,7 @@ def check_consistency(satisfiability_list: List[Tuple[str, str]]) -> bool:
     return all(status == filtered_statuses[0] for status in filtered_statuses)
 
 
-def run_solvers(file_path, algorithm_configuration_list):
+def run_solvers(file_path, algorithm_configuration_list,log=False):
     for sh_file in glob.glob(bench_folder + "/src/process_benchmarks/temp_shell/*"):
         os.remove(sh_file)
     if not os.path.exists(strip_file_name_suffix(file_path) + ".smt2"):
@@ -135,7 +136,7 @@ def run_solvers(file_path, algorithm_configuration_list):
         else:
             file = strip_file_name_suffix(file_path) + ".smt2"
         other_solver_result_dict = run_on_one_problem(file_path=file, parameters_list=[], solver=solver,
-                                                      solver_log=False)
+                                                      solver_log=log)
         satisfiability_list.append((solver,other_solver_result_dict["result"]))
 
     #this solver

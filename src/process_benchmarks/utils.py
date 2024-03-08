@@ -130,8 +130,9 @@ def create_a_shell_file(file_path, parameter_list="", solver=""):
     return shell_file_path
 
 def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,log:bool=False):
-    print("-" * 10)
-    print("run " + shell_file_path)
+    if log==True:
+        print("-" * 10)
+        print("run " + shell_file_path)
     run_shell_command = ["sh", shell_file_path]
     start = time.time()
 
@@ -144,7 +145,8 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,lo
     # print("Output from script:", completed_process.stdout)
     result_dict = process_solver_output(completed_process.stdout, problem_file_path, solver,log=log)
     result_dict["used_time"] = used_time
-    print("Finished", "use time: ", used_time)
+    if log==True:
+        print("Finished", "use time: ", used_time)
     return result_dict
 
 
