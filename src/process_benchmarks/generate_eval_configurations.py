@@ -97,7 +97,7 @@ def main():
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name = "03_track_generated_eval_30000_31000"
+    benchmark_name = "03_track_valid_task_3_merged_1_40000_334"#"03_track_eval_task_3_1_1000" #"03_track_generated_eval_30000_31000"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])

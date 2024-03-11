@@ -146,8 +146,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             self.explored_deep = self.current_deep
         #print(f"explore_paths call: {self.total_explore_paths_call}")
         # print(previous_dict)
-        # print(len(current_eq.eq_left_str),current_eq.eq_left_str)
-        # print(len(current_eq.eq_right_str),current_eq.eq_right_str)
+        #print(len(current_eq.eq_left_str),current_eq.eq_left_str)
+        #print(len(current_eq.eq_right_str),current_eq.eq_right_str)
         # print(f"current_deep: {self.current_deep}, max deep: {self.max_deep}")
 
 
@@ -366,6 +366,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             if len(branch_methods) == 2:
                 pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
                 # [1 if label == [1,0] else 0 for label in self.labels]
+                #print(pred_list)
+
                 if pred_list > 0.5:
                     pred_list = [1, 0]
                 else:
@@ -374,6 +376,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             elif len(branch_methods) == 3:
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
+                #print(pred_list)
                 # pred_list=[1,0.5,0]#this make it use fixed branching
 
 
@@ -382,8 +385,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         for pred, split_eq, edge_label in zip(pred_list, split_eq_list, edge_label_list):
             prediction_list.append([pred, (split_eq, edge_label)])
 
+        #print([x[0] for x in prediction_list])
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
-        # print([x[0] for x in sorted_prediction_list])
+
+
         return sorted_prediction_list
 
     def _task_1_and_2_branch_prediction(self, eq: Equation, branch_methods):

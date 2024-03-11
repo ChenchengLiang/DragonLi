@@ -16,7 +16,7 @@ import glob
 
 def main():
     # generate track
-    track_name="03_track_train_task_3_merged_1_40000_train_100_chunk_size"
+    track_name="03_track_generated_train_1_20000_task_3_continuously_train"
     track_folder = bench_folder + "/"+track_name
 
     # divide to train and valid folder

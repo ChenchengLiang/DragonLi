@@ -100,7 +100,7 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], sum
 
 def run_on_one_problem(file_path:str, parameters_list:List[str], solver:str, solver_log:bool=False):
     # create a shell file to run the main_parameter.py
-    shell_file_path = create_a_shell_file(file_path, parameters_list, solver)
+    shell_file_path = create_a_shell_file(file_path, parameters_list, solver,log=solver_log)
 
     # run the shell file
     result_dict = run_a_shell_file(shell_file_path, file_path, solver,log=solver_log)
@@ -112,7 +112,7 @@ def run_on_one_problem(file_path:str, parameters_list:List[str], solver:str, sol
     return result_dict
 
 
-def create_a_shell_file(file_path, parameter_list="", solver=""):
+def create_a_shell_file(file_path, parameter_list="", solver="",log=False):
     parameter_str = " ".join(parameter_list)
     shell_folder = project_folder+"/src/process_benchmarks/temp_shell"
     random_integer = random.randint(1, 100000)
@@ -126,6 +126,7 @@ def create_a_shell_file(file_path, parameter_list="", solver=""):
     with open(shell_file_path, 'w') as file:
         file.write("#!/bin/sh\n")
         file.write(timeout_command + " " + solver_command + " " + file_path + " " + parameter_str + "\n")
+    if log==True:
         print("run command:",timeout_command + " " + solver_command + " " + file_path + " " + parameter_str)
     return shell_file_path
 
