@@ -26,11 +26,11 @@ from tqdm import tqdm
 def main():
     algorithm_configuration_list:List[Tuple[str,List[str]]] = [
         (ElimilateVariablesRecursive,["fixed", f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed",f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["random", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed",f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed",
+        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",f"--termination_condition termination_condition_0"]),
+        (SplitEquations, ["random", f"--algorithm SplitEquations", f"--order_equations_method fixed",f"--termination_condition termination_condition_0"]),
+        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",
                           f"--termination_condition termination_condition_1"]),
-        (SplitEquations, ["random", f"--algorithm SplitEquations", f"--choose_unknown_eq_method fixed",
+        (SplitEquations, ["random", f"--algorithm SplitEquations", f"--order_equations_method fixed",
                           f"--termination_condition termination_condition_1"]),
     ]
 

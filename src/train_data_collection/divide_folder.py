@@ -16,7 +16,7 @@ from src.train_data_collection.utils import dvivde_track_for_cluster
 
 def main():
     # generate track
-    track_name="03_track_valid_task_3"
+    track_name="03_track_eval_task_3_merged_40000_train_data_folder_10"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 

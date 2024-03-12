@@ -233,32 +233,6 @@ class Equation:
             else:
                 break
 
-    def is_fact(self) -> (bool, List[Tuple[Variable, List[Terminal]]]):
-
-        # Condition: "" = List[Variable]
-        if len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
-            if all(isinstance(term.value, Variable) for term in
-                   self.right_terms):  # if all right hand side are variables
-                return True, [(term.value, [EMPTY_TERMINAL]) for term in self.right_terms]
-        # Condition: List[Variable] = ""
-        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
-            if all(isinstance(term.value, Variable) for term in self.left_terms):  # if all left hand side are variables
-                return True, [(term.value, [EMPTY_TERMINAL]) for term in self.left_terms]
-        # Condition: A=AA
-        elif len(self.left_terms) > 0 and len(self.right_terms) > 0 and len(self.left_terms) != len(
-                self.right_terms) and self.variable_number == 1 and self.terminal_numbers <= 1:
-            return True, [(self.variable_list[0], [EMPTY_TERMINAL])]
-        # Condition: Variable=List[Terminal]
-        elif len(self.left_terms) == 1 and isinstance(self.left_terms[0].value, Variable) and all(
-                isinstance(term.value, Terminal) for term in self.right_terms):
-            return True, [(self.left_terms[0].value, [t.value for t in self.right_terms])]
-        # Condition: List[Terminal]=Variable
-        elif len(self.right_terms) == 1 and isinstance(self.right_terms[0].value, Variable) and all(
-                isinstance(term.value, Terminal) for term in self.left_terms):
-            return True, [(self.right_terms[0].value, [t.value for t in self.left_terms])]
-        else:
-            return False, []
-
     def check_satisfiability_simple(self) -> str:
         if len(self.term_list) == 0:  # both sides are empty
             return SAT
@@ -289,53 +263,6 @@ class Equation:
             else:
                 return UNKNOWN
 
-
-    def check_satisfiability(self) -> str:
-        if len(self.term_list) == 0:  # both sides are empty
-            return SAT
-        elif len(self.left_terms) == 0 and len(self.right_terms) > 0:  # left side is empty
-            return self.satisfiability_one_side_empty(self.right_terms)
-        elif len(self.left_terms) > 0 and len(self.right_terms) == 0:  # right side is empty
-            return self.satisfiability_one_side_empty(self.left_terms)
-        else:  # both sides are not empty
-            first_left_term = self.left_terms[0]
-            first_right_term = self.right_terms[0]
-            last_left_term = self.left_terms[-1]
-            last_right_term = self.right_terms[-1]
-
-            # both sides are exatcly the same
-            if self.left_terms == self.right_terms:
-                return SAT
-            # all terms are variables
-            elif all(isinstance(term.value, Variable) for term in self.term_list):
-                result, _ = self.is_fact()
-                return SAT if result == True else UNKNOWN
-            # all terms are terminals
-            elif all(isinstance(term.value, Terminal) for term in self.term_list):
-                return self.check_both_side_all_terminal_case()
-            # mismatch prefix terminal
-            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
-                return UNSAT
-            # mistmatch suffix terminal
-            elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
-                return UNSAT
-            # todo trivial other conditions
-            else:
-                result, _ = self.is_fact()
-                return SAT if result == True else UNKNOWN
-
-    def satisfiability_one_side_empty(self, not_empty_side: List[Term]) -> str:
-        '''
-        Assume another side is empty.
-        there are three conditions for one side: (1). terminals + variables (2). only terminals (3). only variables
-        '''
-        # (1) + (2): if there are any Terminal in the not_empty_side, then it is UNSAT
-        if any(isinstance(term.value, Terminal) for term in not_empty_side):
-            return UNSAT
-        # (3): if there are only Variables in the not_empty_side
-        else:
-            result, _ = self.is_fact()
-            return SAT if result == True else UNKNOWN
 
     def check_both_side_all_terminal_case(self):
         left_str = "".join(
@@ -372,80 +299,10 @@ class Formula:
     def __init__(self, eq_list: List[Equation]):
         self.eq_list = eq_list
 
-        self.facts: List[Tuple[Equation, Tuple[Variable, List[Terminal]]]] = []
         self.sat_equations: List[Equation] = []
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
 
-    def categorize_equations_1(self):
-        self.sat_equations = []
-        self.unsat_equations = []
-        self.unknown_equations = []
-        for eq in self.eq_list:
-            satisfiability = eq.check_satisfiability_simple()
-            #print(eq.eq_str,satisfiability)
-            if satisfiability == SAT:
-                self.sat_equations.append(eq)
-            elif satisfiability == UNSAT:
-                self.unsat_equations.append(eq)
-            else:
-                self.unknown_equations.append(eq)
-
-    def categorize_equations(self):
-        self.facts = []
-        self.sat_equations = []
-        self.unsat_equations = []
-        self.unknown_equations = []
-
-        # check satisfiability for each equation
-        for eq in self.eq_list:
-            satisfiability = eq.check_satisfiability()
-            # color_print(f"{satisfiability},{eq.eq_str}", "green" )
-
-            if satisfiability == SAT:
-                self.sat_equations.append(eq)
-                is_fact, fact_assignment = eq.is_fact()
-                if is_fact:
-                    for fact in fact_assignment:
-                        self.facts.append((eq, fact))
-
-            elif satisfiability == UNSAT:
-                self.unsat_equations.append(eq)
-            else:
-                self.unknown_equations.append(eq)
-
-    def propagate_facts(self):
-        propagate_count = 0
-        while True:
-            previous_fact_eq_list = [ff[0] for ff in self.facts]
-            self.simplify_eq_list()
-            self.categorize_equations()
-            current_fact_eq_list = [ff[0] for ff in self.facts]
-
-            if current_fact_eq_list == previous_fact_eq_list:
-                # print("No new facts are found")
-                break
-
-            # print("Propagate facts")
-            propagate_count += 1
-            current_eq_list = list(self.eq_list)
-
-            for fact in self.facts:
-                fact_eq: Equation = fact[0]
-                fact_variable: Variable = fact[1][0]
-                fact_terminal_list: List[Terminal] = fact[1][1]
-
-                if fact_eq in current_eq_list:
-                    eq_list_without_fact = list(current_eq_list)
-                    eq_list_without_fact.remove(fact_eq)
-
-                    updated_eq_list_without_fact = _update_term_in_eq_list(eq_list_without_fact, Term(fact_variable),
-                                                                           [Term(t) for t in fact_terminal_list])
-                    current_eq_list = updated_eq_list_without_fact + [fact_eq]
-
-            self.eq_list = list(current_eq_list)
-
-        print(f"Propagate facts {propagate_count} times")
 
     def check_satisfiability_2(self) -> str:
         if self.eq_list_length==0:
@@ -457,27 +314,6 @@ class Formula:
                     return UNSAT
             return UNKNOWN
 
-
-    def check_satisfiability_1(self) -> str:
-        self.categorize_equations_1()
-        if self.eq_list_length==0:
-            return SAT
-        else:
-            if self.unsat_number != 0:
-                return UNSAT
-            else:
-                return UNKNOWN
-
-
-    def check_satisfiability(
-            self) -> str:  # todo this require to check the relation between the equations, is done in propagate_facts
-        if self.unknown_number == 0:
-            if self.unsat_number == 0:
-                return SAT
-            else:
-                return UNSAT
-        else:
-            return UNKNOWN
 
     def simplify_eq_list(self):
         for eq in self.eq_list:
@@ -495,9 +331,6 @@ class Formula:
     def eq_list_length(self):
         return len(self.eq_list)
 
-    @property
-    def fact_number(self) -> int:
-        return len(self.facts)
 
     @property
     def unknown_number(self) -> int:
@@ -511,54 +344,6 @@ class Formula:
     def sat_number(self) -> int:
         return len(self.sat_equations)
 
-
-#
-# class Formula:
-#     def __init__(self, eq_list: List[Equation]):
-#         self.formula = eq_list
-#         self.facts: List[Tuple[Equation, List[Tuple[Variable, List[Terminal]]]]] = []
-#         self.sat_equations: List[Equation] = []
-#         self.unsat_equations: List[Equation] = []
-#         self.unknown_equations: List[Equation] = []
-#         for eq in self.formula:
-#             satisfiability = eq.check_satisfiability()
-#             if satisfiability == SAT:
-#                 self.sat_equations.append(eq)
-#                 is_fact, fact_assignment = eq.is_fact()
-#                 if is_fact:
-#                     self.facts.append((eq, fact_assignment))
-#                     # for f in fact_assignment:
-#                     #     self.facts.append((eq, f))
-#             elif satisfiability == UNSAT:
-#                 self.unsat_equations.append(eq)
-#             else:
-#                 self.unknown_equations.append(eq)
-#
-#     @property
-#     def fact_number(self) -> int:
-#         return len(self.facts)
-#
-#     @property
-#     def unknown_number(self) -> int:
-#         return len(self.unknown_equations)
-#
-#     @property
-#     def unsat_number(self) -> int:
-#         return len(self.unsat_equations)
-#
-#     @property
-#     def satisfiability(self) -> str:
-#         if self.unknown_number == 0:
-#             if self.unsat_number == 0:
-#                 return SAT
-#             else:
-#                 return UNSAT
-#         else:
-#             return UNKNOWN
-#
-#     def print_eq_list(self):
-#         for eq in self.formula:
-#             print(eq.eq_str)
 
 
 class Assignment:

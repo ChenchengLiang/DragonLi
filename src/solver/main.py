@@ -102,8 +102,7 @@ def main():
                             "gnn_model_path":gnn_model_path,"extract_algorithm":"fixed",
                             "termination_condition":"termination_condition_0"} # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
-    algorithm_parameters_SplitEquations={"choose_unknown_eq_method":"fixed",
-                                         "order_equations_method":"fixed",
+    algorithm_parameters_SplitEquations={"order_equations_method":"fixed",
                                          "branch_method":"fixed",
                                          "termination_condition":"termination_condition_0",
                                          "graph_type":graph_type,"graph_func":graph_func_map[graph_type]}

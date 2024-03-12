@@ -24,8 +24,10 @@ send answered track to and Alvis
 #sh word_equation_submit_draw_graphs_for_train_data.sh #draw graphs for train data (.json)
 
 
-6. Alvis: sh word_equation_submit_store_dataset_to_pickle.sh
+6. Alvis: 
 set benchmark in python code src/solver/models/store_dataset_to_pickle.py
+sh word_equation_submit_store_dataset_to_pickle.sh
+
 
 7. Alvis:
 sh word_equation_submit_initialize_configurations.sh
