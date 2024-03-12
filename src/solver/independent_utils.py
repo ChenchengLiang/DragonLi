@@ -9,6 +9,9 @@ import pickle
 import time
 import hashlib
 from collections import OrderedDict
+import functools
+import sys
+import io
 
 def check_list_consistence(target_list):
     consitence_list = []
@@ -166,6 +169,27 @@ def time_it(func:Callable):
         end_time = time.time()  # Record the end time
         print(f"----- Function {func.__name__} finished, took {end_time - start_time} seconds to run -----")
         return result
+    return wrapper
+
+
+class SuppressPrint:
+    """Context manager to suppress print output."""
+    def __enter__(self):
+        self.original_stdout = sys.stdout  # Save a reference to the original standard output
+        sys.stdout = io.StringIO()  # Redirect standard output to a string buffer
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout = self.original_stdout  # Reset the standard output to its original value
+
+def log_control(method):
+    """Decorator to suppress print statements in a method based on an instance attribute."""
+    @functools.wraps(method)
+    def wrapper(instance, *args, **kwargs):
+        if getattr(instance, 'log_enabled', True):
+            return method(instance, *args, **kwargs)
+        else:
+            with SuppressPrint():
+                return method(instance, *args, **kwargs)
     return wrapper
 
 def color_print(text,color):

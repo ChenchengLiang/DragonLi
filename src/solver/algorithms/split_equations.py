@@ -7,7 +7,7 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
     RESTART_MAX_DEEP_STEP, compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
-from ..independent_utils import remove_duplicates, flatten_list, color_print
+from ..independent_utils import remove_duplicates, flatten_list, color_print,log_control
 from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
@@ -45,6 +45,9 @@ class SplitEquations(AbstractAlgorithm):
         sys.setrecursionlimit(recursion_limit)
         print("recursion limit number", sys.getrecursionlimit())
 
+        self.log_enabled = True
+
+    @log_control
     def run(self):
         original_formula = Formula(self.equation_list)
 
@@ -69,6 +72,7 @@ class SplitEquations(AbstractAlgorithm):
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
+
 
     def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
