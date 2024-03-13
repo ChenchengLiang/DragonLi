@@ -51,7 +51,6 @@ def main(args):
     task=args.gnn_task
     termination_condition=args.termination_condition
     algorithm=algorithm_map[args.algorithm]
-    choose_unknown_eq_method=args.choose_unknown_eq_method
     order_equations_method=args.order_equations_method
 
     print(file_path, branch_method, graph_type)
@@ -66,7 +65,6 @@ def main(args):
     algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
                             "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path,
                             "termination_condition":termination_condition,
-                            "choose_unknown_eq_method":choose_unknown_eq_method,
                             "order_equations_method":order_equations_method} # branch_method [gnn,random,fixed]
 
 
