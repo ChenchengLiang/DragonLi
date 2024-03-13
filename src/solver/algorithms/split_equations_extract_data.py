@@ -14,7 +14,7 @@ import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula
 
 
-class SplitEquations(AbstractAlgorithm):
+class SplitEquationsExtractData(AbstractAlgorithm):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Equation],
                  parameters: Dict):
         super().__init__(terminals, variables, equation_list)
@@ -29,14 +29,11 @@ class SplitEquations(AbstractAlgorithm):
 
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
                                          "random": self._order_equations_random,
-                                         "category": self._order_equations_category,
-                                         "category_gnn": self._order_equations_category_gnn,
-                                         "gnn": self._order_equations_gnn}
+                                         "category": self._order_equations_category}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
 
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
-                                       "random": self._order_branches_random,
-                                       "gnn": self._order_branches_gnn}
+                                       "random": self._order_branches_random}
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
         self.check_termination_condition_map = {"termination_condition_0": self.early_termination_condition_0,
@@ -53,23 +50,13 @@ class SplitEquations(AbstractAlgorithm):
     def run(self):
         original_formula = Formula(self.equation_list)
 
-        if self.parameters["termination_condition"] == "termination_condition_1":
-            while True:
-                initial_node: Tuple[int, Dict] = (
-                    0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
-                        "back_track_count": 0})
-                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,previous_node=initial_node,edge_label="start")
-                if satisfiability != UNKNOWN:
-                    break
 
-                self.restart_max_deep += RESTART_MAX_DEEP_STEP
-        else:
-            initial_node: Tuple[int, Dict] = (
-                0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
-                    "back_track_count": 0})
-            self.nodes.append(initial_node)
+        initial_node: Tuple[int, Dict] = (
+            0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+                "back_track_count": 0})
+        self.nodes.append(initial_node)
 
-            satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
+        satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
                                                         edge_label="start")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -87,6 +74,8 @@ class SplitEquations(AbstractAlgorithm):
         if res != None:
             return (res, original_formula)
 
+        #todo get all branches and label the training data
+        
 
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
 
@@ -116,7 +105,6 @@ class SplitEquations(AbstractAlgorithm):
             else:
                 return (UNSAT, current_formula)
 
-
     def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
             Tuple[int, Dict]:
         current_node_number = self.total_split_eq_call
@@ -128,26 +116,10 @@ class SplitEquations(AbstractAlgorithm):
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
         return current_node
 
+
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-
-    def _order_equations_category_gnn(self, f: Formula) -> Formula:
-        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
-
-        # Check if the equation categories are only 5 and 6
-        only_5_and_6:bool = all(n in [5, 6] for _, n in categoried_eq_list)
-
-        if only_5_and_6==True:
-            sorted_eq_list = self._order_equations_gnn(f).eq_list
-        else:
-            sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
-
-        return Formula([eq for eq, _ in sorted_eq_list])
-
-    def _order_equations_gnn(self, f: Formula) -> Formula:
-        # todo implement gnn
-        return f
 
 
     def _order_equations_category(self, f: Formula) -> Formula:
@@ -164,7 +136,6 @@ class SplitEquations(AbstractAlgorithm):
         return f
 
 
-
     def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         return children
 
@@ -172,9 +143,6 @@ class SplitEquations(AbstractAlgorithm):
         random.shuffle(children)
         return children
 
-    def _order_branches_gnn(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
-        # todo implement gnn
-        return children
 
     def early_termination_condition_0(self, current_depth: int):
         return None

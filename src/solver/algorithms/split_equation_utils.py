@@ -1,10 +1,120 @@
-from typing import Tuple, List
+from typing import Tuple, List, Callable
 
 from src.solver.Constants import SAT, UNSAT, UNKNOWN
-from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list,Terminal
+from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, Terminal
 import random
 
 from src.solver.independent_utils import color_print
+
+
+def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
+    # f.print_eq_list()
+    f.simplify_eq_list()
+
+    satisfiability = f.check_satisfiability_2()
+
+    return satisfiability, f
+
+def apply_rules(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
+    # handle non-split rules
+
+    # both sides are empty
+    if len(eq.term_list) == 0:
+        children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
+    # left side is empty
+    elif len(eq.left_terms) == 0 and len(eq.right_terms) > 0:
+        children: List[Tuple[Equation, Formula, str]] = _left_side_empty(eq, f)
+    # right side is empty
+    elif len(eq.left_terms) > 0 and len(eq.right_terms) == 0:  # right side is empty
+        children: List[Tuple[Equation, Formula, str]] = _left_side_empty(Equation(eq.right_terms, eq.left_terms), f)
+    # both sides are not empty
+    else:
+        first_left_term = eq.left_terms[0]
+        first_right_term = eq.right_terms[0]
+        last_left_term = eq.left_terms[-1]
+        last_right_term = eq.right_terms[-1]
+        # \epsilon=\epsilon \wedge \phi case
+        if eq.left_terms == eq.right_terms:
+            children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
+
+        # match prefix terminal #this has been simplified, so will never reach here
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
+            eq.simplify()
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+
+        # mismatch prefix terminal
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+        # mistmatch suffix terminal
+        elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
+
+        # split rules
+        else:
+            left_term = eq.left_terms[0]
+            right_term = eq.right_terms[0]
+            # left side is variable, right side is terminal
+            if type(left_term.value) == Variable and type(right_term.value) == Terminal:
+                rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
+                                             _left_variable_right_terminal_branch_2]
+                children: List[Tuple[Equation, Formula, str]] = _get_split_children(eq, f, rule_list)
+
+            # left side is terminal, right side is variable
+            elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
+                rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
+                                             _left_variable_right_terminal_branch_2]
+                children: List[Tuple[Equation, Formula, str]] = _get_split_children(
+                    Equation(eq.right_terms, eq.left_terms), f,
+                    rule_list)
+
+            # both side are differernt variables
+            elif type(left_term.value) == Variable and type(right_term.value) == Variable:
+                rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
+                children: List[Tuple[Equation, Formula, str]] = _get_split_children(eq, f, rule_list)
+
+            else:
+                children: List[Tuple[Equation, Formula, str]] = []
+                color_print(f"error: {eq.eq_str}", "red")
+
+    return children
+
+
+def _left_side_empty(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
+    '''
+    Assume another side is empty.
+    there are three conditions for one side: (1). terminals + variables (2). only terminals (3). only variables
+    '''
+    # (1) + (2): if there are any Terminal in the not_empty_side, then it is UNSAT
+    not_empty_side = eq.right_terms
+    if any(isinstance(term.value, Terminal) for term in not_empty_side):
+        eq.given_satisfiability = UNSAT
+        children: List[Tuple[Equation, Formula, str]] = [
+            (eq, Formula([eq] + f.eq_list), " a u = \epsilon \wedge \phi")]
+    # (3): if there are only Variables in the not_empty_side
+    else:
+        for variable_term in not_empty_side:
+            f = _update_formula(f, variable_term, [])
+        children: List[Tuple[Equation, Formula, str]] = [
+            (eq, f, " XYZ = \epsilon \wedge \phi")]
+
+    return children
+
+
+def _get_split_children(self, eq: Equation, f: Formula, rule_list: List[Callable]) -> List[Tuple[Equation, Formula, str]]:
+    children: List[Tuple[Equation, Formula, str]] = []
+    for rule in rule_list:
+        new_eq, new_formula, fresh_variable_counter, label_str = rule(eq, f,
+                                                                      self.fresh_variable_counter)
+        self.fresh_variable_counter = fresh_variable_counter
+        reconstructed_formula = Formula([new_eq] + new_formula.eq_list)
+        child: Tuple[Equation, Formula, str] = (new_eq, reconstructed_formula, label_str)
+        children.append(child)
+    return children
 
 
 def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
@@ -34,7 +144,7 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
             last_left_term = eq.left_terms[-1]
             last_right_term = eq.right_terms[-1]
             # \epsilon=\epsilon \wedge \phi case
-            if eq.left_terms == eq.right_terms: #this has been simplified, so will never reach here
+            if eq.left_terms == eq.right_terms:  # this has been simplified, so will never reach here
                 category_eq_list.append((eq, 1))
 
             # match prefix terminal #this has been simplified, so will never reach here
