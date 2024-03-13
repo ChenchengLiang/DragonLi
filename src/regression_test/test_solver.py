@@ -28,10 +28,12 @@ def main():
         (ElimilateVariablesRecursive,["fixed", f"--termination_condition termination_condition_0"]),
         (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",f"--termination_condition termination_condition_0"]),
         (SplitEquations, ["random", f"--algorithm SplitEquations", f"--order_equations_method fixed",f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",
-                          f"--termination_condition termination_condition_1"]),
-        (SplitEquations, ["random", f"--algorithm SplitEquations", f"--order_equations_method fixed",
-                          f"--termination_condition termination_condition_1"]),
+        (SplitEquations, ["category", f"--algorithm SplitEquations", f"--order_equations_method fixed",
+                          f"--termination_condition termination_condition_0"]),
+        # (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",
+        #                   f"--termination_condition termination_condition_1"]),
+        # (SplitEquations, ["random", f"--algorithm SplitEquations", f"--order_equations_method fixed",
+        #                   f"--termination_condition termination_condition_1"]),
     ]
 
     log=False

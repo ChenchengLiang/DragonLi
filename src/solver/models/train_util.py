@@ -550,7 +550,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
                                                             valid_accuracy,
                                                             epoch_info_log, model_index=label_size)
 
-    elif parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracy:
+    if parameters["save_criterion"] == "valid_accuracy" and valid_accuracy > best_valid_accuracy:
         best_valid_accuracy = valid_accuracy
         best_model, epoch_info_log = add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_loss,
                                                             valid_accuracy,

@@ -12,7 +12,8 @@ from src.solver.visualize_util import visualize_path, visualize_path_html, visua
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _left_variable_right_terminal_branch_1, \
-    _left_variable_right_terminal_branch_2, _two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3, _update_formula
+    _left_variable_right_terminal_branch_2, _two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3, \
+    _update_formula, _category_formula_by_rules
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -29,7 +30,8 @@ class SplitEquations(AbstractAlgorithm):
 
 
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
-                                         "random": self._order_equations_random}
+                                         "random": self._order_equations_random,
+                                         "category": self._order_equations_category}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
 
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
@@ -79,7 +81,6 @@ class SplitEquations(AbstractAlgorithm):
         self.total_split_eq_call += 1
 
         print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
-        #print(original_formula.eq_list_str)
 
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
@@ -94,7 +95,7 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
-            #print(f"current_eq:{current_eq.eq_str}, separated_formula:{separated_formula.eq_list_str}")
+
 
             current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
 
@@ -140,6 +141,13 @@ class SplitEquations(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
+
+    def _order_equations_category(self, f: Formula) -> Formula:
+        categoried_eq_list:List[Tuple[Equation, int]]=_category_formula_by_rules(f)
+        sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
+
+        return Formula([eq for eq, _ in sorted_eq_list])
+
     def _order_equations_fixed(self, f: Formula) -> Formula:
         return f
 
@@ -164,11 +172,13 @@ class SplitEquations(AbstractAlgorithm):
         else:
             first_left_term = eq.left_terms[0]
             first_right_term = eq.right_terms[0]
+            last_left_term = eq.left_terms[-1]
+            last_right_term = eq.right_terms[-1]
             # \epsilon=\epsilon \wedge \phi case
             if eq.left_terms == eq.right_terms:
                 children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-            # match prefix terminal
+            # match prefix terminal #this has been simplified, so will never reach here
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
                 eq.simplify()
                 children: List[Tuple[Equation, Formula, str]] = [
@@ -179,6 +189,12 @@ class SplitEquations(AbstractAlgorithm):
                 eq.given_satisfiability = UNSAT
                 children: List[Tuple[Equation, Formula, str]] = [
                     (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+            # mistmatch suffix terminal
+            elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
+                eq.given_satisfiability = UNSAT
+                children: List[Tuple[Equation, Formula, str]] = [
+                    (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
+
             # split rules
             else:
                 left_term = eq.left_terms[0]
