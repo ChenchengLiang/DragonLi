@@ -19,14 +19,13 @@ From: continuumio/miniconda3
     
 
     # Install the CUDA Toolkit and specific PyTorch with CUDA support
-    pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
+    conda install -y nvidia/label/cuda-12.4.0::cuda pytorch=2.1.0 torchvision torchaudio -c pytorch
 
-
+    
     # Any additional setup can go here
-    pip install -r requirement/requirements.txt
-
+    pip install -r requirement/requirements.txt    
+    
     pip install mlflow torch
-
 
 
     #install z3
@@ -54,6 +53,7 @@ From: continuumio/miniconda3
     apt-get update
     apt-get install sbt -y
     apt-get install default-jdk -y
+
 
 
 %environment

@@ -34,7 +34,7 @@ def main():
     # file_path = bench_folder + "/debug/g_03_track_eval_task_3_1_1000_799.eq"
     # file_path = bench_folder + "/debug/g_03_track_eval_task_3_1_1000_21.eq"
     # file_path = bench_folder + "/debug/g_03_track_train_task_3_15001_20000_19243.eq"
-    file_path = bench_folder + "/debug/04_track_1.eq"
+    #file_path = bench_folder + "/debug/04_track_1.eq"
 
     # file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     # file_path= bench_folder +"/examples/01_track_4.eq"
@@ -83,8 +83,8 @@ def main():
     # file_path = bench_folder + "/examples/multi_eqs/04_track_180.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/04_track_183.eq"  # UNSAT
     # file_path=bench_folder +"/debug/19949.corecstrs.readable.eq" #UNSAT
-    # file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
-    # file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
+    file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
+    #file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
     #file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
 
     # smt format
@@ -106,6 +106,11 @@ def main():
                                                         "termination_condition": "termination_condition_0"}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
+                                           "order_equations_method": "category",
+                                           "termination_condition": "termination_condition_0",
+                                           "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
+
+    algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                            "order_equations_method": "category",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}

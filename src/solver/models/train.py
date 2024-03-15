@@ -49,8 +49,8 @@ def main():
 
         train_config = {
                 "benchmark":benchmark,"graph_type": "graph_1", "model_type": model_type,"task":task,
-            "num_epochs": 10, "learning_rate": 0.001,
-            "save_criterion": "valid_accuracy", "batch_size": 10000, "gnn_hidden_dim": 16,
+            "num_epochs": 10, "learning_rate": 0.001,"share_gnn":False,
+            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 16,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 16, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
             "node_type":4,"train_step":10,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
         }
@@ -63,6 +63,11 @@ def main():
     #     mlflow.set_experiment(experiment_name=train_config["experiment_name"],experiment_id=train_config["experiment_id"])
     # else:
     #     mlflow.set_experiment(train_config["experiment_name"])
+
+    print("-"*10)
+    color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}","green")
+    color_print(f"torch vesion: {torch.__version__}","green")
+    print("-" * 10)
 
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)

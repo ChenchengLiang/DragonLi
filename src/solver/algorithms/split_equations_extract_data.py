@@ -7,11 +7,12 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
     RESTART_MAX_DEEP_STEP, compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
-from ..independent_utils import remove_duplicates, flatten_list, color_print,log_control
+from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control
 from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula
+from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, apply_rules, \
+    simplify_and_check_formula
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -25,7 +26,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.fresh_variable_counter = 0
         self.total_split_eq_call = 0
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
-
 
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
                                          "random": self._order_equations_random,
@@ -50,18 +50,16 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def run(self):
         original_formula = Formula(self.equation_list)
 
-
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                 "back_track_count": 0})
         self.nodes.append(initial_node)
 
         satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
-                                                        edge_label="start")
+                                                    edge_label="start")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
-
 
     def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
@@ -74,33 +72,38 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         if res != None:
             return (res, original_formula)
 
-        #todo get all branches and label the training data
-        
-
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
 
         if satisfiability != UNKNOWN:
             return satisfiability, current_formula
         else:
-            current_formula = self.order_equations_func(current_formula)
-            current_eq, separated_formula = self.get_first_eq(current_formula)
+            # todo get all branches and label the training data
+            branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
+            for index, eq in enumerate(list(current_formula.eq_list)):
+                current_eq, separated_formula = self.get_eq_by_index(Formula(current_formula.eq_list), index)
+                current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
+                children: List[Tuple[Equation, Formula, str]] = apply_rules(current_eq, separated_formula)
+                children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
+
+                split_branch_satisfiability_list = []
+                for c_index, child in enumerate(children):
+                    (c_eq, c_formula, edge_label) = child
+                    satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
+                                                                edge_label)
+                    split_branch_satisfiability_list.append(satisfiability)
+
+                if any(eq_satisfiability == SAT for eq_satisfiability in split_branch_satisfiability_list):
+                    branch_eq_satisfiability_list.append((current_eq, SAT))
+                elif any(eq_satisfiability == UNKNOWN for eq_satisfiability in split_branch_satisfiability_list):
+                    branch_eq_satisfiability_list.append((current_eq, UNKNOWN))
+                else:
+                    branch_eq_satisfiability_list.append((current_eq, UNSAT))
 
 
-            current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
 
-            children: List[Tuple[Equation, Formula, str]] = apply_rules(current_eq, separated_formula)
-            children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
-
-            unknown_flag = False
-            for c_index, child in enumerate(children):
-                (c_eq, c_formula, edge_label) = child
-                satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
-                                                            edge_label)
-                if satisfiability == SAT:
-                    return (SAT, res_formula)
-                elif satisfiability == UNKNOWN:
-                    unknown_flag = True
-            if unknown_flag == True:
+            if any(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+                return (SAT, current_formula)
+            elif any(eq_satisfiability == UNKNOWN for _, eq_satisfiability in branch_eq_satisfiability_list):
                 return (UNKNOWN, current_formula)
             else:
                 return (UNSAT, current_formula)
@@ -116,14 +119,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
         return current_node
 
+    def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
+        return f.eq_list[index], Formula(f.eq_list.pop(index))
 
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-
-
     def _order_equations_category(self, f: Formula) -> Formula:
-        categoried_eq_list:List[Tuple[Equation, int]]=_category_formula_by_rules(f)
+        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
         sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
 
         return Formula([eq for eq, _ in sorted_eq_list])
@@ -135,14 +138,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         random.shuffle(f.eq_list)
         return f
 
-
     def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         return children
 
     def _order_branches_random(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         random.shuffle(children)
         return children
-
 
     def early_termination_condition_0(self, current_depth: int):
         return None

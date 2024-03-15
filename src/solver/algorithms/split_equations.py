@@ -102,7 +102,6 @@ class SplitEquations(AbstractAlgorithm):
             children: List[Tuple[Equation, Formula, str]] = apply_rules(current_eq, separated_formula)
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
-            unknown_flag = False
             for c_index, child in enumerate(children):
                 (c_eq, c_formula, edge_label) = child
                 satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
@@ -110,11 +109,9 @@ class SplitEquations(AbstractAlgorithm):
                 if satisfiability == SAT:
                     return (SAT, res_formula)
                 elif satisfiability == UNKNOWN:
-                    unknown_flag = True
-            if unknown_flag == True:
-                return (UNKNOWN, current_formula)
-            else:
-                return (UNSAT, current_formula)
+                    return (UNKNOWN, res_formula)
+
+            return (UNSAT, current_formula)
 
 
     def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \

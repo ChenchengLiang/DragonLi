@@ -32,7 +32,7 @@ def main():
                 for ffnn_layer_num in [2]:
                     for hidden_dim in [128]:#[128,256]:
                         for dropout_rate in [0.5]:
-                            for batch_size in [1000]:
+                            for batch_size in [1000,10000]:
                                 for model_type in ["GCNSplit","GINSplit"]:#["GCNSplit","GINSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                     for share_gnn in [False]:
                                         if model_type == "GAT":
