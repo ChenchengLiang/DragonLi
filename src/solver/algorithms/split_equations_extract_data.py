@@ -82,7 +82,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             for index, eq in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(current_formula.eq_list), index)
                 current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
-                children: List[Tuple[Equation, Formula, str]] = apply_rules(current_eq, separated_formula)
+                children, fresh_variable_counter = apply_rules(current_eq, separated_formula, self.fresh_variable_counter)
+                self.fresh_variable_counter = fresh_variable_counter
                 children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
                 split_branch_satisfiability_list = []
@@ -98,8 +99,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     branch_eq_satisfiability_list.append((current_eq, UNKNOWN))
                 else:
                     branch_eq_satisfiability_list.append((current_eq, UNSAT))
-
-
 
             if any(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
                 return (SAT, current_formula)

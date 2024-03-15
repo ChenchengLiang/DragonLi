@@ -99,7 +99,8 @@ class SplitEquations(AbstractAlgorithm):
 
             current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
 
-            children: List[Tuple[Equation, Formula, str]] = apply_rules(current_eq, separated_formula)
+            children,fresh_variable_counter= apply_rules(current_eq, separated_formula,self.fresh_variable_counter)
+            self.fresh_variable_counter=fresh_variable_counter
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
             for c_index, child in enumerate(children):

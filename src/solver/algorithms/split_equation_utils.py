@@ -1,6 +1,6 @@
 from typing import Tuple, List, Callable
 
-from src.solver.Constants import SAT, UNSAT, UNKNOWN
+from src.solver.Constants import SAT, UNSAT, UNKNOWN,FRESH_VARIABLE_COUNTER
 from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, Terminal
 import random
 
@@ -15,7 +15,7 @@ def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
 
     return satisfiability, f
 
-def apply_rules(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
+def apply_rules(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[Tuple[Equation, Formula, str]],int]:
     # handle non-split rules
 
     # both sides are empty
@@ -62,26 +62,26 @@ def apply_rules(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]
             if type(left_term.value) == Variable and type(right_term.value) == Terminal:
                 rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
                                              _left_variable_right_terminal_branch_2]
-                children: List[Tuple[Equation, Formula, str]] = _get_split_children(eq, f, rule_list)
+                children,fresh_variable_counter= _get_split_children(eq, f, rule_list,fresh_variable_counter)
 
             # left side is terminal, right side is variable
             elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
                 rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
                                              _left_variable_right_terminal_branch_2]
-                children: List[Tuple[Equation, Formula, str]] = _get_split_children(
+                children,fresh_variable_counter= _get_split_children(
                     Equation(eq.right_terms, eq.left_terms), f,
-                    rule_list)
+                    rule_list,fresh_variable_counter)
 
             # both side are differernt variables
             elif type(left_term.value) == Variable and type(right_term.value) == Variable:
                 rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
-                children: List[Tuple[Equation, Formula, str]] = _get_split_children(eq, f, rule_list)
+                children, fresh_variable_counter = _get_split_children(eq, f, rule_list,fresh_variable_counter)
 
             else:
                 children: List[Tuple[Equation, Formula, str]] = []
                 color_print(f"error: {eq.eq_str}", "red")
 
-    return children
+    return children,fresh_variable_counter
 
 
 def _left_side_empty(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
@@ -105,16 +105,14 @@ def _left_side_empty(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, 
     return children
 
 
-def _get_split_children(self, eq: Equation, f: Formula, rule_list: List[Callable]) -> List[Tuple[Equation, Formula, str]]:
+def _get_split_children(eq: Equation, f: Formula, rule_list: List[Callable],fresh_variable_counter:int) -> Tuple[List[Tuple[Equation, Formula, str]],int]:
     children: List[Tuple[Equation, Formula, str]] = []
     for rule in rule_list:
-        new_eq, new_formula, fresh_variable_counter, label_str = rule(eq, f,
-                                                                      self.fresh_variable_counter)
-        self.fresh_variable_counter = fresh_variable_counter
+        new_eq, new_formula, fresh_variable_counter, label_str = rule(eq, f, fresh_variable_counter)
         reconstructed_formula = Formula([new_eq] + new_formula.eq_list)
         child: Tuple[Equation, Formula, str] = (new_eq, reconstructed_formula, label_str)
         children.append(child)
-    return children
+    return children,fresh_variable_counter
 
 
 def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
