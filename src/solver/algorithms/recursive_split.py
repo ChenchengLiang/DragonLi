@@ -364,6 +364,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         with torch.no_grad():
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
+                self.gnn_model_2.to("cpu")
                 pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
                 # [1 if label == [1,0] else 0 for label in self.labels]
                 #print(pred_list)
@@ -375,6 +376,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 # pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
+                self.gnn_model_3.to("cpu")
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
                 #print(pred_list)
                 # pred_list=[1,0.5,0]#this make it use fixed branching

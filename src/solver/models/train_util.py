@@ -702,7 +702,6 @@ def data_loader_1(dataset, parameters):# separate train and valid data here by s
 
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
-    print("data_loader_2")
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
 
