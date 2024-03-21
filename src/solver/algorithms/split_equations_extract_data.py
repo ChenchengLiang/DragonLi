@@ -8,7 +8,7 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control
-from src.solver.visualize_util import visualize_path, visualize_path_html, visualize_path_png
+from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, apply_rules, \
@@ -100,12 +100,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 else:
                     branch_eq_satisfiability_list.append((current_eq, UNSAT))
 
-            if any(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+            if all(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
                 return (SAT, current_formula)
-            elif any(eq_satisfiability == UNKNOWN for _, eq_satisfiability in branch_eq_satisfiability_list):
-                return (UNKNOWN, current_formula)
-            else:
+            elif any(eq_satisfiability == UNSAT for _, eq_satisfiability in branch_eq_satisfiability_list):
                 return (UNSAT, current_formula)
+            else:
+                return (UNKNOWN, current_formula)
 
     def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
             Tuple[int, Dict]:

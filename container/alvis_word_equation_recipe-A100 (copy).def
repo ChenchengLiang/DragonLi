@@ -21,15 +21,15 @@ From: continuumio/miniconda3
     # Install the CUDA Toolkit and specific PyTorch with CUDA support
     pip install torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu121
 
-    pip install  dgl -f https://data.dgl.ai/wheels/cu121/repo.html
-    pip install  dglgo -f https://data.dgl.ai/wheels-test/repo.html
-
 
     # Any additional setup can go here
     pip install -r requirement/requirements.txt
 
+    conda install -c dglteam/label/cu121 dgl
 
     pip install mlflow torch
+
+
 
     #install z3
     apt-get -y update

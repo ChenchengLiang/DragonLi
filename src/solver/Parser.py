@@ -84,11 +84,12 @@ class Parser:
         self.parser = parser
 
 
-    def parse(self, file_path: str,zip=None) -> Dict:
-        print("-"*10, "Parsing", "-"*10)
+    def parse(self, file_path: str,zip=None,log=False) -> Dict:
         file_reader = EqReader() if type(self.parser) == EqParser else SMT2Reader()
         content = file_reader.read(file_path,zip)
-        print("file content: ", content)
+        if log==True:
+            print("-" * 10, "Parsing", "-" * 10)
+            print("file content: ", content)
         return self.parser.parse(content)
 
 

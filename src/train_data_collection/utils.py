@@ -12,6 +12,7 @@ from src.solver.algorithms.utils import merge_graphs,graph_to_gnn_format,concate
 from src.solver.visualize_util import draw_graph
 import zipfile
 import fnmatch
+from tqdm import tqdm
 
 
 
@@ -49,7 +50,7 @@ def _read_label_and_eqs(zip,f,graph_folder,parser,graph_func):
     split_eq_file_list = ["train/" + x for x in json_dict["middle_branch_eq_file_name_list"]]
 
     eq:Equation=concatenate_eqs(parser.parse(eq_file,zip)["equation_list"])
-    print("eq",len(eq.eq_str),eq.eq_str)
+    #print("eq",len(eq.eq_str),eq.eq_str)
     eq_nodes, eq_edges = graph_func(eq.left_terms, eq.right_terms)
     split_eq_list: List[Equation] = [concatenate_eqs(parser.parse(split_eq_file,zip)["equation_list"]) for split_eq_file in
                                      split_eq_file_list]
@@ -59,7 +60,7 @@ def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable,
     parser_type = EqParser()
     parser = Parser(parser_type)
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
-        for f in zip_file_content.namelist():
+        for f in tqdm(zip_file_content.namelist(),desc="output_split_eq_graphs"):
         #for f in glob.glob(graph_folder + "/*.label.json"):
             if fnmatch.fnmatch(f, '*.label.json'):
                 eq_nodes, eq_edges, split_eq_list, split_eq_file_list, label_list,satisfiability_list = _read_label_and_eqs(zip_file_content,f, graph_folder, parser,

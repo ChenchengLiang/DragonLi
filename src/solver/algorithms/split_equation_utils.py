@@ -1,6 +1,6 @@
 from typing import Tuple, List, Callable
 
-from src.solver.Constants import SAT, UNSAT, UNKNOWN,FRESH_VARIABLE_COUNTER
+from src.solver.Constants import SAT, UNSAT, UNKNOWN
 from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, Terminal
 import random
 

@@ -17,7 +17,7 @@ sys.path.append(project_folder)
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
-from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariables,ElimilateVariablesRecursive,SplitEquations
+from src.solver.algorithms import EnumerateAssignments,EnumerateAssignmentsUsingGenerator,ElimilateVariablesRecursive,SplitEquations
 from src.solver.Constants import algorithm_timeout
 from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder,bench_folder,UNKNOWN,SAT,UNSAT,recursion_limit
@@ -26,7 +26,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
     sys.setrecursionlimit(recursion_limit)
-    benchmark="03_track_generated_train_1_20000_task_3_continuously_train_no_divided"
+    benchmark="03_track_generated_train_1_20000_task_3_continuously_train_337"
     folder_list=[folder for folder in get_folders(bench_folder+"/"+benchmark) if "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list)!=0:

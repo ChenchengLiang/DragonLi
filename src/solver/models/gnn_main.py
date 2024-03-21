@@ -1,32 +1,42 @@
 import os
 
 os.environ["DGLBACKEND"] = "pytorch"
-import dgl
-import dgl.data
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+from Dataset import WordEquationDatasetBinaryClassification,KarateClubDataset,SyntheticDataset,WordEquationDatasetMultiClassification
+from src.solver.Constants import bench_folder
 from dgl.dataloading import GraphDataLoader
-import urllib.request
-import pandas as pd
-from Dataset import KarateClubDataset,SyntheticDataset,WordEquationDatasetBinaryClassification
-from src.solver.Constants import project_folder,bench_folder
-
 def main():
 
 
     # dataset = KarateClubDataset()
-    # graph = dataset[0]
-    # print(graph)
+    # print(len(dataset))
+    # print(dataset[0])
+    # print(dataset[1])
+
 
     # dataset = SyntheticDataset()
-    # graph, label = dataset[0]
-    # print(graph, label)
+    # print(len(dataset))
+    # print(dataset[0])
+    # print(dataset[1])
+    #
+    # print("-----")
+    # data_loader = GraphDataLoader(dataset, batch_size=100, shuffle=True)
+    # for batched_graph, labels in data_loader:
+    #     print(batched_graph, labels)
 
-    graph_folder=bench_folder+"/test"
-    train_valid_dataset = WordEquationDatasetBinaryClassification(graph_folder=graph_folder)
-    graph, label = train_valid_dataset[0]
-    print("train_valid_dataset[0]",graph, label)
+
+
+    graph_folder=bench_folder+"/debug-train/graph_1"
+    dataset = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=4,
+                                                     label_size=2)
+    print(len(dataset))
+    print(dataset[0])
+    print(dataset[1])
+
+    print("-----")
+    data_loader = GraphDataLoader(dataset, batch_size=1000, shuffle=True)
+    for batched_graph, labels in data_loader:
+        print(batched_graph)
+        print(len(labels))
 
 
 

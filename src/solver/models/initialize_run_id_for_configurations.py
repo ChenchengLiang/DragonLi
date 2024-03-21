@@ -1,6 +1,6 @@
+import configparser
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -12,15 +12,8 @@ os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import dgl.data
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from src.solver.models.Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN
-from dgl.dataloading import GraphDataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
 from typing import Dict
-from collections import Counter
 from src.solver.Constants import project_folder
-from Dataset import WordEquationDatasetBinaryClassification
 import mlflow
 import argparse
 import json
@@ -28,8 +21,10 @@ import datetime
 import subprocess
 from src.solver.independent_utils import color_print,get_folders
 import signal
-from src.solver.models.train_util import (initialize_model_structure,load_train_and_valid_dataset,training_phase,validation_phase,
-                                          initialize_train_objects,log_and_save_best_model,save_checkpoint)
+from src.solver.models.train_util import (initialize_model_structure, load_train_and_valid_dataset, training_phase,
+                                          validation_phase,
+                                          initialize_train_objects, log_and_save_best_model, save_checkpoint,
+                                          update_config_file)
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -48,14 +43,20 @@ def main():
 
     train_config = initiate_run_id_for_a_configuration(train_config)
 
-    #update configuration file
-    with open(configuration_file, 'w') as f:
-        json.dump(train_config, f, indent=4)
+
+    update_config_file(configuration_file,train_config)
+
 
     print("done")
 
 
 def initiate_run_id_for_a_configuration(train_config):
+    print("-"*10)
+    color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}","green")
+    color_print(f"torch vesion: {torch.__version__}","green")
+    color_print(f"dgl backend: {dgl.backend.backend_name}", "green")
+    print("-" * 10)
+    train_config["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     benchmark_folder = config['Path']['woorpje_benchmarks']
     today = datetime.date.today().strftime("%Y-%m-%d")
     mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
@@ -110,9 +111,9 @@ def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
     train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
         dataset, parameters, model, model_type=model_type)
     # Training Phase
-    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer,parameters)
     # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type)
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type,parameters)
     # Save based on specified criterion
     best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
                                                                                                best_model, model,
@@ -135,10 +136,10 @@ def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
         dataset, parameters, model, model_type=model_type)
 
     # Training Phase
-    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer,parameters)
 
     # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type)
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type,parameters)
 
     # Save based on specified criterion
     best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,

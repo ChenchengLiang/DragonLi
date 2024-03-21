@@ -1,6 +1,6 @@
+import configparser
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -12,15 +12,6 @@ os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import dgl.data
 import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from src.solver.models.Models import GCNWithNFFNN,GATWithNFFNN,GINWithNFFNN
-from dgl.dataloading import GraphDataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-from typing import Dict
-from collections import Counter
-from src.solver.Constants import project_folder
-from Dataset import WordEquationDatasetBinaryClassification
 import mlflow
 import argparse
 import json
@@ -28,7 +19,10 @@ import datetime
 import subprocess
 from src.solver.independent_utils import color_print
 import signal
-from src.solver.models.train_util import train_one_model,create_data_loaders,train_multiple_models,train_multiple_models_separately,check_run_exists,check_experiment_exists
+from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists, \
+    update_config_file
+
+
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -49,10 +43,10 @@ def main():
 
         train_config = {
                 "benchmark":benchmark,"graph_type": "graph_1", "model_type": model_type,"task":task,
-            "num_epochs": 10, "learning_rate": 0.001,"share_gnn":False,
+            "num_epochs": 50, "learning_rate": 0.001,"share_gnn":False,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 128,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 128, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
-            "node_type":4,"train_step":10,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
+            "node_type":4,"train_step":50,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
         }
 
 
@@ -84,8 +78,8 @@ def main():
                 train_config=train_a_model(train_config,mlflow_run)
                 train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])]+=train_config["train_step"]
                 # update configuration file
-                with open(configuration_file, 'w') as f:
-                    json.dump(train_config, f, indent=4)
+                update_config_file(configuration_file, train_config)
+
     else:
         with mlflow.start_run() as mlflow_run:
             train_config["current_train_folder"] = benchmark
@@ -102,7 +96,9 @@ def train_a_model(train_config,mlflow_run):
     print("-"*10)
     color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}","green")
     color_print(f"torch vesion: {torch.__version__}","green")
+    color_print(f"dgl backend: {dgl.backend.backend_name}", "green")
     print("-" * 10)
+    train_config["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     benchmark_folder = config['Path']['woorpje_benchmarks']
     train_config["run_id"] = mlflow_run.info.run_id

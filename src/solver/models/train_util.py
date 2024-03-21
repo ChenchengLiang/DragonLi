@@ -1,22 +1,22 @@
+import json
 import os
+import time
+from collections import Counter
+from typing import Dict, Union
+
+import mlflow
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs, \
-    GraphClassifier, SharedGNN, Classifier
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
-from typing import Dict, Callable,Union
-from collections import Counter
-from src.solver.Constants import project_folder, mlflow_folder, checkpoint_folder
-from src.solver.independent_utils import get_memory_usage, load_from_pickle, save_to_pickle, \
-    load_from_pickle_within_zip, compress_to_zip, time_it,color_print
+
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
-    WordEquationDatasetMultiClassification, WordEquationDatasetMultiClassificationLazy
-import mlflow
-import time
-import random
-import numpy as np
+    WordEquationDatasetMultiClassification
+from src.solver.Constants import project_folder, checkpoint_folder
+from src.solver.independent_utils import load_from_pickle_within_zip, time_it, color_print
+from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs, \
+    GraphClassifier, SharedGNN, Classifier
 
 
 def train_multiple_models(parameters, benchmark_folder):
@@ -299,6 +299,7 @@ def train_multiple_models_separately(parameters, benchmark_folder):
 
 
 def load_train_and_valid_dataset(parameters, benchmark_folder, label_size):
+
     if os.path.exists(os.path.join(benchmark_folder,parameters["benchmark"], "valid_data")):
         color_print(text=f"load from two folders", color="yellow")
         train_data_folder = parameters["current_train_folder"]
@@ -347,12 +348,29 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
     mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_{label_size}_statistics.txt")
     return dataset
 
-def training_phase(model,train_dataloader,loss_function,optimizer):
+def training_phase(model, train_dataloader, loss_function, optimizer, parameters:Dict):
     # Training Phase
+    model.to(parameters["device"])
     model.train()
     train_loss = 0.0
-    for batched_graph, labels in train_dataloader:
-        pred = model(batched_graph)  # Squeeze to remove the extra dimension
+    for (batch_index,(batched_graph, labels)) in enumerate(train_dataloader):
+        graphs_cuda = [graph.to(parameters["device"]) for graph in batched_graph]
+        labels = labels.clone().detach().to(parameters["device"])
+
+        # color_print(str(parameters["device"]), "green")
+        # #print model device
+        # for name, param in model.named_parameters():
+        #     color_print(f"{name} is on {param.device}","green")
+        # #print label device
+        # color_print(f"labels.device: {labels.device}", "green")
+        # #print data device
+        # for g in graphs_cuda:
+        #     color_print(f"g.device: {g.device}","blue")
+
+        pred = model(graphs_cuda)  # Squeeze to remove the extra dimension
+
+
+
         pred_final, labels = squeeze_labels(pred, labels)
         loss = loss_function(pred_final, labels)  # labels are not squeezed
         optimizer.zero_grad()
@@ -363,14 +381,18 @@ def training_phase(model,train_dataloader,loss_function,optimizer):
     avg_train_loss = train_loss / len(train_dataloader)
     return model,avg_train_loss
 
-def validation_phase(model,valid_dataloader,loss_function,model_type):
+def validation_phase(model,valid_dataloader,loss_function,model_type,parameters:Dict):
     model.eval()
+    model.to(parameters["device"])
     valid_loss = 0.0
     num_correct = 0
     num_valids = 0
     with torch.no_grad():
         for batched_graph, labels in valid_dataloader:
-            pred = model(batched_graph)
+            graphs_cuda = [graph.to('cuda') for graph in batched_graph]
+            labels = labels.clone().detach().to(parameters["device"])
+
+            pred = model(graphs_cuda)
             pred_final, labels = squeeze_labels(pred, labels)
 
             loss = loss_function(pred_final, labels)
@@ -391,18 +413,20 @@ def train_binary_classification(dataset, model, parameters: Dict):
     print("-" * 10, "train_binary_classification", "-" * 10)
 
     model_type="binary_classification"
-    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
+    (train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy,
+     epoch_info_log, check_point_model_path) = initialize_train_objects(
         dataset, parameters, model,model_type=model_type)
 
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
                                                                                           filename=check_point_model_path)
 
+
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"]+1)):
         # Training Phase
-        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer)
+        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer,parameters)
 
         # Validation Phase
-        model,avg_valid_loss,valid_accuracy=validation_phase(model, valid_dataloader, loss_function, model_type)
+        model,avg_valid_loss,valid_accuracy=validation_phase(model, valid_dataloader, loss_function, model_type, parameters)
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
@@ -432,12 +456,13 @@ def train_multi_classification(dataset, model, parameters: Dict):
     model, optimizer, start_epoch, best_valid_loss, best_valid_accuracy = load_checkpoint(model, optimizer, parameters,
                                                                                           filename=check_point_model_path)
 
+
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"]+1)):
         # Training Phase
-        model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer)
+        model,avg_train_loss=training_phase(model,train_dataloader,loss_function,optimizer,parameters)
 
         # Validation Phase
-        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,model_type)
+        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,model_type,parameters)
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
@@ -517,9 +542,18 @@ def load_checkpoint(model, optimizer, parameters, filename='model_checkpoint.pth
     try:
         run_id = parameters["run_id"]
         checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
-        checkpoint = torch.load(checkpoint_path)
+
+        checkpoint = torch.load(checkpoint_path,map_location=parameters["device"])
         model.load_state_dict(checkpoint['state_dict'])
+        #model.to(parameters["device"]) # this has been done in training_phase and validation_phase
+
         optimizer.load_state_dict(checkpoint['optimizer'])
+        # Ensure optimizer's state is correctly moved to the GPU (if it has tensors)
+        for state in optimizer.state.values():
+            for k, v in state.items():
+                if isinstance(v, torch.Tensor):
+                    state[k] = v.to(parameters["device"])
+
         start_epoch = checkpoint['epoch']
         best_valid_loss = checkpoint['best_valid_loss']
         best_valid_accuracy = checkpoint['best_valid_accuracy']
@@ -632,20 +666,21 @@ def create_data_loaders(dataset:Union[WordEquationDatasetMultiClassification,Dic
 
 
 @time_it
-def data_loader_1(dataset, parameters):
+def data_loader_1(dataset, parameters):# separate train and valid data here by samplers
     train_sampler, valid_sampler, train_indices, valid_indices = get_samplers(dataset)
+
 
     train_dataloader = GraphDataLoader(dataset, sampler=train_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
-    # valid_dataloader=train_dataloader
+    #valid_dataloader=train_dataloader
     valid_dataloader = GraphDataLoader(dataset, sampler=valid_sampler, batch_size=parameters["batch_size"],
                                        drop_last=False)
+
 
     # Check if the dataset is for binary classification or multi-class classification
     first_label = dataset[0][1]
     label_size = dataset._label_size
-    print("print(dataset[0])")
-    print(dataset[0])
+    print(f"dataset[0] {dataset[0]}")
 
     is_binary_classification = len(first_label.shape) == 0 or (
             len(first_label.shape) == 1 and first_label.shape[0] == 1)
@@ -666,13 +701,13 @@ def data_loader_1(dataset, parameters):
 
 
 @time_it
-def data_loader_2(dataset, parameters):
+def data_loader_2(dataset, parameters): # load separated train and valid data here
+    print("data_loader_2")
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
 
     first_label = dataset["train"][0][1]
     label_size =dataset['train']._label_size
-    print("print(dataset[0])")
     print(dataset["train"][0])
     is_binary_classification = len(first_label.shape) == 0 or (
             len(first_label.shape) == 1 and first_label.shape[0] == 1)
@@ -735,3 +770,9 @@ def check_experiment_exists(experiment_id):
         # If an exception occurs, it likely means the experiment_id does not exist
         print(f"Experiment ID not found: {e}")
         return False
+
+
+def update_config_file(configuration_file,train_config):
+    with open(configuration_file, 'w') as f:
+        train_config["device"] = str(train_config["device"])  # change tensor to string so can dump it to json
+        json.dump(train_config, f, indent=4)

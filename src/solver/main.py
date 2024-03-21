@@ -12,7 +12,7 @@ from src.solver.Constants import bench_folder, project_folder, UNKNOWN
 from src.solver.Parser import Parser, EqParser, SMT2Parser
 from src.solver.Solver import Solver
 from src.solver.utils import print_results, graph_func_map
-from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, ElimilateVariables, \
+from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, \
     ElimilateVariablesRecursive, SplitEquations
 from src.solver.DataTypes import Equation
 from src.solver.independent_utils import strip_file_name_suffix
@@ -117,7 +117,6 @@ def main():
 
     solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
-    # solver = Solver(algorithm=ElimilateVariables,algorithm_parameters=algorithm_parameters)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)

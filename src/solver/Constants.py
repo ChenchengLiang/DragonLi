@@ -10,7 +10,7 @@ checkpoint_folder = config['Path']['checkpoint_folder']
 summary_folder = config['Path']['summary_folder']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 10
+algorithm_timeout: int = 30
 shell_timeout: int = algorithm_timeout
 
 # control termination when executing algorithm
@@ -34,8 +34,6 @@ RECURSION_ERROR: str = "RECURSION_ERROR"
 recursion_limit: int = 1000000000
 OUTPUT_LEAF_NODE_PERCENTAGE = 0.001
 GNN_BRANCH_RATIO = 0.5
-
-FRESH_VARIABLE_COUNTER = 0
 
 UNKNOWN: str = "UNKNOWN"
 SAT: str = "SAT"

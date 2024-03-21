@@ -1,6 +1,6 @@
+import configparser
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -8,12 +8,9 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format,zip_folder,get_folders
-from src.solver.Parser import Parser, EqParser
-import glob
+from src.solver.independent_utils import zip_folder,get_folders
 from src.solver.utils import graph_func_map
-from typing import List, Tuple, Dict, Union, Optional, Callable
-from src.solver.Constants import project_folder, bench_folder,recursion_limit
+from src.solver.Constants import bench_folder,recursion_limit
 from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs, output_split_eq_graphs
 import shutil
 import argparse
@@ -29,7 +26,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "debug-train"
+    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train_no_divided"
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)

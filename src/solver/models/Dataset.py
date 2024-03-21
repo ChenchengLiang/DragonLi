@@ -6,8 +6,8 @@ import zipfile
 from src.solver.independent_utils import color_print
 
 os.environ["DGLBACKEND"] = "pytorch"
-import dgl
 import torch
+import dgl
 from dgl.data import DGLDataset
 import pandas as pd
 import glob
@@ -20,13 +20,16 @@ import time
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
-    num_nodes = pd.DataFrame(g["nodes"]).to_numpy().shape[0]
+    num_nodes = torch.tensor(pd.DataFrame(g["nodes"]).to_numpy().shape[0])
 
     dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
+
     dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
     # dgl_graph.ndata["label"] = node_labels #node label
     dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
     dgl_graph = dgl.add_self_loop(dgl_graph)
+
+
     return dgl_graph,g["label"]
 
 def get_edge_src_and_dst_list(edges):
@@ -35,7 +38,7 @@ def get_edge_src_and_dst_list(edges):
     for e in edges:
         edges_src.append(e[0])
         edges_dst.append(e[1])
-    return pd.DataFrame(edges_src).to_numpy().flatten(), pd.DataFrame(edges_dst).to_numpy().flatten()
+    return torch.from_numpy(pd.DataFrame(edges_src).to_numpy().flatten()), torch.from_numpy(pd.DataFrame(edges_dst).to_numpy().flatten())
 
 class WordEquationDatasetBinaryClassification(DGLDataset):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=1):
@@ -430,8 +433,8 @@ class SyntheticDataset(DGLDataset):
         super().__init__(name="synthetic")
 
     def process(self):
-        edges = pd.read_csv("./graph_edges.csv")
-        properties = pd.read_csv("./graph_properties.csv")
+        edges = pd.read_csv("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/models/graph_edges.csv")
+        properties = pd.read_csv("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/models/graph_properties.csv")
         self.graphs = []
         self.labels = []
 
@@ -476,8 +479,8 @@ class KarateClubDataset(DGLDataset):
         super().__init__(name="karate_club")
 
     def process(self):
-        nodes_data = pd.read_csv("./members.csv")
-        edges_data = pd.read_csv("./interactions.csv")
+        nodes_data = pd.read_csv("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/models/members.csv")
+        edges_data = pd.read_csv("/home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src/solver/models/interactions.csv")
         node_features = torch.from_numpy(nodes_data["Age"].to_numpy())
         node_labels = torch.from_numpy(
             nodes_data["Club"].astype("category").cat.codes.to_numpy()

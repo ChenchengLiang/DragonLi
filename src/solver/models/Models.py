@@ -5,6 +5,7 @@ import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
+from src.solver.independent_utils import color_print
 
 
 ############################################# Task 3 #############################################
