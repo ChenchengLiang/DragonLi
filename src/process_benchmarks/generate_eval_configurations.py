@@ -1,7 +1,6 @@
-import glob
+import configparser
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -9,15 +8,8 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 
 sys.path.append(path)
-from typing import List, Tuple, Dict
-from src.process_benchmarks.utils import run_on_one_track, result_summary
-from src.solver.Constants import bench_folder, BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, \
-    RECURSION_DEPTH_EXCEEDED, \
-    RECURSION_ERROR, project_folder
+from src.solver.Constants import bench_folder, project_folder
 from src.solver.independent_utils import write_configurations_to_json_file
-
-import json
-import shutil
 
 
 def main():
@@ -97,7 +89,7 @@ def main():
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
 
-    benchmark_name = "03_track_generated_eval_30000_31000"#"03_track_eval_task_3_1_1000"
+    benchmark_name = "03_track"#"03_track_generated_eval_30000_31000"#"03_track_eval_task_3_1_1000"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])

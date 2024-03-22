@@ -1,4 +1,14 @@
+import os
+
+
+os.environ["DGLBACKEND"] = "pytorch"
+
 import torch
+
+import dgl
+
+from dgl.data import DGLDataset
+
 
 # Check if CUDA is available
 is_cuda_available = torch.cuda.is_available()

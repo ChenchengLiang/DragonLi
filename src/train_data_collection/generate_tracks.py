@@ -1,6 +1,6 @@
+import configparser
 import os
 import sys
-import configparser
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -10,14 +10,13 @@ sys.path.append(path)
 
 import random
 import string
-from src.solver.Constants import project_folder, bench_folder
+from src.solver.Constants import bench_folder
 from copy import deepcopy
 from src.solver.independent_utils import remove_duplicates, identify_available_capitals, strip_file_name_suffix
 from src.train_data_collection.utils import dvivde_track_for_cluster
-import glob
 import shutil
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 
 def main():

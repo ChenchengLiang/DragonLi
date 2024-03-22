@@ -13,7 +13,6 @@ from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, \
     ElimilateVariablesRecursive, SplitEquations
-from src.solver.DataTypes import Equation
 import argparse
 
 

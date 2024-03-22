@@ -1,7 +1,7 @@
 import torch
 from src.solver.Constants import project_folder
-def load_model(model_path) :
-    loaded_model = torch.load(model_path)
+def load_model(model_path,map_location=torch.device('cpu')) :
+    loaded_model = torch.load(model_path,map_location=map_location)
     loaded_model.eval()  # Set the model to evaluation mode
     return loaded_model
 

@@ -15,7 +15,7 @@ from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation,
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals,get_memory_usage,time_it
+    dump_to_json_with_format, identify_available_capitals, get_memory_usage, time_it, color_print
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
@@ -29,6 +29,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                  parameters: Dict):
 
         super().__init__(terminals, variables, equation_list)
+
+        parameters["device"] = torch.device("cpu")
+        color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}", "green")
+        print(f"torch.device: {torch.device('cpu')}")
 
         self.assignment = Assignment()
         self.parameters = parameters
@@ -73,6 +77,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # run_id = "feb2e17e68bb4310bb3c539c672fd166"
             # self.gnn_model = load_model_from_mlflow(experiment_id, run_id)
             self.graph_func = parameters["graph_func"]
+
             if parameters["task"] == "task_1":
                 self.gnn_model = load_model(parameters["gnn_model_path"])
                 self.branch_prediction_func = self._task_1_and_2_branch_prediction
@@ -86,6 +91,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 self.gnn_model_3 = load_model(parameters["gnn_model_path"].replace("_0_", "_3_"))
                 self.branch_prediction_func = self._task_3_branch_prediction
         self.output_train_data = False if self.file_name == "" else True
+
+
+
 
     @time_it
     def run(self):
@@ -364,7 +372,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         with torch.no_grad():
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
-                self.gnn_model_2.to("cpu")
+                #self.gnn_model_2.to("cpu")
                 pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
                 # [1 if label == [1,0] else 0 for label in self.labels]
                 #print(pred_list)
@@ -376,7 +384,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 # pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
-                self.gnn_model_3.to("cpu")
+                #self.gnn_model_3.to("cpu")
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
                 #print(pred_list)
                 # pred_list=[1,0.5,0]#this make it use fixed branching
