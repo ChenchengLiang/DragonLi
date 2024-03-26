@@ -19,6 +19,7 @@ from src.solver.independent_utils import remove_duplicates, flatten_list, strip_
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
+from src.solver.models.train_util import squeeze_labels
 
 sys.path.append(
     project_folder + "/src/solver/models")
@@ -368,26 +369,34 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             split_eq: Equation = Equation(l, r)
             split_eq_list.append(split_eq)
             edge_label_list.append(edge_label)
+
         # predict
         with torch.no_grad():
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
-                #self.gnn_model_2.to("cpu")
                 pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
-                # [1 if label == [1,0] else 0 for label in self.labels]
+                #[1 if label == [1,0] else 0 for label in self.labels]
                 #print(pred_list)
 
                 if pred_list > 0.5:
                     pred_list = [1, 0]
                 else:
                     pred_list = [0, 1]
-                # pred_list=[1,0]#this make it use fixed branching
+
+                # if pred_list < 0.5:
+                #     pred_list = [1, 0]
+                # else:
+                #     pred_list = [0, 1]
+
+
+                #pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
-                #self.gnn_model_3.to("cpu")
+
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
-                #print(pred_list)
-                # pred_list=[1,0.5,0]#this make it use fixed branching
+
+                print(pred_list)
+                #pred_list=[1,0.5,0]#this make it use fixed branching
 
 
         # sort
@@ -397,6 +406,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
         #print([x[0] for x in prediction_list])
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+
 
 
         return sorted_prediction_list
@@ -434,7 +444,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         return merged_nodes, merged_edges
 
     def _use_gnn_branching(self, eq: Equation, current_node_number, node_info, branch_methods):
-        ################################ stop branching condition ################################
+
+
+        ############################### stop branching condition ################################
         result = self._execute_branching_data_termination_condition(eq, node_info)
         if result == None:
             pass
@@ -451,7 +463,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         #
         # print(f"- {self.total_split_call} gnn branch -")
 
-        ################################ prediction ################################
+
+
+        ############################### prediction ################################
         sorted_prediction_list = self.branch_prediction_func(eq, branch_methods)
 
         # Perform depth-first search based on the sorted prediction list
@@ -818,7 +832,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = local_right_terms_queue.popleft()
 
         # create fresh variable V1'
-        fresh_variable_term = self._create_fresh_variables(variables.copy())
+        fresh_variable_term = self._create_fresh_variables(copy.deepcopy(variables))
         # replace V1 with V2 V1' to obtain [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
         self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]],
                             terms_queue=local_left_terms_queue)
@@ -915,7 +929,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         right_term = local_right_terms_queue.popleft()
 
         # create fresh variable V1'
-        fresh_variable_term = self._create_fresh_variables(variables.copy())
+        fresh_variable_term = self._create_fresh_variables(copy.deepcopy(variables))
 
         # replace V1 with aV1' to obtain [Terms] [V1/aV1'] = [Terms] [V1/aV1']
         self.replace_a_term(old_term=left_term, new_term=[[right_term, fresh_variable_term]],

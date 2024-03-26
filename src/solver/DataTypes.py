@@ -426,8 +426,9 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
         global_node_counter = add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter)
         global_node_counter = add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter)
 
-    local_left_terms = deque(left_terms.copy())
-    local_right_terms = deque(right_terms.copy())
+    #copy.deepcopy
+    local_left_terms = deque(copy.deepcopy(left_terms))
+    local_right_terms = deque(copy.deepcopy(right_terms))
 
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
                                          local_left_terms, equation_node, global_node_counter)
@@ -445,7 +446,7 @@ def add_a_node(nodes, global_node_counter, type, content, label):
 
 
 def add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter):
-    for v in Equation(left_terms.copy(), right_terms.copy()).variable_list:
+    for v in Equation(left_terms, right_terms).variable_list:
         v_node, global_node_counter = add_a_node(nodes, global_node_counter, type=Variable, content=v.value,
                                                  label=None)
         variable_nodes.append(v_node)
@@ -453,7 +454,7 @@ def add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_no
 
 
 def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter):
-    for t in Equation(left_terms.copy(), right_terms.copy()).termimal_list_without_empty_terminal:
+    for t in Equation(left_terms, right_terms).termimal_list_without_empty_terminal:
         t_node, global_node_counter = add_a_node(nodes, global_node_counter, type=Terminal, content=t.value,
                                                  label=None)
         terminal_nodes.append(t_node)

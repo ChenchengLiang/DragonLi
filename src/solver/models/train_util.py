@@ -11,7 +11,7 @@ import torch.nn as nn
 from dgl.dataloading import GraphDataLoader
 from torch.utils.data.sampler import SubsetRandomSampler
 
-from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
+from src.solver.models.Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification
 from src.solver.Constants import project_folder, checkpoint_folder
 from src.solver.independent_utils import load_from_pickle_within_zip, time_it, color_print

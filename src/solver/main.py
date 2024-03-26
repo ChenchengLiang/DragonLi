@@ -2,6 +2,8 @@ import os
 import sys
 import configparser
 
+from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
+
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -20,7 +22,7 @@ from src.solver.independent_utils import strip_file_name_suffix
 
 def main():
     # debug
-    file_path=bench_folder +"/examples/03_track_52.eq"
+    #file_path=bench_folder +"/examples/03_track_52.eq"
     # example path
     # file_path=bench_folder +"/regression_test/g_03_track_27.eq"
     # file_path=bench_folder +"/temp/output.eq"
@@ -35,9 +37,13 @@ def main():
     # file_path = bench_folder + "/debug/g_03_track_eval_task_3_1_1000_21.eq"
     # file_path = bench_folder + "/debug/g_03_track_train_task_3_15001_20000_19243.eq"
     #file_path = bench_folder + "/debug/04_track_5.eq"
+    #file_path = bench_folder + "/debug/g_03_track_9153.eq"
+    #file_path = bench_folder + "/debug/g_03_track_9596.eq"
+    #file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_839.eq"
+    #file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_4104.eq"
 
     # file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
-    # file_path= bench_folder +"/examples/01_track_4.eq"
+    #file_path= bench_folder +"/examples/01_track_4.eq"
     # file_path = bench_folder+"/examples/43/01_track_43.eq"
     # file_path = bench_folder+"/examples/g_01_track_85.eq"
     # file_path = bench_folder + "/examples/32/g_01_track_32.eq"
@@ -45,7 +51,7 @@ def main():
     # file_path = bench_folder + "/examples/g_02_SAT/g_01_track_SAT_2.eq"
     # file_path = bench_folder + "/examples/g_01_SAT_464/g_01_track_SAT_464.eq"
     # file_path = bench_folder + "/examples/g_random_track_1144.eq"
-    # file_path = bench_folder + "/examples/g_03_track_generated_eval_30000_31000_30683.eq"
+    #file_path = bench_folder + "/examples/g_03_track_generated_eval_30000_31000_30683.eq"
 
     # file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -53,7 +59,7 @@ def main():
     # file_path = bench_folder +"/01_track/01_track_1.eq"
     # file_path = bench_folder +"/01_track/01_track_2.eq"
     # file_path = bench_folder +"/01_track/01_track_3.eq"
-    # file_path = bench_folder +"/01_track/01_track_4.eq"
+    #file_path = bench_folder +"/01_track/01_track_4.eq"
     # file_path = bench_folder +"/01_track/01_track_5.eq"
     # file_path = bench_folder +"/01_track/01_track_36.eq"
     # file_path = bench_folder +"/01_track/01_track_37.eq"
@@ -68,8 +74,9 @@ def main():
     # file_path = bench_folder +"/03_track/03_track_17.eq"
 
     # multiple equations
-    # file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
-    # file_path=bench_folder +"/examples/multi_eqs/2/test2.eq" #UNSAT
+    file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    #file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/26/04_track_26.eq"  # SAT
@@ -95,9 +102,9 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type = "graph_5"
+    graph_type = "graph_1"
     task = "task_3"
-    model_type = "GINSplit"
+    model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
 
     algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "gnn", "task": task, "graph_type": graph_type,
@@ -112,14 +119,15 @@ def main():
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                            "order_equations_method": "category",
-                                           "termination_condition": "termination_condition_0",
+                                           "termination_condition": "termination_condition_3",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
 
+    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
-    solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
+    #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
 
     print_results(result_dict)
 

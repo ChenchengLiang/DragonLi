@@ -25,7 +25,15 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.edges = []
         self.fresh_variable_counter = 0
         self.total_split_eq_call = 0
+        self.eq_node_number=0
+        self.total_node_number=1
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
+        #control path number for extraction
+        self.max_deep_for_extraction=3
+        self.max_found_sat_path_extraction=5
+        self.found_sat_path=0
+        self.max_found_path_extraction=5
+        self.found_path=0
 
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
                                          "random": self._order_equations_random,
@@ -36,8 +44,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                        "random": self._order_branches_random}
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
-        self.check_termination_condition_map = {"termination_condition_0": self.early_termination_condition_0,
-                                                "termination_condition_1": self.early_termination_condition_1}
+        self.check_termination_condition_map = {"termination_condition_0": self.early_termination_condition_0, #no limit
+                                                "termination_condition_1": self.early_termination_condition_1, #restart
+                                                "termination_condition_2": self.early_termination_condition_2, #max deepth
+                                                "termination_condition_3": self.early_termination_condition_3, #found path
+                                                "termination_condition_4": self.early_termination_condition_4} #found sat path
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
 
@@ -45,43 +56,50 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         print("recursion limit number", sys.getrecursionlimit())
 
         self.log_enabled = True
-
+        self.png_edge_label= True
     @log_control
     def run(self):
-        original_formula = Formula(self.equation_list)
+        original_formula = Formula(list(self.equation_list))
 
         initial_node: Tuple[int, Dict] = (
-            0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
+            0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
                 "back_track_count": 0})
         self.nodes.append(initial_node)
 
-        satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
+        satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_branch_node=initial_node,
                                                     edge_label="start")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
-    def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
+    def split_eq(self, original_formula: Formula, current_depth: int, previous_branch_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
-
         print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+
+
+        current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
         if res != None:
+            current_node[1]["status"] = res
+            self.found_path+=1
             return (res, original_formula)
 
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
 
         if satisfiability != UNKNOWN:
+            current_node[1]["status"] = satisfiability
+            self.found_path+=1
             return satisfiability, current_formula
         else:
-            # todo get all branches and label the training data
+            # todo systematic search training data
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
-                current_eq, separated_formula = self.get_eq_by_index(Formula(current_formula.eq_list), index)
-                current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
+                current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
+                current_eq_node=self.record_eq_node_and_edges(current_eq, previous_node=current_node, edge_label=f"eq:{index}")
+
                 children, fresh_variable_counter = apply_rules(current_eq, separated_formula, self.fresh_variable_counter)
                 self.fresh_variable_counter = fresh_variable_counter
                 children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
@@ -89,37 +107,57 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 split_branch_satisfiability_list = []
                 for c_index, child in enumerate(children):
                     (c_eq, c_formula, edge_label) = child
-                    satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
-                                                                edge_label)
+                    satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, previous_branch_node=current_eq_node,
+                                                                edge_label=edge_label)
                     split_branch_satisfiability_list.append(satisfiability)
 
                 if any(eq_satisfiability == SAT for eq_satisfiability in split_branch_satisfiability_list):
+                    current_eq_node[1]["status"] = SAT
                     branch_eq_satisfiability_list.append((current_eq, SAT))
                 elif any(eq_satisfiability == UNKNOWN for eq_satisfiability in split_branch_satisfiability_list):
+                    current_eq_node[1]["status"] = UNKNOWN
                     branch_eq_satisfiability_list.append((current_eq, UNKNOWN))
                 else:
+                    current_eq_node[1]["status"] = UNSAT
                     branch_eq_satisfiability_list.append((current_eq, UNSAT))
 
             if all(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+                current_node[1]["status"] = SAT
                 return (SAT, current_formula)
             elif any(eq_satisfiability == UNSAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+                current_node[1]["status"] = UNSAT
                 return (UNSAT, current_formula)
             else:
+                current_node[1]["status"] = UNKNOWN
                 return (UNKNOWN, current_formula)
 
-    def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
+    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
+        current_node_number = self.total_node_number
+        label = f"{eq.eq_str}"
+        current_node = (
+            current_node_number,
+            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0})
+        self.nodes.append(current_node)
+        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.eq_node_number+=1
+        self.total_node_number+=1
+        return current_node
+
+    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
             Tuple[int, Dict]:
-        current_node_number = self.total_split_eq_call
-        label = f"{eq.eq_str},{f.eq_list_str}"
+        current_node_number = self.total_node_number
+        label = f"{f.eq_list_str}"
         current_node = (
             current_node_number,
             {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.total_node_number+=1
         return current_node
 
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
-        return f.eq_list[index], Formula(f.eq_list.pop(index))
+        poped_eq=f.eq_list.pop(index)
+        return poped_eq, Formula(f.eq_list)
 
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
@@ -151,6 +189,16 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         if current_depth > self.restart_max_deep:
             return UNKNOWN
 
+    def early_termination_condition_2(self, current_depth: int):
+        if current_depth > self.max_deep_for_extraction:
+            return UNKNOWN
+    def early_termination_condition_3(self, current_depth: int):
+        if self.found_path >= self.max_found_path_extraction:
+            return UNKNOWN
+    def early_termination_condition_4(self, current_depth: int):
+        if self.found_sat_path >= self.max_found_sat_path_extraction:
+            return UNKNOWN
+
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
-        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image)
+        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image,edge_label=self.png_edge_label)

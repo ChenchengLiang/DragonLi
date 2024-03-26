@@ -54,22 +54,26 @@ def visualize_path(nodes, edges, file_path):
 
     plt.savefig(file_path + ".png")
 
-def visualize_path_png(nodes, edges, file_path,compress=False):
+def visualize_path_png(nodes, edges, file_path,compress=False,edge_label=False):
     dot = Digraph(comment='The Graph')
 
     # Add nodes
     for node_id, attributes in nodes:
         fillcolor = get_node_color(attributes["status"])
-        if attributes["output_to_file"]:
-            shape = attributes["shape"]
-        else:
-            shape = "ellipse"
+        # if attributes["output_to_file"]:
+        #     shape = attributes["shape"]
+        # else:
+        #     shape = "ellipse"
+        shape = attributes["shape"]
         back_track_count=attributes["back_track_count"]
         dot.node(str(node_id),label=f"{node_id}:{back_track_count}",style = 'filled',fillcolor=fillcolor,shape=shape)
 
     # Add edges
     for source, target, attributes in edges:
-        dot.edge(str(source), str(target))
+        if edge_label==True:
+            dot.edge(str(source), str(target), label=attributes['label'])
+        else:
+            dot.edge(str(source), str(target))
 
     # Save the dot file and render as a PNG
     file_name=file_path.replace(".eq","")
