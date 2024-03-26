@@ -120,14 +120,14 @@ def main():
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                            "order_equations_method": "category",
                                            "termination_condition": "termination_condition_3",
-                                           "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
+                                           "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 
     solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=True)
 
     print_results(result_dict)
 

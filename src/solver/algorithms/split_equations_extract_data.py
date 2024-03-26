@@ -1,3 +1,4 @@
+import os.path
 import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
@@ -7,7 +8,8 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
     RESTART_MAX_DEEP_STEP, compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
-from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control
+from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control, strip_file_name_suffix, \
+    dump_to_json_with_format
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
@@ -32,8 +34,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_deep_for_extraction=3
         self.max_found_sat_path_extraction=5
         self.found_sat_path=0
-        self.max_found_path_extraction=5
+        self.max_found_path_extraction=20
         self.found_path=0
+        self.task= parameters["task"]
+        self.file_name = strip_file_name_suffix(parameters["file_path"])
+        self.train_data_count=0
 
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
                                          "random": self._order_equations_random,
@@ -66,35 +71,38 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 "back_track_count": 0})
         self.nodes.append(initial_node)
 
-        satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_branch_node=initial_node,
+        satisfiability, new_formula,child_node = self.split_eq(original_formula, current_depth=0, previous_branch_node=initial_node,
                                                     edge_label="start")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
     def split_eq(self, original_formula: Formula, current_depth: int, previous_branch_node: Tuple[int, Dict],
-                 edge_label: str) -> Tuple[str, Formula]:
+                 edge_label: str) -> Tuple[str, Formula,Tuple[int, Dict]]:
         self.total_split_eq_call += 1
         print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
-
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 
-        # early termination condition
+        ####################### early termination condition #######################
         res = self.check_termination_condition_func(current_depth)
         if res != None:
             current_node[1]["status"] = res
+            current_node[1]["back_track_count"] = 1
             self.found_path+=1
-            return (res, original_formula)
+            return (res, original_formula,current_node)
 
+        ####################### search #######################
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
 
         if satisfiability != UNKNOWN:
             current_node[1]["status"] = satisfiability
+            current_node[1]["back_track_count"] = 1
             self.found_path+=1
-            return satisfiability, current_formula
+            return (satisfiability, current_formula,current_node)
         else:
             # todo systematic search training data
+            back_track_count=0
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
@@ -104,32 +112,66 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 self.fresh_variable_counter = fresh_variable_counter
                 children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
-                split_branch_satisfiability_list = []
+                eq_back_track_count=0
+                split_branch_satisfiability_list:List[Tuple[Equation,str,int]] = []
                 for c_index, child in enumerate(children):
                     (c_eq, c_formula, edge_label) = child
-                    satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, previous_branch_node=current_eq_node,
+                    satisfiability, res_formula,child_node = self.split_eq(c_formula, current_depth + 1, previous_branch_node=current_eq_node,
                                                                 edge_label=edge_label)
+                    back_track_count+=child_node[1]["back_track_count"]
+                    eq_back_track_count+=child_node[1]["back_track_count"]
                     split_branch_satisfiability_list.append(satisfiability)
 
+
+                current_eq_node[1]["back_track_count"] = eq_back_track_count
                 if any(eq_satisfiability == SAT for eq_satisfiability in split_branch_satisfiability_list):
                     current_eq_node[1]["status"] = SAT
-                    branch_eq_satisfiability_list.append((current_eq, SAT))
+                    branch_eq_satisfiability_list.append((current_eq, SAT,current_eq_node[1]["back_track_count"] ))
                 elif any(eq_satisfiability == UNKNOWN for eq_satisfiability in split_branch_satisfiability_list):
                     current_eq_node[1]["status"] = UNKNOWN
-                    branch_eq_satisfiability_list.append((current_eq, UNKNOWN))
+                    branch_eq_satisfiability_list.append((current_eq, UNKNOWN,current_eq_node[1]["back_track_count"] ))
                 else:
                     current_eq_node[1]["status"] = UNSAT
-                    branch_eq_satisfiability_list.append((current_eq, UNSAT))
+                    branch_eq_satisfiability_list.append((current_eq, UNSAT,current_eq_node[1]["back_track_count"] ))
 
-            if all(eq_satisfiability == SAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+            current_node[1]["back_track_count"] = back_track_count
+            if all(eq_satisfiability == SAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = SAT
-                return (SAT, current_formula)
-            elif any(eq_satisfiability == UNSAT for _, eq_satisfiability in branch_eq_satisfiability_list):
+            elif any(eq_satisfiability == UNSAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = UNSAT
-                return (UNSAT, current_formula)
             else:
                 current_node[1]["status"] = UNKNOWN
-                return (UNKNOWN, current_formula)
+
+            #todo label eqs and output
+            if len(branch_eq_satisfiability_list)>1:
+                self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,current_node[0])
+
+
+            return (current_node[1]["status"], current_formula,current_node)
+
+    def extract_dynamic_embedding_train_data(self, branch_eq_satisfiability_list,node_id):
+        min_count=min([count for _,_,count in branch_eq_satisfiability_list])
+        label_list=[0]*len(branch_eq_satisfiability_list)
+        satisfiability_list=[]
+        back_track_count_list=[]
+        middle_branch_eq_file_name_list=[]
+        one_train_data_name = f"{self.file_name}@{node_id}"
+        for index,(eq,satisfiability,branch_number) in enumerate(branch_eq_satisfiability_list):
+            satisfiability_list.append(satisfiability)
+            back_track_count_list.append(branch_number)
+            one_eq_file_name = f"{self.file_name}@{node_id}:{index}"
+            eq.output_eq_file(one_eq_file_name, satisfiability)
+            middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name))
+            if sum(label_list)<1 and branch_number==min_count:
+                label_list[index] = 1
+
+        # write label_list to file
+        label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
+                      "label_list": label_list, "middle_branch_eq_file_name_list": middle_branch_eq_file_name_list}
+        dump_to_json_with_format(label_dict, one_train_data_name+".label.json")
+
+        self.train_data_count+=1
+
 
     def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
         current_node_number = self.total_node_number
@@ -202,3 +244,4 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
         visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image,edge_label=self.png_edge_label)
+

@@ -277,7 +277,7 @@ class Equation:
         nodes, edges = graph_func(self.left_terms, self.right_terms)
         draw_graph(nodes, edges, file_path)
 
-    def output_eq_file(self, file_name, satisfiability=UNKNOWN):
+    def output_eq_file(self, file_name, satisfiability=UNKNOWN,answer_file=False):
         # replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
         eq = self.eq_str.split("=")
         left_str_list: List[str] = eq[0].split("#")
@@ -291,8 +291,9 @@ class Equation:
         content += "SatGlucose(100)"
         with open(file_name + ".eq", "w") as f:
             f.write(content)
-        with open(file_name + ".answer", "w") as f:
-            f.write(satisfiability)
+        if answer_file:
+            with open(file_name + ".answer", "w") as f:
+                f.write(satisfiability)
 
 
 class Formula:

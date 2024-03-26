@@ -389,7 +389,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 #     pred_list = [0, 1]
 
 
-                #pred_list=[1,0]#this make it use fixed branching
+                pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
 
@@ -788,7 +788,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         node_info[1]["output_to_file"] = True
         node_info[1]["shape"] = shape
         if self.output_train_data == True:
-            eq.output_eq_file(file_name, satisfiability)
+            eq.output_eq_file(file_name, satisfiability,answer_file=True)
 
     def pop_both_same_terms(self, left_terms: List[Term], right_terms: List[Term], variables):
         '''
