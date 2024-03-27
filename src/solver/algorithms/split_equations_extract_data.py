@@ -101,7 +101,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.found_path+=1
             return (satisfiability, current_formula,current_node)
         else:
-            # todo systematic search training data
+            #systematic search training data
             back_track_count=0
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
@@ -142,7 +142,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNKNOWN
 
-            #todo label eqs and output
+            #output labeled eqs
             if len(branch_eq_satisfiability_list)>1:
                 self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,current_node[0])
 

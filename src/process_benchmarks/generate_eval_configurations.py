@@ -15,13 +15,13 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_1"
-    model_type= "GCNSplit"#"GINSplit"
+    graph_type = "graph_4"
+    model_type= "GINSplit"#"GINSplit"
     solver_param_list = [
         #["this", ["random", f"--termination_condition termination_condition_0"]],
         # ["this", ["random", f"--termination_condition termination_condition_1"]],
         # ["this", ["random", f"--termination_condition termination_condition_2"]],
-        #["this", ["fixed", f"--termination_condition termination_condition_0"]],
+        ["this", ["fixed", f"--termination_condition termination_condition_0"]],
         # ["this", ["fixed", f"--termination_condition termination_condition_1"]],
         # ["this", ["fixed", f"--termination_condition termination_condition_2"]],
 
@@ -88,8 +88,9 @@ def main():
         # "track_01_generated_SAT_train": bench_folder + "/01_track_generated_SAT_train/ALL",
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
-
-    benchmark_name = "03_track_generated_eval_30000_31000"#"03_track_eval_task_3_1_1000" #03_track_generated_eval_train_1_20000_folder_1
+    benchmark_name="03_track_eval_task_3_merged_40000_train_data_folder_10"
+    #benchmark_name = "03_track_generated_eval_train_1_20000_folder_1"
+    #benchmark_name = "03_track_generated_eval_30000_31000"#"03_track_eval_task_3_1_1000"
     benchmark_folder = benchmark_name + "/ALL"
     folder_number = sum(
         [1 for fo in os.listdir(bench_folder + "/" + benchmark_folder) if "divided" in os.path.basename(fo)])

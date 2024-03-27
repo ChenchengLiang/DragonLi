@@ -13,13 +13,12 @@ from src.solver.Constants import recursion_limit, \
     RESTART_INITIAL_MAX_DEEP, RESTART_MAX_DEEP_STEP
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1, SeparateSymbol
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
-from src.solver.algorithms.utils import graph_to_gnn_format,concatenate_eqs,merge_graphs
+from src.solver.algorithms.utils import graph_to_gnn_format, concatenate_eqs, merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
-    dump_to_json_with_format, identify_available_capitals, get_memory_usage, time_it, color_print
+    dump_to_json_with_format, time_it, color_print
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
-from src.solver.models.train_util import squeeze_labels
 
 sys.path.append(
     project_folder + "/src/solver/models")
@@ -153,7 +152,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep += 1
         if self.explored_deep < self.current_deep:
             self.explored_deep = self.current_deep
-        #print(f"explore_paths call: {self.total_explore_paths_call}")
+        if self.total_explore_paths_call%100==0:
+            print(f"explore_paths call: {self.total_explore_paths_call}")
         # print(previous_dict)
         #print(len(current_eq.eq_left_str),current_eq.eq_left_str)
         #print(len(current_eq.eq_right_str),current_eq.eq_right_str)
@@ -375,8 +375,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
                 pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
-                #[1 if label == [1,0] else 0 for label in self.labels]
-                #print(pred_list)
+                # #[1 if label == [1,0] else 0 for label in self.labels]
+                # #print(pred_list)
 
                 if pred_list > 0.5:
                     pred_list = [1, 0]
@@ -389,13 +389,13 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 #     pred_list = [0, 1]
 
 
-                pred_list=[1,0]#this make it use fixed branching
+                #pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
 
                 pred_list = self.gnn_model_3(split_graph_list).squeeze()
 
-                print(pred_list)
+                #print(pred_list)
                 #pred_list=[1,0.5,0]#this make it use fixed branching
 
 

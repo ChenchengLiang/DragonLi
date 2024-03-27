@@ -38,15 +38,19 @@ def main():
     else:
         today = datetime.date.today().strftime("%Y-%m-%d")
         task="task_3"
+        graph_type="graph_1"
         model_type="GCNSplit"#GINSplit
+        #benchmark="03_track_train_task_3_merged_1_40000_train_100_chunk_size-debug-folder-10"
         benchmark="debug-train"
+        drop_rate=0.0
+        hidden_dimention=128
 
         train_config = {
-                "benchmark":benchmark,"graph_type": "graph_1", "model_type": model_type,"task":task,
-            "num_epochs": 50, "learning_rate": 0.001,"share_gnn":False,
-            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": 128,
-            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":0.5,"ffnn_hidden_dim": 128, "ffnn_layer_num": 2,"ffnn_dropout_rate":0.5,
-            "node_type":4,"train_step":50,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
+                "benchmark":benchmark,"graph_type": graph_type, "model_type": model_type,"task":task,
+            "num_epochs": 500, "learning_rate": 0.001,"share_gnn":True,
+            "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dimention,
+            "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":drop_rate,"ffnn_hidden_dim": hidden_dimention, "ffnn_layer_num": 2,"ffnn_dropout_rate":drop_rate,
+            "node_type":4,"train_step":500,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
         }
 
 
@@ -61,7 +65,7 @@ def main():
 
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     torch.autograd.set_detect_anomaly(True)
-    if check_run_exists(train_config["run_id"]):
+    if check_run_exists(train_config["run_id"]): #continuos training
         with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
             color_print(text=f"use the existing run id {mlflow_run.info.run_id}",color="yellow")
             # pick one unfinished train
@@ -80,9 +84,9 @@ def main():
                 # update configuration file
                 update_config_file(configuration_file, train_config)
 
-    else:
+    else: #start a new training
         with mlflow.start_run() as mlflow_run:
-            train_config["current_train_folder"] = benchmark
+            train_config["current_train_folder"] = benchmark+"/divided_10"
             color_print(text=f"create a new run id {mlflow_run.info.run_id}", color="yellow")
             train_a_model(train_config, mlflow_run,)
 
