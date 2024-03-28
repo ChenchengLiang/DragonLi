@@ -29,7 +29,7 @@ class Classifier(nn.Module):
         if output_dim == 1: #adapt to BCELoss
             self.layers.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
         else:
-            self.layers.append(nn.Linear(ffnn_hidden_dim*output_dim, ffnn_hidden_dim))
+            self.layers.append(nn.Linear(ffnn_hidden_dim*(output_dim+1), ffnn_hidden_dim))
         for _ in range(ffnn_layer_num):
             self.layers.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
 
@@ -57,6 +57,9 @@ class BaseEmbedding(nn.Module):
         self.gnn_layers = nn.ModuleList()
         self._build_layers(hidden_feats, num_gnn_layers)
 
+        # self.gating_network = GatingNetwork(hidden_feats)
+        # self.global_attention_pooling = GlobalAttentionPooling(self.gating_network)
+
     def _build_layers(self, hidden_feats, num_gnn_layers):
         # To be implemented in the subclasses
         raise NotImplementedError
@@ -68,6 +71,7 @@ class BaseEmbedding(nn.Module):
             h = self.apply_layer(g, h, layer, i)
 
         g.ndata['h'] = h
+        #hg=self.global_attention_pooling(g, h)
         hg = dgl.mean_nodes(g, 'h')
         return hg
 
@@ -111,9 +115,13 @@ class SharedGNN(nn.Module):
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
 
+
     def forward(self, graphs):
         embeddings = [self.embedding(g) for g in graphs]
         concatenated_embedding = torch.cat(embeddings, dim=2)
+
+
+
         return concatenated_embedding
 
 

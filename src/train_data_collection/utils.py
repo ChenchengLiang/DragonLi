@@ -6,7 +6,7 @@ from typing import List, Tuple, Dict, Union, Optional, Callable
 import os
 import shutil
 import json
-from src.solver.Constants import satisfiability_to_int_label
+from src.solver.Constants import satisfiability_to_int_label, UNKNOWN
 from src.solver.DataTypes import Equation, Edge,Terminal,Term,SeparateSymbol
 from src.solver.algorithms.utils import merge_graphs,graph_to_gnn_format,concatenate_eqs
 from src.solver.visualize_util import draw_graph
@@ -66,13 +66,19 @@ def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable,
                 eq_nodes, eq_edges, split_eq_list, split_eq_file_list, label_list,satisfiability_list = _read_label_and_eqs(zip_file_content,f, graph_folder, parser,
                                                                                                     graph_func)
                 multi_graph_dict={}
+                graph_dict = graph_to_gnn_format(eq_nodes, eq_edges, label=-1,
+                                                 satisfiability=UNKNOWN)
+                multi_graph_dict[0]=graph_dict
+
                 for i,(split_eq, split_file, split_label,split_satisfiability) in enumerate(zip(split_eq_list, split_eq_file_list, label_list,satisfiability_list)):
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
+
                     if visualize == True:
                         merged_nodes, merged_edges = merge_graphs(eq_nodes, eq_edges, split_eq_nodes, split_eq_edges)
                         draw_graph(nodes=merged_nodes, edges=merged_edges, filename=split_file)
+
                     graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,satisfiability=split_satisfiability)
-                    multi_graph_dict[i]=graph_dict
+                    multi_graph_dict[i+1]=graph_dict
 
                 # Dumping the dictionary to a JSON file
                 json_file = graph_folder+"/"+f.replace(".label.json",".graph.json").replace("train/","")

@@ -6,6 +6,7 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Optional, Callable
 
 import torch
+from dgl.dataloading import GraphDataLoader
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
@@ -16,7 +17,7 @@ from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format, concatenate_eqs, merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
     dump_to_json_with_format, time_it, color_print
-from src.solver.models.Dataset import get_one_dgl_graph
+from src.solver.models.Dataset import get_one_dgl_graph, WordEquationDatasetMultiClassification
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 
@@ -44,6 +45,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.gnn_branch_memory_limitation = 1.0
         self.max_deep = INITIAL_MAX_DEEP
         self.fresh_variable_counter=0
+        self.extract_termination_flag=False
+        self.learn_one_path=True
         self.nodes = []
         self.edges = []
         self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
@@ -171,75 +174,79 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.edges.append((previous_dict["node_number"], current_node_number, {'label': previous_dict["label"]}))
 
         ################################ Check terminate conditions ################################
+        res=self.check_trivial_cases(current_eq, node_info)
+        if res!=None:
+            return res
 
-        ## both side contains variables and terminals
-        ###both side empty
-        if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) == 0:
-            return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
-        ### left side empty
-        if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) != 0:
-            if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
-                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-            elif len(
-                    current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
-                return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
-            else:  # terminals
-                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-        ### right side empty
-        if len(current_eq.left_terms) != 0 and len(current_eq.right_terms) == 0:
-            if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
-                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-            elif len(
-                    current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
-                return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
-            else:  # terminals
-                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-
-        ## both side only have terminals
-        if current_eq.variable_number == 0:
-            # satisfiability = SAT if self.check_equation(current_eq.left_terms,current_eq.right_terms) == True else UNSAT
-            return self.record_and_close_branch(current_eq.check_both_side_all_terminal_case(), current_eq.variable_list,
-                                                node_info, current_eq)
-
-        ## both side only have variables
-        if len(current_eq.termimal_list_without_empty_terminal) == 0:
-            return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
-
-        ## special cases
-        ### special case: one side only have terminals and another side have longer terminals.
-        ### special case: variables surrounded by identical terminals
-        ### special case: variables surrounded by different terminals
-        ### special case: starting or ending with variables
-
-        ### special case 1: mismatched leading or tailing terminals
-        left_leading_terminals, first_left_non_terminal_term = self.get_leading_terminals(current_eq.left_terms)
-        right_leading_terminals, first_right_non_terminal_term = self.get_leading_terminals(current_eq.right_terms)
-        if len(left_leading_terminals) > 0 and len(right_leading_terminals) > 0 and len(left_leading_terminals) == len(
-                right_leading_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_leading_terminals != right_leading_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
-            return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-
-        left_tailing_terminals, first_left_non_terminal_term = self.get_leading_terminals(
-            list(reversed(current_eq.left_terms)))
-        right_tailing_terminals, first_right_non_terminal_term = self.get_leading_terminals(
-            list(reversed(current_eq.right_terms)))
-        if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and len(left_tailing_terminals) == len(
-                right_tailing_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_tailing_terminals != right_tailing_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
-            return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-
-        ### special case 2: one side only have one variable, e,g. M = terminals+variables SAT, M = terminals SAT, M = variables SAT, M="" SAT
-        if current_eq.number_of_special_symbols == 0:
-            if (len(current_eq.left_terms) == 1 and current_eq.left_terms[0].value_type == Variable):
-                if current_eq.left_terms[
-                    0] in current_eq.right_terms and current_eq.terminal_numbers_without_empty_terminal != 0:  # M = terminals+variables and M in right hand side
-                    return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-                else:
-                    return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
-            if (len(current_eq.right_terms) == 1 and current_eq.right_terms[0].value_type == Variable):
-                if current_eq.right_terms[
-                    0] in current_eq.left_terms and current_eq.terminal_numbers_without_empty_terminal != 0:
-                    return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
-                else:
-                    return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        #
+        # ## both side contains variables and terminals
+        # ###both side empty
+        # if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) == 0:
+        #     return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        # ### left side empty
+        # if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) != 0:
+        #     if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
+        #         return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #     elif len(
+        #             current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
+        #         return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        #     else:  # terminals
+        #         return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        # ### right side empty
+        # if len(current_eq.left_terms) != 0 and len(current_eq.right_terms) == 0:
+        #     if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
+        #         return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #     elif len(
+        #             current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
+        #         return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        #     else:  # terminals
+        #         return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #
+        # ## both side only have terminals
+        # if current_eq.variable_number == 0:
+        #     # satisfiability = SAT if self.check_equation(current_eq.left_terms,current_eq.right_terms) == True else UNSAT
+        #     return self.record_and_close_branch(current_eq.check_both_side_all_terminal_case(), current_eq.variable_list,
+        #                                         node_info, current_eq)
+        #
+        # ## both side only have variables
+        # if len(current_eq.termimal_list_without_empty_terminal) == 0:
+        #     return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        #
+        # ## special cases
+        # ### special case: one side only have terminals and another side have longer terminals.
+        # ### special case: variables surrounded by identical terminals
+        # ### special case: variables surrounded by different terminals
+        # ### special case: starting or ending with variables
+        #
+        # ### special case 1: mismatched leading or tailing terminals
+        # left_leading_terminals, first_left_non_terminal_term = self.get_leading_terminals(current_eq.left_terms)
+        # right_leading_terminals, first_right_non_terminal_term = self.get_leading_terminals(current_eq.right_terms)
+        # if len(left_leading_terminals) > 0 and len(right_leading_terminals) > 0 and len(left_leading_terminals) == len(
+        #         right_leading_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_leading_terminals != right_leading_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
+        #     return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #
+        # left_tailing_terminals, first_left_non_terminal_term = self.get_leading_terminals(
+        #     list(reversed(current_eq.left_terms)))
+        # right_tailing_terminals, first_right_non_terminal_term = self.get_leading_terminals(
+        #     list(reversed(current_eq.right_terms)))
+        # if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and len(left_tailing_terminals) == len(
+        #         right_tailing_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_tailing_terminals != right_tailing_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
+        #     return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #
+        # ### special case 2: one side only have one variable, e,g. M = terminals+variables SAT, M = terminals SAT, M = variables SAT, M="" SAT
+        # if current_eq.number_of_special_symbols == 0:
+        #     if (len(current_eq.left_terms) == 1 and current_eq.left_terms[0].value_type == Variable):
+        #         if current_eq.left_terms[
+        #             0] in current_eq.right_terms and current_eq.terminal_numbers_without_empty_terminal != 0:  # M = terminals+variables and M in right hand side
+        #             return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #         else:
+        #             return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        #     if (len(current_eq.right_terms) == 1 and current_eq.right_terms[0].value_type == Variable):
+        #         if current_eq.right_terms[
+        #             0] in current_eq.left_terms and current_eq.terminal_numbers_without_empty_terminal != 0:
+        #             return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        #         else:
+        #             return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
 
         ################################ Split equation ################################
         left_term = current_eq.left_terms[0]
@@ -282,6 +289,80 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 return self.left_side_vairable_right_side_special_symbol(Equation(current_eq.right_terms,current_eq.left_terms),current_node_number,node_info)
 
 
+    def check_trivial_cases(self,current_eq:Equation,node_info:Tuple[int,Dict]):
+        ################################ Check terminate conditions ################################
+
+        ## both side contains variables and terminals
+        ###both side empty
+        if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) == 0:
+            return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+        ### left side empty
+        if len(current_eq.left_terms) == 0 and len(current_eq.right_terms) != 0:
+            if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
+                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+            elif len(
+                    current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
+                return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+            else:  # terminals
+                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+        ### right side empty
+        if len(current_eq.left_terms) != 0 and len(current_eq.right_terms) == 0:
+            if len(current_eq.termimal_list_without_empty_terminal) != 0 and current_eq.variable_number != 0:  # terminals+variables
+                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+            elif len(
+                    current_eq.termimal_list_without_empty_terminal) == 0 and current_eq.variable_number != 0:  # variables
+                return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+            else:  # terminals
+                return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+
+        ## both side only have terminals
+        if current_eq.variable_number == 0:
+            # satisfiability = SAT if self.check_equation(current_eq.left_terms,current_eq.right_terms) == True else UNSAT
+            return self.record_and_close_branch(current_eq.check_both_side_all_terminal_case(),
+                                                current_eq.variable_list,
+                                                node_info, current_eq)
+
+        ## both side only have variables
+        if len(current_eq.termimal_list_without_empty_terminal) == 0:
+            return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+
+        ## special cases
+        ### special case: one side only have terminals and another side have longer terminals.
+        ### special case: variables surrounded by identical terminals
+        ### special case: variables surrounded by different terminals
+        ### special case: starting or ending with variables
+
+        ### special case 1: mismatched leading or tailing terminals
+        left_leading_terminals, first_left_non_terminal_term = self.get_leading_terminals(current_eq.left_terms)
+        right_leading_terminals, first_right_non_terminal_term = self.get_leading_terminals(current_eq.right_terms)
+        if len(left_leading_terminals) > 0 and len(right_leading_terminals) > 0 and len(left_leading_terminals) == len(
+                right_leading_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_leading_terminals != right_leading_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
+            return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+
+        left_tailing_terminals, first_left_non_terminal_term = self.get_leading_terminals(
+            list(reversed(current_eq.left_terms)))
+        right_tailing_terminals, first_right_non_terminal_term = self.get_leading_terminals(
+            list(reversed(current_eq.right_terms)))
+        if len(left_tailing_terminals) > 0 and len(right_tailing_terminals) > 0 and len(left_tailing_terminals) == len(
+                right_tailing_terminals) and first_left_non_terminal_term != None and first_right_non_terminal_term != None and left_tailing_terminals != right_tailing_terminals and first_left_non_terminal_term == first_right_non_terminal_term:
+            return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+
+        ### special case 2: one side only have one variable, e,g. M = terminals+variables SAT, M = terminals SAT, M = variables SAT, M="" SAT
+        if current_eq.number_of_special_symbols == 0:
+            if (len(current_eq.left_terms) == 1 and current_eq.left_terms[0].value_type == Variable):
+                if current_eq.left_terms[
+                    0] in current_eq.right_terms and current_eq.terminal_numbers_without_empty_terminal != 0:  # M = terminals+variables and M in right hand side
+                    return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+                else:
+                    return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+            if (len(current_eq.right_terms) == 1 and current_eq.right_terms[0].value_type == Variable):
+                if current_eq.right_terms[
+                    0] in current_eq.left_terms and current_eq.terminal_numbers_without_empty_terminal != 0:
+                    return self.record_and_close_branch(UNSAT, current_eq.variable_list, node_info, current_eq)
+                else:
+                    return self.record_and_close_branch(SAT, current_eq.variable_list, node_info, current_eq)
+
+        return None
 
     def both_side_same_terms(self, eq: Equation, variables: List[Variable],
                              current_node_number, node_info):
@@ -354,9 +435,18 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             return self._use_fixed_branching(eq, current_node_number, node_info, branch_methods)
 
     def _task_3_branch_prediction(self, eq: Equation, branch_methods):
+        input_graph_list=[]
         split_graph_list = []
         split_eq_list = []
         edge_label_list = []
+
+        eq_nodes, eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
+        eq_graph_dict = graph_to_gnn_format(eq_nodes, eq_edges)
+        dgl_graph, _ = get_one_dgl_graph(eq_graph_dict)
+        input_graph_list.append(dgl_graph)
+
+
+
         for i, method in enumerate(branch_methods):
             # branch
             l, r, _, edge_label = method(eq.left_terms, eq.right_terms, eq.variable_list)
@@ -365,25 +455,25 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # Load data
             dgl_graph, _ = get_one_dgl_graph(graph_dict)
             split_graph_list.append(dgl_graph)
+            input_graph_list.append(dgl_graph)
             # record
             split_eq: Equation = Equation(l, r)
             split_eq_list.append(split_eq)
             edge_label_list.append(edge_label)
 
+
+
+
         # predict
         with torch.no_grad():
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
-                pred_list = self.gnn_model_2(split_graph_list).squeeze()  # separate model returns a float number
+
+                pred_list = self.gnn_model_2(input_graph_list).squeeze()  # separate model returns a float number
                 # #[1 if label == [1,0] else 0 for label in self.labels]
-                # #print(pred_list)
+                #print(pred_list)
 
-                if pred_list > 0.5:
-                    pred_list = [1, 0]
-                else:
-                    pred_list = [0, 1]
-
-                # if pred_list < 0.5:
+                # if pred_list > 0.5:
                 #     pred_list = [1, 0]
                 # else:
                 #     pred_list = [0, 1]
@@ -393,7 +483,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             elif len(branch_methods) == 3:
 
-                pred_list = self.gnn_model_3(split_graph_list).squeeze()
+                pred_list = self.gnn_model_3(input_graph_list).squeeze()
 
                 #print(pred_list)
                 #pred_list=[1,0.5,0]#this make it use fixed branching
@@ -466,7 +556,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
         ############################### prediction ################################
+
         sorted_prediction_list = self.branch_prediction_func(eq, branch_methods)
+        # print(eq.eq_str)
+        # for i, data in enumerate(sorted_prediction_list):
+        #     split_eq, edge_label = data[1]
+        #     print(split_eq.eq_str)
 
         # Perform depth-first search based on the sorted prediction list
         satisfiability_list = []
@@ -529,10 +624,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             result = self._handle_one_split_branch_outcome(i, branch_methods, satisfiability, branch_variables,
                                                            node_info, split_eq, back_track_count=back_track_count_list,
                                                            satisfiability_list=satisfiability_list)
-            if result == None:
-                pass
-            else:
+            if result != None:
                 return result
+
 
     def _handle_one_split_branch_outcome(self, i, branch_methods, satisfiability, branch_variables, node_info, eq,
                                          back_track_count: List[int], satisfiability_list=None):
@@ -563,11 +657,12 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         # print(f"Memory usage: {get_memory_usage()}")
 
         ################################ stop branching condition ################################
+
         result = self._extract_branching_data_termination_condition(eq, node_info)
-        if result == None:
-            pass
-        else:
+        if result != None:
             return result
+
+
 
         ################################ branching ################################
         satisfiability_list, back_track_count_list, branch_eq_list = self._extract_branching_data_branching(eq,
@@ -601,19 +696,35 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 ## 1 UNSAT 1 UNKNOWN [0,1]
                 ## 2 UNKNOWN [count children]
                 label_list = [0, 0]
-                # if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
-                if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
-                        UNSAT) == 2 or satisfiability_list.count(UNKNOWN) == 2:  # 2 SAT or 2 UNSAT or 2 UNKNOWN
-                    min_value = min(back_track_count_list)
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-                        break
-                elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
+                #if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
+                # if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
+                #         UNSAT) == 2 or satisfiability_list.count(UNKNOWN) == 2:  # 2 SAT or 2 UNSAT or 2 UNKNOWN
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                #         break
+                # elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
+                #     label_list[satisfiability_list.index(SAT)] = 1
+                # elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
+                #         UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
+                #     label_list[satisfiability_list.index(UNKNOWN)] = 1
+
+
+                ######## only learn sat related split point
+                if satisfiability_list.count(SAT) == 2:
+                    # min_value = min(back_track_count_list)
+                    # min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    # for min_value_index in min_value_indeces:
+                    #     label_list[min_value_index] = 1
+                    label_list = [0, 0]
+
+                elif satisfiability_list.count(SAT) == 1:
                     label_list[satisfiability_list.index(SAT)] = 1
-                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
-                        UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
-                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+                else:
+                    label_list=[0,0]
+
+
 
 
 
@@ -634,6 +745,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
                     for min_value_index in min_value_indeces:
                         label_list[min_value_index] = 1
+                        break
                 elif satisfiability_list.count(SAT) == 2:
                     sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
                     others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
@@ -659,10 +771,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 label_list = [0, 0, 0]
 
             # write label_list to file
-            label_json_file_name = middle_eq_file_name + ".label.json"
-            label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
-                          "label_list": label_list, "middle_branch_eq_file_name_list": middle_branch_eq_file_name_list}
-            dump_to_json_with_format(label_dict, label_json_file_name)
+            if sum(label_list)==1:
+                # print(label_list,satisfiability_list,back_track_count_list)
+                # print(eq.eq_str)
+                # for local_eq in branch_eq_list:
+                #     print(local_eq.eq_str)
+                label_json_file_name = middle_eq_file_name + ".label.json"
+                label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
+                              "label_list": label_list, "middle_branch_eq_file_name_list": middle_branch_eq_file_name_list}
+                dump_to_json_with_format(label_dict, label_json_file_name)
 
         # return result
         return self.record_and_close_branch(current_eq_satisfiability, eq.variable_list, node_info, eq,
@@ -706,6 +823,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             satisfiability, branch_variables, back_track_count = self.explore_paths(branch_eq,
                                                                                     {"node_number": current_node_number,
                                                                                      "label": edge_label})
+            #set first sat path to be the end condition
+            if satisfiability==SAT and self.learn_one_path==True:
+                self.extract_termination_flag = True
 
             satisfiability_list.append(satisfiability)
             back_track_count_list.append(sum(back_track_count))
@@ -738,6 +858,8 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         if self.total_split_call > MAX_SPLIT_CALL:
+            return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
+        if self.extract_termination_flag==True:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
         return None

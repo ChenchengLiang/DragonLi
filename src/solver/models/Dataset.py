@@ -133,7 +133,7 @@ class WordEquationDatasetBinaryClassification(DGLDataset):
 
 
 class WordEquationDatasetMultiClassification(DGLDataset):
-    def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory=[], label_size=3):
+    def __init__(self, graph_folder="", data_fold="train", node_type=3, graphs_from_memory:List[Dict]=[], label_size=3):
         self._data_fold = data_fold
         self._graph_folder = graph_folder
         self._graphs_from_memory = graphs_from_memory
@@ -161,24 +161,39 @@ class WordEquationDatasetMultiClassification(DGLDataset):
                 if isinstance(g,dict):
                     dgl_graph, label = get_one_dgl_graph(g)
                     split_graph_list.append(dgl_graph)
-                    split_graph_labels.append(label)
+                    if label!=-1:
+                        split_graph_labels.append(label)
             #print(len(split_graph_list)==self._label_size, len(split_graph_list),self._label_size)
-            if len(split_graph_list)==self._label_size:
+
+            if len(split_graph_list)==self._label_size+1: # filter out the data with wrong label size for different classificaiton model
                 self.graphs.append(split_graph_list)
                 self.labels.append(split_graph_labels)
 
         # Convert the label list to tensor for saving.
-        if self._label_size == 2:
-            self.labels = [1 if label == [1,0] else 0 for label in self.labels]
-            self.labels = torch.LongTensor(self.labels)
-
-        else:
-            self.labels = torch.Tensor(self.labels)
+        # if self._label_size == 2:
+        #     self.labels = [1 if label == [1,0] else 0 for label in self.labels]
+        #     self.labels = torch.LongTensor(self.labels)
+        #
+        # else:
+        #     self.labels = torch.Tensor(self.labels)
+        self.labels = torch.Tensor(self.labels)
 
         #print(self.labels)
 
 
     def get_graph_list_from_folder(self):
+        '''
+                graph_1 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],
+                           "edge_types": [1, 1, 1],
+                           "label": -1,"satisfiability": UNKNOWN}
+                graph_1 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],
+                           "edge_types": [1, 1, 1],
+                           "label": 1,"satisfiability": SAT}
+                graph_2 = {"nodes": [0, 1, 2, 3, 4], "node_types": [1, 1, 1, 2, 2], "edges": [[1, 2], [2, 3], [3, 0]],
+                           "edge_types": [1, 1, 1],
+                           "label": 0,"satisfiability": UNSAT}
+                graphs = [graph_0,graph_1, graph_2]
+                '''
         zip_file=self._graph_folder+".zip"
         if os.path.exists(zip_file): #read from zip file
             with zipfile.ZipFile(zip_file,'r') as zip_file_content:
@@ -223,7 +238,8 @@ class WordEquationDatasetMultiClassification(DGLDataset):
                         max_node_number=len(g["nodes"])
                     if min_node_number>len(g["nodes"]):
                         min_node_number=len(g["nodes"])
-                    multi_classification_label.append(g["label"])
+                    if g["label"]!=-1:
+                        multi_classification_label.append(g["label"])
                     if g["satisfiability"] == SAT:
                         sat_label_number += 1
                     elif g["satisfiability"] == UNSAT:

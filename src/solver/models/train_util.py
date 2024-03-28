@@ -59,8 +59,8 @@ def train_multiple_models(parameters, benchmark_folder):
                                                                  parameters=parameters)
 
     mlflow.log_metrics(metrics)
-    mlflow.pytorch.log_model(best_models[0], "model_2")
-    mlflow.pytorch.log_model(best_models[1], "model_3")
+    mlflow.pytorch.log_model(best_models[0], f"model_{parameters['label_size']}")
+    mlflow.pytorch.log_model(best_models[1], f"model_{parameters['label_size']}")
 
 
 def train_one_model(parameters, benchmark_folder):
@@ -237,9 +237,13 @@ def train_binary_and_multi_classification(dataset_list, GNN_model_list, paramete
 
 def initialize_model_structure(parameters):
     # Classifiers
+    # classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+    #                           ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=1,
+    #                           ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=1,
+                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
                               ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+
     classifier_3 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                               ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=3,
                               ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
@@ -286,7 +290,8 @@ def train_multiple_models_separately(parameters, benchmark_folder):
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     dataset_2 = load_train_and_valid_dataset(parameters,benchmark_folder, 2)
-    best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
+    #best_model_2, metrics_2 = train_binary_classification(dataset_2, model=model_2, parameters=parameters)
+    best_model_2, metrics_2 = train_multi_classification(dataset_2, model=model_2, parameters=parameters)
     dataset_3 = load_train_and_valid_dataset(parameters,benchmark_folder,  3)
     best_model_3, metrics_3 = train_multi_classification(dataset_3, model=model_3, parameters=parameters)
 
@@ -372,11 +377,15 @@ def training_phase(model, train_dataloader, loss_function, optimizer, parameters
 
 
         pred_final, labels = squeeze_labels(pred, labels)
+
         loss = loss_function(pred_final, labels)  # labels are not squeezed
+
+
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
         train_loss += loss.item()
+
 
     avg_train_loss = train_loss / len(train_dataloader)
     return model,avg_train_loss
@@ -438,7 +447,7 @@ def train_binary_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log,index)
-        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"]:
+        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"] or best_valid_accuracy == 1.0:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
@@ -475,14 +484,14 @@ def train_multi_classification(dataset, model, parameters: Dict):
                                                                                                    best_valid_loss,
                                                                                                    best_valid_accuracy,
                                                                                                    epoch_info_log,index)
-        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"]:
+        if index == parameters["train_step"]-1 or epoch >= parameters["num_epochs"] or best_valid_accuracy == 1.0:
             save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                             filename=check_point_model_path)
             break
 
     # Return the trained model and the best metrics
-    best_metrics = {"best_valid_loss_multi_class": best_valid_loss,
-                    "best_valid_accuracy_multi_class": best_valid_accuracy}
+    best_metrics = {f"best_valid_loss_multi_class_{parameters['label_size']}": best_valid_loss,
+                    f"best_valid_accuracy_multi_class_{parameters['label_size']}": best_valid_accuracy}
     return best_model, best_metrics
 
 def initialize_train_objects(dataset, parameters, model, model_type="binary_classification"):
@@ -491,10 +500,10 @@ def initialize_train_objects(dataset, parameters, model, model_type="binary_clas
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
     if model_type == "binary_classification":
         loss_function = nn.BCELoss()  # Initialize the loss function
-        check_point_model_path = parameters["run_id"] + "_checkpoint_model_2.pth"
+        check_point_model_path = parameters["run_id"] + f"_checkpoint_model_{parameters['label_size']}.pth"
     elif model_type == "multi_classification":
         loss_function = nn.CrossEntropyLoss()
-        check_point_model_path = parameters["run_id"] + "_checkpoint_model_3.pth"
+        check_point_model_path = parameters["run_id"] + f"_checkpoint_model_{parameters['label_size']}.pth"
 
     best_model = None
     best_valid_loss = float('inf')  # Initialize with a high value
@@ -592,7 +601,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
 
     # Print the losses once every 5 epochs
     if epoch % 2 == 0:
-        current_epoch_info = f"Model: {model_type} | Epoch: {epoch:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
+        current_epoch_info = f"Model: {model_type}_{parameters['label_size']} | Epoch: {epoch:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
         mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{label_size}.txt")
@@ -606,8 +615,8 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
     else:
         total_epoch = epoch
 
-    metrics = {f"train_loss_{model_type}": avg_train_loss, f"valid_loss_{model_type}": avg_valid_loss,
-               f"best_valid_accuracy_{model_type}": best_valid_accuracy, f"valid_accuracy_{model_type}": valid_accuracy,
+    metrics = {f"train_loss_{model_type}_{parameters['label_size']}": avg_train_loss, f"valid_loss_{model_type}_{parameters['label_size']}": avg_valid_loss,
+               f"best_valid_accuracy_{model_type}_{parameters['label_size']}": best_valid_accuracy, f"valid_accuracy_{model_type}_{parameters['label_size']}": valid_accuracy,
                "epoch": epoch,"current_folder":current_folder_number,"total_epoch":total_epoch}
     mlflow.log_metrics(metrics)
     return best_model, best_valid_loss, best_valid_accuracy, epoch_info_log

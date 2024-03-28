@@ -93,7 +93,8 @@ def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
     dataset_2 = load_train_and_valid_dataset(parameters, benchmark_folder, 2)
-    best_model_2, metrics_2 = train_binary_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
+    #best_model_2, metrics_2 = train_binary_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
+    best_model_2, metrics_2 = train_multi_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
     dataset_3 = load_train_and_valid_dataset(parameters,benchmark_folder,  3)
     best_model_3, metrics_3 = train_multi_classification_get_run_id(dataset_3, model=model_3, parameters=parameters)
 
@@ -155,8 +156,8 @@ def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
     save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                     filename=check_point_model_path)
     # Return the trained model and the best metrics
-    best_metrics = {"best_valid_loss_multi_class": best_valid_loss,
-                    "best_valid_accuracy_multi_class": best_valid_accuracy}
+    best_metrics = {f"best_valid_loss_multi_class_{parameters['label_size']}": best_valid_loss,
+                    f"best_valid_accuracy_multi_class_{parameters['label_size']}": best_valid_accuracy}
     return best_model, best_metrics
 
 

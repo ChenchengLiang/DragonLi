@@ -26,7 +26,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train_no_divided"
+    benchmark = "debug-train"
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)

@@ -29,17 +29,18 @@ def main():
 
     # draw graphs for all folders
     benchmark = "debug-train"
+    parameters = {"node_type":4}
+
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:
-            store_dataset_to_pickle_one_folder(args, benchmark + "/" + folder)
+            store_dataset_to_pickle_one_folder(args, benchmark + "/" + folder,parameters)
     else:
-        store_dataset_to_pickle_one_folder(args, benchmark)
+        store_dataset_to_pickle_one_folder(args, benchmark,parameters)
 
-def store_dataset_to_pickle_one_folder(args,folder):
-    parameters={}
+def store_dataset_to_pickle_one_folder(args,folder,parameters):
     parameters["folder"] = folder
     parameters["graph_type"] = args.graph_type
 
@@ -49,7 +50,6 @@ def store_dataset_to_pickle_one_folder(args,folder):
 
 
 def prepare_and_save_datasets_task_3(parameters):
-    parameters["node_type"] = 4
     benchmark_folder = os.path.join(bench_folder, parameters["folder"])
     graph_folder = os.path.join(benchmark_folder, parameters["graph_type"])
     graph_type = parameters["graph_type"]

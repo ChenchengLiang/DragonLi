@@ -47,10 +47,10 @@ def main():
 
         train_config = {
                 "benchmark":benchmark,"graph_type": graph_type, "model_type": model_type,"task":task,
-            "num_epochs": 500, "learning_rate": 0.001,"share_gnn":True,
+            "num_epochs": 500, "learning_rate": 0.001,"share_gnn":False,
             "save_criterion": "valid_accuracy", "batch_size": 1000, "gnn_hidden_dim": hidden_dimention,
             "gnn_layer_num": 2, "num_heads": 2, "gnn_dropout_rate":drop_rate,"ffnn_hidden_dim": hidden_dimention, "ffnn_layer_num": 2,"ffnn_dropout_rate":drop_rate,
-            "node_type":4,"train_step":500,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
+            "node_type":3,"train_step":500,"run_id":None,"experiment_name":today + "-" + benchmark,"experiment_id":None
         }
 
 
