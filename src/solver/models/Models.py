@@ -29,7 +29,8 @@ class Classifier(nn.Module):
         if output_dim == 1: #adapt to BCELoss
             self.layers.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
         else:
-            self.layers.append(nn.Linear(ffnn_hidden_dim*(output_dim+1), ffnn_hidden_dim))
+            self.layers.append(nn.Linear(ffnn_hidden_dim*(output_dim+1), ffnn_hidden_dim)) # with parent node
+            #self.layers.append(nn.Linear(ffnn_hidden_dim * (output_dim), ffnn_hidden_dim)) #without parent node
         for _ in range(ffnn_layer_num):
             self.layers.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
 

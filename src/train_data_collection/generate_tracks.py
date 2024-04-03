@@ -209,7 +209,7 @@ def generate_one_track_3(file_name, index):
         # replace each b with lhs or rhs of eq from track 1
         for item in one_hand_side_str:
             if item == "b":
-                _, _, _, eqs = generate_one_track_1(file_name, index, write_replacement_log=False)
+                _, _, _, eqs = generate_one_track_1(file_name, index, max_variables=24,max_terminals=24,max_length=20,write_replacement_log=False)
                 l = eqs[0][0]
                 r = eqs[0][1]
                 replaced_item = random.choice([l, r])

@@ -21,9 +21,13 @@ MAX_DEEP = 1000000
 RESTART_INITIAL_MAX_DEEP = 20
 RESTART_MAX_DEEP_STEP = 1
 
-MAX_SPLIT_CALL = 1000
-MAX_ONE_SIDE_LENGTH = 10000
+#extract data parameters
+EXTRACT_ONE_PATH = True
+MAX_SPLIT_CALL_FOR_TRAIN_DATA_COLLECTION = 2000
+MAX_ONE_SIDE_LENGTH = 300
 MAX_EQ_LENGTH = MAX_ONE_SIDE_LENGTH * 2
+
+
 
 BRANCH_CLOSED: str = "BRANCH_CLOSED"
 MAX_PATH: int = 10000000
@@ -40,7 +44,7 @@ SAT: str = "SAT"
 UNSAT: str = "UNSAT"
 SUCCESS: str = "SUCCESS"
 FAIL: str = "FAIL"
-compress_image = False
+compress_image = True
 
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}

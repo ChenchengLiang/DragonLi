@@ -10,8 +10,9 @@ from dgl.dataloading import GraphDataLoader
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
-    MAX_SPLIT_CALL, OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH, MAX_DEEP, compress_image, \
-    RESTART_INITIAL_MAX_DEEP, RESTART_MAX_DEEP_STEP
+    MAX_SPLIT_CALL_FOR_TRAIN_DATA_COLLECTION, OUTPUT_LEAF_NODE_PERCENTAGE, GNN_BRANCH_RATIO, MAX_ONE_SIDE_LENGTH, \
+    MAX_DEEP, compress_image, \
+    RESTART_INITIAL_MAX_DEEP, RESTART_MAX_DEEP_STEP, EXTRACT_ONE_PATH
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, get_eq_graph_1, SeparateSymbol
 from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format, concatenate_eqs, merge_graphs
@@ -46,7 +47,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.max_deep = INITIAL_MAX_DEEP
         self.fresh_variable_counter=0
         self.extract_termination_flag=False
-        self.learn_one_path=True
+        self.learn_one_path=EXTRACT_ONE_PATH
         self.nodes = []
         self.edges = []
         self.branch_method_func_map = {"extract_branching_data_task_1": self._extract_branching_data_task_1,
@@ -155,8 +156,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         self.current_deep += 1
         if self.explored_deep < self.current_deep:
             self.explored_deep = self.current_deep
-        if self.total_explore_paths_call%100==0:
-            print(f"explore_paths call: {self.total_explore_paths_call}")
+
+
+        # if self.total_explore_paths_call%100==0:
+        #     print(f"explore_paths call: {self.total_explore_paths_call}")
         # print(previous_dict)
         #print(len(current_eq.eq_left_str),current_eq.eq_left_str)
         #print(len(current_eq.eq_right_str),current_eq.eq_right_str)
@@ -478,7 +481,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 # else:
                 #     pred_list = [0, 1]
 
-
+                #pred_list=random.choice([[0,1], [1,0]]) #use random branching
                 #pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
@@ -674,9 +677,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         current_eq_satisfiability = self._get_satisfiability_from_satisfiability_list(satisfiability_list)
 
         # draw two eq graphs
-        # output current node to eq file
-        middle_eq_file_name = f"{self.file_name}@{node_info[0]}"
-        self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
+
 
         if self.output_train_data == True:
             # output splited nodes to eq files
@@ -695,8 +696,9 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 ## 2 UNSAT [count children]
                 ## 1 UNSAT 1 UNKNOWN [0,1]
                 ## 2 UNKNOWN [count children]
-                label_list = [0, 0]
+
                 #if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
+                # label_list = [0, 0]
                 # if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
                 #         UNSAT) == 2 or satisfiability_list.count(UNKNOWN) == 2:  # 2 SAT or 2 UNSAT or 2 UNKNOWN
                 #     min_value = min(back_track_count_list)
@@ -712,17 +714,38 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
                 ######## only learn sat related split point
-                if satisfiability_list.count(SAT) == 2:
-                    # min_value = min(back_track_count_list)
-                    # min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    # for min_value_index in min_value_indeces:
-                    #     label_list[min_value_index] = 1
-                    label_list = [0, 0]
+                # label_list = [0, 0]
+                # if satisfiability_list.count(SAT) == 2:
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                #
+                # elif satisfiability_list.count(SAT) == 1:
+                #     label_list[satisfiability_list.index(SAT)] = 1
+                # else:
+                #     label_list=[0,0]
 
-                elif satisfiability_list.count(SAT) == 1:
+
+                ####### old implementation
+                label_list = [0, 0]
+                if satisfiability_list.count(SAT) == 2:  # 2 SAT
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
                     label_list[satisfiability_list.index(SAT)] = 1
-                else:
-                    label_list=[0,0]
+                elif satisfiability_list.count(UNSAT) == 2:  # 2 UNSAT
+                    pass
+                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
+                        UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
+                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+                elif satisfiability_list.count(UNKNOWN) == 2:  # 2 UNKNOWN
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
 
 
 
@@ -738,14 +761,73 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 ## 2 UNKNOWN 1 UNSAT [count children for two UNKNOWN]
                 ## 2 UNSAT 1 UNKNWON [0,0,1]
 
+            #     label_list = [0, 0, 0]
+            #     if satisfiability_list.count(SAT) == 3 or satisfiability_list.count(
+            #             UNSAT) == 3 or satisfiability_list.count(UNKNOWN) == 3:
+            #         min_value = min(back_track_count_list)
+            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+            #         for min_value_index in min_value_indeces:
+            #             label_list[min_value_index] = 1
+            #             break
+            #     elif satisfiability_list.count(SAT) == 2:
+            #         sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
+            #         others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
+            #         min_value = min([back_track_count_list[i] for i in sat_indices])
+            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+            #                              x == min_value and i not in others_indices]
+            #         for min_value_index in min_value_indeces:
+            #             label_list[min_value_index] = 1
+            #     elif satisfiability_list.count(SAT) == 1:
+            #         label_list[satisfiability_list.index(SAT)] = 1
+            #     elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
+            #         unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
+            #         others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
+            #         min_value = min([back_track_count_list[i] for i in unknown_indices])
+            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+            #                              x == min_value and i not in others_indices]
+            #         for min_value_index in min_value_indeces:
+            #             label_list[min_value_index] = 1
+            #
+            #     elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
+            #         label_list[satisfiability_list.index(UNKNOWN)] = 1
+            # else:
+            #     label_list = [0, 0, 0]
+
+                ######## only learn sat related split point
+                # label_list = [0, 0, 0]
+                # if satisfiability_list.count(SAT) == 3:
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                #         break
+                # elif satisfiability_list.count(SAT) == 2:
+                #     sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
+                #     others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
+                #     min_value = min([back_track_count_list[i] for i in sat_indices])
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+                #                          x == min_value and i not in others_indices]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                # elif satisfiability_list.count(SAT) == 1:
+                #     label_list[satisfiability_list.index(SAT)] = 1
+                # else:
+                #     label_list = [0, 0, 0]
+
+                ########## old implementation
                 label_list = [0, 0, 0]
-                if satisfiability_list.count(SAT) == 3 or satisfiability_list.count(
-                        UNSAT) == 3 or satisfiability_list.count(UNKNOWN) == 3:
+                if satisfiability_list.count(SAT) == 3:
                     min_value = min(back_track_count_list)
                     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
                     for min_value_index in min_value_indeces:
                         label_list[min_value_index] = 1
-                        break
+                elif satisfiability_list.count(UNSAT) == 3:
+                    pass
+                elif satisfiability_list.count(UNKNOWN) == 3:
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
                 elif satisfiability_list.count(SAT) == 2:
                     sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
                     others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
@@ -767,11 +849,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
                 elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
                     label_list[satisfiability_list.index(UNKNOWN)] = 1
-            else:
-                label_list = [0, 0, 0]
+
+
 
             # write label_list to file
             if sum(label_list)==1:
+                # output current node to eq file
+                middle_eq_file_name = f"{self.file_name}@{node_info[0]}"
+                self._output_train_data(middle_eq_file_name, eq, current_eq_satisfiability, node_info, "diamond")
+
                 # print(label_list,satisfiability_list,back_track_count_list)
                 # print(eq.eq_str)
                 # for local_eq in branch_eq_list:
@@ -857,7 +943,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
         if eq.left_hand_side_length > MAX_ONE_SIDE_LENGTH or eq.right_hand_side_length > MAX_ONE_SIDE_LENGTH:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
 
-        if self.total_split_call > MAX_SPLIT_CALL:
+        if self.total_split_call > MAX_SPLIT_CALL_FOR_TRAIN_DATA_COLLECTION:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)
         if self.extract_termination_flag==True:
             return self.record_and_close_branch(UNKNOWN, eq.variable_list, node_info, eq)

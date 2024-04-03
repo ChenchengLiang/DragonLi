@@ -635,6 +635,14 @@ def add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_l
         os.remove(best_model_path)
     torch.save(best_model, best_model_path)
 
+    best_model_path_save_locally=parameters["model_save_path"].replace(
+        "model_", f"model_{model_index}_")
+    if os.path.exists(best_model_path_save_locally):
+        os.remove(best_model_path_save_locally)
+    torch.save(best_model, best_model_path_save_locally)
+
+
+
     mlflow.log_artifact(best_model_path)
     os.remove(best_model_path)
     epoch_info_log = epoch_info_log + "\n" + current_epoch_info
