@@ -119,6 +119,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     satisfiability, res_formula,child_node = self.split_eq(c_formula, current_depth + 1, previous_branch_node=current_eq_node,
                                                                 edge_label=edge_label)
                     back_track_count+=child_node[1]["back_track_count"]
+                    back_track_count+=1
                     eq_back_track_count+=child_node[1]["back_track_count"]
                     split_branch_satisfiability_list.append(satisfiability)
 

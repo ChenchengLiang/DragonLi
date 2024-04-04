@@ -24,9 +24,9 @@ def main():
     task="task_3"
     node_type=3
     learning_rate=0.001
-    train_step=300
+    train_step=10
     configurations = []
-    for benchmark in ["03_track_generated_train_1_20000_task_3_continuously_train_337_train=valid"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
+    for benchmark in ["03_track_generated_train_1_20000_task_3_continuously_train_337"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
         for graph_type in ["graph_1"]:
             for gnn_layer_num in [2]:#[2,8]:
                 for ffnn_layer_num in [2]:
