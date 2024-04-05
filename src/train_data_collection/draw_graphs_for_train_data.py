@@ -11,7 +11,7 @@ sys.path.append(path)
 from src.solver.independent_utils import zip_folder,get_folders
 from src.solver.utils import graph_func_map
 from src.solver.Constants import bench_folder,recursion_limit
-from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs, output_split_eq_graphs
+from src.train_data_collection.utils import output_eq_graphs, output_pair_eq_graphs, output_split_eq_graphs,output_rank_eq_graphs
 import shutil
 import argparse
 
@@ -26,18 +26,19 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train_337"
+    benchmark = "choose_eq_train"#"03_track_generated_train_1_20000_task_3_continuously_train_337"
+    task = "rank_task_1"#"task_3"
+
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:
-            draw_graph_for_one_folder(args,benchmark + "/" + folder)
+            draw_graph_for_one_folder(args,benchmark + "/" + folder,task)
     else:
-        draw_graph_for_one_folder(args,benchmark)
+        draw_graph_for_one_folder(args,benchmark,task)
 
-def draw_graph_for_one_folder(args,folder):
-    task = "task_3"
+def draw_graph_for_one_folder(args,folder,task):
 
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
@@ -45,6 +46,9 @@ def draw_graph_for_one_folder(args,folder):
         draw_func = output_pair_eq_graphs  # task 2
     elif task == "task_3":
         draw_func = output_split_eq_graphs  # task 3
+    elif task == "rank_task_1": #[one graph] + G:List[graph]
+        draw_func = output_rank_eq_graphs
+
 
     train_eq_folder = bench_folder + "/" + folder + "/train"
     train_zip_file=train_eq_folder+".zip"

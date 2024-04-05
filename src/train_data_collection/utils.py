@@ -56,9 +56,41 @@ def _read_label_and_eqs(zip,f,graph_folder,parser,graph_func):
                                      split_eq_file_list]
     return eq_nodes,eq_edges,split_eq_list, split_eq_file_list, json_dict["label_list"],json_dict["satisfiability_list"]
 
+def _read_label_and_eqs_for_rank(zip,f,parser):
+    with zip.open(f) as json_file:
+        json_dict = json.loads(json_file.read())
+
+    rank_eq_file_list = ["train/" + x for x in json_dict["middle_branch_eq_file_name_list"]]
+
+    split_eq_list: List[Equation] = [concatenate_eqs(parser.parse(split_eq_file,zip)["equation_list"]) for split_eq_file in
+                                     rank_eq_file_list]
+    return split_eq_list, rank_eq_file_list, json_dict["label_list"],json_dict["satisfiability_list"]
+
+
+
+
+def output_rank_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):
+    parser = get_parser()
+    with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
+        for f in tqdm(zip_file_content.namelist(),desc="output_rank_eq_graphs"): #scan all files in zip
+            if fnmatch.fnmatch(f, '*.label.json'):
+                rank_eq_list, rank_eq_file_list, label_list, satisfiability_list = _read_label_and_eqs_for_rank(
+                    zip_file_content, f, parser)
+                multi_graph_dict = {}
+                for i,(split_eq, split_file, split_label,split_satisfiability) in enumerate(zip(rank_eq_list, rank_eq_file_list, label_list,satisfiability_list)):
+                    split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
+
+                    if visualize == True:
+                        draw_graph(nodes=split_eq_nodes, edges=split_eq_edges, filename=split_file)
+
+                    graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,satisfiability=split_satisfiability)
+                    multi_graph_dict[i]=graph_dict
+                # Dumping the dictionary to a JSON file
+                json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
+                dump_to_json_with_format(multi_graph_dict, json_file)
+
 def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):
-    parser_type = EqParser()
-    parser = Parser(parser_type)
+    parser = get_parser()
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
         for f in tqdm(zip_file_content.namelist(),desc="output_split_eq_graphs"):
         #for f in glob.glob(graph_folder + "/*.label.json"):
@@ -66,6 +98,7 @@ def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable,
                 eq_nodes, eq_edges, split_eq_list, split_eq_file_list, label_list,satisfiability_list = _read_label_and_eqs(zip_file_content,f, graph_folder, parser,
                                                                                                     graph_func)
                 multi_graph_dict={}
+                #get parent eq graph
                 graph_dict = graph_to_gnn_format(eq_nodes, eq_edges, label=-1,
                                                  satisfiability=UNKNOWN)
                 multi_graph_dict[0]=graph_dict
@@ -86,8 +119,7 @@ def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable,
 
 
 def output_pair_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):
-    parser_type = EqParser()
-    parser = Parser(parser_type)
+    parser = get_parser()
 
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
         for f in zip_file_content.namelist():
@@ -111,8 +143,7 @@ def output_pair_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, 
 
 
 def output_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visualize: bool = False):
-    parser_type = EqParser()
-    parser = Parser(parser_type)
+    parser = get_parser()
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
         for f in zip_file_content.namelist():
             if fnmatch.fnmatch(f, '*.eq'):
@@ -141,3 +172,9 @@ def output_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, visua
                     # Dumping the dictionary to a JSON file
                     json_file = graph_folder+"/"+(strip_file_name_suffix(f) + ".graph.json").replace("train/","")
                     dump_to_json_with_format(graph_dict, json_file)
+
+
+
+def get_parser():
+    parser_type = EqParser()
+    return Parser(parser_type)

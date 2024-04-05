@@ -162,7 +162,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             back_track_count_list.append(branch_number)
             one_eq_file_name = f"{self.file_name}@{node_id}:{index}"
             eq.output_eq_file(one_eq_file_name, satisfiability)
-            middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name))
+            middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name)+".eq")
             if sum(label_list)<1 and branch_number==min_count:
                 label_list[index] = 1
 
