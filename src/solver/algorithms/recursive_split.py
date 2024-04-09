@@ -486,10 +486,10 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
             elif len(branch_methods) == 3:
 
-                pred_list = self.gnn_model_3(input_graph_list).squeeze()
+                #pred_list = self.gnn_model_3(input_graph_list).squeeze()
 
                 #print(pred_list)
-                #pred_list=[1,0.5,0]#this make it use fixed branching
+                pred_list=[1,0.5,0]#this make it use fixed branching
 
 
         # sort
@@ -698,19 +698,19 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 ## 2 UNKNOWN [count children]
 
                 #if the satisfiabilities are the same the shortest back_track_count has label 1 and others are 0
-                # label_list = [0, 0]
-                # if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
-                #         UNSAT) == 2 or satisfiability_list.count(UNKNOWN) == 2:  # 2 SAT or 2 UNSAT or 2 UNKNOWN
-                #     min_value = min(back_track_count_list)
-                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                #     for min_value_index in min_value_indeces:
-                #         label_list[min_value_index] = 1
-                #         break
-                # elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
-                #     label_list[satisfiability_list.index(SAT)] = 1
-                # elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
-                #         UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
-                #     label_list[satisfiability_list.index(UNKNOWN)] = 1
+                label_list = [0, 0]
+                if satisfiability_list.count(SAT) == 2 or satisfiability_list.count(
+                        UNSAT) == 2 or satisfiability_list.count(UNKNOWN) == 2:  # 2 SAT or 2 UNSAT or 2 UNKNOWN
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                        break
+                elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
+                    label_list[satisfiability_list.index(SAT)] = 1
+                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
+                        UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
+                    label_list[satisfiability_list.index(UNKNOWN)] = 1
 
 
                 ######## only learn sat related split point
@@ -728,24 +728,24 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
 
 
                 ####### old implementation
-                label_list = [0, 0]
-                if satisfiability_list.count(SAT) == 2:  # 2 SAT
-                    min_value = min(back_track_count_list)
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-                elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
-                    label_list[satisfiability_list.index(SAT)] = 1
-                elif satisfiability_list.count(UNSAT) == 2:  # 2 UNSAT
-                    pass
-                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
-                        UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
-                    label_list[satisfiability_list.index(UNKNOWN)] = 1
-                elif satisfiability_list.count(UNKNOWN) == 2:  # 2 UNKNOWN
-                    min_value = min(back_track_count_list)
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
+                # label_list = [0, 0]
+                # if satisfiability_list.count(SAT) == 2:  # 2 SAT
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                # elif satisfiability_list.count(SAT) == 1:  # 1 SAT 1 others
+                #     label_list[satisfiability_list.index(SAT)] = 1
+                # elif satisfiability_list.count(UNSAT) == 2:  # 2 UNSAT
+                #     pass
+                # elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(
+                #         UNKNOWN) == 1:  # 1 UNSAT 1 UNKNOWN
+                #     label_list[satisfiability_list.index(UNKNOWN)] = 1
+                # elif satisfiability_list.count(UNKNOWN) == 2:  # 2 UNKNOWN
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
 
 
 
@@ -761,37 +761,36 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 ## 2 UNKNOWN 1 UNSAT [count children for two UNKNOWN]
                 ## 2 UNSAT 1 UNKNWON [0,0,1]
 
-            #     label_list = [0, 0, 0]
-            #     if satisfiability_list.count(SAT) == 3 or satisfiability_list.count(
-            #             UNSAT) == 3 or satisfiability_list.count(UNKNOWN) == 3:
-            #         min_value = min(back_track_count_list)
-            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-            #         for min_value_index in min_value_indeces:
-            #             label_list[min_value_index] = 1
-            #             break
-            #     elif satisfiability_list.count(SAT) == 2:
-            #         sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
-            #         others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
-            #         min_value = min([back_track_count_list[i] for i in sat_indices])
-            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
-            #                              x == min_value and i not in others_indices]
-            #         for min_value_index in min_value_indeces:
-            #             label_list[min_value_index] = 1
-            #     elif satisfiability_list.count(SAT) == 1:
-            #         label_list[satisfiability_list.index(SAT)] = 1
-            #     elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
-            #         unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
-            #         others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
-            #         min_value = min([back_track_count_list[i] for i in unknown_indices])
-            #         min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
-            #                              x == min_value and i not in others_indices]
-            #         for min_value_index in min_value_indeces:
-            #             label_list[min_value_index] = 1
-            #
-            #     elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
-            #         label_list[satisfiability_list.index(UNKNOWN)] = 1
-            # else:
-            #     label_list = [0, 0, 0]
+                label_list = [0, 0, 0]
+                if satisfiability_list.count(SAT) == 3 or satisfiability_list.count(
+                        UNSAT) == 3 or satisfiability_list.count(UNKNOWN) == 3:
+                    min_value = min(back_track_count_list)
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                        break
+                elif satisfiability_list.count(SAT) == 2:
+                    sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
+                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
+                    min_value = min([back_track_count_list[i] for i in sat_indices])
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+                                         x == min_value and i not in others_indices]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+                elif satisfiability_list.count(SAT) == 1:
+                    label_list[satisfiability_list.index(SAT)] = 1
+                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
+                    unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
+                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
+                    min_value = min([back_track_count_list[i] for i in unknown_indices])
+                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+                                         x == min_value and i not in others_indices]
+                    for min_value_index in min_value_indeces:
+                        label_list[min_value_index] = 1
+
+                elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
+                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+
 
                 ######## only learn sat related split point
                 # label_list = [0, 0, 0]
@@ -815,40 +814,40 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 #     label_list = [0, 0, 0]
 
                 ########## old implementation
-                label_list = [0, 0, 0]
-                if satisfiability_list.count(SAT) == 3:
-                    min_value = min(back_track_count_list)
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-                elif satisfiability_list.count(UNSAT) == 3:
-                    pass
-                elif satisfiability_list.count(UNKNOWN) == 3:
-                    min_value = min(back_track_count_list)
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-                elif satisfiability_list.count(SAT) == 2:
-                    sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
-                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
-                    min_value = min([back_track_count_list[i] for i in sat_indices])
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
-                                         x == min_value and i not in others_indices]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-                elif satisfiability_list.count(SAT) == 1:
-                    label_list[satisfiability_list.index(SAT)] = 1
-                elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
-                    unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
-                    others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
-                    min_value = min([back_track_count_list[i] for i in unknown_indices])
-                    min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
-                                         x == min_value and i not in others_indices]
-                    for min_value_index in min_value_indeces:
-                        label_list[min_value_index] = 1
-
-                elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
-                    label_list[satisfiability_list.index(UNKNOWN)] = 1
+                # label_list = [0, 0, 0]
+                # if satisfiability_list.count(SAT) == 3:
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                # elif satisfiability_list.count(UNSAT) == 3:
+                #     pass
+                # elif satisfiability_list.count(UNKNOWN) == 3:
+                #     min_value = min(back_track_count_list)
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if x == min_value]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                # elif satisfiability_list.count(SAT) == 2:
+                #     sat_indices = [index for index, value in enumerate(satisfiability_list) if value == SAT]
+                #     others_indices = [index for index, value in enumerate(satisfiability_list) if value != SAT]
+                #     min_value = min([back_track_count_list[i] for i in sat_indices])
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+                #                          x == min_value and i not in others_indices]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                # elif satisfiability_list.count(SAT) == 1:
+                #     label_list[satisfiability_list.index(SAT)] = 1
+                # elif satisfiability_list.count(UNSAT) == 1 and satisfiability_list.count(UNKNOWN) == 2:
+                #     unknown_indices = [index for index, value in enumerate(satisfiability_list) if value == UNKNOWN]
+                #     others_indices = [index for index, value in enumerate(satisfiability_list) if value != UNKNOWN]
+                #     min_value = min([back_track_count_list[i] for i in unknown_indices])
+                #     min_value_indeces = [i for i, x in enumerate(back_track_count_list) if
+                #                          x == min_value and i not in others_indices]
+                #     for min_value_index in min_value_indeces:
+                #         label_list[min_value_index] = 1
+                #
+                # elif satisfiability_list.count(UNSAT) == 2 and satisfiability_list.count(UNKNOWN) == 1:
+                #     label_list[satisfiability_list.index(UNKNOWN)] = 1
 
 
 

@@ -120,6 +120,8 @@ def create_a_shell_file(file_path, parameter_list="", solver="",log=False):
     shell_file_path = os.path.join(shell_folder, shell_file_name)
     timeout_command = "timeout " + str(shell_timeout)
 
+    #todo add apptainer image command
+
     solver_command = solver_command_map[solver]
     if os.path.exists(shell_file_path):
         os.remove(shell_file_path)
@@ -170,7 +172,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver:str
         elif "Equation has no solution due to set bounds" in solver_output:
             result = UNSAT
 
-    elif solver == "z3":
+    elif solver == "z3" or solver== "z3_noodler":
         lines = solver_output.split('\n')
         if lines[0] == "sat":
             result = SAT

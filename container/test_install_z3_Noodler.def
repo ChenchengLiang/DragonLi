@@ -1,0 +1,42 @@
+# build image command: apptainer build image.sif my_recipe.def
+Bootstrap: docker
+From: continuumio/miniconda3
+
+%setup
+    mkdir ${APPTAINER_ROOTFS}/requirement
+
+%files
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src .
+    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/requirements.txt requirement
+
+
+%post
+
+    apt-get -y update
+    apt-get -y install git build-essential cmake  # Add cmake here
+
+    # Install z3 Noodler dependencies
+    git clone 'https://github.com/VeriFIT/mata.git'
+    cd mata
+    make release
+    make install
+    cd ..
+
+    # Install z3 Noodler
+    git clone 'https://github.com/VeriFIT/z3-noodler.git'
+    mkdir z3-noodler/build
+    cd z3-noodler/build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    make
+
+
+
+
+%environment
+    export PATH=/opt/conda/bin:$PATH
+
+
+
+%runscript
+    exec python "$@"
+

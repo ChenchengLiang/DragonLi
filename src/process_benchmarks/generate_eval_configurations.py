@@ -18,10 +18,10 @@ def main():
     graph_type = "graph_1"
     model_type= "GCNSplit"#"GINSplit"
     solver_param_list = [
-        #["this", ["random", f"--termination_condition termination_condition_0"]],
+        # ["this", ["random", f"--termination_condition termination_condition_0"]],
         # ["this", ["random", f"--termination_condition termination_condition_1"]],
         # ["this", ["random", f"--termination_condition termination_condition_2"]],
-        #["this", ["fixed", f"--termination_condition termination_condition_0"]],
+        # ["this", ["fixed", f"--termination_condition termination_condition_0"]],
         # ["this", ["fixed", f"--termination_condition termination_condition_1"]],
         # ["this", ["fixed", f"--termination_condition termination_condition_2"]],
 
@@ -41,10 +41,10 @@ def main():
         #when read the model model_0_graph_2_GCNSplit.pth, it points to two files model_2_graph_2_GCNSplit.pth and model_3_graph_2_GCNSplit.pth
         ["this", ["gnn", f"--termination_condition termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
                   f"--gnn_task {task}"]],
-        # ["this", ["gnn", f"--termination_condition termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
-        # ["this", ["gnn", f"--termination_condition termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
+        ["this", ["gnn", f"--termination_condition termination_condition_1", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+        ["this", ["gnn", f"--termination_condition termination_condition_2", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
 
         # ["this",
         #  ["gnn:random", f"--termination_condition termination_condition_0", f"--graph_type {graph_type}", "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
@@ -70,6 +70,7 @@ def main():
         # ["z3", []],
         # ["ostrich", []],
         # ["cvc5", []],
+        # ["z3_noodler", []],
     ]
 
     benchmark_dict = {
@@ -88,7 +89,7 @@ def main():
         # "track_01_generated_SAT_train": bench_folder + "/01_track_generated_SAT_train/ALL",
         # "track_01_generated_SAT_eval": bench_folder + "/01_track_generated_SAT_eval",
     }
-    benchmark_name="03_track_generated_eval_1_20000_task_3_continuously_train_337_debug"
+    benchmark_name="03_track_generated_eval_30000_31000"
     #benchmark_name = "03_track_generated_eval_train_1_20000_folder_1"
     #benchmark_name = "03_track_generated_eval_30000_31000"#"03_track_eval_task_3_1_1000"
     benchmark_folder = benchmark_name + "/ALL"

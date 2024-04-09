@@ -10,7 +10,7 @@ checkpoint_folder = config['Path']['checkpoint_folder']
 summary_folder = config['Path']['summary_folder']
 max_variable_length: int = 8
 
-algorithm_timeout: int = 30
+algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
 
 # control termination when executing algorithm
@@ -22,8 +22,8 @@ RESTART_INITIAL_MAX_DEEP = 20
 RESTART_MAX_DEEP_STEP = 1
 
 #extract data parameters
-EXTRACT_ONE_PATH = True
-MAX_SPLIT_CALL_FOR_TRAIN_DATA_COLLECTION = 2000
+EXTRACT_ONE_PATH = False
+MAX_SPLIT_CALL_FOR_TRAIN_DATA_COLLECTION = 1000
 MAX_ONE_SIDE_LENGTH = 300
 MAX_EQ_LENGTH = MAX_ONE_SIDE_LENGTH * 2
 
@@ -49,7 +49,8 @@ compress_image = True
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
-solver_command_map = {"z3": "z3",
+solver_command_map = {"z3": "/z3-noodler/build/z3",
+                      "z3_noodler": "/z3-noodler/build/z3 smt.string_solver=\"noodler\"",
                       "this": "python3 " + project_folder + "/src/process_benchmarks/main_parameter.py",
                       "woorpje": project_folder + "/other_solvers/woorpje-0_2/bin/woorpje",
                       "ostrich": project_folder + "/other_solvers/ostrich/ostrich",
