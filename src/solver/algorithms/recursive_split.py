@@ -6,7 +6,6 @@ from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Optional, Callable
 
 import torch
-from dgl.dataloading import GraphDataLoader
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, SAT, UNSAT, UNKNOWN, project_folder, INITIAL_MAX_DEEP, MAX_DEEP_STEP, \
@@ -18,7 +17,7 @@ from src.solver.algorithms.abstract_algorithm import AbstractAlgorithm
 from src.solver.algorithms.utils import graph_to_gnn_format, concatenate_eqs, merge_graphs
 from src.solver.independent_utils import remove_duplicates, flatten_list, strip_file_name_suffix, \
     dump_to_json_with_format, time_it, color_print
-from src.solver.models.Dataset import get_one_dgl_graph, WordEquationDatasetMultiClassification
+from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 
@@ -472,7 +471,7 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             # todo this can be improved by passing functions
             if len(branch_methods) == 2:
 
-                pred_list = self.gnn_model_2(input_graph_list).squeeze()  # separate model returns a float number
+                #pred_list = self.gnn_model_2(input_graph_list).squeeze()  # separate model returns a float number
                 # #[1 if label == [1,0] else 0 for label in self.labels]
                 #print(pred_list)
 
@@ -482,14 +481,14 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
                 #     pred_list = [0, 1]
 
                 #pred_list=random.choice([[0,1], [1,0]]) #use random branching
-                #pred_list=[1,0]#this make it use fixed branching
+                pred_list=[1,0]#this make it use fixed branching
 
             elif len(branch_methods) == 3:
 
-                #pred_list = self.gnn_model_3(input_graph_list).squeeze()
+                pred_list = self.gnn_model_3(input_graph_list).squeeze()
 
                 #print(pred_list)
-                pred_list=[1,0.5,0]#this make it use fixed branching
+                #pred_list=[1,0.5,0]#this make it use fixed branching
 
 
         # sort

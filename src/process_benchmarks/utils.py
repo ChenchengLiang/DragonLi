@@ -7,7 +7,7 @@ from src.solver.independent_utils import strip_file_name_suffix, color_print, re
 import csv
 from typing import List, Dict, Tuple
 import glob
-from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR,RED,GREEN,COLORRESET
+from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR,RED,GREEN,COLORRESET,eval_container_path
 import random
 from src.solver.independent_utils import mean,check_list_consistence,time_it,handle_files_with_target_string,handle_duplicate_files,apply_to_all_files,delete_duplicate_lines
 import shutil
@@ -120,16 +120,21 @@ def create_a_shell_file(file_path, parameter_list="", solver="",log=False):
     shell_file_path = os.path.join(shell_folder, shell_file_name)
     timeout_command = "timeout " + str(shell_timeout)
 
-    #todo add apptainer image command
+
+    container_command=""
+    if eval_container_path!="":
+        container_command=f" apptainer exec {eval_container_path} "
+        if solver=="this":
+            container_command=""
 
     solver_command = solver_command_map[solver]
     if os.path.exists(shell_file_path):
         os.remove(shell_file_path)
     with open(shell_file_path, 'w') as file:
         file.write("#!/bin/sh\n")
-        file.write(timeout_command + " " + solver_command + " " + file_path + " " + parameter_str + "\n")
+        file.write(f"{timeout_command} {container_command} {solver_command} {file_path} {parameter_str} \n")
     if log==True:
-        print("run command:",timeout_command + " " + solver_command + " " + file_path + " " + parameter_str)
+        print("run command:",f"{timeout_command} {container_command} {solver_command} {file_path} {parameter_str} \n")
     return shell_file_path
 
 def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,log:bool=False):

@@ -8,6 +8,8 @@ bench_folder = config['Path']['woorpje_benchmarks']
 mlflow_folder = config['Path']['mlflow_folder']
 checkpoint_folder = config['Path']['checkpoint_folder']
 summary_folder = config['Path']['summary_folder']
+eval_container_path = config['Path']['eval_container_path']
+
 max_variable_length: int = 8
 
 algorithm_timeout: int = 300
@@ -49,7 +51,7 @@ compress_image = True
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
-solver_command_map = {"z3": "/z3-noodler/build/z3",
+solver_command_map = {"z3": "/z3/build/z3",
                       "z3_noodler": "/z3-noodler/build/z3 smt.string_solver=\"noodler\"",
                       "this": "python3 " + project_folder + "/src/process_benchmarks/main_parameter.py",
                       "woorpje": project_folder + "/other_solvers/woorpje-0_2/bin/woorpje",

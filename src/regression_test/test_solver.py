@@ -35,7 +35,7 @@ def main():
 
     ]
 
-    log = False
+    log = True
 
     # test
     consistance_list = []
@@ -143,7 +143,7 @@ def run_solvers(file_path, algorithm_configuration_list, log=False):
         (algorithm, parameter_list) = ac
         file = strip_file_name_suffix(file_path) + ".eq"
         olver_result_dict = run_on_one_problem(file_path=file, parameters_list=parameter_list, solver="this",
-                                               solver_log=False)
+                                               solver_log=log)
 
         satisfiability_list.append((f"this:{algorithm.__name__}-config_{i}", olver_result_dict["result"]))
     return satisfiability_list

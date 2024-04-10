@@ -42,6 +42,7 @@ def main():
     #file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_839.eq"
     #file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_4104.eq"
     #file_path = bench_folder + "/debug-eval/g_03_track_27.eq"
+    file_path = "/home/cheli243/Desktop/CodeToGit/Woorpje_benchmarks/debug-eval-uppmax/ALL/divided_1/04_track_1.eq"
 
     # file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
     #file_path= bench_folder +"/examples/01_track_4.eq"
@@ -75,7 +76,7 @@ def main():
     # file_path = bench_folder +"/03_track/03_track_17.eq"
 
     # multiple equations
-    file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
     #file_path = bench_folder + "/examples/multi_eqs/1/test1.eq" #SAT
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -123,9 +124,9 @@ def main():
                                            "termination_condition": "termination_condition_3",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
-    #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
+    solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     result_dict = solver.solve(parsed_content, visualize=True, output_train_data=True)
