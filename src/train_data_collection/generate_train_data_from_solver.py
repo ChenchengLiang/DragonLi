@@ -26,7 +26,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 def main():
     sys.setrecursionlimit(recursion_limit)
-    benchmark="03_track_generated_train_1_20000_task_3_continuously_train_337_multiple_path_new_implementation"
+    benchmark="smtlib_2023-05-05_without_woorpje_train_300_each_folder"
     folder_list=[folder for folder in get_folders(bench_folder+"/"+benchmark) if "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list)!=0:

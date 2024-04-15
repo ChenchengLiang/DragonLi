@@ -50,7 +50,7 @@ def main():
         }
 
     solver_log = False
-    suffix_dict = {"z3": ".smt2","z3_noodler": ".smt2", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
+    suffix_dict = {"z3": ".smt2","z3-noodler": ".smt2", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
     print("config:",config)
 

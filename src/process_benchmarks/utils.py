@@ -177,7 +177,7 @@ def process_solver_output(solver_output: str, problem_file_path: str, solver:str
         elif "Equation has no solution due to set bounds" in solver_output:
             result = UNSAT
 
-    elif solver == "z3" or solver== "z3_noodler":
+    elif solver == "z3" or solver== "z3-noodler":
         lines = solver_output.split('\n')
         if lines[0] == "sat":
             result = SAT

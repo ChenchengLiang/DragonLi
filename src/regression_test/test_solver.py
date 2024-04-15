@@ -129,7 +129,7 @@ def run_solvers(file_path, algorithm_configuration_list, log=False):
     satisfiability_list: List[Tuple[str, str]] = []
 
     # other solvers
-    for solver in ["z3", "cvc5", "ostrich", "woorpje","z3_noodler"]:
+    for solver in ["z3", "cvc5", "ostrich", "woorpje","z3-noodler"]:
         if solver == "woorpje":
             file = strip_file_name_suffix(file_path) + ".eq"
         else:

@@ -26,7 +26,7 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train_337_multiple_path_new_implementation"#"choose_eq_train"
+    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train"#"choose_eq_train"
     task = "task_3"#"rank_task_1"
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
