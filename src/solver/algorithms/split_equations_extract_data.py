@@ -102,7 +102,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             return (satisfiability, current_formula,current_node)
         else:
             #systematic search training data
-            back_track_count=0
+            split_back_track_count=1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
@@ -114,17 +114,21 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
                 eq_back_track_count=0
                 split_branch_satisfiability_list:List[Tuple[Equation,str,int]] = []
+
                 for c_index, child in enumerate(children):
                     (c_eq, c_formula, edge_label) = child
                     satisfiability, res_formula,child_node = self.split_eq(c_formula, current_depth + 1, previous_branch_node=current_eq_node,
                                                                 edge_label=edge_label)
-                    back_track_count+=child_node[1]["back_track_count"]
-                    back_track_count+=1
-                    eq_back_track_count+=child_node[1]["back_track_count"]
+                    split_back_track_count+=child_node[1]["back_track_count"]
+
+                    eq_back_track_count += child_node[1]["back_track_count"]
+
+
                     split_branch_satisfiability_list.append(satisfiability)
 
 
                 current_eq_node[1]["back_track_count"] = eq_back_track_count
+
                 if any(eq_satisfiability == SAT for eq_satisfiability in split_branch_satisfiability_list):
                     current_eq_node[1]["status"] = SAT
                     branch_eq_satisfiability_list.append((current_eq, SAT,current_eq_node[1]["back_track_count"] ))
@@ -135,7 +139,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     current_eq_node[1]["status"] = UNSAT
                     branch_eq_satisfiability_list.append((current_eq, UNSAT,current_eq_node[1]["back_track_count"] ))
 
-            current_node[1]["back_track_count"] = back_track_count
+            current_node[1]["back_track_count"] = split_back_track_count
             if all(eq_satisfiability == SAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = SAT
             elif any(eq_satisfiability == UNSAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):

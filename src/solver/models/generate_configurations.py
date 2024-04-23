@@ -22,12 +22,12 @@ import signal
 def main():
     num_epochs=300
     task="task_3"
-    node_type=3
+    node_type=4
     learning_rate=0.001
     train_step=10
     configurations = []
-    for benchmark in ["03_track_generated_train_1_20000_task_3_continuously_train_337_multiple_path_new_implementation"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
-        for graph_type in ["graph_2","graph_3","graph_4","graph_5"]:#["graph_1"]:
+    for benchmark in ["01_track_train_task_3_1_2000"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
+        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:#[2,8]:
                 for ffnn_layer_num in [2]:
                     for hidden_dim in [128]:#[128,256]:

@@ -28,8 +28,8 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "03_track_generated_train_1_20000_task_3_continuously_train"
-    parameters = {"node_type":3}
+    benchmark = "01_track_train_task_3_1_2000"
+    parameters = {"node_type":4}
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
