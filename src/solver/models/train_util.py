@@ -14,7 +14,8 @@ from torch.utils.data.sampler import SubsetRandomSampler
 from src.solver.models.Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification
 from src.solver.Constants import project_folder, checkpoint_folder
-from src.solver.independent_utils import load_from_pickle_within_zip, time_it, color_print
+from src.solver.independent_utils import load_from_pickle_within_zip, time_it, color_print, \
+    initialize_one_hot_category_count
 from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs, \
     GraphClassifier, SharedGNN, Classifier
 
@@ -733,18 +734,33 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
 
     else:
         # Multi-class classification
-        train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
-        valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
+        category_count = initialize_one_hot_category_count(dataset["train"]._label_size)
 
-    get_distribution_strings(label_size,train_labels,valid_labels)
+        train_category_count= category_count.copy()
+        valid_category_count= category_count.copy()
+
+        for row in dataset["train"]:
+            train_category_count[tuple(row[1].numpy())] += 1
+
+        for row in dataset["valid"]:
+            valid_category_count[tuple(row[1].numpy())] += 1
+
+        train_label_distribution=train_category_count
+        valid_label_distribution=valid_category_count
+
+
+        # train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
+        # valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
+        # # Calculate label distributions
+        # train_label_distribution = Counter(train_labels)
+        # valid_label_distribution = Counter(valid_labels)
+
+    get_distribution_strings(label_size,train_label_distribution,valid_label_distribution)
 
     return train_dataloader, valid_dataloader
 
 @time_it
-def get_distribution_strings(label_size,train_labels,valid_labels):
-    # Calculate label distributions
-    train_label_distribution = Counter(train_labels)
-    valid_label_distribution = Counter(valid_labels)
+def get_distribution_strings(label_size,train_label_distribution,valid_label_distribution):
 
     train_distribution_str = "Training label distribution: " + str(
         train_label_distribution) + "\nBase accuracy: " + str(

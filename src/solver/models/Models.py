@@ -8,7 +8,42 @@ from dgl.nn.pytorch import SumPooling
 from src.solver.independent_utils import color_print
 
 
-############################################# Task 3 #############################################
+############################################# Rank task 1 #############################################
+
+class GNNRankTask1(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+        super(GNNRankTask1, self).__init__()
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+
+
+    def forward(self, graphs):
+        for g in graphs:
+            print(g)
+        embeddings = [self.embedding(g) for g in graphs]
+        print("Embeddings:", len(embeddings))
+        print("Embeddings[0]:", len(embeddings[0]))
+        print("Embeddings[1]:", len(embeddings[1]))
+        print("Embeddings[2]:", len(embeddings[2]))
+
+
+
+
+        G_embadding=torch.stack(embeddings[1:],dim=1)
+        G_embadding=torch.sum(G_embadding,dim=1)
+        print("G_embadding:", len(G_embadding))
+
+        final_embeding_list=[embeddings[0],G_embadding]
+        concatenated_embedding = torch.cat(final_embeding_list, dim=2)
+
+        return concatenated_embedding
+
+
+
+
+
+############################################# Branch Task 3 #############################################
 
 class GraphClassifier(nn.Module):
     def __init__(self, shared_gnn, classifier):
@@ -120,8 +155,6 @@ class SharedGNN(nn.Module):
     def forward(self, graphs):
         embeddings = [self.embedding(g) for g in graphs]
         concatenated_embedding = torch.cat(embeddings, dim=2)
-
-
 
         return concatenated_embedding
 

@@ -355,3 +355,11 @@ def create_folder(folder_path):
         shutil.rmtree(folder_path)
         os.mkdir(folder_path)
     return folder_path
+
+def initialize_one_hot_category_count(label_size):
+    category_count = {}
+    for i in range(label_size):
+        category = [0] * label_size
+        category[i] = 1
+        category_count[tuple(category)] = 0
+    return category_count

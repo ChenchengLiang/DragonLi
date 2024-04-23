@@ -3,7 +3,7 @@ import os
 import sys
 import zipfile
 
-from src.solver.independent_utils import color_print
+from src.solver.independent_utils import color_print, initialize_one_hot_category_count
 
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
@@ -110,21 +110,18 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
         graph_number = 0
         total_graph_node = 0
         min_node_number = sys.maxsize
-        category_count = {}
-        for i in range(self._label_size):
-            category=[0]*self._label_size
-            category[i]=1
-            category_count[tuple(category)]=0
+        category_count = initialize_one_hot_category_count(self._label_size)
+        for label in self.labels:
+            category_count[tuple(label.numpy())] += 1
 
 
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
-            label=[]
+
             for index, g in graphs.items():
                 if isinstance(g, dict):
                     total_graph_node += len(g["nodes"])
                     graph_number += 1
-                    label.append(g["label"])
 
                     if max_node_number < len(g["nodes"]):
                         max_node_number = len(g["nodes"])
@@ -136,13 +133,12 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
                         unsat_label_number += 1
                     else:
                         unknown_label_number += 1
-            category_count[tuple(label)] += 1
 
 
 
         result_str = (f"label size: {self._label_size}, split_number: {split_number}, \n"
                       f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n")
-        result_str += f"labe distribution: {category_count.__str__()} \n"
+        result_str += f"label distribution: {category_count.__str__()} \n"
         result_str += f"dominate accuracy: {max(category_count.values()) / sum(category_count.values())} \n"
         result_str += f"max node number: {max_node_number} \n"
         result_str += f"min node number: {min_node_number} \n"
