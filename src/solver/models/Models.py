@@ -19,22 +19,12 @@ class GNNRankTask1(nn.Module):
 
 
     def forward(self, graphs):
-        for g in graphs:
-            print(g)
         embeddings = [self.embedding(g) for g in graphs]
-        print("Embeddings:", len(embeddings))
-        print("Embeddings[0]:", len(embeddings[0]))
-        print("Embeddings[1]:", len(embeddings[1]))
-        print("Embeddings[2]:", len(embeddings[2]))
 
+        G_embedding=torch.stack(embeddings[1:],dim=0)
+        G_embedding=torch.sum(G_embedding,dim=0)
 
-
-
-        G_embadding=torch.stack(embeddings[1:],dim=1)
-        G_embadding=torch.sum(G_embadding,dim=1)
-        print("G_embadding:", len(G_embadding))
-
-        final_embeding_list=[embeddings[0],G_embadding]
+        final_embeding_list=[embeddings[0],G_embedding]
         concatenated_embedding = torch.cat(final_embeding_list, dim=2)
 
         return concatenated_embedding
@@ -57,15 +47,17 @@ class GraphClassifier(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim, ffnn_dropout_rate=0.5):
+    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim, ffnn_dropout_rate=0.5,parent_node=True):
         super(Classifier, self).__init__()
         self.output_dim = output_dim
         self.layers = nn.ModuleList()
         if output_dim == 1: #adapt to BCELoss
             self.layers.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
         else:
-            self.layers.append(nn.Linear(ffnn_hidden_dim*(output_dim+1), ffnn_hidden_dim)) # with parent node
-            #self.layers.append(nn.Linear(ffnn_hidden_dim * (output_dim), ffnn_hidden_dim)) #without parent node
+            if parent_node==True:
+                self.layers.append(nn.Linear(ffnn_hidden_dim*(output_dim+1), ffnn_hidden_dim)) # with parent node
+            else:
+                self.layers.append(nn.Linear(ffnn_hidden_dim * (output_dim), ffnn_hidden_dim)) #without parent node
         for _ in range(ffnn_layer_num):
             self.layers.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
 
