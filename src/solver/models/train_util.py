@@ -324,7 +324,7 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
     node_type = parameters["node_type"]
     graph_type = parameters["graph_type"]
 
-    start_time = time.time()
+
     # Filenames for the ZIP files
     zip_file = os.path.join(bench_folder, f"dataset_{label_size}_{graph_type}.pkl.zip")
 
@@ -345,9 +345,6 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
         # compress_to_zip(pickle_file_2)
 
     parameters["label_size"] = dataset._label_size
-    end_time = time.time()  # End time
-    elapsed_time = end_time - start_time  # Calculate elapsed time
-    print("-" * 10, "load dataset finished", "use time (s):", str(elapsed_time), "-" * 10)
 
     dataset_statistics = dataset.statistics()
     mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_{label_size}_statistics.txt")
