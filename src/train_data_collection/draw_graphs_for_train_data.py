@@ -26,8 +26,14 @@ def main():
     args = arg_parser.parse_args()
 
     # draw graphs for all folders
-    benchmark = "01_track_train_task_3_1_2000"#"choose_eq_train"
-    task = "task_3"#"rank_task_1"
+    # benchmark = "01_track_train_task_3_1_2000"
+    # task = "task_3"
+
+    benchmark="choose_eq_train"
+    task="rank_task_1"
+
+
+
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]
