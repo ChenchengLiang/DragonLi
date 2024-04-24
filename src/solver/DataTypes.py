@@ -319,6 +319,8 @@ class Formula:
     def simplify_eq_list(self):
         for eq in self.eq_list:
             eq.simplify()
+        # simplify empty equation
+        self.eq_list = [eq for eq in self.eq_list if eq.term_length > 0]
 
     def print_eq_list(self):
         for index, eq in enumerate(self.eq_list):

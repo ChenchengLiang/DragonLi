@@ -7,11 +7,14 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
     RESTART_MAX_DEEP_STEP, compress_image
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
+from . import graph_to_gnn_format
 from ..independent_utils import remove_duplicates, flatten_list, color_print,log_control
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula
+from src.solver.models.utils import load_model
+from ..models.Dataset import get_one_dgl_graph
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -33,6 +36,11 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_gnn": self._order_equations_category_gnn,
                                          "gnn": self._order_equations_gnn}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
+        #load model if call gnn
+        if "gnn" in self.parameters["order_equations_method"]:
+            self.gnn_rank_model = load_model(parameters["gnn_model_path"].replace("_0_", "_2_"))
+            self.graph_func = parameters["graph_func"]
+
 
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
                                        "random": self._order_branches_random,
@@ -149,6 +157,19 @@ class SplitEquations(AbstractAlgorithm):
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo implement gnn
+        # form input graphs
+        G_list= []
+        for eq in f.eq_list:
+            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
+            graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
+            print(eq.eq_str)
+            print(graph_dict)
+            dgl_graph, _ = get_one_dgl_graph(graph_dict)
+            G_list.append(dgl_graph)
+
+        # predict
+        # sort
+
         return f
 
 

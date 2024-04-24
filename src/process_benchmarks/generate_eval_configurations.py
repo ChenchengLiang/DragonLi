@@ -15,9 +15,9 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "task_3"
-    graph_type = "graph_1"
+    graph_type = "graph_5"
     model_type = "GCNSplit"  # "GINSplit"
-    benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
+    benchmark_name = "01_track_eval_task_3_1_1000"
     solver_param_list = [
         # ["this", ["random", f"--termination_condition termination_condition_0"]],
         # ["this", ["random", f"--termination_condition termination_condition_1"]],
