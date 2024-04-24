@@ -15,7 +15,7 @@ import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
-
+import torch
 
 class SplitEquations(AbstractAlgorithm):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Equation],
@@ -33,7 +33,7 @@ class SplitEquations(AbstractAlgorithm):
         self.order_equations_func_map = {"fixed": self._order_equations_fixed,
                                          "random": self._order_equations_random,
                                          "category": self._order_equations_category,
-                                         "category_gnn": self._order_equations_category_gnn,
+                                         "category_gnn": self._order_equations_category_gnn,# first category then gnn
                                          "gnn": self._order_equations_gnn}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         #load model if call gnn
@@ -148,29 +148,44 @@ class SplitEquations(AbstractAlgorithm):
         # Check if the equation categories are only 5 and 6
         only_5_and_6:bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
-        if only_5_and_6==True:
+        if only_5_and_6==True and len(categoried_eq_list)>1:
             sorted_eq_list = self._order_equations_gnn(f).eq_list
         else:
-            sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
+            sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
-        return Formula([eq for eq, _ in sorted_eq_list])
+        return Formula(sorted_eq_list)
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
-        # todo implement gnn
         # form input graphs
         G_list= []
         for eq in f.eq_list:
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
             graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
-            print(eq.eq_str)
-            print(graph_dict)
             dgl_graph, _ = get_one_dgl_graph(graph_dict)
             G_list.append(dgl_graph)
+        input_eq_graph_list=[]
+        for index, g in enumerate(G_list):
+            one_eq_data = [g] + G_list
+            input_eq_graph_list.append(one_eq_data)
 
         # predict
-        # sort
+        rank_list = [self.gnn_rank_model(e).squeeze() for e in input_eq_graph_list]
+        # transform multiple one-hot encoded binary classification prediction to one score
+        rank_list = [torch.sigmoid(x)[0] for x in rank_list]
 
-        return f
+        # sort
+        prediction_list = []
+        for pred, split_eq in zip(rank_list, f.eq_list):
+            prediction_list.append([pred,split_eq])
+
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+
+        # print("rank_list", rank_list)
+        # for x in sorted_prediction_list:
+        #     print(x[0],x[1].eq_str)
+
+        formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
+        return formula_with_sorted_eq_list
 
 
     def _order_equations_category(self, f: Formula) -> Formula:

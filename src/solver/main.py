@@ -120,7 +120,7 @@ def main():
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                           "order_equations_method": "gnn",
+                                           "order_equations_method": "category_gnn",
                                             "gnn_model_path":gnn_model_path,
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
