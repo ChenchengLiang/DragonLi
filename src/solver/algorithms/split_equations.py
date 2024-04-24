@@ -156,6 +156,8 @@ class SplitEquations(AbstractAlgorithm):
         return Formula(sorted_eq_list)
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
+        # todo check soundness of this sorted prediction with 100% accuracy model
+
         # form input graphs
         G_list= []
         for eq in f.eq_list:
