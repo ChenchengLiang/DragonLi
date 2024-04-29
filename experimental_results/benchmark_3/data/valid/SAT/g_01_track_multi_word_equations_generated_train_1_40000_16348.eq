@@ -1,0 +1,5 @@
+Variables {RADTF}
+Terminals {eotnbqs}
+Equation: oeoetooooeoeoteeeonetneneeontnteenoeoettnenoottontotntottn = oeoetooooeoeoteeeoRn
+Equation: tqttbtqtbsqbqbsstsstttbsbbttqstttbqqbqtbsqsqsqbs = tqADbtqtbsqbqTqsqFs
+SatGlucose(100)

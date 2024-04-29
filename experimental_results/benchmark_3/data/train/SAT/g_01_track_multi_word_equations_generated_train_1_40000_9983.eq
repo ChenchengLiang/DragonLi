@@ -1,0 +1,6 @@
+Variables {KUPYMSHEFVC}
+Terminals {hbfpimy}
+Equation: fbfbbbhbbhbfbKbfbUPYhhbfb = fbfbbbhbbhbfbfMffffbSHE
+Equation: FVHCEhh = hphiipihpphhhphppipppiiihiihh
+Equation: mmmyymyyyyyymmmymymymyyymyymyymmmyymmyyyymymyymmmm = mmmyymyyyyyymmmymymymyyymyymyymmmyymmyyyymymyymmmm
+SatGlucose(100)

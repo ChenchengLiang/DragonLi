@@ -1,0 +1,5 @@
+Variables {KHD}
+Terminals {hbqklw}
+Equation: hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh = hhhhhhhhhKHhhDhhhh
+Equation: lbkbbwwbkwklwbqwwbwqlqwbqbblwqwlqlkw = lbkbbwwbkwklwbqwwbwqlqwbqbblwqwlqlkw
+SatGlucose(100)

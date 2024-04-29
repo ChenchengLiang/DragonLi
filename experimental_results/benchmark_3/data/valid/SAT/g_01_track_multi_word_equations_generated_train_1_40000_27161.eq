@@ -1,0 +1,5 @@
+Variables {CVUHTNEGPFJBYS}
+Terminals {aybqipfmch}
+Equation: iaiiiiaCyViaaiabbayipyiapbbaaa = iaUiiiiapybbiqpiapyiiaqHaaTN
+Equation: cccccmhEmcGfmfaPFafaamfhacmcchammhhaaccaJBY = cccccmhmcmamccmhmmaffmfahhhfCSmmhhaacU
+SatGlucose(100)

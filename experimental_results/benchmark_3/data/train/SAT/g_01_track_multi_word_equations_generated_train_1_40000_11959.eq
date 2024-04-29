@@ -1,0 +1,5 @@
+Variables {CNOUEYG}
+Terminals {xomvupe}
+Equation: xovmxvmumuvuuuommuvxxooxuoxovvxmuomo = xovmxvmumuvuuuommuvxxooxuoxovvxmuomCo
+Equation: eepeeeeeepeeppepepepepepeepppeeeeppppeeeeppppeepepeepepep = eNOeeeeepeeppeUeppppeeEeYepG
+SatGlucose(100)

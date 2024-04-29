@@ -1,0 +1,6 @@
+Variables {EBNRTLDFV}
+Terminals {jbqdrnhpavmoye}
+Equation: nnjdjjqqqjjjrrjnjrnnrnjqbnjdqrqjrbqjqbrdbEbjbqnbnrrbqq = nnjdjjqqqjjjrrjnjrBqNRTqq
+Equation: hppLpppaahpahhaahppapppphahahhahaaapaapppphaapphaaphppapDh = hpphpppaahpahhaahppapppphahahhahaaapaapppphaapphaaphppapRh
+Equation: mmyyvvoooevmymFyeooyoeeyvvye = mmyyvvoooeVoooeeomyeemyovmmyeooyoeeyvvye
+SatGlucose(100)

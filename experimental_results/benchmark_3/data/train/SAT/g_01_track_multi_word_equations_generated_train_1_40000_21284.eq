@@ -1,0 +1,6 @@
+Variables {TJINBMUWX}
+Terminals {sagwdu}
+Equation: asgassggsgaasggaassaaagasgsgaggagsassaass = asgassggsgaasgTJIgasNBs
+Equation: wwwwwwwBwwwwwwwMwww = wwwwwwwwwwwwwwwwwwwwwwwUwwwwwwwwwwwwwwwWw
+Equation: ududddXdddduuddudduddduuddddudduddudud = ududdddduuduuudddduuddudduddduudddduddIuddudud
+SatGlucose(100)

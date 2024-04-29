@@ -1,0 +1,5 @@
+Variables {NMIUVT}
+Terminals {esm}
+Equation: eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee = eeeeeeeeNeeeeeeeeeeeeeeeeeeeeeeeeee
+Equation: sssmsmmsmmsssssmmmsmsmsmmmsssmmssmssmsssssmsmssmsmM = sssmsmmsmmsssIUVsmsmsTmmmmssm
+SatGlucose(100)

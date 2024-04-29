@@ -1,0 +1,8 @@
+Variables {AGBZXNWQTCPKSJDIU}
+Terminals {haslpwxzo}
+Equation: aaaAGh = aaahBZ
+Equation: lplpppllsllpslssppslsssssspllspls = lplpppllsllpslssppslXpls
+Equation: wwwwwwwwwwwwwwwwwwwwwwwwwwwNWwwQwTwwwwZw = wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+Equation: xxxxxxxxxxxxxxxxxxCPxxxxxxxKSJxxxD = xxxxxxxxxxxxxxxxIxZxxxxx
+Equation: zzozozzooozozzooooozzoozzozzz = zzozozzooozUKoozzozzzCB
+SatGlucose(100)

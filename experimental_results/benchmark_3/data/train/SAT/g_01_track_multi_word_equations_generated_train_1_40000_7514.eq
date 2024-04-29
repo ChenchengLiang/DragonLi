@@ -1,0 +1,5 @@
+Variables {FT}
+Terminals {ijbgawpd}
+Equation: jjjiiijjjijijjjijjjiiijijjijijjiiijjjjiiiijj = jjjiiijjjijijjjijjjiiijijjijijjiiijjjjiiiijF
+Equation: wggwwwggapppdbgwgagggbadbdpbagbwpwppdaaw = wggwwwggapppdbgTdaaw
+SatGlucose(100)

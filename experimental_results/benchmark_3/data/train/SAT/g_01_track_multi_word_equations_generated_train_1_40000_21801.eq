@@ -1,0 +1,6 @@
+Variables {EWF}
+Terminals {imyckentashw}
+Equation: yyymmyimEicimcicicW = yyymmyimyicimciciciicmciicicmmyyyiyccmymycciyi
+Equation: eyyeykekttknnyytktyennyennytynkteektknttynytntkey = eyyeykekttknnyytktyennyennytynkteektknttynytntkey
+Equation: hawshttswttwsshsatweewsehewswewtwshaatehssashtwwahwesa = hawshttswttwsshsatweewsehewswewtwshaatehssashtwFa
+SatGlucose(100)

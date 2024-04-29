@@ -1,0 +1,7 @@
+Variables {ESTANDMIVOKZBHG}
+Terminals {egipqbraczm}
+Equation: gipieieipiiepegeieggpgieeippiiepeeipgiiepgppeppeeieiepee = gipieieipiiepegeieggpgieeippiiepeeipgiiepgppeppeeieiEpee
+Equation: qqSTANqqqD = qqqqqqqqMIVqOEKZq
+Equation: BVMHOI = b
+Equation: gzgmgimgizigizziigmmgmgmiggzizmmimiigimigzzzgzgiigizz = gzgmgimgizigizziigmmgmgmiggzizmmimiigimigAizG
+SatGlucose(100)

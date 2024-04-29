@@ -1,0 +1,8 @@
+Variables {KXPHELSTQIOVJANYMCF}
+Terminals {urxnioawejcltk}
+Equation: uKuXuuuuuuuuuuuu = uuuuuuuuuuuuuPHELS
+Equation: XrxxxnuxnuoiuixurorxiruSruTi = rxxxnQuxnuoiuixIOrnxVri
+Equation: weaajjajeejejjaeawwawajwcwcweejaaewwwcjcweejwecjwawa = weaajjajeejejjaeawwawajwcwcweejaaewwwcjcweejwecjwawa
+Equation: cjccoljjcoljccolojjcjcOlJ = cjccoljjcolAHlojjcjcljlljljjjcccjcjlc
+Equation: raerakrritPeNYiiAMaCkQ = rLFKIEk
+SatGlucose(100)

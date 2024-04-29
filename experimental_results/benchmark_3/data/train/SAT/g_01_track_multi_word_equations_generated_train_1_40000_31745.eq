@@ -1,0 +1,5 @@
+Variables {QXGMPFYLBINREVWJA}
+Terminals {syrinauo}
+Equation: syiiisyiiyiysyiiyyrssyisyyiQrsrissyisyyiisssyi = syiiisyiiyiysyiiyyXGMPyissFyysssrsrissyisyyiisssyY
+Equation: uunsarLsQraaMrrsBINRu = uunsarrEPoXanrrsVWJA
+SatGlucose(100)

@@ -1,0 +1,6 @@
+Variables {KQAXFZSCGHW}
+Terminals {ghfdxyb}
+Equation: dfKggfghdfdghf = dfddQghfgghggfghdfdghf
+Equation: xgggggggxgggxggxxxxxxgggxxggxggxgxxggxxAxxggggxgxxgxg = xgggggggxgggxggxxxxxxgggxxggxggxgxxXFg
+Equation: byydyybbbffbdZydbbbbfyyyyybybfybfSyyyyf = byyCGHdWfyyQyyf
+SatGlucose(100)

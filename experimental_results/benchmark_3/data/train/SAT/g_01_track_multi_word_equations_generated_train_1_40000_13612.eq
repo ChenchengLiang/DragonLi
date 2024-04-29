@@ -1,0 +1,5 @@
+Variables {KWHIDSJC}
+Terminals {fksonqlz}
+Equation: qqkkqqkofksofnKfqfWnsnsqf = qqkkqqkofksofnnfonqsqkooqfqfonkqqqqqnqqsosqoksonsnsqf
+Equation: ozozfllolflzzozozffoooozzolzfzofolfffozlzzflzH = ozozfllolfIDfffozlSlzoJCo
+SatGlucose(100)

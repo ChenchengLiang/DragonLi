@@ -1,0 +1,5 @@
+Variables {EYUMQVPA}
+Terminals {zkewy}
+Equation: zzzzzEzzzzzzzzzzzzzz = zzzzzzzzzYzzzzz
+Equation: eeewekyeywewykeekwyeyewyeeekwyUkkwwkkekMQVPeAwyyyeykeky = eeewekyeywewykeekwyeyewyeeekwykwekkwwkkekyeeywyyyeykeky
+SatGlucose(100)

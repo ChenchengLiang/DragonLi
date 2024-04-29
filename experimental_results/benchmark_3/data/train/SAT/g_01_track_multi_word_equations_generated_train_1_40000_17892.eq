@@ -1,0 +1,7 @@
+Variables {CXEZGMOYNST}
+Terminals {mpdejwnarqb}
+Equation: dpdmdeddddjj = dpdmdeddddjj
+Equation: wCwwwwwwwwwwwwwwXEZGMw = wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+Equation: npnjnpnapjrjnpjnrjprjrprapaprjarprrja = npnjnpOjrjnpjnrjprjrprapaprjYarprrja
+Equation: ebbbeeqqqNbqqqebqbbeeebqebebqeebqbebqqSeqebbeb = ebbbeeqqqqqbqqqebqbbeeebqebTGbqeebqbebqqqqeeqeeqqbeqebbeb
+SatGlucose(100)

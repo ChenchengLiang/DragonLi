@@ -1,0 +1,8 @@
+Variables {HUXCRFTZKSJDMVBNQIAW}
+Terminals {qgphecmwri}
+Equation: qgpggq = HUgXCRF
+Equation: hhhhhhhhhhhhhhhhhhThhhhhhhhhhhhhhhhhhhhhhhhhhhhhZhhh = hhhhhhhhhhhhKhhhhhhhhhhhhhhhhhhhhSJDhh
+Equation: mechemcmeeehecemehmecchmhmhhceeecceeeeeccececehhmechhec = mechemcmeeehecemehmecchmhmhhceeecceeeeeccececehhmechhec
+Equation: rwemirwimrrwiJeweriwrrr = rwemMiVBNrrr
+Equation: hccBhhhchcQhCh = hccchhhhchchZcccccchIhccccAWTcUhh
+SatGlucose(100)

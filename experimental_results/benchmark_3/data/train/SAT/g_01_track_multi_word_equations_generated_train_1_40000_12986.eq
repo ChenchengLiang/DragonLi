@@ -1,0 +1,5 @@
+Variables {TIMOWYXLGZD}
+Terminals {dpbijnh}
+Equation: ppddpdppddpppdpddTIppppdddpddpdpdpdppdpMdddOd = ppddpdppWYdpd
+Equation: njhnjhdnnjjijnbdhbhnhjdihhjdihijinnbiddiihinbihddjXd = njhnjhdnnjjijnbdhbhnhjdihhjdihijinLWGZDiOd
+SatGlucose(100)

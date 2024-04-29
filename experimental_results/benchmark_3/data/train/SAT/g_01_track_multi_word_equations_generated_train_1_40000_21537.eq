@@ -1,0 +1,5 @@
+Variables {FZDGOLCTY}
+Terminals {txvwbie}
+Equation: xxvxwvxvxwwtvvtwvwxwvvtxwvxwwvFxZw = xxvxwvxvxwwtvvtwvwxDwvvtxwvxwGOLxttwwxxxxw
+Equation: eiiibeiiZebeebbeeeebieieeeeieeb = eiiibeiieeeeeiibCTeebeYebieieeeeieeb
+SatGlucose(100)

@@ -1,0 +1,6 @@
+Variables {DYUQFSKCVLNOG}
+Terminals {euavonixmk}
+Equation: eDeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee = eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+Equation: uennavnavuaeuouvooauanunonauvYvevuuvuaoaenUvavaooen = uQaoaennaunovavaoFSK
+Equation: ikikmxemixxkkCkmFKmeVLN = ikikmxUkimOkGmxme
+SatGlucose(100)

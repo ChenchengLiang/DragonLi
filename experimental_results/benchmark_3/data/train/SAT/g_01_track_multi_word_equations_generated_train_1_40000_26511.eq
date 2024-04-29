@@ -1,0 +1,6 @@
+Variables {RLJUSNBOP}
+Terminals {ohjfxdci}
+Equation: ooooooRoLJU = SoNo
+Equation: dfjdjhdxxfoddhojjhjhoohxhdoxhhhxhddofhddodhxd = dfjdjhdxxfoddhojjhjhoohxhdoxhhhxhddofhddBodhxd
+Equation: occfxcfcfcfxccifiOxixifxoooificooicioxPficfixxicoof = occfxcfcfcfxccififiocixixifxoooificooicioxooxificfixxicoof
+SatGlucose(100)

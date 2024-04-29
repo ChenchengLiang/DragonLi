@@ -1,0 +1,7 @@
+Variables {FKPTWAGZUQSL}
+Terminals {nizmykecgu}
+Equation: znnznnFnKP = znnznnzzniinmzniinmmznzmnzmiimTWAnizi
+Equation: nnnnynyynnnyynnynGnnyyZPnnynynUn = nnnnynyynnnyynnynynnnnnynnnnnyynyyynnnyynnyynnnynynnynynnnyn
+Equation: cQAee = cekceekkekkeccceckkkeckckkeeccccckeecceeekkcekekcekkkkee
+Equation: giiigSFiL = giiigggiigugiigiiuiiiiiuuWigii
+SatGlucose(100)

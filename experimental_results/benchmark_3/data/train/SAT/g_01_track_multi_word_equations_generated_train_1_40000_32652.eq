@@ -1,0 +1,5 @@
+Variables {CR}
+Terminals {aftsiz}
+Equation: tftatffttttttataffatfaaaataffffattfattaafaaattaafaftfaft = tftatffttttttataffatfaaaataffffattfattaafaaattaafaftfaft
+Equation: zsfzfsfzzzzifszzfizszsfzsssiiCzzizisszzsiiz = zsfzfsfzzzzifszzfizszsfzsssiifififRszzsiiz
+SatGlucose(100)

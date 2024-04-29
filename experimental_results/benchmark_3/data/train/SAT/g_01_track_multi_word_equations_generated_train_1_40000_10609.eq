@@ -1,0 +1,6 @@
+Variables {BSFWLCTVQRDIJNHAOKPX}
+Terminals {cfmpwobjl}
+Equation: cppcfffpmfccfpmmfmpcfmmcmcfffBpfffcmcmf = cppcffSFfmcfpmcmpfffWLCTV
+Equation: wwwwwooowowQowwwowooowRDWIwowJoowo = wwwwwooowowNBHFwoAwowoooOSKTwwwwPowo
+Equation: lllplpwlpwlppwwjbpjlwpjppjjpbwllbjbjljjjpwjwjpwlljbjwpjl = lllplpwlpwlppwwjbpXbjljjjpwjwjpwlljbjwpjl
+SatGlucose(100)

@@ -1,0 +1,5 @@
+Variables {LPKWSRJDTIGZVXNU}
+Terminals {xovjmqugtkc}
+Equation: xoxqLvomPKWSjoxomj = xoxqjjxxxjvmvomxoxRqjovoxmvvvxqomvJDqjjoTmj
+Equation: kucgcktkkggtutctuIgctcugGDZucuVgcgu = kucgcktkkggXJgctcugktukucukPkuckgkkkcgcgNUW
+SatGlucose(100)

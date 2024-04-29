@@ -1,0 +1,5 @@
+Variables {TUILZ}
+Terminals {ftdeyiq}
+Equation: tdfffTedtedeedefefdetttffddffteetfeefftddddteeeeddfeettedfef = tdfffedtedeedefefdetttffddffteetfeefftddddteeeeddfeettedfef
+Equation: yUqiiqyi = yyiiiILZyyqiiqyi
+SatGlucose(100)

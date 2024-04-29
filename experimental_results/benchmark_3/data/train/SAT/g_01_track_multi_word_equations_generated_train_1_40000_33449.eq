@@ -1,0 +1,5 @@
+Variables {YQFUAEG}
+Terminals {csxrta}
+Equation: csccccxcsxccxxrsxcYrsxxsQrsrcxF = csccccxcsxccxxrsxcsrsxxscrsssrscxxssrscrcsxrsscxcrrsrcxUAE
+Equation: aattaassasastasstattaatsaasaaastaaGtat = aattaassUaastaattat
+SatGlucose(100)

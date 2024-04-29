@@ -1,0 +1,7 @@
+Variables {PAFURJWNEMIYXOQTCBS}
+Terminals {ziegudwltj}
+Equation: iziziizizizzzziiizzziiiizzzzzzzzizzizziiziizzPizz = izAFUzzizzizziRizJz
+Equation: eeeWgeegegNgP = eeJeEgggggMIYggFAXg
+Equation: wdduwuuuuOdQdudddwuwwddwuddddwduwFX = wdduwuuuudwdudddwuwwddwuddddwduwwuuudEW
+Equation: lttwttwwtjwwlwwlltIwltlwtljtjwl = ltQwlltwlTJCwtlBSl
+SatGlucose(100)

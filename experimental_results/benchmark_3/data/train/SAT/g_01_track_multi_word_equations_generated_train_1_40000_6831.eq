@@ -1,0 +1,5 @@
+Variables {DNFW}
+Terminals {vskglo}
+Equation: ssssvsssvsssssvvssvvvvsvvsssvsssvssvsssvvsvvvvvvvssss = ssssvsssvsssssvvsDvvsvvvvvNFs
+Equation: kloklgklgoooollllglgggolkgglWoogolkl = kloklgklgoooollllglgggolkggloooogolkl
+SatGlucose(100)

@@ -1,0 +1,7 @@
+Variables {DOWEFVBTULNGAQ}
+Terminals {tzuneihxm}
+Equation: tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt = tttttttttttttttttttttttttttttttttttttttttttttttttttttttttt
+Equation: nznuzunzeeeuueeeDnzOeezneuue = nznWEue
+Equation: iieFVBiiiiiTUL = iieeeieiieeeeeeieeeieeeeieiiieieeeieieiiiiii
+Equation: xtxmuthNmtGmmu = xtxmuthuumtAEQ
+SatGlucose(100)

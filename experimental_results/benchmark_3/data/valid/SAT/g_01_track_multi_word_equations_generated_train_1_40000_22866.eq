@@ -1,0 +1,4 @@
+Variables {HWMBY}
+Terminals {ehgdzq}
+Equation: zHdzgzqdgddhzdehqeqWqzgghezdzqzhghzdqgezhhehdgd = zhedqqdqqhdzgzqdgddhzdehqeqdzzqzgghezdzqzhghzdqgezhheMBYd
+SatGlucose(100)

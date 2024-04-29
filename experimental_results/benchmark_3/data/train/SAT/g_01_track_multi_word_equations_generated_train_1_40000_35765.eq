@@ -1,0 +1,4 @@
+Variables {JE}
+Terminals {eu}
+Equation: ueeeeueueeeuuueeuueueeueeeeeuueuuueeeueeeeueeeeueeeuuueeuJu = ueeeeueueeeuuueeuueueeueeeeeuueuuueeeueeeeueEeeeuuueeuuu
+SatGlucose(100)

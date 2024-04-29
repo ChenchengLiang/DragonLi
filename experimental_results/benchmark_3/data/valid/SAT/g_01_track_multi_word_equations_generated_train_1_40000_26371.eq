@@ -1,0 +1,8 @@
+Variables {YRCEZXNBHLSUVJTK}
+Terminals {zlpjnwbeakftd}
+Equation: lzjpjjpljplzzppYRCjpEjZXN = lzjpjjpljplzzppljpzlplpzljpj
+Equation: nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnBnnnnnnnn = nCnHNLZSUnnnnnnnnnnnnVnnnnnn
+Equation: llelleblblleleewlebelbXwwbll = llLBll
+Equation: fkkafkkafkkkkkkakaafaakkaaffakaaa = fkkafkLJaa
+Equation: TZYtaKd = tdataatadattdtadtdaatdddtdatadadaadtaaaddd
+SatGlucose(100)

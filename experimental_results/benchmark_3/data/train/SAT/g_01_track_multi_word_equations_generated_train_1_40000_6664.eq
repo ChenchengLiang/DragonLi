@@ -1,0 +1,6 @@
+Variables {VJNCOFI}
+Terminals {pxtuswiakng}
+Equation: uxVJuwNCOF = uxstuxuwwptsptwutwtwxuwutsxuwsupustwuws
+Equation: knggakannIg = knggakanng
+Equation: nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn = nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+SatGlucose(100)

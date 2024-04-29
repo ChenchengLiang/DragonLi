@@ -1,0 +1,7 @@
+Variables {YXTUZEDHROPCAFVM}
+Terminals {stvzxlyqnwjkb}
+Equation: vtztsztttzzvztvtY = vtztsztttzzvztvtsstvsstzvszzzzvvzvszvzvtzzvsvvtsszzss
+Equation: XqqxllynyyynxyqnylnlnxxyxTUZEqDl = yyyyqHqxllynyyynxyqnylnlnxYROnlxl
+Equation: jkjkjwjkwwPjjjwkwwj = CAF
+Equation: bbzvbvlvVbvblzzvvzvbzllzbzzlbvbvvvbMbzvvllzzlvTvlzvzlbvl = bbzvbvlvbvblzzvvzvbzllzbzzlbvbvvvbvvbzvvllzzlvvlzvzlbvl
+SatGlucose(100)

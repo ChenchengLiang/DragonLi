@@ -1,0 +1,7 @@
+Variables {DVCJXOHNYRUGKLQ}
+Terminals {brgtsyqul}
+Equation: brbDVbrbrgbrrgbrbggCgrgbJrbgbr = brbgbbrbrgbrrXrbggrOgrgbrrrbgbr
+Equation: XHtsstgtNtYRggsgtgUsgttGt = tsstgttstsggsgtggssgttstttssgsstgstgtttsttttgsgsKst
+Equation: qyyqyqqyLyqyyyqyqqyyqyC = qyyqyqqyqqyqqqqqyyqyqyyqyqyqyyyqyqqyyqyqqqqyyqyyyqqqqyyq
+Equation: qlU = qlXQY
+SatGlucose(100)

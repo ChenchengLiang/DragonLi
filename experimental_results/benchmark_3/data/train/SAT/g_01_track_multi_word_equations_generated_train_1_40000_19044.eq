@@ -1,0 +1,5 @@
+Variables {RUYWNSP}
+Terminals {lrejgmvtx}
+Equation: rgjlrllgrelrgrglrrjggjglelggggeegjlregggrljjjrgljrjrlg = rgjlrllgrelrgrglrrjggjglelggggeegjlregggrljjjrgljrjrlg
+Equation: tvtxtxtrtxvmtmxmRUvYWNvtt = tvtxtxtrtxvSxmxtvPtrvtt
+SatGlucose(100)

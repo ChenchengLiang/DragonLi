@@ -1,0 +1,5 @@
+Variables {NTRYCKMZI}
+Terminals {iefwdqb}
+Equation: ffiNTRYwewwdiC = ffiwffiefwddfeweeffdweideiwiwiwiwfdwddwdiwfwewwdidwffi
+Equation: ibiibiqKqqbqbibiRbqiqbbqqbq = ibiibiqMZYqibiiiiqqqbiiiqqbqbibIibqiqbbqqbq
+SatGlucose(100)

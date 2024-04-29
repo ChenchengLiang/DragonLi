@@ -1,0 +1,8 @@
+Variables {SDWVAMIOKUZRJBNT}
+Terminals {agktufnehvcrmlwoxyi}
+Equation: ufSDkfk = uffWk
+Equation: ehnnheheennhehnnnehheehhnehhhhhneeenehnenVenneeh = ehnnheheennhehnnnehheehhnehhhhhneeenehAenneeh
+Equation: MIOacrKrUaraacvrrrvVZ = rvrararracrcrcvaavrravrcavrrcacvvavrcaraacvrrrvrvc
+Equation: wlRWlovlovJ = wlxmmmmvowBNlvwvmvvolvxlomolmmmololvomxlwolvvlovlov
+Equation: iyyUKeoeiN = iyyTeievvevyV
+SatGlucose(100)

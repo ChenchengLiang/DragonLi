@@ -1,0 +1,6 @@
+Variables {VQCYTMEAFXRDJ}
+Terminals {cwuldphrb}
+Equation: wccccwcccwcwccwwwcwcwcwcwcwwwwccccwcwcwccwwwwcwcccwwccwcw = wccccVcwcccwwcQcwcw
+Equation: wCYwT = wwldulwuddwluuMEAwuddwFXldRd
+Equation: chbrpbrchpchpbccbphppbhhhcbprbbbpDprrcppcbJphr = chbrpbrchpchpbccbphppbhhhcbprbbbpprrcppcbccbrcbrbphr
+SatGlucose(100)

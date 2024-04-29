@@ -1,0 +1,10 @@
+Variables {ETURBJHQFVKISYPNZ}
+Terminals {cdwnegsoxbmziqlj}
+Equation: dETdcU = dRwBw
+Equation: ggcegwnnegnceeceenwgnegnngJewnnw = ggcegwnnegnceeceenwgUnnw
+Equation: xxnoooonssnnsxxHQT = xxnoooonssnnsxxxoonxosonxnnosonnxsnxxoosnxsnoonnxxsxnsxsnnx
+Equation: bdddddbbF = HVbbdKIbddRS
+Equation: mmmiimqiiqqmmqmzzqmmiqmmzimimzzqqqqqiqiqmmqmzm = RYP
+Equation: ssxlNsxlxlxxxJxxx = ssxlssxlxlxxxxxlssxxxxllslsslxllxsxxllxxx
+Equation: jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjUjjjjjjjjjjjjjj = jjjjjjjjjjjjjjjjjjjjjjjjjjjZ
+SatGlucose(100)
