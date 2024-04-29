@@ -1,5 +1,0 @@
-Variables {ZKLGUA}
-Terminals {icmuk}
-Equation: Zccicmumcuiccmuiiimccucmmmiucccucccuiiimimimimuuiciu = cmuccicmumcuiccmuiiimccucmmmiucccucccuiiimimimimuuiciu
-Equation: kkkkkkkkkkkkkkkkKLkGkk = kkkkkkkkkkkkkkkkkkkkkkkkkkkUAkkk
-SatGlucose(100)

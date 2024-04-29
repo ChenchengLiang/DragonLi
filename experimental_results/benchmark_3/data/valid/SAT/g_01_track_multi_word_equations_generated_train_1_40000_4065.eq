@@ -1,5 +1,0 @@
-Variables {CSRNLKGZT}
-Terminals {uwycxrjpqbga}
-Equation: cxryruxxcrwxcyucwwyuyxucwuwuxwyrcucwxuxccwcryxrcwcxccrcyuy = cxryruxxcrwxcyucwwyuyxucwuwuxwyrcuCcryxrcwcxccrcyS
-Equation: ppqpgpgpgqbggjjbbgqbpbpjpagbgpgjabbbqbaqjbgaqpbqgapqa = ppqpgpRqNLKGZT
-SatGlucose(100)

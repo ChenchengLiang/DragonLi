@@ -1,6 +1,0 @@
-Variables {QKAFMG}
-Terminals {sdkbcxgz}
-Equation: skksdsdsskkkdskskskkddksdddsksksdddddsdsdsddsddkkdsdkdkkdksd = skksdsdsskkkdskskskkddksdQd
-Equation: sKcAFxbM = sccxsccbxsbbbxxxbxbbssbsxcxcxbxbcxs
-Equation: gggzzgggzgzzggzgzzzzgzggggggggzgggg = gggzzgggzgzzggzgzzzGzgggg
-SatGlucose(100)

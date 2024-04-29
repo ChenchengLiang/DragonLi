@@ -1,5 +1,0 @@
-Variables {HOZNUDEKFWTGPXV}
-Terminals {pkvurd}
-Equation: HOZNkpppkpkpkkppkUkpkkpkkppkkkppDE = kpppkpkpkkppkppKpkkpkkppkkkppkpppkpppkkkkkkpppkFWTG
-Equation: dvPdudp = dvpkkkkvdrpukkpkZGXDpvupvkvkpdrrrrkvkvpuvVrvrvpdudp
-SatGlucose(100)

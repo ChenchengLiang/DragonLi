@@ -1,7 +1,0 @@
-Variables {UIQHNEDLYWPJGMTOBV}
-Terminals {xyrutwqclks}
-Equation: rtyyyuuuutuuxryyuuyyuuyttrutxyutrttuyutttryx = rtyyyuuuutuuxryyuuyyuuyttrutxyutrttuyutttryx
-Equation: U = IQHNED
-Equation: clkkcllclklqkqcsqklllllcksskckqsqskscqlsllkqqc = cLklllllcksskckqsqskscqlYWPJG
-Equation: kkkkkkkkkkkkkkkkkkkkkkkkMLkTJP = kkkkkkkkkkkkOkkkkkkkkkBkkkkkkWVkk
-SatGlucose(100)

@@ -1,5 +1,0 @@
-Variables {DLRMBNEF}
-Terminals {psindg}
-Equation: pdiDiisisidpspnssnpiLiddis = pdisRMsisidpspnssnpipidBNdis
-Equation: gEMgggngnnnngnngnggngngnggnngngFng = ggnggnggngnnnnggnnngngngggngnnnngnngnggngngnggnngnggnnnng
-SatGlucose(100)

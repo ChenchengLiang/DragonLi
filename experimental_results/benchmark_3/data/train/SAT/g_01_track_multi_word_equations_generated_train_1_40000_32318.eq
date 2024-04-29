@@ -1,7 +1,0 @@
-Variables {YUGZAWKHDRQJPCIVE}
-Terminals {sbhigykzv}
-Equation: YbhhUssssG = bbhhbhhhhsssZAW
-Equation: kyybyzbigyzkbkkyizbbkizkzibgyykigzbkkkgyybygkzykyiy = kyybyzbigyzkbkkyizbbkizkzibgyykigzbkkkgyybygkzykyiy
-Equation: KHDbbbbbRbbGQ = JPCIVbb
-Equation: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvEvvvvvvvvvvvvvvv = vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-SatGlucose(100)

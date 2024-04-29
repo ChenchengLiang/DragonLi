@@ -1,8 +1,0 @@
-Variables {LYKCQIBSTWOZH}
-Terminals {pmarqstkyhnxjobid}
-Equation: mapaLYaapaKCp = mapapapppmampmaapammpppmmapmppmpmammpaampmapaaapmmap
-Equation: rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr = rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-Equation: QIq = stqtsmqsmtqtmkqskkqksmBkq
-Equation: jynhInST = jynhnxjynxhyhhhjhhnhynynWhxjxjxjyxrjrxxyhnrxynrryxn
-Equation: oiBTo = OZLH
-SatGlucose(100)

@@ -1,5 +1,0 @@
-Variables {OWXUTAQVHPIFY}
-Terminals {rtqawvkyd}
-Equation: qqrttOWrXtqrrUrTrq = qqrAttrrtqqrrQtrqqVHPIqrqtF
-Equation: wkydwvdwdwwywwdaaydvwyyakwwwdawdyvyvavIdaa = wkydwvdwdwwywwdaaydvwyyakwwwdawdyvyvavYakddaa
-SatGlucose(100)

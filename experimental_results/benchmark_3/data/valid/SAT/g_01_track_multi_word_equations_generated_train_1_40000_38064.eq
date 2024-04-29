@@ -1,7 +1,0 @@
-Variables {YXFJUTCVQGADWIL}
-Terminals {kwlfxrcshqmz}
-Equation: kkkwkkkwwkwwkwkwwwkwkwkkkkwkwkwwwwkkkwwwkwwwkwwkkwkkkwkwwwk = kkkwkkkwwkwwkwkwwwkwkwkkkkwkwkwwwwkkkwwwkwwwkwwkkwkkkwkwwwk
-Equation: lfxfrYXFrJUT = CVlQGAxD
-Equation: kkcccssskscscksssckscckkkscckcccckcsscccckcsckks = kkcccssskscscksssckscckkkscckcccckcsscccckcsckks
-Equation: mmlmqhzzFmmz = mmWqJIL
-SatGlucose(100)

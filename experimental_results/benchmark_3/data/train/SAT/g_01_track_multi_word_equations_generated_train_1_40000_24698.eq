@@ -1,8 +1,0 @@
-Variables {SNDFBGHJQMWAVXLC}
-Terminals {vkabimfycrxgjqhs}
-Equation: kvaSbbaN = kvaakbaDFabkaaakbbak
-Equation: ivvvvvmvvivmmviimmmiDmvvmiviivimimvimvivivmmim = ivvvBGHvvmvivmmvimvvmiviivJvmmimQM
-Equation: aycbbbyrybycayyrryrryyyfbWfcyrbafcbyar = aycbbbyrybycayyrryrryyyfbaayycbrfbfcyrbafcbBAVyar
-Equation: xagakgagxkakxkxgkkaaXagkxax = xagakgagxkakxkxL
-Equation: qhahqqjqqasjsqhaaassaajqsahqhh = qhahqqCaFhqhh
-SatGlucose(100)

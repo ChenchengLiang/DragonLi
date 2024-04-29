@@ -1,6 +1,0 @@
-Variables {KJSMFQX}
-Terminals {zwjvamgkcyhubi}
-Equation: vmvavwKJSzm = Mzmjwjazm
-Equation: ygycgyykckcgyycygggyccyyggkgyygyykggkgcgcycky = ygycgyykckcgyycygggyccyyggkgyygyykggkgcgcycky
-Equation: uaiiikibiuakhhFiuubibQhbabaa = uaiXkibiuakhhhuuahhiubkakuaakauakhiuubibhbabaa
-SatGlucose(100)

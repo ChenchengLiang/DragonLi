@@ -1,7 +1,0 @@
-Variables {WBZVUHDLNSAYIFE}
-Terminals {udewsakyg}
-Equation: aewadsWdseadeaeawwwuwuuauweuaaddwssueeasauwuwseuaaauss = aewadsaasdseadeaeawwwuwuuauweuaaddwssueeasauwuwsBaauss
-Equation: ddZdddVddddUHDL = dddddddddddddddd
-Equation: aaaaaaaaaaaaaNaaBSHaa = aaaAaD
-Equation: kwwywkgygkkwwkwwygwykwgwgyywwykZkwYy = kwIwgwkFEUwwkwgyy
-SatGlucose(100)

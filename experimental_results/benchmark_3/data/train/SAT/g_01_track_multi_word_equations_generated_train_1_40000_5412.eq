@@ -1,8 +1,0 @@
-Variables {HVGSTZMNCIOKEYFBW}
-Terminals {xztnurelvmh}
-Equation: runtnzHVGSnzzTtuuxZnz = runtnzMzxuNCI
-Equation: ellelOellele = ellelellele
-Equation: llululnvKvnrrlElvlvulvuYFvVO = llululnvvnununnrvvrvrruuvvnrrluuvlHnvlvlvulvuuvrvnv
-Equation: hhmmBm = hhmmmmmhhhmmmmhm
-Equation: uuxmmxmuxxuuxuxumummxmmxuuuxmuxuxmxummuxmxxmmummxuxmxuxumWxu = uuxmmxmuxxuuxuxumummxmmxuuuxmuxuxmxummuxmxxmmummxuxmxuxumuxu
-SatGlucose(100)

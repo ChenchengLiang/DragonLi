@@ -1,9 +1,0 @@
-Variables {FIGQMWATBXNHRUZPOL}
-Terminals {kxlonmjigyerusaptwdq}
-Equation: FxI = xxkxGxkxQM
-Equation: gomjioimioimnmmnngjgmmnoW = gATBXN
-Equation: yryuruyeeussuyreeysrreysyuruseussyseyyrysyuyeuueruuu = AyrHuX
-Equation: gnnangnnagaaggngnganaanggannnnnnnaaanagnngaannaganagnnaaXana = gnnaR
-Equation: dwdwtwptMtdttUtrrrtrrwp = dwdwtwptprwpppwwdprdtdttrdpptrrrtrrwp
-Equation: xqxeaaxqdaexeeqxaaxdqxarreraxZrddreaqqUerPAO = xqxeaaxqdaexeeqxaaxdqxarreraxxeerddreaqqraerLxe
-SatGlucose(100)

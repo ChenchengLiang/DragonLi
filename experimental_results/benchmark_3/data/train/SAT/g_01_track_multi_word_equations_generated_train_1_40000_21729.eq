@@ -1,5 +1,0 @@
-Variables {EARDQ}
-Terminals {pgazvtif}
-Equation: pppgppgpppppEgpgggpppgppggpppppgpgggppgppppppggg = pppgppgppppppppgpgggpppgppggpppppgpgggppgppppppggg
-Equation: taiffvAtiatR = taiffvvazafzzfavffvittzafzzavztDQvvaztiat
-SatGlucose(100)

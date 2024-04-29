@@ -1,8 +1,0 @@
-Variables {ERMGCKIPWYXFV}
-Terminals {xryukbsvawfho}
-Equation: rxxxxrrxrrrxxxxxxrrxrrrxrxxrrxxrxxxxxrxxrxxrrxrrr = rxxxxrrxrrrxxxxxxrrxrrrxrErrxxrRxxrxxrrxrrr
-Equation: uuyuuyuyyuyyyyuuuyuuuuyyuyyuuMRGCyyKyyyyyyuyuuuuyIyuyy = uuyuuyuyyuyyyyuuuyuPuuuyyuyy
-Equation: bkbkybvsbvbkbvbykkbkksbysvssbykyvvskkykkvvsvksvbysskbyb = bkbkybvsbvbkbvbykWvvskkykkvYsskbyb
-Equation: xXa = xawF
-Equation: foobohobbhbVhfoRobb = fooboKbbhbhfMffCb
-SatGlucose(100)

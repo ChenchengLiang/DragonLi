@@ -1,5 +1,0 @@
-Variables {BSLGJRA}
-Terminals {pyd}
-Equation: ppppppppppppppppppppppppppppppppppppppppppppppppppppppp = ppppppppppppppppppppppppppppppppppppppppppppppppppppppp
-Equation: BSyLdG = JdddyyyyyyddydRddyddAdyddy
-SatGlucose(100)

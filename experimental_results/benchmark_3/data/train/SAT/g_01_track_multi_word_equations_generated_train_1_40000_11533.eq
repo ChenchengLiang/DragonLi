@@ -1,7 +1,0 @@
-Variables {PECTMUFXOSDIHGRJYZKA}
-Terminals {xtkueblmgh}
-Equation: xxxxxxxxxxxxxxP = xxxxxECTMxUxxF
-Equation: ttttttttttttXtttOStt = ttttDttttttttttttttttttttttttttttttttttIUHEtttGMRtt
-Equation: eubklulubumlbbulmekelbJPlebmXmulkYEMRmbubmlllZT = eubklulubumlbbulmekelbulebmmulklmumbubmllllleububu
-Equation: hghhhhhgghhhhgghhhghhghghhhhhhhhhKhhh = hghhDGhhhhhA
-SatGlucose(100)

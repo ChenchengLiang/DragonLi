@@ -1,5 +1,0 @@
-Variables {RMVZFKB}
-Terminals {yv}
-Equation: yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy = RyyyyMyyyVZyyF
-Equation: vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv = vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvKvBv
-SatGlucose(100)

@@ -1,6 +1,0 @@
-Variables {YCU}
-Terminals {vyljebhxwgftp}
-Equation: llelljjvyyYvjjje = llelljjvyyCe
-Equation: xgxxwhbxwwwbhxbwwghUwgggxbxwhxgxhxgxwwhgwhh = xgxxwhbxwwwbhxbwwghbbhwhwgxwwxhbhbwgggxbxwhxgxhxgxwwhgwhh
-Equation: yyyytfphfyffhthththhppfhytpftfyypyhpYttyfp = yyyytfphfyffhthththhppfhytpftfyypyhpfffhtyyfppttyfp
-SatGlucose(100)

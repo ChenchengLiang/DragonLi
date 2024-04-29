@@ -1,6 +1,0 @@
-Variables {LAWQHECYVXUFBSNGTPRJ}
-Terminals {qxchpb}
-Equation: xxqqqxqqqxxxqxqxqxxxxxqqxqxxqxqxxLxx = xxqqqxqqqAWxxqqxqxxqxqxxxqxxxxxxqxqqqxxqxxxxxxqxxxx
-Equation: xphhxhxQccpppppxhcHECYAc = xVxcxppXUFLBSNc
-Equation: bbbbbbSbbbbbbbbGbbbbbb = bbbbbbbbbEbNbbUXTbbbPRAJ
-SatGlucose(100)

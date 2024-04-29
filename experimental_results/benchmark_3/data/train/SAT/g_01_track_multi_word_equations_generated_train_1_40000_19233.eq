@@ -1,6 +1,0 @@
-Variables {AVXPBJISZG}
-Terminals {acirnlykfu}
-Equation: ccaiiaaiacaaaccAccaVXPiiciaaia = ccaiiaaiacaaacciaaaiccaccaaciiiciaaia
-Equation: iyrrrynkyrnyrillnykkyknrylkkrlikllrrklyrilkkllrikyri = iyrrrynkyrnyrillnykkyknrylkkrlikllrrklyrilkkllrikyri
-Equation: ffffyffffuyyyffuyuyfyuuyuyf = fBJfISfZG
-SatGlucose(100)

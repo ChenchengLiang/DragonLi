@@ -1,8 +1,0 @@
-Variables {AHPJNBWTOZ}
-Terminals {pjtfuhina}
-Equation: pppjjpjpppjpppppppjAHppP = pppjjpjpppjpppppppjpppppjjjppjppjpppjjjjjpppjpppppj
-Equation: ttJtt = NBWtT
-Equation: fffffffffffffffffffOfffffffffffTfffffffff = ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-Equation: uiihuiuuuuhhiuiuuuuihuhihuuhhhihuiihhuuiiuihuiuuihiiuhhh = uiihZh
-Equation: annanannnnnannannanaaanannnaaanannnnaan = annanannnnnannannanaaanannnaaanannnnaan
-SatGlucose(100)

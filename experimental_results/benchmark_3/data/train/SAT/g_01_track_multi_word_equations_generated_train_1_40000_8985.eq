@@ -1,9 +1,0 @@
-Variables {LSUVIHBPFEJMYOCZN}
-Terminals {mnruglyvisckhoxe}
-Equation: mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm = mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm
-Equation: LSUVgInrH = rruugunrggurgnrB
-Equation: rylmymriyiymllvmvymVvymryvrlyvymylm = rylmymPvmiFEiiviiiivymryvrlyJlm
-Equation: llllllllllllllllllllllllllllMllllll = lllFYOlLC
-Equation: kcskscYkssckkkkscssskEs = kcsHJsZs
-Equation: sexoxexxosoxhhxosseoh = sexoxexxoNsoxhhxosseoh
-SatGlucose(100)

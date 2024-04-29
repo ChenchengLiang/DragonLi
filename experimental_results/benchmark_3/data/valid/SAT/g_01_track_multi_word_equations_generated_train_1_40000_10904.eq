@@ -1,6 +1,0 @@
-Variables {DOPHYXFA}
-Terminals {vpntdk}
-Equation: vnvnvnnppnvnvnvvpnpvnvnnnvvpnnppvvDv = vnvnvnnppnvnvOPHv
-Equation: tttttttttttttttYt = tttttXFPDttt
-Equation: kddddkkdkdkkdkkkkddkdkddkkkkdkkdkdkkdkkkddkkdkdkkkdkkkddd = kddddkkdkdkkdkkkkddkdkddkkkkdkkdkdkkdkkkddkkdA
-SatGlucose(100)

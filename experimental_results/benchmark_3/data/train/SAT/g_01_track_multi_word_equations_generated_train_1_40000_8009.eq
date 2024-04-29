@@ -1,7 +1,0 @@
-Variables {DBHMFGINOQPCZXUYRA}
-Terminals {ogvqwbihpex}
-Equation: Dgqvwowgooqq = owvvowqBHogvM
-Equation: ehhpbhbebpeiiheppehipbebbbbphepiihbpbppebeih = ehhpbhbebpeiiheFpGIBpbppeN
-Equation: OQ = iviiiiiiiiiiiviiivBPIiCZXUYRA
-Equation: xxxqqqqvxqqvxqqqvvvvxxvqqqqvxxqvxvvqqvqqvvqqqvx = xxxqqqqvxqqvxqqqvvvvxxvqqqqvxxqvxvvqqvqqvvqqqvx
-SatGlucose(100)

@@ -1,8 +1,0 @@
-Variables {HJUQDKXGMRY}
-Terminals {reqdxilpcbos}
-Equation: rrrrrrrrrrrrrrrrrrrrrrrrHrJrrUr = rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
-Equation: eidlqilxqqdlidqqxddqdeiidQqqdiixiixqlqxeeleqxeHiellx = eidlqilxqqdDxddqdeiidldqdxqKx
-Equation: cccpppcpccccpppXcc = cccGppcpccccpppcpcc
-Equation: bbobobbbbbbMb = bbobobbbbbbbboobboobboboobobbbobooobobbobobboboooob
-Equation: sssss = sRY
-SatGlucose(100)

@@ -1,5 +1,0 @@
-Variables {OJEDQMU}
-Terminals {ilyhtuc}
-Equation: iililiilillliliilliiiiiilllililllliliiiillliiiiiillliiil = iiliOlliliilliiiiiJEl
-Equation: hycycccDhuchhychyhchcchcccuuhuyccctutJQ = hycyccchtcytyhhctyhhtyhuchMEyhchcUtcy
-SatGlucose(100)

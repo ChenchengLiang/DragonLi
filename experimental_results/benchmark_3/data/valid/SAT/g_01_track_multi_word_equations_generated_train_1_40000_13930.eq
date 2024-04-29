@@ -1,8 +1,0 @@
-Variables {XFYEQHRMAWBVCGP}
-Terminals {zquagpldr}
-Equation: zzzzquuzquzqqquX = zzzzquuzquzqqquuuFYzuqquqzqqEq
-Equation: aaaaaaaaaaaaaaaaaaaQaaaa = aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaHRMAa
-Equation: EqpgpAgpqgquuqu = WFBVuC
-Equation: qaqqlaaqaqllqaqlllqlqlGqa = qaqWqaqlllqlqllqa
-Equation: drrrddrrdddrrddrdrdrrrdrddrrrdrrrddrddrddrrrr = drrrddrrdddrrddrdrdrrrdrddrrrdrrrPdrdHdrrrr
-SatGlucose(100)

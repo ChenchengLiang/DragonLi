@@ -1,5 +1,0 @@
-Variables {MO}
-Terminals {ujthl}
-Equation: jttjjujjtjutjtjutjtutjtjjjuuutujtjuutujujjutuutjjjjututjtt = jttjjujjtjutjtjuMtjtt
-Equation: hlllllhlhlllhhhlhhhhlhlhOlhhlhlhhl = hlllllhlhlllhhhlhhhhlhlhlhhlhllhhllhlllhhlhlhhl
-SatGlucose(100)

@@ -1,8 +1,0 @@
-Variables {ENALCDMWXSVHBI}
-Terminals {ahckpemjvxls}
-Equation: ahhaahahahhaaaahaaahhaahaaahahaaahahahah = ahhEhahNAahhaaaahaaahhaahaLaahahaaahCah
-Equation: hhchkkkcckkkckk = hhchkkkcD
-Equation: pppppppppppppppppppppppppppppppppppppppppppppppppp = pppppppppppppppppppppppppMppppWpppp
-Equation: ejjvvevmeemeevejejejjvjvemmme = ejXvemmmeS
-Equation: sVjlsExalssjljalsj = sasHBalllasssxjxjlslxSIljalsj
-SatGlucose(100)

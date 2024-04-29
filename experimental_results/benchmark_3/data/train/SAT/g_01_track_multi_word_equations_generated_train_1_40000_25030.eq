@@ -1,6 +1,0 @@
-Variables {UMZNWJBRK}
-Terminals {gorkwyxbslqtv}
-Equation: wwrgokwgwwwggkwkgogkwwkorkkrgwgo = wwrgokwgwwwggkwkgogkwwkorkkrgwgo
-Equation: xqbbxbsqlylybqxqqqlxxxylxxylylsylbbbsqlybxxsyslxqbsyxblqbbb = xqbbxbsqlylybqxqqqlxxxylxxylylsylbbbsqlybxxsyslxqbsyxblqbbb
-Equation: UMv = ttvvttvZNWJtvBRK
-SatGlucose(100)

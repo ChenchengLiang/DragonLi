@@ -1,5 +1,0 @@
-Variables {XTSGEBKFL}
-Terminals {oykevfzdua}
-Equation: yXykTSGEB = yoKFL
-Equation: fauzdazuzduuzuvvuavfddvzzvzadvdfzaadavvfffdzdvufvufaddfvvdvz = fauzdazuzduuzuvvuavfddvzzvzadvdfzaadavvfffdzdvufvufaddfvvdvz
-SatGlucose(100)
