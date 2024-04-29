@@ -472,15 +472,15 @@ class ElimilateVariablesRecursive(AbstractAlgorithm):
             if len(branch_methods) == 2:
 
                 pred_list = self.gnn_model_2(input_graph_list).squeeze()  # separate model returns a float number
-                # pred_list=[1,0]#this make it use fixed branching
+                #pred_list=[1,0]#this make it use fixed branching
 
                 #pred_list=random.choice([[0,1], [1,0]]) #use random branching
 
 
             elif len(branch_methods) == 3:
 
-                pred_list = self.gnn_model_3(input_graph_list).squeeze()
-                #pred_list=[1,0.5,0]#this make it use fixed branching
+                #pred_list = self.gnn_model_3(input_graph_list).squeeze()
+                pred_list=[1,0.5,0]#this make it use fixed branching
 
 
         # sort
