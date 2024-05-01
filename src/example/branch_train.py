@@ -76,7 +76,7 @@ def local_train(graph_type,benchmark):
     model_type = "GCNSplit"  # GINSplit
     drop_rate = 0.0
     hidden_dimention = 128
-    epochs=500
+    epochs=1000
 
     train_config = {
         "benchmark": benchmark, "graph_type": graph_type, "model_type": model_type, "task": task,

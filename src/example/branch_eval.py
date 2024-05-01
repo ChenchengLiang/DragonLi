@@ -14,13 +14,25 @@ def main():
     eval(folder)
 
 def eval(folder):
+    graph_type="graph_1"
+    model_folder="Models/"
+    model_type="GCNSplit"
+    task="task_3"
     #termination_condition_i , i \in [0,1,2] corresponding to BT_{j} j \in [1,2,3]
     algorithm_configuration_list: List[Tuple[str, List[str]]] = [
         (ElimilateVariablesRecursive, ["fixed", f"--termination_condition termination_condition_0"]),
         (ElimilateVariablesRecursive, ["random", f"--termination_condition termination_condition_0"]),
-        (ElimilateVariablesRecursive, ["gnn", f"--termination_condition termination_condition_0"]),
-        (ElimilateVariablesRecursive, ["gnn:fixed", f"--termination_condition termination_condition_0"]),
-        (ElimilateVariablesRecursive, ["gnn:random", f"--termination_condition termination_condition_0"]),
+        (ElimilateVariablesRecursive, ["gnn", f"--termination_condition termination_condition_0",f"--graph_type {graph_type}",
+                  "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]),
+        (ElimilateVariablesRecursive,
+         ["gnn:fixed", f"--termination_condition termination_condition_0", f"--graph_type {graph_type}",
+          "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]),
+        (ElimilateVariablesRecursive,
+         ["gnn:random", f"--termination_condition termination_condition_0", f"--graph_type {graph_type}",
+          "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+          f"--gnn_task {task}"]),
     ]
 
     log = True
