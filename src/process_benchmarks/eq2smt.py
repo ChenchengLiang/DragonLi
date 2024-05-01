@@ -16,11 +16,11 @@ import shutil
 
 def main():
     #transform one benchmark with divived folders
-    folder="03_track_generated_eval_train_1_20000_folder_1/ALL"
-    folder_number = sum([1 for fo in os.listdir(bench_folder + "/"+folder) if "divided" in os.path.basename(fo)])
+    folder=f"{bench_folder}/03_track_generated_eval_train_1_20000_folder_1/ALL"
+    folder_number = sum([1 for fo in os.listdir(folder) if "divided" in os.path.basename(fo)])
     for i in range(folder_number):
         divided_folder_index=i+1
-        for file_path in glob.glob(bench_folder + "/"+folder+"/divided_"+str(divided_folder_index)+"/*.eq"):
+        for file_path in glob.glob(folder+"/divided_"+str(divided_folder_index)+"/*.eq"):
             one_eq_file_to_smt2(file_path)
 
 

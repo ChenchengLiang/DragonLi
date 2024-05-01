@@ -149,8 +149,8 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver:str,lo
     # eld.wait()
     end = time.time()
     used_time = end - start
-    # print(completed_process)
-    # print("Output from script:", completed_process.stdout)
+    ############print(completed_process)
+    #########print("Output from script:", completed_process.stdout)
     result_dict = process_solver_output(completed_process.stdout, problem_file_path, solver,log=log)
     result_dict["used_time"] = used_time
     if log==True:

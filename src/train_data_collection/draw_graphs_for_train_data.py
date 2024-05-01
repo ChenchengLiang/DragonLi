@@ -29,22 +29,24 @@ def main():
     # benchmark = "01_track_train_task_3_1_2000"
     # task = "task_3"
 
-    benchmark="choose_eq_train"
+    benchmark_name = "choose_eq_train"
+    benchmark_path=f"{bench_folder}/{benchmark_name}"
+
     task="rank_task_1"
 
 
 
 
-    folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
+    folder_list = [folder for folder in get_folders(benchmark_path) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:
-            draw_graph_for_one_folder(args,benchmark + "/" + folder,task)
+            draw_graph_for_one_folder(args,benchmark_path + "/" + folder,task)
     else:
-        draw_graph_for_one_folder(args,benchmark,task)
+        draw_graph_for_one_folder(args,benchmark_path,task)
 
-def draw_graph_for_one_folder(args,folder,task):
+def draw_graph_for_one_folder(args,benchmark_path,task):
 
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
@@ -56,11 +58,11 @@ def draw_graph_for_one_folder(args,folder,task):
         draw_func = output_rank_eq_graphs
 
 
-    train_eq_folder = bench_folder + "/" + folder + "/train"
+    train_eq_folder = benchmark_path+ "/train"
     train_zip_file=train_eq_folder+".zip"
     for graph_type in [args.graph_type]:
         # prepare folder
-        graph_folder = bench_folder + "/" + folder + "/" + graph_type
+        graph_folder = benchmark_path + "/" + graph_type
 
         if os.path.exists(graph_folder):
             shutil.rmtree(graph_folder)

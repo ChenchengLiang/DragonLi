@@ -40,20 +40,21 @@ def main():
                                            "termination_condition": "termination_condition_3","task":"dynamic_embedding"}
 
     sys.setrecursionlimit(recursion_limit)
-    folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
+    benchmark_path = bench_folder + "/" + benchmark
+    folder_list = [folder for folder in get_folders(benchmark_path) if
                    "divided" in folder or "valid" in folder]
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:
-            generate_train_data_in_one_folder(benchmark + "/" + folder, algorithm, algorithm_parameters)
+            generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters)
     else:
-        generate_train_data_in_one_folder(benchmark, algorithm, algorithm_parameters)
+        generate_train_data_in_one_folder(benchmark_path, algorithm, algorithm_parameters)
 
 
 def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
     # prepare train folder
-    all_eq_folder = bench_folder + "/" + folder + "/SAT"
-    train_eq_folder = bench_folder + "/" + folder + "/train"
+    all_eq_folder = folder+ "/SAT"
+    train_eq_folder = folder+ "/train"
 
     # copy answers from divide folder
     # divided_folder = benchmark + "/ALL"
