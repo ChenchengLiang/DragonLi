@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Union, Deque,Callable
+from typing import List, Union, Deque, Callable, Tuple, Dict
 
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL
+from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_one_equation, get_variable_string, get_terminal_string
 
 
@@ -56,3 +56,28 @@ class AbstractAlgorithm(ABC):
             else:  # type(t.value) == Terminal
                 value_list.append(t.get_value_str)
         return value_list
+
+
+    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
+        current_node_number = self.total_node_number
+        label = f"{eq.eq_str}"
+        current_node = (
+            current_node_number,
+            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0})
+        self.nodes.append(current_node)
+        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.eq_node_number+=1
+        self.total_node_number+=1
+        return current_node
+
+    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
+            Tuple[int, Dict]:
+        current_node_number = self.total_node_number
+        label = f"{f.eq_list_str}"
+        current_node = (
+            current_node_number,
+            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
+        self.nodes.append(current_node)
+        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.total_node_number+=1
+        return current_node

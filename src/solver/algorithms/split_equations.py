@@ -145,29 +145,6 @@ class SplitEquations(AbstractAlgorithm):
 
 
 
-    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
-        current_node_number = self.total_node_number
-        label = f"{eq.eq_str}"
-        current_node = (
-            current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0})
-        self.nodes.append(current_node)
-        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
-        self.eq_node_number+=1
-        self.total_node_number+=1
-        return current_node
-
-    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
-            Tuple[int, Dict]:
-        current_node_number = self.total_node_number
-        label = f"{f.eq_list_str}"
-        current_node = (
-            current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
-        self.nodes.append(current_node)
-        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
-        self.total_node_number+=1
-        return current_node
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
