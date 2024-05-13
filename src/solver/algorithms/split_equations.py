@@ -27,6 +27,8 @@ class SplitEquations(AbstractAlgorithm):
         self.edges = []
         self.fresh_variable_counter = 0
         self.total_split_eq_call = 0
+        self.total_node_number = 1
+        self.eq_node_number = 0
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
 
@@ -56,6 +58,7 @@ class SplitEquations(AbstractAlgorithm):
         print("recursion limit number", sys.getrecursionlimit())
 
         self.log_enabled = True
+        self.png_edge_label = True
 
     @log_control
     def run(self):
@@ -88,24 +91,32 @@ class SplitEquations(AbstractAlgorithm):
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
 
+        current_node = self.record_node_and_edges(original_formula, previous_node, edge_label)
+
         print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
         if res != None:
+            current_node[1]["status"] = res
+            current_node[1]["back_track_count"] = 1
             return (res, original_formula)
 
 
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
 
         if satisfiability != UNKNOWN:
+            current_node[1]["status"] = satisfiability
+            current_node[1]["back_track_count"] = 1
             return satisfiability, current_formula
         else:
-            current_formula = self.order_equations_func(current_formula)
+            current_formula:Formula = self.order_equations_func(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
 
-            current_node = self.record_node_and_edges(current_eq, separated_formula, previous_node, edge_label)
+            current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
+                                                            edge_label=f"eq:{0}")
+
 
             children,fresh_variable_counter= apply_rules(current_eq, separated_formula,self.fresh_variable_counter)
             self.fresh_variable_counter=fresh_variable_counter
@@ -114,30 +125,49 @@ class SplitEquations(AbstractAlgorithm):
             unknown_flag = 0
             for c_index, child in enumerate(children):
                 (c_eq, c_formula, edge_label) = child
-                satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_node,
+                satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_eq_node,
                                                             edge_label)
                 if satisfiability == SAT:
+                    current_node[1]["status"] = SAT
+                    current_eq_node[1]["status"] = SAT
                     return (SAT, res_formula)
                 elif satisfiability == UNKNOWN:
                     unknown_flag=1
 
             if unknown_flag==1:
+                current_node[1]["status"] = UNKNOWN
+                current_eq_node[1]["status"] = UNKNOWN
                 return (UNKNOWN, current_formula)
             else:
+                current_node[1]["status"] = UNSAT
+                current_eq_node[1]["status"] = UNSAT
                 return (UNSAT, current_formula)
 
 
-    def record_node_and_edges(self, eq: Equation, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
+
+    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
+        current_node_number = self.total_node_number
+        label = f"{eq.eq_str}"
+        current_node = (
+            current_node_number,
+            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0})
+        self.nodes.append(current_node)
+        self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.eq_node_number+=1
+        self.total_node_number+=1
+        return current_node
+
+    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
             Tuple[int, Dict]:
-        current_node_number = self.total_split_eq_call
-        label = f"{eq.eq_str},{f.eq_list_str}"
+        current_node_number = self.total_node_number
+        label = f"{f.eq_list_str}"
         current_node = (
             current_node_number,
             {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
+        self.total_node_number+=1
         return current_node
-
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
@@ -225,4 +255,4 @@ class SplitEquations(AbstractAlgorithm):
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
-        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image)
+        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image,edge_label=self.png_edge_label)
