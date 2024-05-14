@@ -54,11 +54,15 @@ class SplitEquations(AbstractAlgorithm):
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
 
-        sys.setrecursionlimit(recursion_limit)
-        print("recursion limit number", sys.getrecursionlimit())
 
         self.log_enabled = True
         self.png_edge_label = True
+
+        print("----- Settings -----")
+        sys.setrecursionlimit(recursion_limit)
+        print("recursion limit number", sys.getrecursionlimit())
+
+        print("order_equations_method:", self.parameters["order_equations_method"])
 
     @log_control
     def run(self):
@@ -164,6 +168,8 @@ class SplitEquations(AbstractAlgorithm):
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo check soundness of this sorted prediction with 100% accuracy model
+
+        print("----- order_equations_gnn -----")
 
         # form input graphs
         G_list= []

@@ -30,12 +30,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.eq_node_number=0
         self.total_node_number=1
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
+        self.found_sat_path = 0
+        self.found_unsat_path = 0
+        self.found_path = 0
         #control path number for extraction
         self.max_deep_for_extraction=3
-        self.max_found_sat_path_extraction=5
-        self.found_sat_path=0
+        self.max_found_sat_path_extraction=1
         self.max_found_path_extraction=20
-        self.found_path=0
         self.task= parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.train_data_count=0
@@ -86,11 +87,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         ####################### early termination condition #######################
         res = self.check_termination_condition_func(current_depth)
-        if res != None:
+        if res != None: #None denote skip termination check
             current_node[1]["status"] = res
             current_node[1]["back_track_count"] = 1
             self.found_path+=1
-            return (res, original_formula,current_node)
+            return (res, original_formula,current_node) # terminate current branch
 
         ####################### search #######################
         satisfiability, current_formula = simplify_and_check_formula(original_formula)
@@ -99,6 +100,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             current_node[1]["status"] = satisfiability
             current_node[1]["back_track_count"] = 1
             self.found_path+=1
+            if satisfiability==SAT:
+                self.found_sat_path+=1
+            if satisfiability==UNSAT:
+                self.found_unsat_path+=1
+
             return (satisfiability, current_formula,current_node)
         else:
             #systematic search training data
@@ -140,12 +146,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     branch_eq_satisfiability_list.append((current_eq, UNSAT,current_eq_node[1]["back_track_count"] ))
 
             current_node[1]["back_track_count"] = split_back_track_count
-            if all(eq_satisfiability == SAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
+            if any(eq_satisfiability == SAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = SAT
-            elif any(eq_satisfiability == UNSAT for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
-                current_node[1]["status"] = UNSAT
-            else:
+            elif any(eq_satisfiability == UNKNOWN for _, eq_satisfiability,_ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = UNKNOWN
+            else:
+                current_node[1]["status"] = UNSAT
+
 
             #output labeled eqs
             if len(branch_eq_satisfiability_list)>1:
