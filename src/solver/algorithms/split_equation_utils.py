@@ -7,6 +7,35 @@ import random
 from src.solver.independent_utils import color_print
 
 
+def order_equations_fixed(f: Formula) -> Formula:
+    return f
+
+def order_equations_random(f: Formula) -> Formula:
+    random.shuffle(f.eq_list)
+    return f
+
+
+def order_equations_category(f: Formula) -> Formula:
+    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+    sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
+
+    return Formula([eq for eq, _ in sorted_eq_list])
+
+def order_equations_category_random(f: Formula) -> Formula:
+    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+
+    # Check if the equation categories are only 5 and 6
+    only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+
+    if only_5_and_6 == True and len(categoried_eq_list) > 1:
+        sorted_eq_list = order_equations_random(f).eq_list
+    else:
+        sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
+
+    return Formula(sorted_eq_list)
+
+
+
 def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
     # f.print_eq_list()
     f.simplify_eq_list()

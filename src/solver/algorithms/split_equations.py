@@ -12,7 +12,7 @@ from ..independent_utils import remove_duplicates, flatten_list, color_print,log
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula
+from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula,order_equations_fixed,order_equations_random,order_equations_category,order_equations_category_random
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -32,11 +32,12 @@ class SplitEquations(AbstractAlgorithm):
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
 
-        self.order_equations_func_map = {"fixed": self._order_equations_fixed,
-                                         "random": self._order_equations_random,
-                                         "category": self._order_equations_category,
+        self.order_equations_func_map = {"fixed": order_equations_fixed,
+                                         "random": order_equations_random,
+                                         "category": order_equations_category,
                                          "category_gnn": self._order_equations_category_gnn,# first category then gnn
-                                         "gnn": self._order_equations_gnn}
+                                         "gnn": self._order_equations_gnn,
+                                         "category_random":order_equations_category_random}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         #load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
@@ -169,7 +170,6 @@ class SplitEquations(AbstractAlgorithm):
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo check soundness of this sorted prediction with 100% accuracy model
 
-        print("----- order_equations_gnn -----")
 
         # form input graphs
         G_list= []
@@ -202,19 +202,6 @@ class SplitEquations(AbstractAlgorithm):
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
         return formula_with_sorted_eq_list
 
-
-    def _order_equations_category(self, f: Formula) -> Formula:
-        categoried_eq_list:List[Tuple[Equation, int]]=_category_formula_by_rules(f)
-        sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
-
-        return Formula([eq for eq, _ in sorted_eq_list])
-
-    def _order_equations_fixed(self, f: Formula) -> Formula:
-        return f
-
-    def _order_equations_random(self, f: Formula) -> Formula:
-        random.shuffle(f.eq_list)
-        return f
 
 
 

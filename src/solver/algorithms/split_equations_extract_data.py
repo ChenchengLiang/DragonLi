@@ -14,7 +14,7 @@ from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, apply_rules, \
-    simplify_and_check_formula
+    simplify_and_check_formula,order_equations_fixed,order_equations_random,order_equations_category,order_equations_category_random
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -41,9 +41,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.train_data_count=0
 
-        self.order_equations_func_map = {"fixed": self._order_equations_fixed,
-                                         "random": self._order_equations_random,
-                                         "category": self._order_equations_category}
+        self.order_equations_func_map = {"fixed": order_equations_fixed,
+                                         "random": order_equations_random,
+                                         "category": order_equations_category,
+                                         "category_random":order_equations_category_random}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
 
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
@@ -107,7 +108,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
             return (satisfiability, current_formula,current_node)
         else:
-            #systematic search training data
+            #systematic search training data by using "order_equations_method": "fixed"
+            current_formula: Formula = self.order_equations_func(current_formula)
+
             split_back_track_count=1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
@@ -192,18 +195,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-    def _order_equations_category(self, f: Formula) -> Formula:
-        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
-        sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
 
-        return Formula([eq for eq, _ in sorted_eq_list])
-
-    def _order_equations_fixed(self, f: Formula) -> Formula:
-        return f
-
-    def _order_equations_random(self, f: Formula) -> Formula:
-        random.shuffle(f.eq_list)
-        return f
 
     def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         return children
