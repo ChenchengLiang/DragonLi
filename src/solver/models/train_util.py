@@ -4,6 +4,7 @@ import time
 from collections import Counter
 from typing import Dict, Union
 
+import dgl
 import mlflow
 import numpy as np
 import torch
@@ -717,12 +718,26 @@ def data_loader_1(dataset, parameters):# separate train and valid data here by s
 
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
-    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
-    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
+
+    def custom_collate_fn(batch):
+        batched_graphs = []
+        batched_labels = []
+
+        # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
+        for graphs, labels in batch:
+            # Batch all graphs in this sample together
+            batched_graphs.append(dgl.batch(graphs))
+            batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
+
+        return batched_graphs, torch.stack(batched_labels)
+
+    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
+    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 
     first_label = dataset["train"][0][1]
     label_size =dataset['train']._label_size
     print(dataset["train"][0])
+
     is_binary_classification = len(first_label.shape) == 0 or (
             len(first_label.shape) == 1 and first_label.shape[0] == 1)
 

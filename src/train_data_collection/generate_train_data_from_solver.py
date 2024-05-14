@@ -37,7 +37,7 @@ def main():
 
     algorithm = SplitEquationsExtractData
     algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category",
-                                           "termination_condition": "termination_condition_3","task":"dynamic_embedding"}
+                                           "termination_condition": "termination_condition_4","task":"dynamic_embedding"}
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark

@@ -36,8 +36,9 @@ def main():
 def train_wrapper(parameters):
     ############### Dataset initialization ################
 
-    parameters["data_folder"] = "divided_1"
     parameters["graph_type"] = "graph_1"
+
+    parameters["data_folder"] = "divided_1"
     train_dataset = read_dataset_from_zip(parameters)
     parameters["data_folder"] = "valid_data"
     valid_dataset = read_dataset_from_zip(parameters)
@@ -70,8 +71,8 @@ def train_wrapper(parameters):
     epoch_info_log = ""
 
     ############### Training ################
-    parameters["num_epochs"] = 200
-    parameters["train_step"] = 200
+    parameters["num_epochs"] = 500
+    parameters["train_step"] = 500
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2

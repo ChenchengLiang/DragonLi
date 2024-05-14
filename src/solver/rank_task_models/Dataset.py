@@ -63,7 +63,6 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
                 self.labels.append(rank_label)
 
 
-
         self.labels = torch.Tensor(self.labels)
 
     def get_graph_list_from_folder(self):
