@@ -174,15 +174,23 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     # Check if the equation categories are only 5 and 6
                     only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
                     if only_5_and_6 == True:
-                        self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
+                        current_node[1]["output_to_file"]=True
+                        _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
+                        # print("total eqs", len(current_formula.eq_list))
+                        # for eq, label in zip(current_formula.eq_list, label_list):
+                        #     print(eq.eq_str, label)
                 else:  # fix or random
-                    self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
+                    current_node[1]["output_to_file"] = True
+                    _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
+                    # print("total eqs",len(current_formula.eq_list))
+                    # for eq,label in zip(current_formula.eq_list,label_list):
+                    #     print(eq.eq_str,label)
 
             return (current_node[1]["status"], current_formula, current_node)
 
     def extract_dynamic_embedding_train_data(self, branch_eq_satisfiability_list, node_id):
         self.total_output_branches += 1
-        min_count = min([count for _, _, count in branch_eq_satisfiability_list])
+
         label_list = [0] * len(branch_eq_satisfiability_list)
         satisfiability_list = []
         back_track_count_list = []
@@ -226,6 +234,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         dump_to_json_with_format(label_dict, one_train_data_name + ".label.json")
 
         self.train_data_count += 1
+        return satisfiability_list,label_list
 
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
         poped_eq = f.eq_list.pop(index)

@@ -78,8 +78,10 @@ def main():
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
-    file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -129,7 +131,7 @@ def main():
 
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
-                                           "order_equations_method": "fixed",
+                                           "order_equations_method": "category",
                                            "termination_condition": "termination_condition_4",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 

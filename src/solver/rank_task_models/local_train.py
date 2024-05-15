@@ -25,18 +25,31 @@ import signal
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN
 import torch.nn as nn
-
+import numpy as np
+import random
 
 def main():
     parameters = {}
     parameters["benchmark_folder"] = "choose_eq_train"
     mlflow_wrapper(parameters)
 
+    random_seed = 42
+    torch.manual_seed(random_seed)
+    torch.cuda.manual_seed(random_seed)
+    torch.cuda.manual_seed_all(random_seed)  # if you are using more than one GPU
+    np.random.seed(random_seed)
+    random.seed(random_seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    os.environ['PYTHONHASHSEED'] = str(random_seed)
+    os.environ['CUBLAS_WORKSPACE_CONFIG'] = ":4096:8"
+    dgl.seed(random_seed)
+
 
 def train_wrapper(parameters):
     ############### Dataset initialization ################
 
-    parameters["graph_type"] = "graph_1"
+    parameters["graph_type"] = "graph_5"
 
     parameters["data_folder"] = "divided_1"
     train_dataset = read_dataset_from_zip(parameters)
@@ -77,6 +90,7 @@ def train_wrapper(parameters):
     classification_type = "multi_classification"
     parameters["label_size"] = 2
     parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("device:", parameters["device"])
     parameters["save_criterion"] = "valid_accuracy"
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")

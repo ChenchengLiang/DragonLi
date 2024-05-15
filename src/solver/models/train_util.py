@@ -397,7 +397,7 @@ def validation_phase(model,valid_dataloader,loss_function,model_type,parameters:
     num_valids = 0
     with torch.no_grad():
         for batched_graph, labels in valid_dataloader:
-            graphs_cuda = [graph.to('cuda') for graph in batched_graph]
+            graphs_cuda = [graph.to(parameters["device"]) for graph in batched_graph]
             labels = labels.clone().detach().to(parameters["device"])
 
             pred = model(graphs_cuda)
@@ -599,7 +599,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
                                                             epoch_info_log, model_index=label_size)
 
     # Print the losses once every 5 epochs
-    if epoch % 2 == 0:
+    if epoch % 5 == 0:
         current_epoch_info = f"Model: {model_type}_{parameters['label_size']} | Epoch: {epoch:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info

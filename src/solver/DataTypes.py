@@ -527,12 +527,14 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             for v_node in variable_nodes:
                 if v_node.content == current_node.content:
                     edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
+                    #edges.append(Edge(source=v_node.id, target=current_node.id, type=None, content="", label=None))
                     break
 
         if graph_type in ["graph_4", "graph_5"] and current_node.type == Terminal:
             for t_node in terminal_nodes:
                 if t_node.content == current_node.content:
                     edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
+                    # edges.append(Edge(source=t_node.id, target=current_node.id, type=None, content="", label=None))
                     break
 
         previous_node = current_node
