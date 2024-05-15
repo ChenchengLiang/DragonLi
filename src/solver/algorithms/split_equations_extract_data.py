@@ -176,9 +176,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     if only_5_and_6 == True:
                         current_node[1]["output_to_file"]=True
                         _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
-                        # print("total eqs", len(current_formula.eq_list))
-                        # for eq, label in zip(current_formula.eq_list, label_list):
-                        #     print(eq.eq_str, label)
+                        print("total eqs", len(current_formula.eq_list))
+                        for eq, label in zip(current_formula.eq_list, label_list):
+                            print(eq.eq_str, label)
                 else:  # fix or random
                     current_node[1]["output_to_file"] = True
                     _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])

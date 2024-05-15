@@ -49,7 +49,7 @@ def main():
 def train_wrapper(parameters):
     ############### Dataset initialization ################
 
-    parameters["graph_type"] = "graph_5"
+    parameters["graph_type"] = "graph_1"
 
     parameters["data_folder"] = "divided_1"
     train_dataset = read_dataset_from_zip(parameters)
