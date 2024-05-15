@@ -19,3 +19,5 @@ Outputs: divided_i/dataset_graph_1.pkl.zip, valid_data/dataset_graph_1.pkl.zip
 Inputs: benchmark_folder, and some other parameters can be set in the code
 Outputs: Models/model_2_graph_1_GCNSplit.pth
 Train can be monitored by mlflow at http://127.0.0.1:5000
+
+5. Run main.py to verify results

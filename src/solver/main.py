@@ -129,7 +129,7 @@ def main():
 
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "fixed",
                                            "termination_condition": "termination_condition_4",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 

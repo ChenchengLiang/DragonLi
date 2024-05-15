@@ -19,13 +19,13 @@ class GNNRankTask1(nn.Module):
 
 
     def forward(self, graphs):
-        #todo these operation may be optimized
+        #todo these operations may be optimized
         embeddings = [self.embedding(g) for g in graphs]
         concatenated_embedding_list=[]
         for i, emb in enumerate(embeddings):
             first_element=emb[0]
             stacked_tensors = torch.stack([e for e in emb[1:]], dim=0)
-            summed_embeddings = torch.sum(stacked_tensors, dim=0)
+            summed_embeddings = torch.mean(stacked_tensors, dim=0)
             concatenated_embedding=torch.cat([first_element, summed_embeddings], dim=1)
             concatenated_embedding_list.append(concatenated_embedding)
 
