@@ -65,6 +65,27 @@ class Terminal:
         return self.value == other.value
 
 
+class IsomorphicTailSymbol:
+    def __init__(self, value: str):
+        self.value = value
+
+    def __str__(self):
+        return "IsomorphicTailSymbol"
+
+    def __repr__(self):
+        return f"IsomorphicTailSymbol({self.value})"
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        if not isinstance(other, IsomorphicTailSymbol):
+            return False
+        return self.value == other.value
+    @property
+    def get_value_str(self):
+        return self.value
+
 class SeparateSymbol:
     def __init__(self, value: str):
         self.value = value
@@ -88,7 +109,7 @@ EMPTY_TERMINAL: Terminal = Terminal("\"\"")
 
 
 class Term:
-    def __init__(self, value: Union[Variable, Terminal, SeparateSymbol, List['Term']]):
+    def __init__(self, value: Union[Variable, Terminal, SeparateSymbol, List['Term'],IsomorphicTailSymbol]):
         self.value = value
 
     def __repr__(self):
@@ -112,6 +133,8 @@ class Term:
             return list
         elif isinstance(self.value, SeparateSymbol):
             return SeparateSymbol
+        elif isinstance(self.value, IsomorphicTailSymbol):
+            return IsomorphicTailSymbol
         else:
             raise Exception("unknown type")
 
@@ -124,6 +147,8 @@ class Term:
         elif isinstance(self.value, list):
             return "".join([t.get_value_str() for t in self.value])
         elif isinstance(self.value, SeparateSymbol):
+            return self.value.value
+        elif isinstance(self.value, IsomorphicTailSymbol):
             return self.value.value
         else:
             raise Exception("unknown type")
@@ -168,6 +193,13 @@ class Equation:
     @property
     def right_hand_side_length(self):
         return len(self.right_terms)
+
+    @property
+    def left_hand_side_type_list(self):
+        return [term.value_type for term in self.left_terms]
+    @property
+    def right_hand_side_type_list(self):
+        return [term.value_type for term in self.right_terms]
 
     @property
     def variable_list(self) -> List[Variable]:
@@ -223,6 +255,7 @@ class Equation:
     @property
     def number_of_special_symbols(self) -> int:
         return self.eq_str.count("#")
+
 
     def simplify(self):
         # pop the same prefix
@@ -323,6 +356,7 @@ class Formula:
         self.eq_list = [eq for eq in self.eq_list if eq.term_length > 0]
 
     def print_eq_list(self):
+        print("Equation list:")
         for index, eq in enumerate(self.eq_list):
             print(index, eq.eq_str)
 
@@ -520,7 +554,7 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         nodes.append(current_node)
         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
 
-        if graph_type == "graph_2" and current_node.type != SeparateSymbol:  # add edge back to equation node
+        if graph_type == "graph_2" and current_node.type != SeparateSymbol and current_node.type != IsomorphicTailSymbol:  # add edge back to equation node
             edges.append(Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
 
         if graph_type in ["graph_3", "graph_5"] and current_node.type == Variable:

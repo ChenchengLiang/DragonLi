@@ -66,7 +66,7 @@ def train_wrapper(parameters):
     parameters["ffnn_dropout_rate"] = dropout_rate
 
     parameters["model_type"] = "GCNSplit"
-    parameters["node_type"] = 3
+    parameters["node_type"] = 4
     parameters["gnn_hidden_dim"] = hidden_dim
     parameters["gnn_layer_num"] = 2
     parameters["gnn_dropout_rate"] = dropout_rate
@@ -89,7 +89,7 @@ def train_wrapper(parameters):
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2
-    parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    parameters["device"] = "cpu"#torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", parameters["device"])
     parameters["save_criterion"] = "valid_accuracy"
     parameters["model_save_path"] = os.path.join(project_folder, "Models",

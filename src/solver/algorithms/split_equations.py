@@ -12,7 +12,7 @@ from ..independent_utils import remove_duplicates, flatten_list, color_print,log
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import _category_formula_by_rules,apply_rules,simplify_and_check_formula,order_equations_fixed,order_equations_random,order_equations_category,order_equations_category_random
+from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations,_category_formula_by_rules,apply_rules,simplify_and_check_formula,order_equations_fixed,order_equations_random,order_equations_category,order_equations_category_random
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -92,11 +92,11 @@ class SplitEquations(AbstractAlgorithm):
                 "variables": self.variables, "terminals": self.terminals}
 
 
-    def split_eq(self, original_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
+    def split_eq(self, input_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
 
-        current_node = self.record_node_and_edges(original_formula, previous_node, edge_label)
+        current_node = self.record_node_and_edges(input_formula, previous_node, edge_label)
 
         print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
@@ -105,10 +105,10 @@ class SplitEquations(AbstractAlgorithm):
         if res != None:
             current_node[1]["status"] = res
             current_node[1]["back_track_count"] = 1
-            return (res, original_formula)
+            return (res, input_formula)
 
 
-        satisfiability, current_formula = simplify_and_check_formula(original_formula)
+        satisfiability, current_formula = simplify_and_check_formula(input_formula)
 
         if satisfiability != UNKNOWN:
             current_node[1]["status"] = satisfiability
@@ -169,6 +169,7 @@ class SplitEquations(AbstractAlgorithm):
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo check soundness of this sorted prediction with 100% accuracy model
+        # todo add sharp sign for prediction and remove them after ranking
 
 
         # form input graphs

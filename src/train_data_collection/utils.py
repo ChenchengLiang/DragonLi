@@ -1,3 +1,4 @@
+from src.solver.algorithms import differentiate_isomorphic_equations
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format
 from src.solver.Parser import Parser, EqParser
 import glob
@@ -64,7 +65,9 @@ def _read_label_and_eqs_for_rank(zip,f,parser):
 
     split_eq_list: List[Equation] = [concatenate_eqs(parser.parse(split_eq_file,zip)["equation_list"]) for split_eq_file in
                                      rank_eq_file_list]
-    return split_eq_list, rank_eq_file_list, json_dict["label_list"],json_dict["satisfiability_list"]
+    isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
+
+    return isomorphic_differentiated_eq_list, rank_eq_file_list, json_dict["label_list"],json_dict["satisfiability_list"]
 
 
 
@@ -81,7 +84,7 @@ def output_rank_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, 
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
 
                     if visualize == True:
-                        draw_graph(nodes=split_eq_nodes, edges=split_eq_edges, filename=split_file)
+                        draw_graph(nodes=split_eq_nodes, edges=split_eq_edges, filename=graph_folder+"/"+split_file.replace("train/",""))
 
                     graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,satisfiability=split_satisfiability)
                     multi_graph_dict[i]=graph_dict
@@ -108,7 +111,7 @@ def output_split_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable,
 
                     if visualize == True:
                         merged_nodes, merged_edges = merge_graphs(eq_nodes, eq_edges, split_eq_nodes, split_eq_edges)
-                        draw_graph(nodes=merged_nodes, edges=merged_edges, filename=split_file)
+                        draw_graph(nodes=merged_nodes, edges=merged_edges, filename=graph_folder+"/"+split_file.replace("train/",""))
 
                     graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,satisfiability=split_satisfiability)
                     multi_graph_dict[i+1]=graph_dict
@@ -132,7 +135,7 @@ def output_pair_eq_graphs(zip_file:str,graph_folder: str, graph_func: Callable, 
                     split_eq_odes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
                     merged_nodes, merged_edges = merge_graphs(eq_nodes, eq_edges, split_eq_odes, split_eq_edges)
                     if visualize == True:
-                        draw_graph(nodes=merged_nodes, edges=merged_edges, filename=split_file)
+                        draw_graph(nodes=merged_nodes, edges=merged_edges, filename=graph_folder+"/"+split_file.replace("train/",""))
 
                     graph_dict = graph_to_gnn_format(merged_nodes, merged_edges, label=split_label,satisfiability=split_satisfiability)
                     # Dumping the dictionary to a JSON file

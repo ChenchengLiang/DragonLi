@@ -1,10 +1,37 @@
-from typing import Tuple, List, Callable
+from typing import Tuple, List, Callable, Dict, Union
 
 from src.solver.Constants import SAT, UNSAT, UNKNOWN
-from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, Terminal
+from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, \
+    Terminal, IsomorphicTailSymbol
 import random
 
 from src.solver.independent_utils import color_print
+
+
+def differentiate_isomorphic_equations(eq_list: List[Equation]) -> List[Equation]:
+    '''
+    Add different number of '#' to the tails on both sides for isomorphic equations
+    '''
+    occurrence_tracker: Dict[
+        Tuple[Tuple[Union[Variable, Terminal], ...], Tuple[Union[Variable, Terminal], ...]], int] = {}
+    new_eq_list: List[Equation] = []
+
+    for eq in eq_list:
+        # Convert list to tuple to make them hashable
+        eq_type = (tuple(eq.left_hand_side_type_list), tuple(eq.right_hand_side_type_list))
+
+        if eq_type in occurrence_tracker:
+            occurrence_tracker[eq_type] += 1
+            modified_eq = Equation(
+                eq.left_terms + [Term(IsomorphicTailSymbol("#"))] * occurrence_tracker[eq_type],
+                eq.right_terms + [Term(IsomorphicTailSymbol("#"))] * occurrence_tracker[eq_type]
+            )
+            new_eq_list.append(modified_eq)
+        else:
+            occurrence_tracker[eq_type] = 0
+            new_eq_list.append(eq)
+
+    return new_eq_list
 
 
 def order_equations_fixed(f: Formula) -> Formula:

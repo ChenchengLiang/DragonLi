@@ -35,7 +35,7 @@ def main():
     # func=prepare_and_save_datasets_task_3
 
     benchmark = "choose_eq_train"
-    parameters = {"node_type": 3}
+    parameters = {"node_type": 4}
     func=prepare_and_save_datasets_rank
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if

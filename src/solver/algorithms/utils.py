@@ -1,5 +1,6 @@
 from typing import List
-from src.solver.DataTypes import Variable,Terminal,Operator,Node,Edge,Equation,Term,SeparateSymbol
+from src.solver.DataTypes import Variable, Terminal, Operator, Node, Edge, Equation, Term, SeparateSymbol, \
+    IsomorphicTailSymbol
 from src.solver.Constants import UNKNOWN
 
 
@@ -18,7 +19,7 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, s
     "edges": [[1, 2], [2, 3], [3, 0]], "edge_types": [1, 1, 1],
     "label": 1}
     '''
-    node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2, SeparateSymbol:3}
+    node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2, SeparateSymbol:3, IsomorphicTailSymbol:3}
     edge_type_to_int_map = {None: 1}
     graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
                   "label": label,"satisfiability":satisfiability}
