@@ -89,7 +89,7 @@ def train_wrapper(parameters):
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2
-    parameters["device"] = "cpu"#torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("device:", parameters["device"])
     parameters["save_criterion"] = "valid_accuracy"
     parameters["model_save_path"] = os.path.join(project_folder, "Models",

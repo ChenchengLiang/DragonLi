@@ -8,14 +8,17 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from . import graph_to_gnn_format
-from ..independent_utils import remove_duplicates, flatten_list, color_print,log_control
+from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations,_category_formula_by_rules,apply_rules,simplify_and_check_formula,order_equations_fixed,order_equations_random,order_equations_category,order_equations_category_random
+from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
+    apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
+    order_equations_category_random
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
+
 
 class SplitEquations(AbstractAlgorithm):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Equation],
@@ -31,19 +34,17 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
-
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
                                          "category": order_equations_category,
-                                         "category_gnn": self._order_equations_category_gnn,# first category then gnn
+                                         "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "gnn": self._order_equations_gnn,
-                                         "category_random":order_equations_category_random}
+                                         "category_random": order_equations_category_random}
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
-        #load model if call gnn
+        # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
             self.gnn_rank_model = load_model(parameters["gnn_model_path"].replace("_0_", "_2_"))
             self.graph_func = parameters["graph_func"]
-
 
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
                                        "random": self._order_branches_random,
@@ -54,7 +55,6 @@ class SplitEquations(AbstractAlgorithm):
                                                 "termination_condition_1": self.early_termination_condition_1}
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
-
 
         self.log_enabled = True
         self.png_edge_label = True
@@ -74,7 +74,8 @@ class SplitEquations(AbstractAlgorithm):
                 initial_node: Tuple[int, Dict] = (
                     0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                         "back_track_count": 0})
-                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,previous_node=initial_node,edge_label="start")
+                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
+                                                            previous_node=initial_node, edge_label="start")
                 if satisfiability != UNKNOWN:
                     break
 
@@ -91,7 +92,6 @@ class SplitEquations(AbstractAlgorithm):
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
 
-
     def split_eq(self, input_formula: Formula, current_depth: int, previous_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
@@ -107,7 +107,6 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return (res, input_formula)
 
-
         satisfiability, current_formula = simplify_and_check_formula(input_formula)
 
         if satisfiability != UNKNOWN:
@@ -115,16 +114,14 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return satisfiability, current_formula
         else:
-            current_formula:Formula = self.order_equations_func(current_formula)
+            current_formula: Formula = self.order_equations_func(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
-
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}")
 
-
-            children,fresh_variable_counter= apply_rules(current_eq, separated_formula,self.fresh_variable_counter)
-            self.fresh_variable_counter=fresh_variable_counter
+            children, fresh_variable_counter = apply_rules(current_eq, separated_formula, self.fresh_variable_counter)
+            self.fresh_variable_counter = fresh_variable_counter
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
             unknown_flag = 0
@@ -137,9 +134,9 @@ class SplitEquations(AbstractAlgorithm):
                     current_eq_node[1]["status"] = SAT
                     return (SAT, res_formula)
                 elif satisfiability == UNKNOWN:
-                    unknown_flag=1
+                    unknown_flag = 1
 
-            if unknown_flag==1:
+            if unknown_flag == 1:
                 current_node[1]["status"] = UNKNOWN
                 current_eq_node[1]["status"] = UNKNOWN
                 return (UNKNOWN, current_formula)
@@ -148,19 +145,16 @@ class SplitEquations(AbstractAlgorithm):
                 current_eq_node[1]["status"] = UNSAT
                 return (UNSAT, current_formula)
 
-
-
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
-
 
     def _order_equations_category_gnn(self, f: Formula) -> Formula:
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
         # Check if the equation categories are only 5 and 6
-        only_5_and_6:bool = all(n in [5, 6] for _, n in categoried_eq_list)
+        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
-        if only_5_and_6==True and len(categoried_eq_list)>1:
+        if only_5_and_6 == True and len(categoried_eq_list) > 1:
             sorted_eq_list = self._order_equations_gnn(f).eq_list
         else:
             sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
@@ -169,17 +163,16 @@ class SplitEquations(AbstractAlgorithm):
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo check soundness of this sorted prediction with 100% accuracy model
-        # todo add sharp sign for prediction and remove them after ranking
-
 
         # form input graphs
-        G_list= []
-        for eq in f.eq_list:
+        isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
+        G_list = []
+        for eq in isomorphic_differentiated_eq_list:
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
             graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
             dgl_graph, _ = get_one_dgl_graph(graph_dict)
             G_list.append(dgl_graph)
-        input_eq_graph_list=[]
+        input_eq_graph_list = []
         for index, g in enumerate(G_list):
             one_eq_data = [g] + G_list
             input_eq_graph_list.append(one_eq_data)
@@ -192,7 +185,7 @@ class SplitEquations(AbstractAlgorithm):
         # sort
         prediction_list = []
         for pred, split_eq in zip(rank_list, f.eq_list):
-            prediction_list.append([pred,split_eq])
+            prediction_list.append([pred, split_eq])
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
 
@@ -202,9 +195,6 @@ class SplitEquations(AbstractAlgorithm):
 
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
         return formula_with_sorted_eq_list
-
-
-
 
     def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         return children
@@ -226,4 +216,4 @@ class SplitEquations(AbstractAlgorithm):
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
-        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image,edge_label=self.png_edge_label)
+        visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image, edge_label=self.png_edge_label)
