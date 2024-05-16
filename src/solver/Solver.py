@@ -34,16 +34,18 @@ class Solver:
         terminals: List[Terminal] = parsed_equations["terminals"]
         equation_list: List[Equation] = parsed_equations["equation_list"]
         deduplicated_equations: List[Equation] = self.deduplicate_equations(equation_list)
+        sorted_equations = sorted(deduplicated_equations, key=lambda x: x.eq_str)
+        final_equations = sorted_equations
 
         if log == True:
             print(f"- before deduplication {len(equation_list)}-")
             for e in equation_list:
                 print(e.eq_str)
-            print(f"- after deduplication {len(deduplicated_equations)}-")
-            for e in deduplicated_equations:
+            print(f"- after deduplication {len(final_equations)}-")
+            for e in final_equations:
                 print(e.eq_str)
 
-        return variables, terminals, deduplicated_equations
+        return variables, terminals, final_equations
 
     def deduplicate_equations(self, equation_list: List[Equation]) -> List[Equation]:
         unique_equations = []

@@ -734,6 +734,7 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 
+
     first_label = dataset["train"][0][1]
     label_size =dataset['train']._label_size
     print(dataset["train"][0])

@@ -2,6 +2,8 @@ import random
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
+import dgl
+
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
     RESTART_MAX_DEEP_STEP, compress_image
@@ -114,7 +116,7 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return satisfiability, current_formula
         else:
-            current_formula: Formula = self.order_equations_func(current_formula)
+            current_formula: Formula = self.order_equations_func_wrapper(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -178,9 +180,10 @@ class SplitEquations(AbstractAlgorithm):
             input_eq_graph_list.append(one_eq_data)
 
         # predict
-        rank_list = [self.gnn_rank_model(e).squeeze() for e in input_eq_graph_list]
-        # transform multiple one-hot encoded binary classification prediction to one score
-        rank_list = [torch.sigmoid(x)[0] for x in rank_list]
+        with torch.no_grad():
+            rank_list = [self.gnn_rank_model([dgl.batch(e)]).squeeze() for e in input_eq_graph_list]
+            # transform multiple one-hot encoded binary classification prediction to one score
+            rank_list = [torch.sigmoid(x)[0] for x in rank_list]
 
         # sort
         prediction_list = []
@@ -213,6 +216,12 @@ class SplitEquations(AbstractAlgorithm):
     def early_termination_condition_1(self, current_depth: int):
         if current_depth > self.restart_max_deep:
             return UNKNOWN
+
+    def order_equations_func_wrapper(self, f: Formula) -> Formula:
+        if f.eq_list_length>1:
+            return self.order_equations_func(f)
+        else:
+            return f
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)

@@ -19,6 +19,7 @@ class GNNRankTask1(nn.Module):
 
 
     def forward(self, graphs):
+
         #todo these operations may be optimized
         embeddings = [self.embedding(g) for g in graphs]
         concatenated_embedding_list=[]
