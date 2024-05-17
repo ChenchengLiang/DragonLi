@@ -33,6 +33,7 @@ class Solver:
         variables: List[Variable] = parsed_equations["variables"]
         terminals: List[Terminal] = parsed_equations["terminals"]
         equation_list: List[Equation] = parsed_equations["equation_list"]
+
         deduplicated_equations: List[Equation] = self.deduplicate_equations(equation_list)
         sorted_equations = sorted(deduplicated_equations, key=lambda x: x.eq_str)
         final_equations = sorted_equations

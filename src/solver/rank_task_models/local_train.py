@@ -53,8 +53,11 @@ def train_wrapper(parameters):
 
     parameters["data_folder"] = "divided_1"
     train_dataset = read_dataset_from_zip(parameters)
-    parameters["data_folder"] = "valid_data"
-    valid_dataset = read_dataset_from_zip(parameters)
+    if not os.path.exists(os.path.join(bench_folder, parameters["benchmark_folder"], "valid_data")):
+        valid_dataset=train_dataset
+    else:
+        parameters["data_folder"] = "valid_data"
+        valid_dataset = read_dataset_from_zip(parameters)
     dataset = {"train": train_dataset, "valid": valid_dataset}
 
     ############### Model initialization ################

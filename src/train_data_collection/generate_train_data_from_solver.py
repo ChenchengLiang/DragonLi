@@ -41,8 +41,10 @@ def main():
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark
+    # folder_list = [folder for folder in get_folders(benchmark_path) if
+    #                "divided" in folder or "valid" in folder]
     folder_list = [folder for folder in get_folders(benchmark_path) if
-                   "divided" in folder or "valid" in folder]
+                   "divided" in folder]
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:

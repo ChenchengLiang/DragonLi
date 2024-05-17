@@ -31,6 +31,15 @@ class EqParser(AbstractParser):
             return Term(Terminal(c))
 
     def parse(self, content: Dict) -> Dict:
+        '''
+        notice that if input the format is for example:
+        Variable:{ABCD}
+        Terminal:{abcd}
+        Equation:{ABCD = ab}
+        such that there is no space between the variables and terminals
+        Then, it cannot contain compound variable name such as V0 (e.g., Variable:{ABCDV0})
+        Using compound variable name need add space between them (e.g., Variable:{A B C D V0})
+        '''
         self.variable_str = content["variables_str"]
         self.terminal_str = content["terminals_str"]
 
@@ -47,16 +56,20 @@ class EqParser(AbstractParser):
         self.file_path = content["file_path"]
 
         def wrap_one_side_str(one_side_str):
+            def contains_integer(s):
+                return any(char.isdigit() for char in s)
             # dealing with "" and empty string
             if one_side_str == "\"\"":
                 wrapped_terms = [self.wrap_to_term(one_side_str)]
             elif len(one_side_str) == 0:
                 wrapped_terms = [Term(EMPTY_TERMINAL)]
             else:
-                if " " in one_side_str:
+                if " " in one_side_str: #multiple variable separated by space
                     wrapped_terms = [self.wrap_to_term(c) for c in one_side_str.split()]
-                else:
+                elif contains_integer(one_side_str): #one fresh variable
                     wrapped_terms = [self.wrap_to_term(one_side_str)]
+                else: #multiple variables no separation
+                    wrapped_terms = [self.wrap_to_term(c) for c in one_side_str]
 
             return wrapped_terms
 
@@ -65,7 +78,6 @@ class EqParser(AbstractParser):
             left_str, right_str = eq_str.split(' = ')
             wrapped_left_terms = wrap_one_side_str(left_str)
             wrapped_right_terms = wrap_one_side_str(right_str)
-
             equation_list.append(Equation(wrapped_left_terms, wrapped_right_terms))
 
         parsed_content = {"variables": self.variables, "terminals": self.terminals, "equation_list": equation_list,
