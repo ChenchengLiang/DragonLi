@@ -5,6 +5,7 @@ from src.solver.DataTypes import Variable, Terminal, Term, Equation, EMPTY_TERMI
 from src.solver.independent_utils import remove_duplicates
 from src.process_benchmarks.parser_utils import parse_smtlib_to_simple_format
 
+
 class AbstractParser(ABC):
     @abstractmethod
     def parse(self, content):
@@ -19,6 +20,7 @@ class EqParser(AbstractParser):
         self.terminals = None
         self.left_terms = None
         self.right_terms = None
+
     def __str__(self):
         return "EqParser"
 
@@ -31,34 +33,43 @@ class EqParser(AbstractParser):
     def parse(self, content: Dict) -> Dict:
         self.variable_str = content["variables_str"]
         self.terminal_str = content["terminals_str"]
+
+        # handle two differernt input format {ABCDE} and {A B C D E}
+        if " " in content["variables_str"]:
+            content["variables_str"] = content["variables_str"].split()
+        if " " in content["terminals_str"]:
+            content["terminals_str"] = content["terminals_str"].split()
+
         self.variables = remove_duplicates([Variable(v) for v in content["variables_str"]])
         self.terminals = remove_duplicates([EMPTY_TERMINAL] + [Terminal(t) for t in content["terminals_str"]])
         self.variable_values = [v.value for v in self.variables]
         self.terminal_values = [t.value for t in self.terminals]
         self.file_path = content["file_path"]
 
-        equation_list=[]
+        def wrap_one_side_str(one_side_str):
+            # dealing with "" and empty string
+            if one_side_str == "\"\"":
+                wrapped_terms = [self.wrap_to_term(one_side_str)]
+            elif len(one_side_str) == 0:
+                wrapped_terms = [Term(EMPTY_TERMINAL)]
+            else:
+                if " " in one_side_str:
+                    wrapped_terms = [self.wrap_to_term(c) for c in one_side_str.split()]
+                else:
+                    wrapped_terms = [self.wrap_to_term(one_side_str)]
+
+            return wrapped_terms
+
+        equation_list = []
         for eq_str in content["equation_str_list"]:
-            left_str, right_str = eq_str.split('=')
-            #dealing with "" and empty string
-            if left_str == "\"\"":
-                left_terms = [self.wrap_to_term(left_str)]
-            elif len(left_str) == 0:
-                left_terms = [Term(EMPTY_TERMINAL)]
-            else:
-                left_terms= [self.wrap_to_term(c) for c in left_str]
-            if right_str == "\"\"":
-                right_terms = [self.wrap_to_term(right_str)]
-            elif len(right_str) == 0:
-                right_terms = [Term(EMPTY_TERMINAL)]
-            else:
-                right_terms = [self.wrap_to_term(c) for c in right_str]
+            left_str, right_str = eq_str.split(' = ')
+            wrapped_left_terms = wrap_one_side_str(left_str)
+            wrapped_right_terms = wrap_one_side_str(right_str)
 
-            equation_list.append(Equation(left_terms,right_terms))
+            equation_list.append(Equation(wrapped_left_terms, wrapped_right_terms))
 
-
-
-        parsed_content = {"variables": self.variables, "terminals": self.terminals,"equation_list":equation_list, "file_path": self.file_path}
+        parsed_content = {"variables": self.variables, "terminals": self.terminals, "equation_list": equation_list,
+                          "file_path": self.file_path}
 
         return parsed_content
 
@@ -76,18 +87,14 @@ class SMT2Parser(AbstractParser):
         return self.eq_parser.parse(content)
 
 
-
-
-
 class Parser:
     def __init__(self, parser: AbstractParser):
         self.parser = parser
 
-
-    def parse(self, file_path: str,zip=None,log=False) -> Dict:
+    def parse(self, file_path: str, zip=None, log=False) -> Dict:
         file_reader = EqReader() if type(self.parser) == EqParser else SMT2Reader()
-        content = file_reader.read(file_path,zip)
-        if log==True:
+        content = file_reader.read(file_path, zip)
+        if log == True:
             print("-" * 10, "Parsing", "-" * 10)
             print("file content: ", content)
         return self.parser.parse(content)
@@ -101,10 +108,9 @@ class AbstractFileReader(ABC):
 
 class EqReader(AbstractFileReader):
 
-
-    def read(self, file_path: str,zip=None) -> Dict:
-        equation_str_list=[]
-        if zip==None:
+    def read(self, file_path: str, zip=None) -> Dict:
+        equation_str_list = []
+        if zip == None:
             with open(file_path, 'r') as f:
                 lines = f.readlines()
         else:
@@ -116,23 +122,22 @@ class EqReader(AbstractFileReader):
 
         variables_str = lines[0].strip().split("{")[1].split("}")[0]
         terminals_str = lines[1].strip().split("{")[1].split("}")[0]
-        #equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
+        # equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
         for line in lines[2:]:
             if line.startswith("Equation"):
-                equation_str_list.append(line.strip().split(": ")[1].replace(" ", ""))
+                equation_str_list.append(line.strip().split(": ")[1])
 
-
-
-        content = {"variables_str": variables_str, "terminals_str": terminals_str, "equation_str_list": equation_str_list,"file_path": file_path}
+        content = {"variables_str": variables_str, "terminals_str": terminals_str,
+                   "equation_str_list": equation_str_list, "file_path": file_path}
         return content
 
 
 class SMT2Reader(AbstractFileReader):
     def read(self, file_path: str) -> Dict:
-        content={}
-        with open(file_path,'r') as smtlib_input:
+        content = {}
+        with open(file_path, 'r') as smtlib_input:
             parsed_format = parse_smtlib_to_simple_format(smtlib_input.read())
-            content["variables_str"]=parsed_format["Variables"]
+            content["variables_str"] = parsed_format["Variables"]
             content["terminals_str"] = parsed_format["Terminals"]
             content["equation_str_list"] = parsed_format["Equation"]
             content["file_path"] = file_path

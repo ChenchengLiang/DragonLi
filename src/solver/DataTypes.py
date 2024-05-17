@@ -207,7 +207,7 @@ class Equation:
 
     @property
     def variable_str(self) -> str:
-        return "".join([item.value for item in self.variable_list])
+        return " ".join([item.value for item in self.variable_list])
 
     @property
     def variable_number(self) -> int:
@@ -229,7 +229,7 @@ class Equation:
 
     @property
     def terminal_str(self) -> str:
-        return "".join([x.value for x in self.termimal_list_without_empty_terminal])
+        return " ".join([x.value for x in self.termimal_list_without_empty_terminal])
 
     @property
     def terminal_numbers(self) -> int:
@@ -310,11 +310,31 @@ class Equation:
         nodes, edges = graph_func(self.left_terms, self.right_terms)
         draw_graph(nodes, edges, file_path)
 
+    def output_eq_file_rank(self, file_name, satisfiability=UNKNOWN,answer_file=False):
+        left_str_list: List[str] = [x.get_value_str for x in self.left_terms]
+        right_str_list: List[str] = [x.get_value_str for x in self.right_terms]
+
+        # Format the content of the file
+        content = f"Variables {{{''.join(self.variable_str)}}}\n"
+        content += f"Terminals {{{''.join(self.terminal_str)}}}\n"
+        left_str=" ".join(left_str_list)
+        right_str=" ".join(right_str_list)
+        content += f"Equation: {left_str} = {right_str}\n"
+        content += "SatGlucose(100)"
+        with open(file_name + ".eq", "w") as f:
+            f.write(content)
+        if answer_file:
+            with open(file_name + ".answer", "w") as f:
+                f.write(satisfiability)
+
+
     def output_eq_file(self, file_name, satisfiability=UNKNOWN,answer_file=False):
         # replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
+
         eq = self.eq_str.split("=")
         left_str_list: List[str] = eq[0].split("#")
         right_str_list: List[str] = eq[1].split("#")
+
 
         # Format the content of the file
         content = f"Variables {{{''.join(self.variable_str)}}}\n"

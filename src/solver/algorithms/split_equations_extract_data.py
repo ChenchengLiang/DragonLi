@@ -126,7 +126,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             for index, eq in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
                 current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
-                                                                edge_label=f"eq:{index}")
+                                                                edge_label=f"eq:{index}: {current_eq.eq_str}")
 
                 children, fresh_variable_counter = apply_rules(current_eq, separated_formula,
                                                                self.fresh_variable_counter)
@@ -176,9 +176,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     if only_5_and_6 == True:
                         current_node[1]["output_to_file"]=True
                         _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
-                        print("total eqs", len(current_formula.eq_list))
-                        for eq, label in zip(current_formula.eq_list, label_list):
-                            print(eq.eq_str, label)
+                        # print("total eqs", len(current_formula.eq_list))
+                        # for eq, label in zip(current_formula.eq_list, label_list):
+                        #     print(eq.eq_str, label)
                 else:  # fix or random
                     current_node[1]["output_to_file"] = True
                     _,label_list=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node[0])
@@ -200,7 +200,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             satisfiability_list.append(satisfiability)
             back_track_count_list.append(branch_number)
             one_eq_file_name = f"{self.file_name}@{node_id}:{index}"
-            eq.output_eq_file(one_eq_file_name, satisfiability)
+
+            eq.output_eq_file_rank(one_eq_file_name, satisfiability)
             middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name) + ".eq")
 
 
