@@ -31,7 +31,10 @@ class SplitEquations(AbstractAlgorithm):
         self.nodes = []
         self.edges = []
         self.fresh_variable_counter = 0
+        self.total_gnn_call = 0
+        self.total_category_call = 0
         self.total_split_eq_call = 0
+        self.total_rank_call = 0
         self.total_node_number = 1
         self.eq_node_number = 0
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
@@ -90,6 +93,13 @@ class SplitEquations(AbstractAlgorithm):
 
             satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
                                                         edge_label="start")
+        print(f"----- run summary -----")
+        print(f"total_split_eq_call:{self.total_split_eq_call}")
+        print(f"total_rank_call:{self.total_rank_call}")
+        print(f"total_gnn_call:{self.total_gnn_call}")
+        print(f"total_category_call:{self.total_category_call}")
+
+
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
@@ -159,12 +169,14 @@ class SplitEquations(AbstractAlgorithm):
         if only_5_and_6 == True and len(categoried_eq_list) > 1:
             sorted_eq_list = self._order_equations_gnn(f).eq_list
         else:
+            self.total_category_call += 1
             sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
         return Formula(sorted_eq_list)
 
     def _order_equations_gnn(self, f: Formula) -> Formula:
         # todo check soundness of this sorted prediction with 100% accuracy model
+        self.total_gnn_call += 1
 
         # form input graphs
         isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
@@ -218,7 +230,8 @@ class SplitEquations(AbstractAlgorithm):
             return UNKNOWN
 
     def order_equations_func_wrapper(self, f: Formula) -> Formula:
-        if f.eq_list_length>1:
+        if f.eq_list_length > 1:
+            self.total_rank_call += 1
             return self.order_equations_func(f)
         else:
             return f
