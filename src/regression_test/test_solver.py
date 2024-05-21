@@ -12,21 +12,31 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-from src.solver.Constants import bench_folder
+from src.solver.Constants import bench_folder, project_folder
 from src.solver.algorithms import ElimilateVariablesRecursive, SplitEquations
 from src.regression_test.utils import run_solvers, write_to_csv, check_consistency
 from tqdm import tqdm
 
 
 def main():
+    graph_type = "graph_1"
+    model_type = "GCNSplit"
+    gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
+
     algorithm_configuration_list: List[Tuple[str, List[str]]] = [
         (ElimilateVariablesRecursive, ["fixed", f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",
-                          f"--termination_condition termination_condition_0"]),
-        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method random",
-                          f"--termination_condition termination_condition_0"]),
+        # (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method fixed",
+        #                   f"--termination_condition termination_condition_0"]),
+        # (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method random",
+        #                   f"--termination_condition termination_condition_0"]),
         (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method category",
                           f"--termination_condition termination_condition_0"]),
+        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method category_gnn",
+                          f"--termination_condition termination_condition_0",
+                          f"--gnn_model_path {gnn_model_path}"]),
+        (SplitEquations, ["fixed", f"--algorithm SplitEquations", f"--order_equations_method gnn",
+                          f"--termination_condition termination_condition_0",
+                          f"--gnn_model_path {gnn_model_path}"]),
 
     ]
     other_solver_list=["z3", "cvc5", "ostrich", "woorpje","z3-noodler"]

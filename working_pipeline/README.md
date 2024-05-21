@@ -1,6 +1,6 @@
-# boosting-string-equation-solving-by-GNNs (local process for rank task)
+# boosting-string-equation-solving-by-GNNs 
 
-Woking pipeline:
+Woking pipeline (local process for rank task):
 
 1. Run generate_train_data_from_solver.py to generate train data
 Inputs: task name, folder name 
@@ -22,3 +22,7 @@ Outputs: Models/model_2_graph_1_GCNSplit.pth
 Train can be monitored by mlflow at http://127.0.0.1:5000
 
 5. Run main.py to verify results
+
+
+Woking pipeline (cluster process for rank task):
+

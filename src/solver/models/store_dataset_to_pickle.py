@@ -34,7 +34,7 @@ def main():
     # parameters = {"node_type": 4}
     # func=prepare_and_save_datasets_task_3
 
-    benchmark = "choose_eq_train"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"#"choose_eq_train"
     parameters = {"node_type": 4}
     func=prepare_and_save_datasets_rank
 

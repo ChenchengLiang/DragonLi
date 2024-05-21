@@ -29,7 +29,7 @@ from src.process_benchmarks.utils import run_on_one_problem
 
 
 def main():
-    benchmark = "choose_eq_train"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"#"choose_eq_train"
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
