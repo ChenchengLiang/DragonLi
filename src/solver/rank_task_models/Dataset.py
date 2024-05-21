@@ -3,8 +3,6 @@ import os
 import sys
 import zipfile
 
-from src.solver.independent_utils import color_print, initialize_one_hot_category_count
-
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
 import dgl
@@ -18,6 +16,7 @@ from tqdm import tqdm
 import time
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.independent_utils import time_it
+from src.solver.independent_utils import color_print, initialize_one_hot_category_count
 
 
 def get_one_dgl_graph_concatenated_with_other_graphs():

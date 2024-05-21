@@ -3,8 +3,6 @@ import shutil
 import sys
 import configparser
 
-from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -26,6 +24,8 @@ from src.solver.DataTypes import Equation
 from src.solver.Constants import project_folder, bench_folder, UNKNOWN, SAT, UNSAT, recursion_limit
 from src.solver.independent_utils import strip_file_name_suffix, zip_folder, get_folders
 from src.process_benchmarks.utils import run_on_one_problem
+
+from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 
 
 def main():

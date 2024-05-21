@@ -49,3 +49,4 @@ def read_dataset_from_zip(parameters,data_folder):
 
     mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
     return dataset
+

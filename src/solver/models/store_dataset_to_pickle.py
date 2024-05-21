@@ -2,7 +2,6 @@ import configparser
 import os
 import sys
 
-from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -18,7 +17,7 @@ from src.solver.independent_utils import save_to_pickle, compress_to_zip, get_fo
 from Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
     WordEquationDatasetMultiClassification, WordEquationDatasetMultiClassificationLazy
 from src.solver.Constants import project_folder, bench_folder, recursion_limit
-
+from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
 
 def main():
     # draw graphs from train folder

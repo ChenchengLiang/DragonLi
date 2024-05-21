@@ -2,8 +2,6 @@ import configparser
 import os
 import sys
 
-from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -27,7 +25,9 @@ from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, 
 import torch.nn as nn
 import numpy as np
 import random
-from src.solver.rank_task_models.train_utils import read_dataset_from_zip
+from src.solver.rank_task_models.train_utils import read_dataset_from_zip, initialize_model
+from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model
+
 
 def main():
     parameters = {}
@@ -143,27 +143,6 @@ def mlflow_wrapper(parameters):
     mlflow_ui_process.terminate()
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
 
-
-def initialize_model(parameters):
-    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"], parent_node=False)
-
-    # Decide on the GNN type based on parameters
-    embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
-    if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
-        raise ValueError("Unsupported model type")
-
-    gnn_model = GNNRankTask1(
-        input_feature_dim=parameters["node_type"],
-        gnn_hidden_dim=parameters["gnn_hidden_dim"],
-        gnn_layer_num=parameters["gnn_layer_num"],
-        gnn_dropout_rate=parameters["gnn_dropout_rate"],
-        embedding_type=embedding_type
-    )
-    # Initialize GraphClassifiers with the respective GNN models
-    model = GraphClassifier(gnn_model, classifier_2)
-    return model
 
 
 

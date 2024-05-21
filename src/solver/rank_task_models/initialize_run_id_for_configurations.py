@@ -2,8 +2,6 @@ import configparser
 import os
 import sys
 
-from src.solver.rank_task_models.train_utils import initialize_model, read_dataset_from_zip
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -28,6 +26,10 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
                                           validation_phase,
                                           initialize_train_objects, log_and_save_best_model, save_checkpoint,
                                           update_config_file, data_loader_2)
+
+from src.solver.models.utils import device_info
+from src.solver.rank_task_models.train_utils import initialize_model, read_dataset_from_zip
+
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -55,11 +57,7 @@ def main():
 
 
 def initiate_run_id_for_a_configuration(train_config):
-    print("-"*10)
-    color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}","green")
-    color_print(f"torch vesion: {torch.__version__}","green")
-    color_print(f"dgl backend: {dgl.backend.backend_name}", "green")
-    print("-" * 10)
+    device_info()
     train_config["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     benchmark_folder = config['Path']['woorpje_benchmarks']
     today = datetime.date.today().strftime("%Y-%m-%d")
