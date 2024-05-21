@@ -734,10 +734,11 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 
-
+    print(dataset["train"][0])
     first_label = dataset["train"][0][1]
     label_size =dataset['train']._label_size
-    print(dataset["train"][0])
+    parameters["label_size"]=label_size
+
 
     is_binary_classification = len(first_label.shape) == 0 or (
             len(first_label.shape) == 1 and first_label.shape[0] == 1)

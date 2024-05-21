@@ -84,7 +84,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                                                 previous_branch_node=initial_node,
                                                                 edge_label="start")
 
-        print(f"----- total_output_branches:{self.total_output_branches} -----")
+        #print(f"----- total_output_branches:{self.total_output_branches} -----")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}

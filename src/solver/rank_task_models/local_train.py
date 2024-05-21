@@ -27,6 +27,7 @@ from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, 
 import torch.nn as nn
 import numpy as np
 import random
+from src.solver.rank_task_models.train_utils import read_dataset_from_zip
 
 def main():
     parameters = {}
@@ -51,13 +52,12 @@ def train_wrapper(parameters):
 
     parameters["graph_type"] = "graph_1"
 
-    parameters["data_folder"] = "divided_1"
-    train_dataset = read_dataset_from_zip(parameters)
+
+    train_dataset = read_dataset_from_zip(parameters,"divided_1")
     if not os.path.exists(os.path.join(bench_folder, parameters["benchmark_folder"], "valid_data")):
         valid_dataset=train_dataset
     else:
-        parameters["data_folder"] = "valid_data"
-        valid_dataset = read_dataset_from_zip(parameters)
+        valid_dataset = read_dataset_from_zip(parameters,"valid_data")
     dataset = {"train": train_dataset, "valid": valid_dataset}
 
     ############### Model initialization ################
@@ -166,27 +166,6 @@ def initialize_model(parameters):
     return model
 
 
-def read_dataset_from_zip(parameters):
-    data_folder = parameters["data_folder"]
-    pickle_folder = os.path.join(bench_folder, parameters["benchmark_folder"], data_folder)
-    graph_type = parameters["graph_type"]
-
-    # Filenames for the ZIP files
-    zip_file = os.path.join(pickle_folder, f"dataset_{graph_type}.pkl.zip")
-    if os.path.exists(zip_file):
-        print("-" * 10, "load dataset from zipped pickle:", data_folder, "-" * 10)
-        # Names of the pickle files inside ZIP archives
-        pickle_name = f"dataset_{graph_type}.pkl"
-        # Load the datasets directly from ZIP files
-        dataset = load_from_pickle_within_zip(zip_file, pickle_name)
-        dataset_statistics = dataset.statistics()
-    else:
-        color_print(f"Error: ZIP file not found: {zip_file}", RED)
-        dataset = None
-        dataset_statistics = ""
-
-    mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
-    return dataset
 
 
 if __name__ == '__main__':

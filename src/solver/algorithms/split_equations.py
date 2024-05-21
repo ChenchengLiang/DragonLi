@@ -110,7 +110,7 @@ class SplitEquations(AbstractAlgorithm):
 
         current_node = self.record_node_and_edges(input_formula, previous_node, edge_label)
 
-        print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+        #print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
