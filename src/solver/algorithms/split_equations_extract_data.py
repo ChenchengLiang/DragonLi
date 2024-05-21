@@ -84,7 +84,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                                                 previous_branch_node=initial_node,
                                                                 edge_label="start")
 
-        #print(f"----- total_output_branches:{self.total_output_branches} -----")
+        print(f"----- total_output_branches:{self.total_output_branches} -----")
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
@@ -92,7 +92,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def split_eq(self, original_formula: Formula, current_depth: int, previous_branch_node: Tuple[int, Dict],
                  edge_label: str) -> Tuple[str, Formula, Tuple[int, Dict]]:
         self.total_split_eq_call += 1
-        print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+        #print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 

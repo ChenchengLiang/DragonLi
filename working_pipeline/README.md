@@ -30,4 +30,21 @@ Woking pipeline (cluster process for rank task):
 Set parameters in src/train_data_collection/generate_train_data_from_solver.py
 sh word_equation_submit_generate_train_data.sh
 
+2. Alvis:
+Set parameters in src/train_data_collection/draw_graphs_for_train_data.py
+sh word_equation_submit_draw_graphs_for_train_data.sh
+
+3. Alvis:
+Set parameters in src/train_data_collection/store_dataset_to_pickle.py
+sh word_equation_submit_store_dataset_to_pickle.sh
+
+4. Alvis:
+Set parameters in src/solver/model/generate_configurations.py
+sh word_equation_submit_initialize_configurations.sh
+
+5. Alvis:
+sh word_equation_submit_multiple_train_continuously.sh
+
+
+
 
