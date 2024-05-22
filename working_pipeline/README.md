@@ -27,8 +27,8 @@ Train can be monitored by mlflow at http://127.0.0.1:5000
 Woking pipeline (cluster process for rank task):
 
 1. Alvis:
-Set parameters in src/train_data_collection/generate_train_data_from_solver.py
-sh word_equation_submit_generate_train_data.sh
+Set parameters in src/train_data_collection/generate_train_data_from_solver_one_folder.py
+sh word_equation_submit_generate_train_data_parallel.sh benchmark
 
 2. Alvis:
 Set parameters in src/train_data_collection/draw_graphs_for_train_data.py

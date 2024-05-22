@@ -33,7 +33,7 @@ def main():
     # parameters = {"node_type": 4}
     # func=prepare_and_save_datasets_task_3
 
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_new_small_test"#"choose_eq_train"
+    benchmark = "rank_smtlib_2023-05-05_without_woorpje_train_300_each_folder"#"choose_eq_train"
     parameters = {"node_type": 4}
     func=prepare_and_save_datasets_rank
 

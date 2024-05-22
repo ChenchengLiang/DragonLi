@@ -1,7 +1,6 @@
+
 import sys
 import configparser
-
-
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -11,16 +10,25 @@ sys.path.append(path)
 
 import sys
 from src.solver.Constants import project_folder
-
+import argparse
 sys.path.append(project_folder)
 from src.solver.Constants import bench_folder, recursion_limit
-from src.solver.independent_utils import get_folders
 
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
+
 def main():
-    benchmark = "rank_smtlib_2023-05-05_without_woorpje_train_300_each_folder"#"choose_eq_train"
+    # parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('benchmark', type=str, default=None,
+                            help='benchmark name')
+    arg_parser.add_argument('folder', type=str, default=None,
+                            help='divided_i or valid_data folder')
+    args = arg_parser.parse_args()
+    # Accessing the arguments
+    benchmark = args.benchmark
+    folder=args.folder
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
@@ -32,17 +40,8 @@ def main():
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark
-    folder_list = [folder for folder in get_folders(benchmark_path) if
-                   "divided" in folder or "valid" in folder]
-    # folder_list = [folder for folder in get_folders(benchmark_path) if
-    #                "divided" in folder]
-    print(folder_list)
-    if len(folder_list) != 0:
-        for folder in folder_list:
-            generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters)
-    else:
-        generate_train_data_in_one_folder(benchmark_path, algorithm, algorithm_parameters)
 
+    generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters)
 
 if __name__ == '__main__':
     main()
