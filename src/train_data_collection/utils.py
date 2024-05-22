@@ -259,3 +259,38 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")
     shutil.rmtree(train_eq_folder)
     print("done")
+
+
+def draw_graph_for_one_folder(graph_type, benchmark_path, task):
+
+    if task == "task_1":
+        draw_func = output_eq_graphs  # task 1
+    elif task == "task_2":
+        draw_func = output_pair_eq_graphs  # task 2
+    elif task == "task_3":
+        draw_func = output_split_eq_graphs  # task 3
+    elif task == "rank_task_1": #G:List[graph]
+        draw_func = output_rank_eq_graphs
+
+
+    train_eq_folder = benchmark_path+ "/train"
+    train_zip_file=train_eq_folder+".zip"
+    for graph_type in [graph_type]:
+        # prepare folder
+        graph_folder = benchmark_path + "/" + graph_type
+
+        if os.path.exists(graph_folder):
+            shutil.rmtree(graph_folder)
+            os.mkdir(graph_folder)
+        else:
+            os.mkdir(graph_folder)
+
+        # draw one type graphs
+        print(f"- draw {graph_type} -")
+        draw_func(zip_file=train_zip_file,graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
+
+        # compress
+        zip_folder(folder_path=graph_folder, output_zip_file=graph_folder + ".zip")
+        shutil.rmtree(graph_folder)
+
+    print("done")

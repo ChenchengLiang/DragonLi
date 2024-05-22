@@ -11,8 +11,7 @@ sys.path.append(".")
 from src.solver.models.train_util import check_run_exists, train_multiple_models_separately
 from src.solver.algorithms import ElimilateVariablesRecursive
 from src.solver.independent_utils import get_folders, color_print
-from src.train_data_collection.draw_graphs_for_train_data import draw_graph_for_one_folder
-from src.train_data_collection.utils import generate_train_data_in_one_folder
+from src.train_data_collection.utils import generate_train_data_in_one_folder, draw_graph_for_one_folder
 
 import argparse
 
