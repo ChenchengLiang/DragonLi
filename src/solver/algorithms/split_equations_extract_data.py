@@ -76,7 +76,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def run(self):
         original_formula:Formula = Formula(list(self.equation_list))
 
+        # if there is only one equation, no need to extract rank data
+        if len(original_formula.eq_list) <=1:
+            color_print("Only one equation, no need to extract rank data", "purple")
+            return {"result": UNKNOWN, "assignment": self.assignment, "equation_list": self.equation_list,
+                    "variables": self.variables, "terminals": self.terminals}
 
+        #initialize the tree with a node
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
                 "back_track_count": 0})
