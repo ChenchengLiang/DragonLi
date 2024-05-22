@@ -85,7 +85,8 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/7/test7.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -139,9 +140,9 @@ def main():
                                            "termination_condition": "termination_condition_4",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
     #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

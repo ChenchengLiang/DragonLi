@@ -37,6 +37,7 @@ class SplitEquations(AbstractAlgorithm):
         self.total_rank_call = 0
         self.total_node_number = 1
         self.eq_node_number = 0
+        self.termination_condition_max_depth= 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
@@ -79,8 +80,17 @@ class SplitEquations(AbstractAlgorithm):
                 initial_node: Tuple[int, Dict] = (
                     0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                         "back_track_count": 0})
-                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
-                                                            previous_node=initial_node, edge_label="start")
+                try:
+                    satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
+                                                                previous_node=initial_node, edge_label="start")
+                except RecursionError as e:
+                    if "maximum recursion depth exceeded" in str(e):
+                        satisfiability = RECURSION_DEPTH_EXCEEDED
+                        # print(RECURSION_DEPTH_EXCEEDED)
+                    else:
+                        satisfiability = RECURSION_ERROR
+                        # print(RECURSION_ERROR)
+
                 if satisfiability != UNKNOWN:
                     break
 
@@ -90,9 +100,17 @@ class SplitEquations(AbstractAlgorithm):
                 0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
                     "back_track_count": 0})
             self.nodes.append(initial_node)
+            try:
+                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
+                                                            edge_label="start")
+            except RecursionError as e:
+                if "maximum recursion depth exceeded" in str(e):
+                    satisfiability = RECURSION_DEPTH_EXCEEDED
+                    # print(RECURSION_DEPTH_EXCEEDED)
+                else:
+                    satisfiability = RECURSION_ERROR
+                    # print(RECURSION_ERROR)
 
-            satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
-                                                        edge_label="start")
         print(f"----- run summary -----")
         print(f"total_split_eq_call:{self.total_split_eq_call}")
         print(f"total_rank_call:{self.total_rank_call}")
@@ -110,7 +128,8 @@ class SplitEquations(AbstractAlgorithm):
 
         current_node = self.record_node_and_edges(input_formula, previous_node, edge_label)
 
-        #print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+        if self.total_split_eq_call% 10000 == 0:
+            print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
         # early termination condition
         res = self.check_termination_condition_func(current_depth)
@@ -223,10 +242,12 @@ class SplitEquations(AbstractAlgorithm):
         return children
 
     def early_termination_condition_0(self, current_depth: int):
-        return None
+        if current_depth > self.termination_condition_max_depth:
+            return UNKNOWN
+
 
     def early_termination_condition_1(self, current_depth: int):
-        if current_depth > self.restart_max_deep:
+        if current_depth > self.restart_max_deep or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def order_equations_func_wrapper(self, f: Formula) -> Formula:

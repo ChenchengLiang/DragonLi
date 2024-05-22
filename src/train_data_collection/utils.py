@@ -1,15 +1,19 @@
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.Solver import Solver
 from src.solver.algorithms import differentiate_isomorphic_equations
-from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder
+from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
+    compress_to_zip
 from src.solver.Parser import Parser, EqParser
 import glob
+
+from src.solver.models.Dataset import WordEquationDatasetMultiClassification
+from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
 from src.solver.utils import graph_func_map
 from typing import List, Tuple, Dict, Union, Optional, Callable
 import os
 import shutil
 import json
-from src.solver.Constants import satisfiability_to_int_label, UNKNOWN, SAT, UNSAT
+from src.solver.Constants import satisfiability_to_int_label, UNKNOWN, SAT, UNSAT, bench_folder
 from src.solver.DataTypes import Equation, Edge, Terminal, Term, SeparateSymbol
 from src.solver.algorithms.utils import merge_graphs, graph_to_gnn_format, concatenate_eqs
 from src.solver.visualize_util import draw_graph
@@ -294,3 +298,52 @@ def draw_graph_for_one_folder(graph_type, benchmark_path, task):
         shutil.rmtree(graph_folder)
 
     print("done")
+
+
+def store_dataset_to_pickle_one_folder(graph_type, folder, parameters, func):
+    parameters["folder"] = folder
+    parameters["graph_type"] = graph_type
+
+    func(parameters)
+
+    print("Done")
+
+
+def _get_benchmark_folder_and_graph_folder(parameters):
+    benchmark_folder = os.path.join(bench_folder, parameters["folder"])
+    graph_folder = os.path.join(benchmark_folder, parameters["graph_type"])
+    graph_type = parameters["graph_type"]
+    print("folder:", parameters["folder"])
+    return benchmark_folder, graph_folder, graph_type
+
+
+def prepare_and_save_datasets_rank(parameters):
+    benchmark_folder, graph_folder, graph_type = _get_benchmark_folder_and_graph_folder(parameters)
+    pickle_file = os.path.join(benchmark_folder, f"dataset_{graph_type}.pkl")
+    dataset = WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
+    # Save the datasets to pickle files
+    save_to_pickle(dataset, pickle_file)
+    # Compress pickle files into ZIP files
+    compress_to_zip(pickle_file)
+
+
+def prepare_and_save_datasets_task_3(parameters):
+    benchmark_folder, graph_folder, graph_type = _get_benchmark_folder_and_graph_folder(parameters)
+
+    # Filenames for the pickle files
+    pickle_file_2 = os.path.join(benchmark_folder, f"dataset_2_{graph_type}.pkl")
+    pickle_file_3 = os.path.join(benchmark_folder, f"dataset_3_{graph_type}.pkl")
+
+    # Prepare datasets
+    dataset_2 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+                                                       label_size=2)
+    dataset_3 = WordEquationDatasetMultiClassification(graph_folder=graph_folder, node_type=parameters["node_type"],
+                                                       label_size=3)
+
+    # Save the datasets to pickle files
+    save_to_pickle(dataset_2, pickle_file_2)
+    save_to_pickle(dataset_3, pickle_file_3)
+
+    # Compress pickle files into ZIP files
+    compress_to_zip(pickle_file_2)
+    compress_to_zip(pickle_file_3)

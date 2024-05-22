@@ -26,24 +26,38 @@ Train can be monitored by mlflow at http://127.0.0.1:5000
 
 Woking pipeline (cluster process for rank task):
 
-1. Alvis:
-Set parameters in src/train_data_collection/generate_train_data_from_solver_one_folder.py
-sh word_equation_submit_generate_train_data_parallel.sh benchmark
+1. Generate train data:
+Local: Set parameters in src/train_data_collection/generate_train_data_from_solver_one_folder.py
+Alvis: sh word_equation_submit_generate_train_data_parallel.sh benchmark
 
-2. Alvis:
-Set parameters in src/train_data_collection/draw_graphs_for_train_data.py
-sh word_equation_submit_draw_graphs_for_train_data.sh
+2. Draw graphs for train data:
+Local: Set parameters in src/train_data_collection/draw_graphs_for_train_data_one_folder.py
+Alvis: sh word_equation_submit_draw_graphs_for_train_data_parallel.sh benchmark
 
-3. Alvis:
-Set parameters in src/train_data_collection/store_dataset_to_pickle.py
-sh word_equation_submit_store_dataset_to_pickle.sh
+3. Store to pickle data:
+Local: Set parameters in src/train_data_collection/store_dataset_to_pickle_one_folder.py
+Alvis: sh word_equation_submit_store_dataset_to_pickle_parallel.sh benchmark
 
-4. Alvis:
-Set parameters in src/solver/model/generate_configurations.py
-sh word_equation_submit_initialize_configurations.sh
+4. Initialize train configurations:
+Local: Set parameters in src/solver/model/generate_configurations.py
+Alvis: sh word_equation_submit_initialize_configurations.sh
 
-5. Alvis:
-sh word_equation_submit_multiple_train_continuously.sh
+5. Train
+Alvis: sh word_equation_submit_multiple_train_continuously.sh
+
+6. Select models send to UPPMAX
+Local: in /home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns run sh get_models_by_run_id.sh run_id
+Send to Uppmax path /home/cheli243/boosting-string-equation-solving-by-GNNs/Models
+
+
+7. Evaluate:
+Local: configurate evaluation parameters in generate_eval_configurations.py
+Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
+Uppmax: sh send_summary_back.sh
+
+8. Summary evaluation:
+Local: sh merge_and_summary.sh $benchmark_name # this will call merge_summary_folders.py and summary_solutions.py
+
 
 
 

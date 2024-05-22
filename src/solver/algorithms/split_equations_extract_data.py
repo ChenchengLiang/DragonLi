@@ -36,6 +36,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.found_path = 0
         self.total_output_branches = 0
         # control path number for extraction
+        self.termination_condition_max_depth = 10000
         self.max_deep_for_extraction = 3
         self.max_found_sat_path_extraction = 1
         self.max_found_path_extraction = 20
@@ -66,23 +67,34 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.parameters["termination_condition"]]
 
         sys.setrecursionlimit(recursion_limit)
-        print("recursion limit number", sys.getrecursionlimit())
+        #print("recursion limit number", sys.getrecursionlimit())
 
         self.log_enabled = True
         self.png_edge_label = True
 
     @log_control
     def run(self):
-        original_formula = Formula(list(self.equation_list))
+        original_formula:Formula = Formula(list(self.equation_list))
+
 
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
                 "back_track_count": 0})
         self.nodes.append(initial_node)
 
-        satisfiability, new_formula, child_node = self.split_eq(original_formula, current_depth=0,
-                                                                previous_branch_node=initial_node,
-                                                                edge_label="start")
+
+        try:
+            satisfiability, new_formula, child_node = self.split_eq(original_formula, current_depth=0,
+                                                                    previous_branch_node=initial_node,
+                                                                    edge_label="start")
+
+        except RecursionError as e:
+            if "maximum recursion depth exceeded" in str(e):
+                satisfiability = RECURSION_DEPTH_EXCEEDED
+                # print(RECURSION_DEPTH_EXCEEDED)
+            else:
+                satisfiability = RECURSION_ERROR
+                # print(RECURSION_ERROR)
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
 
@@ -252,22 +264,24 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         return children
 
     def early_termination_condition_0(self, current_depth: int):
-        return None
+        if current_depth > self.termination_condition_max_depth:
+            return UNKNOWN
+
 
     def early_termination_condition_1(self, current_depth: int):
-        if current_depth > self.restart_max_deep:
+        if current_depth > self.restart_max_deep or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def early_termination_condition_2(self, current_depth: int):
-        if current_depth > self.max_deep_for_extraction:
+        if current_depth > self.max_deep_for_extraction or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def early_termination_condition_3(self, current_depth: int):
-        if self.found_path >= self.max_found_path_extraction:
+        if self.found_path >= self.max_found_path_extraction or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def early_termination_condition_4(self, current_depth: int):
-        if self.found_sat_path >= self.max_found_sat_path_extraction:
+        if self.found_sat_path >= self.max_found_sat_path_extraction or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def visualize(self, file_path: str, graph_func: Callable):
