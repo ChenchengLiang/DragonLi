@@ -20,7 +20,7 @@ import torch
 import signal
 
 def main():
-    num_epochs=20
+    num_epochs=300
     task="rank_task_1"#"task_3"
     node_type=4
     learning_rate=0.001

@@ -57,11 +57,29 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], sum
         os.mkdir(summary_folder)
     # Name of the CSV file to write to
     if len(parameters_list)>2:
-        parameters_str_list=([parameters_list[0]] +
-                             [parameters_list[1].replace("--termination_condition ", "")] +
-                             [parameters_list[2].replace("--graph_type ", "")] +
-                             [parameters_list[3][parameters_list[3].rfind("_")+1:parameters_list[3].rfind(".")]]
-                             )
+        if "SplitEquations" in parameters_list[3]: #deal with differernt algorithm
+
+            if len(parameters_list)==5:
+                parameters_str_list = ([parameters_list[0]] +
+                                       [parameters_list[1].replace("--termination_condition ", "")] +
+                                       [parameters_list[4].replace("--order_equations_method ", "")]
+                                       )
+            else:
+                parameters_str_list = ([parameters_list[0]] +
+                                       [parameters_list[1].replace("--termination_condition ", "")] +
+                                       [parameters_list[2].replace("--graph_type ", "")] +
+                                       [parameters_list[4].replace("--order_equations_method ", "")]
+                                       [parameters_list[5][
+                                        parameters_list[5].rfind("_") + 1:parameters_list[5].rfind(".")]]
+                                       # deal with model path
+                                       )
+        else:
+            parameters_str_list=([parameters_list[0]] +
+                                 [parameters_list[1].replace("--termination_condition ", "")] +
+                                 [parameters_list[2].replace("--graph_type ", "")] +
+                                 [parameters_list[4][parameters_list[4].rfind("_")+1:parameters_list[4].rfind(".")]] #deal with model path
+                                 )
+
     elif len(parameters_list)==2:
         parameters_str_list = ([parameters_list[0]] +
                                [parameters_list[1].replace("--termination_condition ", "")]
