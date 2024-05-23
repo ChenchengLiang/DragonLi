@@ -24,12 +24,12 @@ def main():
         ["this", ["fixed", "--termination_condition termination_condition_0",
                   f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
-                  f"--order_equations_method category",
+                  f"--order_equations_method category"
                   ]],
         ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}"
+                  f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
-                  f"--order_equations_method category_random",
+                  f"--order_equations_method category_random"
                   ]],
 
         # gnn based configurations
@@ -37,6 +37,12 @@ def main():
                   f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
                   f"--order_equations_method category_gnn",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method gnn",
                   f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
                   f"--gnn_task {task}"]],
 
