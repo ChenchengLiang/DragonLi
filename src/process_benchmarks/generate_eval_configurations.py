@@ -37,7 +37,7 @@ def main():
                   f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
                   f"--order_equations_method category_gnn",
-                  "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
                   f"--gnn_task {task}"]],
 
         # ["this", ["random", f"--termination_condition termination_condition_0"]],

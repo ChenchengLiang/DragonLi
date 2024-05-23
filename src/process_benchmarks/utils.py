@@ -68,7 +68,7 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str,float, float]], sum
                 parameters_str_list = ([parameters_list[0]] +
                                        [parameters_list[1].replace("--termination_condition ", "")] +
                                        [parameters_list[2].replace("--graph_type ", "")] +
-                                       [parameters_list[4].replace("--order_equations_method ", "")]
+                                       [parameters_list[4].replace("--order_equations_method ", "")] +
                                        [parameters_list[5][
                                         parameters_list[5].rfind("_") + 1:parameters_list[5].rfind(".")]]
                                        # deal with model path
