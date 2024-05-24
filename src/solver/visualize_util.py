@@ -240,7 +240,7 @@ def draw_graph(nodes, edges,filename=""):
     from src.solver.DataTypes import Variable, Terminal, Operator,SeparateSymbol,IsomorphicTailSymbol,GlobalVariableOccurrenceSymbol,GlobalTerminalOccurrenceSymbol
 
     equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black",SeparateSymbol:"yellow",
-                                     IsomorphicTailSymbol:"yellow",GlobalVariableOccurrenceSymbol:"orange",GlobalTerminalOccurrenceSymbol:"purple"}
+                                     IsomorphicTailSymbol:"yellow",GlobalVariableOccurrenceSymbol:"yellow",GlobalTerminalOccurrenceSymbol:"purple"}
     dot = Digraph()
     # Set newrank to true for more control over ranking
     dot.attr(newrank='true')
