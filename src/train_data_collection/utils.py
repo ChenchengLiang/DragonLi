@@ -73,38 +73,39 @@ def _read_label_and_eqs_for_rank(zip, f, parser):
     split_eq_list: List[Equation] = [parser.parse(split_eq_file, zip)["equation_list"][0] for split_eq_file in
                                      rank_eq_file_list]
 
+    #isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
 
-    isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
-
-    return isomorphic_differentiated_eq_list, rank_eq_file_list, json_dict["label_list"], json_dict[
+    return split_eq_list, rank_eq_file_list, json_dict["label_list"], json_dict[
         "satisfiability_list"]
 
+
 def _get_global_info(eq_list: List[Equation]):
-    global_info={}
+    global_info = {}
     variable_global_occurrences = {}
     terminal_global_occurrences = {}
     for eq in eq_list:
         for term in eq.term_list:
 
-            if isinstance(term.value, Variable):
+            if term.value_type == Variable:
                 if term.value not in variable_global_occurrences:
                     variable_global_occurrences[term.value] = 0
                 variable_global_occurrences[term.value] += 1
-            elif isinstance(term.value, Terminal):
+            elif term.value_type == Terminal:
                 if term.value not in terminal_global_occurrences:
                     terminal_global_occurrences[term.value] = 0
                 terminal_global_occurrences[term.value] += 1
 
+    global_info["variable_global_occurrences"] = variable_global_occurrences
+    global_info["terminal_global_occurrences"] = terminal_global_occurrences
 
-    global_info["variable_global_occurrences"]=variable_global_occurrences
-    global_info["terminal_global_occurrences"]=terminal_global_occurrences
-
-    for eq in eq_list:
-        print(eq.eq_str)
-    for k, v in global_info.items():
-        print(k)
-        print(v)
+    # for eq in eq_list:
+    #     print(eq.eq_str)
+    # for k, v in global_info.items():
+    #     print(k)
+    #     print(v)
     return global_info
+
+
 def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable, visualize: bool = False):
     parser = get_parser()
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
@@ -112,13 +113,13 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
             if fnmatch.fnmatch(f, '*.label.json'):
                 rank_eq_list, rank_eq_file_list, label_list, satisfiability_list = _read_label_and_eqs_for_rank(
                     zip_file_content, f, parser)
-                global_info=_get_global_info(rank_eq_list)
+                global_info = _get_global_info(rank_eq_list)
 
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
                         zip(rank_eq_list, rank_eq_file_list, label_list, satisfiability_list)):
-                    #todo add global information
-                    split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms,global_info)
+                    # todo add global information
+                    split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms, global_info)
 
                     if visualize == True:
                         draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
@@ -232,8 +233,8 @@ def get_parser():
 
 def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
     # prepare train folder
-    all_eq_folder = folder+ "/SAT"
-    train_eq_folder = folder+ "/train"
+    all_eq_folder = folder + "/SAT"
+    train_eq_folder = folder + "/train"
 
     # copy answers from divide folder
     # divided_folder = benchmark + "/ALL"
@@ -294,20 +295,18 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
     print("done")
 
 
-def draw_graph_for_one_folder(graph_type, benchmark_path, task):
-
+def draw_graph_for_one_folder(graph_type, benchmark_path, task,visualize=False):
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
     elif task == "task_2":
         draw_func = output_pair_eq_graphs  # task 2
     elif task == "task_3":
         draw_func = output_split_eq_graphs  # task 3
-    elif task == "rank_task_1": #G:List[graph]
+    elif task == "rank_task_1":  # G:List[graph]
         draw_func = output_rank_eq_graphs
 
-
-    train_eq_folder = benchmark_path+ "/train"
-    train_zip_file=train_eq_folder+".zip"
+    train_eq_folder = benchmark_path + "/train"
+    train_zip_file = train_eq_folder + ".zip"
     for graph_type in [graph_type]:
         # prepare folder
         graph_folder = benchmark_path + "/" + graph_type
@@ -320,7 +319,8 @@ def draw_graph_for_one_folder(graph_type, benchmark_path, task):
 
         # draw one type graphs
         print(f"- draw {graph_type} -")
-        draw_func(zip_file=train_zip_file,graph_folder=graph_folder, graph_func=graph_func_map[graph_type], visualize=False)
+        draw_func(zip_file=train_zip_file, graph_folder=graph_folder, graph_func=graph_func_map[graph_type],
+                  visualize=visualize)
 
         # compress
         zip_folder(folder_path=graph_folder, output_zip_file=graph_folder + ".zip")

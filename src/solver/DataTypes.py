@@ -65,51 +65,45 @@ class Terminal:
         return self.value == other.value
 
 
-class IsomorphicTailSymbol:
+class Symbol:
     def __init__(self, value: str):
         self.value = value
 
-    def __str__(self):
-        return "IsomorphicTailSymbol"
-
     def __repr__(self):
-        return f"IsomorphicTailSymbol({self.value})"
+        return f"{self.__class__.__name__}({self.value})"
 
     def __hash__(self):
         return hash(self.value)
 
     def __eq__(self, other):
-        if not isinstance(other, IsomorphicTailSymbol):
-            return False
-        return self.value == other.value
-    @property
-    def get_value_str(self):
-        return self.value
-
-class SeparateSymbol:
-    def __init__(self, value: str):
-        self.value = value
+        if isinstance(other, self.__class__):
+            return self.value == other.value
+        return False
 
     def __str__(self):
-        return "SeparateSymbol"
+        return self.__class__.__name__
 
-    def __repr__(self):
-        return f"SeparateSymbol({self.value})"
 
-    def __hash__(self):
-        return hash(self.value)
+class IsomorphicTailSymbol(Symbol):
+    pass  # All necessary methods are inherited from Symbol
 
-    def __eq__(self, other):
-        if not isinstance(other, SeparateSymbol):
-            return False
-        return self.value == other.value
+
+class SeparateSymbol(Symbol):
+    pass  # All necessary methods are inherited from Symbol
+
+
+class GlobalVariableOccurrenceSymbol(Symbol):
+    pass  # All necessary methods are inherited from Symbol
+
+class GlobalTerminalOccurrenceSymbol(Symbol):
+    pass  # All necessary methods are inherited from Symbol
 
 
 EMPTY_TERMINAL: Terminal = Terminal("\"\"")
 
 
 class Term:
-    def __init__(self, value: Union[Variable, Terminal, SeparateSymbol, List['Term'],IsomorphicTailSymbol]):
+    def __init__(self, value: Union[Variable, Terminal, List['Term'], SeparateSymbol, IsomorphicTailSymbol]):
         self.value = value
 
     def __repr__(self):
@@ -125,16 +119,8 @@ class Term:
 
     @property
     def value_type(self):
-        if isinstance(self.value, Variable):
-            return Variable
-        elif isinstance(self.value, Terminal):
-            return Terminal
-        elif isinstance(self.value, list):
-            return list
-        elif isinstance(self.value, SeparateSymbol):
-            return SeparateSymbol
-        elif isinstance(self.value, IsomorphicTailSymbol):
-            return IsomorphicTailSymbol
+        if type(self.value) in [Variable, Terminal, list, SeparateSymbol, IsomorphicTailSymbol]:
+            return type(self.value)
         else:
             raise Exception("unknown type")
 
@@ -197,6 +183,7 @@ class Equation:
     @property
     def left_hand_side_type_list(self):
         return [term.value_type for term in self.left_terms]
+
     @property
     def right_hand_side_type_list(self):
         return [term.value_type for term in self.right_terms]
@@ -256,7 +243,6 @@ class Equation:
     def number_of_special_symbols(self) -> int:
         return self.eq_str.count("#")
 
-
     def simplify(self):
         # pop the same prefix
         for index in range(min(len(self.left_terms), len(self.right_terms))):
@@ -279,7 +265,7 @@ class Equation:
                 return UNSAT
             else:
                 return UNKNOWN
-        else: # both sides are not empty
+        else:  # both sides are not empty
             first_left_term = self.left_terms[0]
             first_right_term = self.right_terms[0]
             last_left_term = self.left_terms[-1]
@@ -290,12 +276,11 @@ class Equation:
             # mismatch prefix terminal
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 return UNSAT
-            #mistmatch suffix terminal
+            # mistmatch suffix terminal
             elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
                 return UNSAT
             else:
                 return UNKNOWN
-
 
     def check_both_side_all_terminal_case(self):
         left_str = "".join(
@@ -310,15 +295,15 @@ class Equation:
         nodes, edges = graph_func(self.left_terms, self.right_terms)
         draw_graph(nodes, edges, file_path)
 
-    def output_eq_file_rank(self, file_name, satisfiability=UNKNOWN,answer_file=False):
+    def output_eq_file_rank(self, file_name, satisfiability=UNKNOWN, answer_file=False):
         left_str_list: List[str] = [x.get_value_str for x in self.left_terms]
         right_str_list: List[str] = [x.get_value_str for x in self.right_terms]
 
         # Format the content of the file
         content = f"Variables {{{''.join(self.variable_str)}}}\n"
         content += f"Terminals {{{''.join(self.terminal_str)}}}\n"
-        left_str=" ".join(left_str_list)
-        right_str=" ".join(right_str_list)
+        left_str = " ".join(left_str_list)
+        right_str = " ".join(right_str_list)
         content += f"Equation: {left_str} = {right_str}\n"
         content += "SatGlucose(100)"
         with open(file_name + ".eq", "w") as f:
@@ -327,14 +312,12 @@ class Equation:
             with open(file_name + ".answer", "w") as f:
                 f.write(satisfiability)
 
-
-    def output_eq_file(self, file_name, satisfiability=UNKNOWN,answer_file=False):
+    def output_eq_file(self, file_name, satisfiability=UNKNOWN, answer_file=False):
         # replaced_v,replaced_eq=replace_primed_vars(self.terminal_str,self.eq_str)
 
         eq = self.eq_str.split("=")
         left_str_list: List[str] = eq[0].split("#")
         right_str_list: List[str] = eq[1].split("#")
-
 
         # Format the content of the file
         content = f"Variables {{{''.join(self.variable_str)}}}\n"
@@ -357,17 +340,15 @@ class Formula:
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
 
-
     def check_satisfiability_2(self) -> str:
-        if self.eq_list_length==0:
+        if self.eq_list_length == 0:
             return SAT
         else:
             for eq in self.eq_list:
-                satisfiability=eq.check_satisfiability_simple()
-                if satisfiability==UNSAT:
+                satisfiability = eq.check_satisfiability_simple()
+                if satisfiability == UNSAT:
                     return UNSAT
             return UNKNOWN
-
 
     def simplify_eq_list(self):
         for eq in self.eq_list:
@@ -388,7 +369,6 @@ class Formula:
     def eq_list_length(self):
         return len(self.eq_list)
 
-
     @property
     def unknown_number(self) -> int:
         return len(self.unknown_equations)
@@ -400,7 +380,6 @@ class Formula:
     @property
     def sat_number(self) -> int:
         return len(self.sat_equations)
-
 
 
 class Assignment:
@@ -465,7 +444,7 @@ class Edge:
         return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
 
 
-def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str,global_info:Dict={}):
+def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str, global_info: Dict = {}):
     global_node_counter = 0
     nodes = []
     edges = []
@@ -483,14 +462,16 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
         global_node_counter = add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter)
         global_node_counter = add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter)
 
-    #copy.deepcopy
+    # copy.deepcopy
     local_left_terms = deque(copy.deepcopy(left_terms))
     local_right_terms = deque(copy.deepcopy(right_terms))
 
+    # Construct left tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         local_left_terms, equation_node, global_node_counter)
+                                         local_left_terms, equation_node, global_node_counter, global_info=global_info)
+    # Construct right tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         local_right_terms, equation_node, global_node_counter)
+                                         local_right_terms, equation_node, global_node_counter, global_info=global_info)
 
     return nodes, edges
 
@@ -565,7 +546,7 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
 #                                        term_list, current_node, global_node_counter)
 
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
-                   global_node_counter):
+                   global_node_counter, global_info: Dict = {}):
     while len(term_list) > 0:
         current_term = term_list.popleft()
         current_node = Node(id=global_node_counter, type=current_term.value_type,
@@ -574,6 +555,54 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         nodes.append(current_node)
         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
 
+        # add global info
+        if global_info == {}:  # no global info
+            pass
+        else:
+            if current_term.value_type == Variable and current_term.value in global_info["variable_global_occurrences"]:
+                # add node and edge
+                current_variable_occurrence_node = Node(id=global_node_counter, type=GlobalVariableOccurrenceSymbol,
+                                                        content="V#", label=None)
+                global_node_counter += 1
+                nodes.append(current_variable_occurrence_node)
+                edges.append(
+                    Edge(source=current_variable_occurrence_node.id, target=current_node.id, type=None, content="",
+                         label=None))
+                for i in range(global_info["variable_global_occurrences"][current_term.value] - 1):
+                    new_variable_occurrence_node = Node(id=global_node_counter, type=GlobalVariableOccurrenceSymbol,
+                                                        content="V#", label=None)
+                    global_node_counter += 1
+                    nodes.append(new_variable_occurrence_node)
+                    edges.append(
+                        Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
+                             type=None, content="", label=None))
+                    current_variable_occurrence_node = new_variable_occurrence_node
+
+
+
+
+            elif current_term.value_type == Terminal and current_term.value in global_info[
+                "terminal_global_occurrences"]:
+                # add node and edge
+                current_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
+                                                        content="T#", label=None)
+                global_node_counter += 1
+                nodes.append(current_terminal_occurrence_node)
+                edges.append(
+                    Edge(source=current_terminal_occurrence_node.id, target=current_node.id, type=None, content="",
+                         label=None))
+                for i in range(global_info["terminal_global_occurrences"][current_term.value] - 1):
+                    new_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
+                                                        content="T#", label=None)
+                    global_node_counter += 1
+                    nodes.append(new_terminal_occurrence_node)
+                    edges.append(
+                        Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
+                             type=None, content="", label=None))
+                    current_terminal_occurrence_node = new_terminal_occurrence_node
+            else:
+                pass
+
         if graph_type == "graph_2" and current_node.type != SeparateSymbol and current_node.type != IsomorphicTailSymbol:  # add edge back to equation node
             edges.append(Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
 
@@ -581,14 +610,14 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             for v_node in variable_nodes:
                 if v_node.content == current_node.content:
                     edges.append(Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
-                    #edges.append(Edge(source=v_node.id, target=current_node.id, type=None, content="", label=None))
+                    # edges.append(Edge(source=v_node.id, target=current_node.id, type=None, content="", label=None))
                     break
 
         if graph_type in ["graph_4", "graph_5"] and current_node.type == Terminal:
             for t_node in terminal_nodes:
                 if t_node.content == current_node.content:
                     edges.append(Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
-                    #edges.append(Edge(source=t_node.id, target=current_node.id, type=None, content="", label=None))
+                    # edges.append(Edge(source=t_node.id, target=current_node.id, type=None, content="", label=None))
                     break
 
         previous_node = current_node
@@ -596,25 +625,29 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
     return global_node_counter
 
 
-def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):
-    return _construct_graph(left_terms, right_terms, graph_type="graph_1",global_info=global_info)
+def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term], global_info: Dict = {}):
+    return _construct_graph(left_terms, right_terms, graph_type="graph_1", global_info=global_info)
 
 
-def get_eq_graph_2(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge back to equation node
-    return _construct_graph(left_terms, right_terms, graph_type="graph_2",global_info=global_info)
+def get_eq_graph_2(left_terms: List[Term], right_terms: List[Term],
+                   global_info: Dict = {}):  # add edge back to equation node
+    return _construct_graph(left_terms, right_terms, graph_type="graph_2", global_info=global_info)
 
 
-def get_eq_graph_3(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding variable nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_3",global_info=global_info)
+def get_eq_graph_3(left_terms: List[Term], right_terms: List[Term],
+                   global_info: Dict = {}):  # add edge to corresponding variable nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_3", global_info=global_info)
 
 
-def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding terminal nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_4",global_info=global_info)
+def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term],
+                   global_info: Dict = {}):  # add edge to corresponding terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_4", global_info=global_info)
 
 
 def get_eq_graph_5(left_terms: List[Term],
-                   right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding variable and terminal nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_5",global_info=global_info)
+                   right_terms: List[Term],
+                   global_info: Dict = {}):  # add edge to corresponding variable and terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_5", global_info=global_info)
 
 
 def _update_term_in_eq_list(eq_list: List[Equation], old_term: Term, new_term: List[Term]) -> List[Equation]:

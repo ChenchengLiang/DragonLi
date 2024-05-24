@@ -32,6 +32,8 @@ def main():
 
     task="rank_task_1"
 
+    visualize=True
+
 
 
 
@@ -40,9 +42,9 @@ def main():
     print(folder_list)
     if len(folder_list) != 0:
         for folder in folder_list:
-            draw_graph_for_one_folder(graph_type, benchmark_path + "/" + folder, task)
+            draw_graph_for_one_folder(graph_type, benchmark_path + "/" + folder, task, visualize=visualize)
     else:
-        draw_graph_for_one_folder(graph_type, benchmark_path, task)
+        draw_graph_for_one_folder(graph_type, benchmark_path, task, visualize=visualize)
 
 
 if __name__ == '__main__':
