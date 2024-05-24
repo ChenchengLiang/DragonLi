@@ -1,6 +1,6 @@
 import copy
 from collections import deque
-from typing import Union, List, Tuple, Deque, Callable, Optional
+from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
 from src.solver.independent_utils import remove_duplicates, color_print
@@ -465,7 +465,7 @@ class Edge:
         return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
 
 
-def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str):
+def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str,global_info:Dict={}):
     global_node_counter = 0
     nodes = []
     edges = []
@@ -596,25 +596,25 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
     return global_node_counter
 
 
-def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term]):
-    return _construct_graph(left_terms, right_terms, graph_type="graph_1")
+def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):
+    return _construct_graph(left_terms, right_terms, graph_type="graph_1",global_info=global_info)
 
 
-def get_eq_graph_2(left_terms: List[Term], right_terms: List[Term]):  # add edge back to equation node
-    return _construct_graph(left_terms, right_terms, graph_type="graph_2")
+def get_eq_graph_2(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge back to equation node
+    return _construct_graph(left_terms, right_terms, graph_type="graph_2",global_info=global_info)
 
 
-def get_eq_graph_3(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding variable nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_3")
+def get_eq_graph_3(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding variable nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_3",global_info=global_info)
 
 
-def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term]):  # add edge to corresponding terminal nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_4")
+def get_eq_graph_4(left_terms: List[Term], right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_4",global_info=global_info)
 
 
 def get_eq_graph_5(left_terms: List[Term],
-                   right_terms: List[Term]):  # add edge to corresponding variable and terminal nodes
-    return _construct_graph(left_terms, right_terms, graph_type="graph_5")
+                   right_terms: List[Term],global_info:Dict={}):  # add edge to corresponding variable and terminal nodes
+    return _construct_graph(left_terms, right_terms, graph_type="graph_5",global_info=global_info)
 
 
 def _update_term_in_eq_list(eq_list: List[Equation], old_term: Term, new_term: List[Term]) -> List[Equation]:

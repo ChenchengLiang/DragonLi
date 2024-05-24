@@ -20,7 +20,7 @@ from src.solver.algorithms.split_equations_extract_data import SplitEquationsExt
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
 def main():
-    benchmark = "rank_smtlib_2023-05-05_without_woorpje_train_300_each_folder"#"choose_eq_train"
+    benchmark = "choose_eq_train"#"choose_eq_train"
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",

@@ -14,7 +14,7 @@ import os
 import shutil
 import json
 from src.solver.Constants import satisfiability_to_int_label, UNKNOWN, SAT, UNSAT, bench_folder
-from src.solver.DataTypes import Equation, Edge, Terminal, Term, SeparateSymbol
+from src.solver.DataTypes import Equation, Edge, Terminal, Term, SeparateSymbol, Variable
 from src.solver.algorithms.utils import merge_graphs, graph_to_gnn_format, concatenate_eqs
 from src.solver.visualize_util import draw_graph
 import zipfile
@@ -73,12 +73,38 @@ def _read_label_and_eqs_for_rank(zip, f, parser):
     split_eq_list: List[Equation] = [parser.parse(split_eq_file, zip)["equation_list"][0] for split_eq_file in
                                      rank_eq_file_list]
 
+
     isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
 
     return isomorphic_differentiated_eq_list, rank_eq_file_list, json_dict["label_list"], json_dict[
         "satisfiability_list"]
 
+def _get_global_info(eq_list: List[Equation]):
+    global_info={}
+    variable_global_occurrences = {}
+    terminal_global_occurrences = {}
+    for eq in eq_list:
+        for term in eq.term_list:
 
+            if isinstance(term.value, Variable):
+                if term.value not in variable_global_occurrences:
+                    variable_global_occurrences[term.value] = 0
+                variable_global_occurrences[term.value] += 1
+            elif isinstance(term.value, Terminal):
+                if term.value not in terminal_global_occurrences:
+                    terminal_global_occurrences[term.value] = 0
+                terminal_global_occurrences[term.value] += 1
+
+
+    global_info["variable_global_occurrences"]=variable_global_occurrences
+    global_info["terminal_global_occurrences"]=terminal_global_occurrences
+
+    for eq in eq_list:
+        print(eq.eq_str)
+    for k, v in global_info.items():
+        print(k)
+        print(v)
+    return global_info
 def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable, visualize: bool = False):
     parser = get_parser()
     with zipfile.ZipFile(zip_file, 'r') as zip_file_content:
@@ -86,10 +112,13 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
             if fnmatch.fnmatch(f, '*.label.json'):
                 rank_eq_list, rank_eq_file_list, label_list, satisfiability_list = _read_label_and_eqs_for_rank(
                     zip_file_content, f, parser)
+                global_info=_get_global_info(rank_eq_list)
+
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
                         zip(rank_eq_list, rank_eq_file_list, label_list, satisfiability_list)):
-                    split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms)
+                    #todo add global information
+                    split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms,global_info)
 
                     if visualize == True:
                         draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,

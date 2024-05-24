@@ -199,6 +199,7 @@ class SplitEquations(AbstractAlgorithm):
 
         # form input graphs
         isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
+        #todo get global graph info
         G_list = []
         for eq in isomorphic_differentiated_eq_list:
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
