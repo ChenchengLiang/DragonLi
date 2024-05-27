@@ -388,3 +388,30 @@ def _create_fresh_variables(fresh_variable_counter) -> Tuple[Term, int]:
     fresh_variable_term = Term(Variable(f"V{fresh_variable_counter}"))  # V1, V2, V3, ...
     fresh_variable_counter += 1
     return fresh_variable_term, fresh_variable_counter
+
+
+def _get_global_info(eq_list: List[Equation]):
+    global_info = {}
+    variable_global_occurrences = {}
+    terminal_global_occurrences = {}
+    for eq in eq_list:
+        for term in eq.term_list:
+
+            if term.value_type == Variable:
+                if term.value not in variable_global_occurrences:
+                    variable_global_occurrences[term.value] = 0
+                variable_global_occurrences[term.value] += 1
+            elif term.value_type == Terminal:
+                if term.value not in terminal_global_occurrences:
+                    terminal_global_occurrences[term.value] = 0
+                terminal_global_occurrences[term.value] += 1
+
+    global_info["variable_global_occurrences"] = variable_global_occurrences
+    global_info["terminal_global_occurrences"] = terminal_global_occurrences
+
+    # for eq in eq_list:
+    #     print(eq.eq_str)
+    # for k, v in global_info.items():
+    #     print(k)
+    #     print(v)
+    return global_info

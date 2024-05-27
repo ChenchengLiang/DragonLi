@@ -28,7 +28,7 @@ def initialize_model(parameters):
     return model
 
 
-def read_dataset_from_zip(parameters,data_folder):
+def read_dataset_from_zip(parameters,data_folder,get_data_statistics=True):
 
     pickle_folder = os.path.join(bench_folder, parameters["benchmark_folder"], data_folder)
     graph_type = parameters["graph_type"]
@@ -41,12 +41,16 @@ def read_dataset_from_zip(parameters,data_folder):
         pickle_name = f"dataset_{graph_type}.pkl"
         # Load the datasets directly from ZIP files
         dataset = load_from_pickle_within_zip(zip_file, pickle_name)
-        dataset_statistics = dataset.statistics()
+        if get_data_statistics==True:
+            dataset_statistics = dataset.statistics()
+            mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
+        else:
+            dataset_statistics = ""
     else:
         color_print(f"Error: ZIP file not found: {zip_file}", RED)
         dataset = None
         dataset_statistics = ""
 
-    mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
+    #mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
     return dataset
 

@@ -1,5 +1,6 @@
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.Solver import Solver
+from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
     compress_to_zip
 from src.solver.Parser import Parser, EqParser
@@ -8,12 +9,12 @@ import glob
 from src.solver.models.Dataset import WordEquationDatasetMultiClassification
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
 from src.solver.utils import graph_func_map
-from typing import List, Tuple, Dict, Union, Optional, Callable
+from typing import List, Callable
 import os
 import shutil
 import json
 from src.solver.Constants import satisfiability_to_int_label, UNKNOWN, SAT, UNSAT, bench_folder
-from src.solver.DataTypes import Equation, Edge, Terminal, Term, SeparateSymbol, Variable
+from src.solver.DataTypes import Equation
 from src.solver.algorithms.utils import merge_graphs, graph_to_gnn_format, concatenate_eqs
 from src.solver.visualize_util import draw_graph
 import zipfile
@@ -76,33 +77,6 @@ def _read_label_and_eqs_for_rank(zip, f, parser):
 
     return split_eq_list, rank_eq_file_list, json_dict["label_list"], json_dict[
         "satisfiability_list"]
-
-
-def _get_global_info(eq_list: List[Equation]):
-    global_info = {}
-    variable_global_occurrences = {}
-    terminal_global_occurrences = {}
-    for eq in eq_list:
-        for term in eq.term_list:
-
-            if term.value_type == Variable:
-                if term.value not in variable_global_occurrences:
-                    variable_global_occurrences[term.value] = 0
-                variable_global_occurrences[term.value] += 1
-            elif term.value_type == Terminal:
-                if term.value not in terminal_global_occurrences:
-                    terminal_global_occurrences[term.value] = 0
-                terminal_global_occurrences[term.value] += 1
-
-    global_info["variable_global_occurrences"] = variable_global_occurrences
-    global_info["terminal_global_occurrences"] = terminal_global_occurrences
-
-    # for eq in eq_list:
-    #     print(eq.eq_str)
-    # for k, v in global_info.items():
-    #     print(k)
-    #     print(v)
-    return global_info
 
 
 def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable, visualize: bool = False):

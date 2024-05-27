@@ -16,12 +16,10 @@ from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
-    order_equations_category_random, run_summary
+    order_equations_category_random, run_summary, _get_global_info
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
-
-from ...train_data_collection.utils import _get_global_info
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -32,7 +30,7 @@ class SplitEquations(AbstractAlgorithm):
         self.parameters = parameters
         self.nodes = []
         self.edges = []
-        self.visualize_gnn_input=True
+        self.visualize_gnn_input=False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.fresh_variable_counter = 0

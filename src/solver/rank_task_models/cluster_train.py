@@ -17,7 +17,7 @@ import argparse
 import json
 import datetime
 import subprocess
-from src.solver.independent_utils import color_print
+from src.solver.independent_utils import color_print, time_it
 import signal
 from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists, \
     update_config_file, load_checkpoint, training_phase, validation_phase, log_and_save_best_model, data_loader_2, \
@@ -82,12 +82,12 @@ def train_a_model(train_config, mlflow_run):
 
     return train_config
 
-
+@time_it
 def train_continuously(parameters):
     # read data
-
-    train_dataset = read_dataset_from_zip(parameters, os.path.basename(parameters["current_train_folder"]))
-    valid_dataset = read_dataset_from_zip(parameters, "valid_data")
+    get_data_statistics = False
+    train_dataset = read_dataset_from_zip(parameters, os.path.basename(parameters["current_train_folder"]),get_data_statistics=get_data_statistics)
+    valid_dataset = read_dataset_from_zip(parameters, "valid_data",get_data_statistics=get_data_statistics)
     dataset = {"train": train_dataset, "valid": valid_dataset}
     train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
 

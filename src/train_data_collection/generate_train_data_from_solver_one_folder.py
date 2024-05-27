@@ -1,4 +1,3 @@
-
 import sys
 import configparser
 
@@ -11,6 +10,7 @@ sys.path.append(path)
 import sys
 from src.solver.Constants import project_folder
 import argparse
+
 sys.path.append(project_folder)
 from src.solver.Constants import bench_folder, recursion_limit
 
@@ -28,20 +28,21 @@ def main():
     args = arg_parser.parse_args()
     # Accessing the arguments
     benchmark = args.benchmark
-    folder=args.folder
+    folder = args.folder
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
     #                         "termination_condition": "termination_condition_0"}  # extract_branching_data_task_2
 
     algorithm = SplitEquationsExtractData
-    algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category",
-                                           "termination_condition": "termination_condition_4","task":"dynamic_embedding"}
+    algorithm_parameters = {"branch_method": "fixed", "order_equations_method": "category",
+                            "termination_condition": "termination_condition_4", "task": "dynamic_embedding"}
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark
 
     generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters)
+
 
 if __name__ == '__main__':
     main()
