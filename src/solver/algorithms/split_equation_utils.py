@@ -8,6 +8,13 @@ import random
 from src.solver.independent_utils import color_print
 
 
+def run_summary(summary_dict):
+    print(f"----- run summary -----")
+    print(f"Total explore_paths call: {summary_dict['total_split_eq_call']}")
+    print(f"total_rank_call: {summary_dict['total_rank_call']}")
+    print(f"total_gnn_call: {summary_dict['total_gnn_call']}")
+    print(f"total_category_call: {summary_dict['total_category_call']}")
+
 def differentiate_isomorphic_equations(eq_list: List[Equation]) -> List[Equation]:
     '''
     Add different number of '#' to the tails on both sides for isomorphic equations
@@ -34,32 +41,37 @@ def differentiate_isomorphic_equations(eq_list: List[Equation]) -> List[Equation
     return new_eq_list
 
 
-def order_equations_fixed(f: Formula) -> Formula:
-    return f
+def order_equations_fixed(f: Formula, category_call=0) -> (Formula,int):
+    return f,category_call
 
-def order_equations_random(f: Formula) -> Formula:
+def order_equations_random(f: Formula, category_call=0) -> (Formula,int):
     random.shuffle(f.eq_list)
-    return f
+    return f,category_call
 
 
-def order_equations_category(f: Formula) -> Formula:
+def order_equations_category(f: Formula, category_call=0) -> (Formula,int):
     categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+    category_call += 1
     sorted_eq_list = sorted(categoried_eq_list, key=lambda x: x[1])
 
-    return Formula([eq for eq, _ in sorted_eq_list])
 
-def order_equations_category_random(f: Formula) -> Formula:
+    return Formula([eq for eq, _ in sorted_eq_list]),category_call
+
+def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
     categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+
 
     # Check if the equation categories are only 5 and 6
     only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
     if only_5_and_6 == True and len(categoried_eq_list) > 1:
-        sorted_eq_list = order_equations_random(f).eq_list
+        ordered_formula,category_call = order_equations_random(f,category_call)
+        sorted_eq_list=ordered_formula.eq_list
     else:
+        category_call += 1
         sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
-    return Formula(sorted_eq_list)
+    return Formula(sorted_eq_list),category_call
 
 
 

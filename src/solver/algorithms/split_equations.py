@@ -16,7 +16,7 @@ from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
-    order_equations_category_random
+    order_equations_category_random, run_summary
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -37,7 +37,7 @@ class SplitEquations(AbstractAlgorithm):
         self.total_rank_call = 0
         self.total_node_number = 1
         self.eq_node_number = 0
-        self.termination_condition_max_depth= 20000
+        self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
@@ -101,7 +101,8 @@ class SplitEquations(AbstractAlgorithm):
                     "back_track_count": 0})
             self.nodes.append(initial_node)
             try:
-                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0, previous_node=initial_node,
+                satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
+                                                            previous_node=initial_node,
                                                             edge_label="start")
             except RecursionError as e:
                 if "maximum recursion depth exceeded" in str(e):
@@ -111,13 +112,9 @@ class SplitEquations(AbstractAlgorithm):
                     satisfiability = RECURSION_ERROR
                     # print(RECURSION_ERROR)
 
-        print(f"----- run summary -----")
-        print(f"total_split_eq_call:{self.total_split_eq_call}")
-        print(f"total_rank_call:{self.total_rank_call}")
-        print(f"total_gnn_call:{self.total_gnn_call}")
-        print(f"total_category_call:{self.total_category_call}")
-
-
+        summary_dict = {"total_split_eq_call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
+                        "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call}
+        run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
                 "variables": self.variables, "terminals": self.terminals}
@@ -128,7 +125,7 @@ class SplitEquations(AbstractAlgorithm):
 
         current_node = self.record_node_and_edges(input_formula, previous_node, edge_label)
 
-        if self.total_split_eq_call% 10000 == 0:
+        if self.total_split_eq_call % 10000 == 0:
             print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
 
         # early termination condition
@@ -145,7 +142,7 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return satisfiability, current_formula
         else:
-            current_formula: Formula = self.order_equations_func_wrapper(current_formula)
+            current_formula = self.order_equations_func_wrapper(current_formula)
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -179,27 +176,28 @@ class SplitEquations(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-    def _order_equations_category_gnn(self, f: Formula) -> Formula:
+    def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
         # Check if the equation categories are only 5 and 6
         only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
         if only_5_and_6 == True and len(categoried_eq_list) > 1:
-            sorted_eq_list = self._order_equations_gnn(f).eq_list
+            ordered_formula, category_call = self._order_equations_gnn(f, category_call)
+            sorted_eq_list = ordered_formula.eq_list
         else:
-            self.total_category_call += 1
+            category_call += 1
             sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
-        return Formula(sorted_eq_list)
+        return Formula(sorted_eq_list), category_call
 
-    def _order_equations_gnn(self, f: Formula) -> Formula:
+    def _order_equations_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         # todo check soundness of this sorted prediction with 100% accuracy model
         self.total_gnn_call += 1
 
         # form input graphs
         isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
-        #todo get global graph info
+        # todo get global graph info
         G_list = []
         for eq in isomorphic_differentiated_eq_list:
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
@@ -229,7 +227,7 @@ class SplitEquations(AbstractAlgorithm):
         #     print(x[0],x[1].eq_str)
 
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
-        return formula_with_sorted_eq_list
+        return formula_with_sorted_eq_list, category_call
 
     def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         return children
@@ -246,7 +244,6 @@ class SplitEquations(AbstractAlgorithm):
         if current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
-
     def early_termination_condition_1(self, current_depth: int):
         if current_depth > self.restart_max_deep or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
@@ -254,7 +251,9 @@ class SplitEquations(AbstractAlgorithm):
     def order_equations_func_wrapper(self, f: Formula) -> Formula:
         if f.eq_list_length > 1:
             self.total_rank_call += 1
-            return self.order_equations_func(f)
+            ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
+            self.total_category_call = category_call
+            return ordered_formula
         else:
             return f
 

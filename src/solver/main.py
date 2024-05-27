@@ -84,9 +84,9 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/7/test7.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
-    #file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -118,18 +118,18 @@ def main():
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
 
-    algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "gnn", "task": task, "graph_type": graph_type,
+    algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "fixed", "task": task, "graph_type": graph_type,
                                                         "graph_func": graph_func_map[graph_type],
                                                         "gnn_model_path": gnn_model_path, "extract_algorithm": "fixed",
                                                         "termination_condition": "termination_condition_0"}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "category_random",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                           "order_equations_method": "category_gnn",
+                                           "order_equations_method": "gnn",
                                             "gnn_model_path":gnn_model_path,
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type]}
@@ -140,8 +140,8 @@ def main():
                                            "termination_condition": "termination_condition_4",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
