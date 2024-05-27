@@ -83,8 +83,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/7/test7.eq"  # SAT
-    #file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
 

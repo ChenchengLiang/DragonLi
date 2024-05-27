@@ -15,10 +15,9 @@ class Solver:
 
     def solve(self, parsed_equations: Dict, visualize=False, output_train_data=False) -> (bool, Assignment):
         variables, terminals, equation_list = self.preprocess(parsed_equations)
-        if output_train_data == True:
-            self._algorithm_parameters["file_path"] = parsed_equations["file_path"]
-        else:
-            self._algorithm_parameters["file_path"] = ""
+
+        self._algorithm_parameters["file_path"] = parsed_equations["file_path"]
+        self._algorithm_parameters["visualize"] = visualize
 
         print("-" * 10, "Solving equation", "-" * 10)
         self._algorithm = self._algorithm(terminals, variables, equation_list, self._algorithm_parameters)

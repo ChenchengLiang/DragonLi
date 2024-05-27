@@ -69,7 +69,7 @@ def train_wrapper(parameters):
     parameters["ffnn_dropout_rate"] = dropout_rate
 
     parameters["model_type"] = "GCNSplit"
-    parameters["node_type"] = 4
+    parameters["node_type"] = 5
     parameters["gnn_hidden_dim"] = hidden_dim
     parameters["gnn_layer_num"] = 2
     parameters["gnn_dropout_rate"] = dropout_rate
@@ -87,8 +87,8 @@ def train_wrapper(parameters):
     epoch_info_log = ""
 
     ############### Training ################
-    parameters["num_epochs"] = 300
-    parameters["train_step"] = 300
+    parameters["num_epochs"] = 10
+    parameters["train_step"] = 10
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2

@@ -10,8 +10,8 @@ from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recu
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from . import graph_to_gnn_format
-from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control
-from src.solver.visualize_util import visualize_path_html, visualize_path_png
+from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control, strip_file_name_suffix
+from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
@@ -20,6 +20,8 @@ from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
+
+from ...train_data_collection.utils import _get_global_info
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -30,6 +32,9 @@ class SplitEquations(AbstractAlgorithm):
         self.parameters = parameters
         self.nodes = []
         self.edges = []
+        self.visualize_gnn_input=True
+
+        self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
         self.total_category_call = 0
@@ -196,14 +201,18 @@ class SplitEquations(AbstractAlgorithm):
         self.total_gnn_call += 1
 
         # form input graphs
-        isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
-        # todo get global graph info
+        #isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
+        global_info = _get_global_info(f.eq_list)
         G_list = []
-        for eq in isomorphic_differentiated_eq_list:
-            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms)
+        for index,eq in enumerate(f.eq_list):
+            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms,global_info)
             graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
             dgl_graph, _ = get_one_dgl_graph(graph_dict)
             G_list.append(dgl_graph)
+            if self.visualize_gnn_input == True:
+                draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
+                           filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
+
         input_eq_graph_list = []
         for index, g in enumerate(G_list):
             one_eq_data = [g] + G_list

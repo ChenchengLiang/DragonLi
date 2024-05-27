@@ -1,6 +1,5 @@
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.Solver import Solver
-from src.solver.algorithms import differentiate_isomorphic_equations
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
     compress_to_zip
 from src.solver.Parser import Parser, EqParser
@@ -118,7 +117,7 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
                         zip(rank_eq_list, rank_eq_file_list, label_list, satisfiability_list)):
-                    # todo add global information
+                    #add global information
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms, global_info)
 
                     if visualize == True:
