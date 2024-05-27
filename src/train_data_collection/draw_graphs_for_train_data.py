@@ -32,7 +32,7 @@ def main():
 
     task="rank_task_1"
 
-    visualize=True
+    visualize=False
 
 
 
