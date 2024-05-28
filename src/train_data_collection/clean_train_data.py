@@ -20,10 +20,18 @@ import fnmatch
 from tqdm import tqdm
 import json
 import hashlib
+import os
+import argparse
 
 def main():
+    # read graph type from command line
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('graph_type', type=str, help='graph_type')
+    args = arg_parser.parse_args()
+    graph_type = args.graph_type
+
+
     benchmark = "choose_eq_train"
-    graph_type="graph_1"
 
     benchmark_path = bench_folder + "/" + benchmark
     folder_list = [folder for folder in get_folders(benchmark_path) if
@@ -31,12 +39,11 @@ def main():
 
     zip_file_name=graph_type
     hash_table=get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
-
     check_hash_table_label_consistency(hash_table)
 
     unify_labels(benchmark_path, folder_list, graph_type, hash_table)
 
-    zip_file_name = f"modified_{graph_type}"
+    zip_file_name=graph_type
     hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
     check_hash_table_label_consistency(hash_table)
 
@@ -83,7 +90,14 @@ def unify_labels(benchmark_path, folder_list, graph_type, hash_table):
                     # Write either modified or original content to the new zip file
                     output_zip.writestr(file_name, modified_content, compress_type=zipfile.ZIP_DEFLATED)
 
-    print("Modification complete and new zip file created.")
+        print(f"Modification complete {folder} {graph_type}")
+
+        #replace original zip file
+        os.remove(input_zip_file_path)
+        os.rename(output_zip_file_path, input_zip_file_path)
+        print(f"File replaced {folder} {graph_type}")
+
+
 
 def get_data_label_hash_table(benchmark_path, folder_list,zip_file_name:str)->Dict:
     # get hash table
