@@ -20,11 +20,11 @@ import torch
 import signal
 
 def main():
-    num_epochs=200
+    num_epochs=100
     task="rank_task_1"#"task_3"
     node_type=5
     learning_rate=0.001
-    train_step=20
+    train_step=10
     configurations = []
     for benchmark in ["rank_smtlib_2023-05-05_without_woorpje_train_300_each_folder"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
         for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
