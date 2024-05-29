@@ -5,7 +5,7 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
-    RESTART_MAX_DEEP_STEP, compress_image
+    RESTART_MAX_DEEP_STEP, compress_image, OUTPUT_NON_SAT_PATH_PERCENTAGE
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control, strip_file_name_suffix, \
@@ -193,27 +193,37 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
-            #todo for no SAT eq case, only output some percentage of them
+
             # output labeled eqs according to order_equations_method
             if len(branch_eq_satisfiability_list) > 1:
-                if "category" in self.parameters["order_equations_method"]:  # category
-                    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(current_formula)
-                    # Check if the equation categories are only 5 and 6
-                    only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
-                    if only_5_and_6 == True:
+
+                #for no SAT eq case, only output some percentage of them
+                output_decision = False
+                if current_node[1]["status"] == SAT:
+                    output_decision = True
+                else:
+                    if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
+                        output_decision = True
+
+                if output_decision == True:
+                    if "category" in self.parameters["order_equations_method"]:  # category
+                        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(current_formula)
+                        # Check if the equation categories are only 5 and 6
+                        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+                        if only_5_and_6 == True:
+                            current_node[1]["output_to_file"] = True
+                            _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
+                                                                                      current_node[0])
+                            # print("total eqs", len(current_formula.eq_list))
+                            # for eq, label in zip(current_formula.eq_list, label_list):
+                            #     print(eq.eq_str, label)
+                    else:  # fix or random
                         current_node[1]["output_to_file"] = True
                         _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
                                                                                   current_node[0])
-                        # print("total eqs", len(current_formula.eq_list))
-                        # for eq, label in zip(current_formula.eq_list, label_list):
-                        #     print(eq.eq_str, label)
-                else:  # fix or random
-                    current_node[1]["output_to_file"] = True
-                    _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
-                                                                              current_node[0])
-                    # print("total eqs",len(current_formula.eq_list))
-                    # for eq,label in zip(current_formula.eq_list,label_list):
-                    #     print(eq.eq_str,label)
+                        # print("total eqs",len(current_formula.eq_list))
+                        # for eq,label in zip(current_formula.eq_list,label_list):
+                        #     print(eq.eq_str,label)
 
             return (current_node[1]["status"], current_formula, current_node)
 
