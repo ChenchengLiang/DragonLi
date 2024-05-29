@@ -37,18 +37,22 @@ def main():
     folder_list = [folder for folder in get_folders(benchmark_path) if
                    "divided" in folder or "valid" in folder]
 
+    log=False
+
     zip_file_name=graph_type
     hash_table=get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
     check_hash_table_label_consistency(hash_table)
 
-    unify_labels(benchmark_path, folder_list, graph_type, hash_table)
+    unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=log)
 
     zip_file_name=graph_type
     hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
-    check_hash_table_label_consistency(hash_table)
+    check_hash_table_label_consistency(hash_table,log=log)
 
 
-def unify_labels(benchmark_path, folder_list, graph_type, hash_table):
+def unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=False):
+    print_count={}
+    data_str_head_dict={}
     for folder in folder_list:
         current_folder = benchmark_path + "/" + folder
         input_zip_file_path = current_folder + f"/{graph_type}.zip"
@@ -68,18 +72,40 @@ def unify_labels(benchmark_path, folder_list, graph_type, hash_table):
                         for key, value in json_data.items():
                             if isinstance(value, dict):
                                 G.append(value)
+                        G=sorted(G,key=lambda x: x['nodes'])
+
                         # check each data
                         for g in G:
                             one_data = [g] + G
-                            hashed_data = hash_one_data(one_data)
+                            hashed_data,data_str = hash_one_data(one_data)
                             # Check hash table
                             if hashed_data in hash_table:
+
                                 label_count = hash_table[hashed_data]
                                 # Modify the JSON data as needed
                                 if label_count[0] > label_count[1]:
                                     g["label"] = 0
                                 else:
                                     g["label"] = 1
+                            else:
+                                color_print(f"Hashed data not found in hash table {hashed_data}", "red")
+
+                            if log==True:
+                                if hashed_data in print_count:
+                                    pass
+                                else:
+                                    print_count[hashed_data]=True
+                                    print(f"hashed_data:{hashed_data}")
+                                    print(data_str)
+                                    print(g["label"])
+                                    data_str_head=data_str.split("->")[0]
+                                    if data_str_head in data_str_head_dict:
+                                        if data_str_head_dict[data_str_head]!=g["label"]:
+                                            color_print(f"Data head label inconsistent {data_str_head}", "red")
+                                            print(data_str_head_dict[data_str_head])
+                                            print(g["label"])
+                                    else:
+                                        data_str_head_dict[data_str_head]=g["label"]
 
                         # Convert modified dict back to JSON bytes
                         modified_content = json.dumps(json_data).encode('utf-8')
@@ -116,10 +142,11 @@ def get_data_label_hash_table(benchmark_path, folder_list,zip_file_name:str)->Di
                         for key, value in json_dict.items():
                             if isinstance(value, dict):
                                 G.append(value)
+                        G = sorted(G, key=lambda x: x['nodes'])
                         # hash one data to hash table
                         for g in G:
                             one_data = [g] + G
-                            hashed_data = hash_one_data(one_data)
+                            hashed_data,data_str = hash_one_data(one_data)
                             label = g["label"]
 
                             if hashed_data in hash_table:
@@ -156,17 +183,19 @@ def check_hash_table_label_consistency(hash_table,log=False):
 
 
 
-def hash_one_data(graph_list:List[Dict])->str:
-    data_str = ""
-    for index, g in enumerate(graph_list):
-        data_str += f"nodes:{str(g['nodes'])}|node_types:{str(g['node_types'])}|edges:{str(g['edges'])},"
+def hash_one_data(graph_list:List[Dict])->(str,str):
+    first=graph_list[0]
+    data_str = f"nodes:{str(first['nodes'])}|node_types:{str(first['node_types'])}|edges:{str(sorted(first['edges']))} -> "
+    for index, g in enumerate(graph_list[1:]):
+        data_str += f"nodes:{str(g['nodes'])}|node_types:{str(g['node_types'])}|edges:{str(sorted(g['edges']))},"
     data_str=remove_last_comma(data_str)
 
     # Hash the string representation
     hashed_data:str=hashlib.md5(data_str.encode()).hexdigest()
 
 
-    return hashed_data
+
+    return hashed_data, data_str
 
 
 def remove_last_comma(s):

@@ -87,8 +87,8 @@ def train_wrapper(parameters):
     epoch_info_log = ""
 
     ############### Training ################
-    parameters["num_epochs"] = 1000
-    parameters["train_step"] = 1000
+    parameters["num_epochs"] = 500
+    parameters["train_step"] = 500
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2
