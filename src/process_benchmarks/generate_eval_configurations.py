@@ -15,46 +15,46 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "rank_task_1"  # "task_3"
-    graph_type = "graph_1"
+    graph_type = "graph_2"
     model_type = "GCNSplit"  # "GINSplit"
     benchmark_name = "smtlib_2023-05-05_without_woorpje_eval"
     algorithm = "SplitEquations"
     solver_param_list = [
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method fixed"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method random"
-                  ]],
-
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_random"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method fixed"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method random"
+        #           ]],
+        #
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_random"
+        #           ]],
 
         # gnn based configurations
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_gnn",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method gnn",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_gnn",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method gnn",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}"]],
 
         # ["this", ["random", f"--termination_condition termination_condition_0"]],
         # ["this", ["random", f"--termination_condition termination_condition_1"]],
@@ -113,11 +113,11 @@ def main():
         #   "--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
         #   f"--gnn_task {task}"]],
 
-        ["z3", []],
-        ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        ["woorpje", []],
-        ["ostrich", []],
-        ["cvc5", []],
+        # ["z3", []],
+        # ["z3-noodler", ["smt.string_solver=\"noodler\""]],
+        # ["woorpje", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
     ]
 
     benchmark_dict = {

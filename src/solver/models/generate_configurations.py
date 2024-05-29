@@ -29,7 +29,7 @@ def main():
     for benchmark in ["rank_smtlib_2023-05-05_without_woorpje_train_300_each_folder"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
         for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:#[2,8]:
-                for ffnn_layer_num in [2,8]:
+                for ffnn_layer_num in [2]:
                     for hidden_dim in [128]:#[128,256]:
                         for dropout_rate in [0.2]:
                             for batch_size in [100]:

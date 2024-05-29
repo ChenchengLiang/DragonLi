@@ -193,6 +193,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
+            #todo for no SAT eq case, only output some percentage of them
             # output labeled eqs according to order_equations_method
             if len(branch_eq_satisfiability_list) > 1:
                 if "category" in self.parameters["order_equations_method"]:  # category
