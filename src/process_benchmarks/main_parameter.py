@@ -2,6 +2,8 @@ import os
 import sys
 import configparser
 
+
+
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -13,12 +15,13 @@ from src.solver.Solver import Solver
 from src.solver.utils import print_results,graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, \
     ElimilateVariablesRecursive, SplitEquations
+from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 import argparse
 
 
 def main(args):
     algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
-                     "SplitEquations": SplitEquations}
+                     "SplitEquations": SplitEquations,"SplitEquationsExtractData":SplitEquationsExtractData}
 
     #parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -38,6 +41,8 @@ def main(args):
                             help='fixed,random...')
     arg_parser.add_argument('--algorithm', type=str, default="ElimilateVariablesRecursive",
                             help='ElimilateVariablesRecursive,SplitEquations...')
+    arg_parser.add_argument('--output_train_data', type=str, default="False",
+                            help='True, False')
 
 
     args = arg_parser.parse_args()
@@ -51,6 +56,7 @@ def main(args):
     termination_condition=args.termination_condition
     algorithm=algorithm_map[args.algorithm]
     order_equations_method=args.order_equations_method
+    output_train_data= True if args.output_train_data=="True" else False
 
     print(file_path, branch_method, graph_type)
 
@@ -69,7 +75,7 @@ def main(args):
 
     solver = Solver(algorithm=algorithm,algorithm_parameters=algorithm_parameters)
 
-    result_dict = solver.solve(parsed_content, visualize=False,output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=False,output_train_data=output_train_data)
 
     print_results(result_dict)
 

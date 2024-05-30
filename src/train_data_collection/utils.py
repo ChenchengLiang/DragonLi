@@ -1,5 +1,6 @@
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.Solver import Solver
+from src.solver.algorithms import ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
@@ -206,15 +207,17 @@ def get_parser():
 
 
 def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
+    algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
+                     "SplitEquations": SplitEquations,"SplitEquationsExtractData":SplitEquationsExtractData}
     graph_type="graph_1"
-    if algorithm == SplitEquationsExtractData:
+    if algorithm == "SplitEquationsExtractData":
         parameters_list=["fixed", "--termination_condition termination_condition_0",
                   f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
+                  f"--algorithm SplitEquations",
                   f"--order_equations_method category"
                   ]
     else:
-        parameters_list=["fixed", f"--termination_condition termination_condition_0"]
+        parameters_list=["fixed", f"--algorithm {algorithm}",f"--termination_condition termination_condition_0"]
 
     # prepare train folder
     all_eq_folder = folder + "/SAT"
@@ -261,16 +264,32 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
         print("satisfiability:", satisfiability)
 
         if satisfiability == SAT or satisfiability == UNSAT:
-            parser_type = EqParser()
-            parser = Parser(parser_type)
-            parsed_content = parser.parse(file_path)
-            # print("parsed_content:", parsed_content)
+            if algorithm == "SplitEquationsExtractData":
+                parameters_list = ["fixed",
+                                   f"--termination_condition {algorithm_parameters['termination_condition']}",
+                                   f"--graph_type {graph_type}",
+                                   f"--algorithm {algorithm}",
+                                   f"--order_equations_method {algorithm_parameters['order_equations_method']}",
+                                   f"--output_train_data True"
+                                   ]
+            else:
+                parameters_list = ["fixed",
+                                   f"--termination_condition {algorithm_parameters['termination_condition']}",
+                                   f"--output_train_data True"]
 
-            solver = Solver(algorithm=algorithm, algorithm_parameters=algorithm_parameters)
+            result_dict = run_on_one_problem(file_path=file_path,
+                                             parameters_list=parameters_list,
+                                             solver="this", solver_log=False)
 
-            result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
+            # parser_type = EqParser()
+            # parser = Parser(parser_type)
+            # parsed_content = parser.parse(file_path)
+            # # print("parsed_content:", parsed_content)
+            #
+            # solver = Solver(algorithm=algorithm_map[algorithm], algorithm_parameters=algorithm_parameters)
+            #
+            # result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
-            # print_results(result_dict)
 
     # compress
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")

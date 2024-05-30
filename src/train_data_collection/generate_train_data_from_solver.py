@@ -26,7 +26,7 @@ def main():
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
     #                         "termination_condition": "termination_condition_0"}  # extract_branching_data_task_2
 
-    algorithm = SplitEquationsExtractData
+    algorithm = "SplitEquationsExtractData"
     algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category",
                                            "termination_condition": "termination_condition_4","task":"dynamic_embedding"}
 
