@@ -89,8 +89,8 @@ def assemble_one_equation(left_terms:List[Term], right_terms:List[Term], assignm
         else:
             right_str.append(t.get_value_str)
 
-    left_terms_str = "".join(left_str) if len(left_str) != 0 else "\"\""
-    right_terms_str = "".join(right_str) if len(right_str) != 0 else "\"\""
+    left_terms_str = " ".join(left_str) if len(left_str) != 0 else "\"\""
+    right_terms_str = " ".join(right_str) if len(right_str) != 0 else "\"\""
 
     string_equation = left_terms_str + " = " + right_terms_str
     return string_equation

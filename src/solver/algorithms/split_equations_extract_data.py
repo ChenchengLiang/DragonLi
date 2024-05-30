@@ -39,7 +39,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.total_category_call = 0
         self.total_rank_call = 0
         # control path number for extraction
-        self.termination_condition_max_depth = 5000
+        self.termination_condition_max_depth = 1000
         self.max_deep_for_extraction = 3
         self.max_found_sat_path_extraction = 1
         self.max_found_path_extraction = 20
