@@ -55,7 +55,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # depth search control
         self.depth_termination_control = False
         self.return_depth = self.termination_condition_max_depth
-        self.return_depth_location = 1
+        self.return_depth_location = 1 # could be a stochastic number between 1 to last path depth
+        self.last_sat_path_depth = self.termination_condition_max_depth
 
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
@@ -173,10 +174,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.found_path += 1
             if satisfiability == SAT:
                 self.found_sat_path += 1
+                self.last_sat_path_depth = current_depth
                 # control non-systematic search
                 if self.systematic_search == False:
                     self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
-                    self.return_depth = self.return_depth_location
+                    self.return_depth = self.return_depth_location # could be a stochastic number between 1 to last path depth
+                    #self.return_depth = random.randint(1, self.last_sat_path_depth)
                     if self. non_systematic_search_hybrid_control == True:
                         probability = random.random()
                         if probability < self.hybrid_rate:
@@ -248,7 +251,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
             if self.parameters["output_train_data"] == True:
                 # output labeled eqs according to order_equations_method
-                if len(branch_eq_satisfiability_list) > 1:
+                if len(branch_eq_satisfiability_list) > 1: #todo lower the output rate when length is small
 
                     # for no SAT eq case, only output some percentage of them
                     output_decision = False

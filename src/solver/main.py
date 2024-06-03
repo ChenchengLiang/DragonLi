@@ -78,7 +78,7 @@ def main():
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
-    file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
@@ -88,6 +88,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -148,7 +149,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
 
     print_results(result_dict)
 
