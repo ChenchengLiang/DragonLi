@@ -41,12 +41,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # control path number for extraction
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
-        self.max_found_sat_path_extraction = 50
+        self.max_found_sat_path_extraction = 20
         self.max_found_path_extraction = 20
 
         # systematic search control
         self.systematic_search = False
-        self.non_systematic_search_hybrid_control = False
+        self.non_systematic_search_hybrid_control = True
         self.hybrid_rate=0.5
         # stochastic search control
         self.stochastic_termination_control = False
@@ -246,36 +246,37 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
-            # output labeled eqs according to order_equations_method
-            if len(branch_eq_satisfiability_list) > 1:
+            if self.parameters["output_train_data"] == True:
+                # output labeled eqs according to order_equations_method
+                if len(branch_eq_satisfiability_list) > 1:
 
-                # for no SAT eq case, only output some percentage of them
-                output_decision = False
-                if current_node[1]["status"] == SAT:
-                    output_decision = True
-                else:
-                    if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
+                    # for no SAT eq case, only output some percentage of them
+                    output_decision = False
+                    if current_node[1]["status"] == SAT:
                         output_decision = True
+                    else:
+                        if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
+                            output_decision = True
 
-                if output_decision == True:
-                    if "category" in self.parameters["order_equations_method"]:  # category
-                        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(current_formula)
-                        # Check if the equation categories are only 5 and 6
-                        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
-                        if only_5_and_6 == True:
+                    if output_decision == True:
+                        if "category" in self.parameters["order_equations_method"]:  # category
+                            categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(current_formula)
+                            # Check if the equation categories are only 5 and 6
+                            only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+                            if only_5_and_6 == True:
+                                current_node[1]["output_to_file"] = True
+                                _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
+                                                                                          current_node[0])
+                                # print("total eqs", len(current_formula.eq_list))
+                                # for eq, label in zip(current_formula.eq_list, label_list):
+                                #     print(eq.eq_str, label)
+                        else:  # fix or random
                             current_node[1]["output_to_file"] = True
                             _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
                                                                                       current_node[0])
-                            # print("total eqs", len(current_formula.eq_list))
-                            # for eq, label in zip(current_formula.eq_list, label_list):
-                            #     print(eq.eq_str, label)
-                    else:  # fix or random
-                        current_node[1]["output_to_file"] = True
-                        _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
-                                                                                  current_node[0])
-                        # print("total eqs",len(current_formula.eq_list))
-                        # for eq,label in zip(current_formula.eq_list,label_list):
-                        #     print(eq.eq_str,label)
+                            # print("total eqs",len(current_formula.eq_list))
+                            # for eq,label in zip(current_formula.eq_list,label_list):
+                            #     print(eq.eq_str,label)
 
             return (current_node[1]["status"], current_formula, current_node)
 

@@ -18,6 +18,7 @@ class Solver:
 
         self._algorithm_parameters["file_path"] = parsed_equations["file_path"]
         self._algorithm_parameters["visualize"] = visualize
+        self._algorithm_parameters["output_train_data"] = output_train_data
 
         print("-" * 10, "Solving equation", "-" * 10)
         self._algorithm = self._algorithm(terminals, variables, equation_list, self._algorithm_parameters)
