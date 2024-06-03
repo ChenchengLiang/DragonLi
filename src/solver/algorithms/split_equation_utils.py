@@ -10,10 +10,9 @@ from src.solver.independent_utils import color_print
 
 def run_summary(summary_dict):
     print(f"----- run summary -----")
-    print(f"Total explore_paths call: {summary_dict['total_split_eq_call']}")
-    print(f"total_rank_call: {summary_dict['total_rank_call']}")
-    print(f"total_gnn_call: {summary_dict['total_gnn_call']}")
-    print(f"total_category_call: {summary_dict['total_category_call']}")
+    for k, v in summary_dict.items():
+        print(f"{k}: {v}")
+
 
 def differentiate_isomorphic_equations(eq_list: List[Equation]) -> List[Equation]:
     '''

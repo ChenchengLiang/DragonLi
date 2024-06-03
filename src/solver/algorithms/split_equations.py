@@ -114,8 +114,8 @@ class SplitEquations(AbstractAlgorithm):
                 else:
                     satisfiability = RECURSION_ERROR
                     # print(RECURSION_ERROR)
-
-        summary_dict = {"total_split_eq_call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
+        # notice that the name "Total explore_paths call" is for summary script to parse
+        summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call}
         run_summary(summary_dict)
 

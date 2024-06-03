@@ -41,13 +41,21 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # control path number for extraction
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
-        self.max_found_sat_path_extraction = 10
+        self.max_found_sat_path_extraction = 50
         self.max_found_path_extraction = 20
+
+        # systematic search control
+        self.systematic_search = False
+        self.non_systematic_search_hybrid_control = False
+        self.hybrid_rate=0.5
         # stochastic search control
-        self.stochastic_end = True
-        self.stochastic_termination_denominator = self.termination_condition_max_depth #todo this can be increased when long time without new sat path
+        self.stochastic_termination_control = False
+        self.stochastic_termination_denominator = self.termination_condition_max_depth  # todo this can be increased when long time without new sat path
         self.stochastic_termination_denominator_factor = 2
-        self.return_to_root=False
+        # depth search control
+        self.depth_termination_control = False
+        self.return_depth = self.termination_condition_max_depth
+        self.return_depth_location = 1
 
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
@@ -75,7 +83,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
 
-        self.stochastic_termination_func: Callable = self.stochastic_termination if self.stochastic_end == True else self.return_none_func
+        self.stochastic_termination_func: Callable = self.stochastic_termination if self.stochastic_termination_control == True else self.return_none_func
+        self.depth_termination_func: Callable = self.depth_termination if self.depth_termination_control == True else self.return_none_func
 
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -114,8 +123,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
 
-        summary_dict = {"total_split_eq_call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
-                        "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call}
+        # notice that the name "Total explore_paths call" is for summary script to parse
+        summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
+                        "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call,"found_sat_path":self.found_sat_path}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -131,7 +141,15 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 
         ####################### early termination condition #######################
-        # stochastic end
+        # depth termination control
+        res = self.depth_termination_func(current_depth)
+        if res != None:  # None denote skip termination check
+            current_node[1]["status"] = res
+            current_node[1]["back_track_count"] = 1
+            self.found_path += 1
+            return (res, original_formula, current_node)  # terminate current branch
+
+        # stochastic termination control
         res = self.stochastic_termination_func(current_depth)
         if res != None:  # None denote skip termination check
             current_node[1]["status"] = res
@@ -155,7 +173,25 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.found_path += 1
             if satisfiability == SAT:
                 self.found_sat_path += 1
-                self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
+                # control non-systematic search
+                if self.systematic_search == False:
+                    self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
+                    self.return_depth = self.return_depth_location
+                    if self. non_systematic_search_hybrid_control == True:
+                        probability = random.random()
+                        if probability < self.hybrid_rate:
+                            self.stochastic_termination_control = True
+                            self.depth_termination_control = False
+                        else:
+                            self.stochastic_termination_control = False
+                            self.depth_termination_control = True
+
+                        self.stochastic_termination_func: Callable = self.stochastic_termination if self.stochastic_termination_control == True else self.return_none_func
+                        self.depth_termination_func: Callable = self.depth_termination if self.depth_termination_control == True else self.return_none_func
+                    else:
+                        pass
+                else:
+                    pass
             if satisfiability == UNSAT:
                 self.found_unsat_path += 1
 
@@ -337,20 +373,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def return_none_func(self, current_depth):
         return None
 
-
-    def return_to_root(self, current_depth):
-        if current_depth > 2:
+    def depth_termination(self, current_depth):
+        if current_depth > self.return_depth:
             return UNKNOWN
+        elif current_depth == self.return_depth:
+            self.return_depth = self.termination_condition_max_depth
         else:
             return None
-
-    def return_to_root_termination_func(self, current_depth):
-        if self.return_to_root==True:
-            return self.return_to_root
-        else:
-            return self.return_none_func
-
-
 
     def order_equations_func_wrapper(self, f: Formula) -> Formula:
         if f.eq_list_length > 1:
