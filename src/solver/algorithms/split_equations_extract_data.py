@@ -28,7 +28,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.edges = []
         self.fresh_variable_counter = 0
         self.total_split_eq_call = 0
-        self.total_gnn_call=0
+        self.total_gnn_call = 0
         self.eq_node_number = 0
         self.total_node_number = 1
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
@@ -39,10 +39,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.total_category_call = 0
         self.total_rank_call = 0
         # control path number for extraction
-        self.termination_condition_max_depth = 1000
+        self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
-        self.max_found_sat_path_extraction = 1
+        self.max_found_sat_path_extraction = 20
         self.max_found_path_extraction = 20
+        # stochastic search control
+        self.stochastic_end = True
+        self.stochastic_termination_denominator = self.termination_condition_max_depth
+        self.stochastic_termination_denominator_factor = 2
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.train_data_count = 0
@@ -123,6 +127,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 
         ####################### early termination condition #######################
+        # stochastic end
+        res = self.stochastic_termination_func(current_depth)
+        if res != None:  # None denote skip termination check
+            current_node[1]["status"] = res
+            current_node[1]["back_track_count"] = 1
+            self.found_path += 1
+            return (res, original_formula, current_node)  # terminate current branch
+
         res = self.check_termination_condition_func(current_depth)
         if res != None:  # None denote skip termination check
             current_node[1]["status"] = res
@@ -139,6 +151,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.found_path += 1
             if satisfiability == SAT:
                 self.found_sat_path += 1
+                self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
             if satisfiability == UNSAT:
                 self.found_unsat_path += 1
 
@@ -193,11 +206,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
-
             # output labeled eqs according to order_equations_method
             if len(branch_eq_satisfiability_list) > 1:
 
-                #for no SAT eq case, only output some percentage of them
+                # for no SAT eq case, only output some percentage of them
                 output_decision = False
                 if current_node[1]["status"] == SAT:
                     output_decision = True
@@ -308,6 +320,24 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def early_termination_condition_4(self, current_depth: int):
         if self.found_sat_path >= self.max_found_sat_path_extraction or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
+
+    def stochastic_termination(self, current_depth):
+        # stochastic end
+        probability = random.random()
+        termination_probability = current_depth / self.stochastic_termination_denominator
+        if probability < termination_probability:
+            return UNKNOWN
+        else:
+            return None
+
+    def no_stochastic_termination(self, current_depth):
+        return None
+
+    def stochastic_termination_func(self, current_depth):
+        if self.stochastic_end == True:
+            return self.stochastic_termination(current_depth)
+        else:
+            return self.no_stochastic_termination(current_depth)
 
     def order_equations_func_wrapper(self, f: Formula) -> Formula:
         if f.eq_list_length > 1:

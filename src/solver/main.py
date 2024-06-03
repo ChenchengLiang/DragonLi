@@ -78,13 +78,13 @@ def main():
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
-    #file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/7/test7.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
@@ -137,18 +137,18 @@ def main():
 
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "category_random",
                                            "termination_condition": "termination_condition_4",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],"task":"dynamic_embedding"}
 
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
 
     print_results(result_dict)
 

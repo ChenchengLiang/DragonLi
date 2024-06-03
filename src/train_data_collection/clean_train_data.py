@@ -31,7 +31,7 @@ def main():
     graph_type = args.graph_type
 
 
-    benchmark = "choose_eq_train"
+    benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"
 
     benchmark_path = bench_folder + "/" + benchmark
     folder_list = [folder for folder in get_folders(benchmark_path) if

@@ -69,7 +69,7 @@ def main():
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
     print("done")
 
-
+@time_it
 def train_a_model(train_config, mlflow_run):
     device_info()
     train_config["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")

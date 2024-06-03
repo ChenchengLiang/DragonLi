@@ -17,7 +17,7 @@ def main():
     task = "rank_task_1"  # "task_3"
     graph_type = "graph_2"
     model_type = "GCNSplit"  # "GINSplit"
-    benchmark_name = "smtlib_2023-05-05_without_woorpje_eval"
+    benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     algorithm = "SplitEquations"
     solver_param_list = [
         # ["this", ["fixed", "--termination_condition termination_condition_0",
