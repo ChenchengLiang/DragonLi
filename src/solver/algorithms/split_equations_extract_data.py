@@ -41,12 +41,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # control path number for extraction
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
-        self.max_found_sat_path_extraction = 20
+        self.max_found_sat_path_extraction = 10
         self.max_found_path_extraction = 20
         # stochastic search control
         self.stochastic_end = True
-        self.stochastic_termination_denominator = self.termination_condition_max_depth
+        self.stochastic_termination_denominator = self.termination_condition_max_depth #todo this can be increased when long time without new sat path
         self.stochastic_termination_denominator_factor = 2
+        self.return_to_root=False
+
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.train_data_count = 0
@@ -72,6 +74,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                                 "termination_condition_4": self.early_termination_condition_4}  # found sat path
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
+
+        self.stochastic_termination_func: Callable = self.stochastic_termination if self.stochastic_end == True else self.return_none_func
 
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -330,14 +334,23 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         else:
             return None
 
-    def no_stochastic_termination(self, current_depth):
+    def return_none_func(self, current_depth):
         return None
 
-    def stochastic_termination_func(self, current_depth):
-        if self.stochastic_end == True:
-            return self.stochastic_termination(current_depth)
+
+    def return_to_root(self, current_depth):
+        if current_depth > 2:
+            return UNKNOWN
         else:
-            return self.no_stochastic_termination(current_depth)
+            return None
+
+    def return_to_root_termination_func(self, current_depth):
+        if self.return_to_root==True:
+            return self.return_to_root
+        else:
+            return self.return_none_func
+
+
 
     def order_equations_func_wrapper(self, f: Formula) -> Formula:
         if f.eq_list_length > 1:
