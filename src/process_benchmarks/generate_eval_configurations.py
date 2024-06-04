@@ -124,6 +124,19 @@ def main():
 
 
         # gnn based configurations
+        # # branch: fixed
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method gnn",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_gnn_random",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -133,7 +146,20 @@ def main():
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_category_gnn_random",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        # # branch: random
+        # ["this", ["random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
         #           f"--order_equations_method gnn",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        # ["this", ["random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_gnn_random",
         #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
         #           f"--gnn_task {task}"]],
         # ["this", ["random", "--termination_condition termination_condition_0",
@@ -145,9 +171,37 @@ def main():
         # ["this", ["random", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_category_gnn_random",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        #
+        # # branch: hybrid
+        # ["this", ["hybrid_fixed_random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
         #           f"--order_equations_method gnn",
         #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
         #           f"--gnn_task {task}"]],
+        # ["this", ["hybrid_fixed_random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_gnn_random",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        # ["this", ["hybrid_fixed_random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_gnn",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+        # ["this", ["hybrid_fixed_random", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_category_gnn_random",
+        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+        #           f"--gnn_task {task}"]],
+
+
 
         # ["this", ["random", f"--termination_condition termination_condition_0"]],
         # ["this", ["random", f"--termination_condition termination_condition_1"]],
@@ -212,6 +266,7 @@ def main():
         ["ostrich", []],
         ["cvc5", []],
     ]
+
 
     benchmark_dict = {
         # "test_track": bench_folder + "/test",
