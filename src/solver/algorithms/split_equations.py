@@ -41,6 +41,7 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
+        self.gnn_call_flag = False
 
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
@@ -89,7 +90,7 @@ class SplitEquations(AbstractAlgorithm):
             while True:
                 initial_node: Tuple[int, Dict] = (
                     0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
-                        "back_track_count": 0})
+                        "back_track_count": 0,"gnn_call":False})
                 try:
                     satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
                                                                 previous_node=initial_node, edge_label="start")
@@ -108,7 +109,7 @@ class SplitEquations(AbstractAlgorithm):
         else:
             initial_node: Tuple[int, Dict] = (
                 0, {"label": "start", "status": None, "output_to_file": False, "shape": "ellipse",
-                    "back_track_count": 0})
+                    "back_track_count": 0,"gnn_call":False})
             self.nodes.append(initial_node)
             try:
                 satisfiability, new_formula = self.split_eq(original_formula, current_depth=0,
@@ -152,7 +153,7 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return satisfiability, current_formula
         else:
-            current_formula = self.order_equations_func_wrapper(current_formula)
+            current_formula = self.order_equations_func_wrapper(current_formula,current_node)
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -215,8 +216,8 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return self.order_equations_random(f, category_call)
     def _order_equations_gnn(self, f: Formula, category_call=0) -> (Formula, int):
-        # todo check soundness of this sorted prediction with 100% accuracy model
         self.total_gnn_call += 1
+        self.gnn_call_flag = True
 
         # form input graphs
         # isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
@@ -271,11 +272,14 @@ class SplitEquations(AbstractAlgorithm):
         if current_depth > self.restart_max_deep or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
-    def order_equations_func_wrapper(self, f: Formula) -> Formula:
+    def order_equations_func_wrapper(self, f: Formula,current_node:Tuple[int,Dict]) -> Formula:
         if f.eq_list_length > 1:
             self.total_rank_call += 1
             ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
             self.total_category_call = category_call
+            if self.gnn_call_flag == True:
+                current_node[1]["gnn_call"] = True
+                self.gnn_call_flag = False
             return ordered_formula
         else:
             return f

@@ -65,6 +65,8 @@ def visualize_path_png(nodes, edges, file_path,compress=False,edge_label=False):
         node_label = f"{node_id}:{back_track_count}"
         if attributes["output_to_file"]: #could also change the shape
             node_label=node_label+"*"
+        if attributes["gnn_call"]: #could also change the shape
+            node_label=node_label+"#"
         dot.node(str(node_id),label=node_label,style = 'filled',fillcolor=fillcolor,shape=shape)
 
     # Add edges

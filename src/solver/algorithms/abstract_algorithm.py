@@ -63,7 +63,7 @@ class AbstractAlgorithm(ABC):
         label = f"{eq.eq_str}"
         current_node = (
             current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0})
+            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0,"gnn_call":False})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
         self.eq_node_number+=1
@@ -76,7 +76,7 @@ class AbstractAlgorithm(ABC):
         label = f"{f.eq_list_str}"
         current_node = (
             current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0})
+            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0,"gnn_call":False})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
         self.total_node_number+=1
