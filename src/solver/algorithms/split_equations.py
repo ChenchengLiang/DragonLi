@@ -272,17 +272,7 @@ class SplitEquations(AbstractAlgorithm):
         if current_depth > self.restart_max_deep or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
-    def order_equations_func_wrapper(self, f: Formula,current_node:Tuple[int,Dict]) -> Formula:
-        if f.eq_list_length > 1:
-            self.total_rank_call += 1
-            ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
-            self.total_category_call = category_call
-            if self.gnn_call_flag == True:
-                current_node[1]["gnn_call"] = True
-                self.gnn_call_flag = False
-            return ordered_formula
-        else:
-            return f
+
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)

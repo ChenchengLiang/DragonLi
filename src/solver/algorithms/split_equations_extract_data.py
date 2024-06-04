@@ -387,14 +387,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         else:
             return None
 
-    def order_equations_func_wrapper(self, f: Formula) -> Formula:
-        if f.eq_list_length > 1:
-            self.total_rank_call += 1
-            ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
-            self.total_category_call = category_call
-            return ordered_formula
-        else:
-            return f
+
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
