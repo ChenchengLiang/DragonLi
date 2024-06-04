@@ -438,7 +438,7 @@ def order_branches_random(children: List[Tuple[Equation, Formula]]) -> List[Tupl
 def order_branches_hybrid_fixed_random(children: List[Tuple[Equation, Formula]]) -> List[
     Tuple[Equation, Formula]]:
     probability = random.random()
-    if probability > HYBRID_BRANCH_RATE:
+    if probability < HYBRID_BRANCH_RATE:
         return order_branches_fixed(children)
     else:
         return order_branches_random(children)
