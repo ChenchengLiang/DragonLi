@@ -30,7 +30,7 @@ class SplitEquations(AbstractAlgorithm):
         self.parameters = parameters
         self.nodes = []
         self.edges = []
-        self.visualize_gnn_input=False
+        self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.fresh_variable_counter = 0
@@ -55,8 +55,10 @@ class SplitEquations(AbstractAlgorithm):
             self.gnn_rank_model = load_model(parameters["gnn_model_path"].replace("_0_", "_2_"))
             self.graph_func = parameters["graph_func"]
 
+        self.hybrid_branch_method_rate = 0.5
         self.branch_method_func_map = {"fixed": self._order_branches_fixed,
                                        "random": self._order_branches_random,
+                                       "hybrid_fixed_random": self._order_branches_hybrid_fixed_random,
                                        "gnn": self._order_branches_gnn}
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
@@ -199,11 +201,11 @@ class SplitEquations(AbstractAlgorithm):
         self.total_gnn_call += 1
 
         # form input graphs
-        #isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
+        # isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(f.eq_list)
         global_info = _get_global_info(f.eq_list)
         G_list = []
-        for index,eq in enumerate(f.eq_list):
-            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms,global_info)
+        for index, eq in enumerate(f.eq_list):
+            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms, global_info)
             graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
             dgl_graph, _ = get_one_dgl_graph(graph_dict)
             G_list.append(dgl_graph)
@@ -246,6 +248,14 @@ class SplitEquations(AbstractAlgorithm):
     def _order_branches_gnn(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         # todo implement gnn
         return children
+
+    def _order_branches_hybrid_fixed_random(self, children: List[Tuple[Equation, Formula]]) -> List[
+        Tuple[Equation, Formula]]:
+        probability = random.random()
+        if probability > self.hybrid_branch_method_rate:
+            return self._order_branches_fixed(children)
+        else:
+            return self._order_branches_random(children)
 
     def early_termination_condition_0(self, current_depth: int):
         if current_depth > self.termination_condition_max_depth:
