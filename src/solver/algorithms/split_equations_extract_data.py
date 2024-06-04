@@ -57,6 +57,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.return_depth = self.termination_condition_max_depth
         self.return_depth_location = 1 # could be a stochastic number between 1 to last path depth
         self.last_sat_path_depth = self.termination_condition_max_depth
+        self.last_sat_path_depth_factor = 2
 
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
@@ -178,8 +179,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 # control non-systematic search
                 if self.systematic_search == False:
                     self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
-                    self.return_depth = self.return_depth_location # could be a stochastic number between 1 to last path depth
-                    #self.return_depth = random.randint(1, self.last_sat_path_depth)
+                    self.return_depth = self.return_depth_location # return to a fixed number
+                    #self.return_depth = random.randint(1, int(self.last_sat_path_depth/self.last_sat_path_depth_factor)) #return to a random number between 1 to last path depth
                     if self. non_systematic_search_hybrid_control == True:
                         probability = random.random()
                         if probability < self.hybrid_rate:
