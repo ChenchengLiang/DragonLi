@@ -1,6 +1,6 @@
 from typing import Tuple, List, Callable, Dict, Union
 
-from src.solver.Constants import SAT, UNSAT, UNKNOWN
+from src.solver.Constants import SAT, UNSAT, UNKNOWN, HYBRID_ORDER_EQUATION_RATE
 from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, \
     Terminal, IsomorphicTailSymbol
 import random
@@ -47,6 +47,18 @@ def order_equations_random(f: Formula, category_call=0) -> (Formula,int):
     random.shuffle(f.eq_list)
     return f,category_call
 
+def order_equations_hybrid_fixed_random(f: Formula, category_call=0) -> (Formula,int):
+    if random.random() < HYBRID_ORDER_EQUATION_RATE:
+        return order_equations_fixed(f,category_call)
+    else:
+        return order_equations_random(f,category_call)
+
+
+def order_equations_hybrid_category_fixed_random(f: Formula, category_call=0) -> (Formula, int):
+    if random.random() < HYBRID_ORDER_EQUATION_RATE:
+        return order_equations_category(f,category_call)
+    else:
+        return order_equations_category_random(f,category_call)
 
 def order_equations_category(f: Formula, category_call=0) -> (Formula,int):
     categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)

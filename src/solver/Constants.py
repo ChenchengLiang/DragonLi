@@ -15,6 +15,10 @@ max_variable_length: int = 8
 algorithm_timeout: int = 300
 shell_timeout: int = algorithm_timeout
 
+
+# order equations parameters
+HYBRID_ORDER_EQUATION_RATE = 0.5
+
 # control termination when executing algorithm
 INITIAL_MAX_DEEP = 500  # 500
 MAX_DEEP_STEP = 250
