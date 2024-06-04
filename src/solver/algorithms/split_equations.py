@@ -6,7 +6,7 @@ import dgl
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
-    RESTART_MAX_DEEP_STEP, compress_image
+    RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from . import graph_to_gnn_format
@@ -16,7 +16,8 @@ from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
-    order_equations_category_random, run_summary, _get_global_info
+    order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
+    order_equations_hybrid_category_fixed_random
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -43,12 +44,18 @@ class SplitEquations(AbstractAlgorithm):
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
 
+
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
+                                         "hybrid_fixed_random":order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,
+                                         "category_random": order_equations_category_random,
+                                         "hybrid_category_fixed_random":order_equations_hybrid_category_fixed_random,
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
+                                         "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "gnn": self._order_equations_gnn,
-                                         "category_random": order_equations_category_random}
+                                         "hybrid_gnn_random":self._order_equations_hybrid_gnn_random
+                                         }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
@@ -181,6 +188,12 @@ class SplitEquations(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
+    def _order_equations_hybrid_category_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
+        probability = random.random()
+        if probability < HYBRID_ORDER_EQUATION_RATE:
+            return self._order_equations_category_gnn(f, category_call)
+        else:
+            return order_equations_category_random(f, category_call)
     def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
@@ -196,6 +209,13 @@ class SplitEquations(AbstractAlgorithm):
 
         return Formula(sorted_eq_list), category_call
 
+
+    def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
+        probability = random.random()
+        if probability < HYBRID_ORDER_EQUATION_RATE:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return self.order_equations_random(f, category_call)
     def _order_equations_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         # todo check soundness of this sorted prediction with 100% accuracy model
         self.total_gnn_call += 1
