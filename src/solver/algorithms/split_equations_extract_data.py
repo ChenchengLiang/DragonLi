@@ -15,7 +15,9 @@ from .abstract_algorithm import AbstractAlgorithm
 import sys
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, apply_rules, \
     simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
-    order_equations_category_random, run_summary
+    order_equations_category_random, run_summary, order_equations_hybrid_fixed_random, \
+    order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
+    order_branches_hybrid_fixed_random
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -65,12 +67,17 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
+                                         "hybrid_fixed_random": order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,
-                                         "category_random": order_equations_category_random}
+                                         "category_random": order_equations_category_random,
+                                         "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random
+                                         }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
 
-        self.branch_method_func_map = {"fixed": self._order_branches_fixed,
-                                       "random": self._order_branches_random}
+        self.branch_method_func_map = {"fixed": order_branches_fixed,
+                                       "random": order_branches_random,
+                                       "hybrid_fixed_random": order_branches_hybrid_fixed_random
+                                       }
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
         self.check_termination_condition_map = {"termination_condition_0": self.early_termination_condition_0,
@@ -339,12 +346,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-    def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
-        return children
-
-    def _order_branches_random(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
-        random.shuffle(children)
-        return children
 
     def early_termination_condition_0(self, current_depth: int):
         if current_depth > self.termination_condition_max_depth:

@@ -1,23 +1,21 @@
 import random
-from collections import deque
-from typing import List, Dict, Tuple, Deque, Union, Callable
+from typing import List, Dict, Tuple, Callable
 
 import dgl
 
-from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
-    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
+from src.solver.Constants import recursion_limit, \
+    RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
-from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
-from src.solver.utils import assemble_parsed_content
+from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula
 from . import graph_to_gnn_format
-from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control, strip_file_name_suffix
+from ..independent_utils import log_control, strip_file_name_suffix
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import differentiate_isomorphic_equations, _category_formula_by_rules, \
+from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
-    order_equations_hybrid_category_fixed_random
+    order_equations_hybrid_category_fixed_random, order_branches_fixed,order_branches_random,order_branches_hybrid_fixed_random
 from src.solver.models.utils import load_model
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -63,9 +61,9 @@ class SplitEquations(AbstractAlgorithm):
             self.graph_func = parameters["graph_func"]
 
         self.hybrid_branch_method_rate = 0.5
-        self.branch_method_func_map = {"fixed": self._order_branches_fixed,
-                                       "random": self._order_branches_random,
-                                       "hybrid_fixed_random": self._order_branches_hybrid_fixed_random,
+        self.branch_method_func_map = {"fixed": order_branches_fixed,
+                                       "random": order_branches_random,
+                                       "hybrid_fixed_random": order_branches_hybrid_fixed_random,
                                        "gnn": self._order_branches_gnn}
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
@@ -258,24 +256,12 @@ class SplitEquations(AbstractAlgorithm):
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
         return formula_with_sorted_eq_list, category_call
 
-    def _order_branches_fixed(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
-        return children
 
-    def _order_branches_random(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
-        random.shuffle(children)
-        return children
 
     def _order_branches_gnn(self, children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
         # todo implement gnn
         return children
 
-    def _order_branches_hybrid_fixed_random(self, children: List[Tuple[Equation, Formula]]) -> List[
-        Tuple[Equation, Formula]]:
-        probability = random.random()
-        if probability > self.hybrid_branch_method_rate:
-            return self._order_branches_fixed(children)
-        else:
-            return self._order_branches_random(children)
 
     def early_termination_condition_0(self, current_depth: int):
         if current_depth > self.termination_condition_max_depth:

@@ -1,6 +1,6 @@
 from typing import Tuple, List, Callable, Dict, Union
 
-from src.solver.Constants import SAT, UNSAT, UNKNOWN, HYBRID_ORDER_EQUATION_RATE
+from src.solver.Constants import SAT, UNSAT, UNKNOWN, HYBRID_ORDER_EQUATION_RATE, HYBRID_BRANCH_RATE
 from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, \
     Terminal, IsomorphicTailSymbol
 import random
@@ -426,3 +426,19 @@ def _get_global_info(eq_list: List[Equation]):
     #     print(k)
     #     print(v)
     return global_info
+
+
+def order_branches_fixed(children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
+    return children
+
+def order_branches_random(children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
+    random.shuffle(children)
+    return children
+
+def order_branches_hybrid_fixed_random(children: List[Tuple[Equation, Formula]]) -> List[
+    Tuple[Equation, Formula]]:
+    probability = random.random()
+    if probability > HYBRID_BRANCH_RATE:
+        return order_branches_fixed(children)
+    else:
+        return order_branches_random(children)

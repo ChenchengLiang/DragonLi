@@ -18,6 +18,7 @@ shell_timeout: int = algorithm_timeout
 
 # order equations parameters
 HYBRID_ORDER_EQUATION_RATE = 0.5
+HYBRID_BRANCH_RATE = 0.5
 
 # control termination when executing algorithm
 INITIAL_MAX_DEEP = 500  # 500
