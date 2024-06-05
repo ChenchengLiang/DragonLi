@@ -1,6 +1,7 @@
 import os
 
 import mlflow
+import torch.nn
 
 from src.solver.Constants import bench_folder, RED
 from src.solver.independent_utils import load_from_pickle_within_zip, color_print
@@ -25,6 +26,8 @@ def initialize_model(parameters):
     )
     # Initialize GraphClassifiers with the respective GNN models
     model = GraphClassifier(gnn_model, classifier_2)
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model)
     return model
 
 

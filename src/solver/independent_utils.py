@@ -372,6 +372,10 @@ def hash_graph_with_glob_info(nodes,edges):
     hashed_data = hashlib.md5(data_str.encode()).hexdigest()
     return hashed_data, data_str
 
+def hash_one_dgl_graph(graph)->(str,str):
+    data_str= f"nodes:{graph.nodes()}|node_types:{graph.ndata['feat']}|edges:{graph.all_edges()}"
+    hashed_data: str = hashlib.md5(data_str.encode()).hexdigest()
+    return hashed_data, data_str
 
 def hash_one_dgl_data(graph_list)->(str,str):
     first = graph_list[0]

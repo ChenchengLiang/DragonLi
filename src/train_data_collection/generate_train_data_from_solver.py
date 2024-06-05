@@ -27,7 +27,7 @@ def main():
     #                         "termination_condition": "termination_condition_0"}  # extract_branching_data_task_2
 
     algorithm = "SplitEquationsExtractData"
-    algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category",
+    algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category_random",
                                            "termination_condition": "termination_condition_4","task":"dynamic_embedding"}
 
     sys.setrecursionlimit(recursion_limit)

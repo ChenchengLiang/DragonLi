@@ -59,7 +59,10 @@ class SplitEquations(AbstractAlgorithm):
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
-            self.gnn_rank_model = load_model(parameters["gnn_model_path"].replace("_0_", "_2_"))
+            self.gnn_rank_model = load_model(parameters["gnn_model_path"].replace("_0_", "_2_")) # this is a GraphClassifier class
+            self.gnn_rank_model.is_test = True
+
+
             self.graph_func = parameters["graph_func"]
 
         self.hybrid_branch_method_rate = 0.5

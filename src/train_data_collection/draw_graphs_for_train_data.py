@@ -27,7 +27,7 @@ def main():
     # benchmark = "01_track_train_task_3_1_2000"
     # task = "task_3"
 
-    benchmark_name = "choose_eq_train"#"choose_eq_train"
+    benchmark_name = "choose_eq_train"
     benchmark_path=f"{bench_folder}/{benchmark_name}"
 
     task="rank_task_1"
