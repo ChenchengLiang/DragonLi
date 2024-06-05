@@ -20,19 +20,19 @@ import torch
 import signal
 
 def main():
-    num_epochs=100
+    num_epochs=200
     task="rank_task_1"#"task_3"
     node_type=5
     learning_rate=0.001
     train_step=10
     configurations = []
-    for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_100_chunk_size_multiple_path"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
+    for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"]:#["01_track_multi_word_equations_generated_train_1_40000_new_SAT_divided_1"]:
         for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:#[2,8]:
                 for ffnn_layer_num in [2]:
                     for hidden_dim in [128]:#[128,256]:
                         for dropout_rate in [0.2]:
-                            for batch_size in [100,1000]:
+                            for batch_size in [1000,10000]:
                                 for model_type in ["GCNSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                     for share_gnn in [False]:
                                         if model_type == "GAT":

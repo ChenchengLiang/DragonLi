@@ -26,8 +26,6 @@ def initialize_model(parameters):
     )
     # Initialize GraphClassifiers with the respective GNN models
     model = GraphClassifier(gnn_model, classifier_2)
-    if torch.cuda.device_count() > 1:
-        model = torch.nn.DataParallel(model)
     return model
 
 
