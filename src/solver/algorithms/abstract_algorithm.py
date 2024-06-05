@@ -10,6 +10,7 @@ class AbstractAlgorithm(ABC):
         self.terminals = terminals
         self.variables = variables
         self.equation_list = equation_list
+        self.gnn_call_flag = False
 
     @abstractmethod
     def run(self):

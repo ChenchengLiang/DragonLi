@@ -21,21 +21,8 @@ from src.solver.independent_utils import strip_file_name_suffix
 
 
 def main():
-    # debug
-    #file_path=bench_folder +"/examples/03_track_52.eq"
-    # example path
-    # file_path=bench_folder +"/regression_test/g_03_track_27.eq"
-    # file_path=bench_folder +"/temp/output.eq"
-    # file_path=bench_folder +"/debug/UNSAT/1533/g_01_track_multi_word_equations_generated_eval_1001_2000_1533.eq"
-    # file_path=bench_folder +"/kaluzaWoorpje/eq_test_delete_diplicated/1234.corecstrs.readable.eq" #deduplicate equations (preprocess)
-    # file_path=bench_folder+"/debug/26544.corecstrs.readable.eq"
-    # file_path = bench_folder + "/kaluzaWoorpje/eq_test_delete_diplicated/1250.corecstrs.readable.eq"
-    # file_path = bench_folder + "/debug/04_track_3.eq"
-    # file_path = bench_folder + "/debug/04_track_16.eq"
-    # file_path = bench_folder + "/debug/test.eq"
-    # file_path = bench_folder + "/debug/g_03_track_eval_task_3_1_1000_799.eq"
-    # file_path = bench_folder + "/debug/g_03_track_eval_task_3_1_1000_21.eq"
-    # file_path = bench_folder + "/debug/g_03_track_train_task_3_15001_20000_19243.eq"
+
+    # debug path
     #file_path = bench_folder + "/debug/04_track_5.eq"
     #file_path = bench_folder + "/debug/g_03_track_9153.eq"
     #file_path = bench_folder + "/debug/g_03_track_9596.eq"
@@ -43,17 +30,8 @@ def main():
     #file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_4104.eq"
     #file_path = bench_folder + "/debug-eval/g_03_track_27.eq"
     #file_path = "/home/cheli243/Desktop/CodeToGit/Woorpje_benchmarks/debug-eval-uppmax/ALL/divided_1/04_track_1.eq"
+    file_path = bench_folder + "/debug-rank/1/g_01_track_multi_word_equations_generated_eval_1001_2000_1685.eq" #UNSAT
 
-    # file_path = bench_folder + "/examples/2_task_2/ALL/ALL/01_track_2.eq"
-    #file_path= bench_folder +"/examples/01_track_4.eq"
-    # file_path = bench_folder+"/examples/43/01_track_43.eq"
-    # file_path = bench_folder+"/examples/g_01_track_85.eq"
-    # file_path = bench_folder + "/examples/32/g_01_track_32.eq"
-    # file_path = bench_folder + "/examples/g_01_SAT/g_01_track_SAT_1.eq"
-    # file_path = bench_folder + "/examples/g_02_SAT/g_01_track_SAT_2.eq"
-    # file_path = bench_folder + "/examples/g_01_SAT_464/g_01_track_SAT_464.eq"
-    # file_path = bench_folder + "/examples/g_random_track_1144.eq"
-    #file_path = bench_folder + "/examples/g_03_track_generated_eval_30000_31000_30683.eq"
 
     # file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -78,7 +56,7 @@ def main():
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
-    file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
@@ -149,7 +127,7 @@ def main():
     #solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
 
     print_results(result_dict)
 

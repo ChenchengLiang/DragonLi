@@ -1,6 +1,6 @@
 import sys
 import configparser
-from typing import List, Dict
+from typing import Dict
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -12,14 +12,13 @@ import sys
 from src.solver.Constants import project_folder
 
 sys.path.append(project_folder)
-from src.solver.Constants import bench_folder, recursion_limit
-from src.solver.independent_utils import get_folders, color_print
+from src.solver.Constants import bench_folder
+from src.solver.independent_utils import get_folders, color_print, hash_one_data
 
 import zipfile
 import fnmatch
 from tqdm import tqdm
 import json
-import hashlib
 import os
 import argparse
 
@@ -181,29 +180,6 @@ def check_hash_table_label_consistency(hash_table,log=False):
     print(f"insistent_count:{insistent_count}")
     print(f"consistent_count:{consistent_count}")
 
-
-
-def hash_one_data(graph_list:List[Dict])->(str,str):
-    first=graph_list[0]
-    data_str = f"nodes:{str(first['nodes'])}|node_types:{str(first['node_types'])}|edges:{str(sorted(first['edges']))} -> "
-    for index, g in enumerate(graph_list[1:]):
-        data_str += f"nodes:{str(g['nodes'])}|node_types:{str(g['node_types'])}|edges:{str(sorted(g['edges']))},"
-    data_str=remove_last_comma(data_str)
-
-    # Hash the string representation
-    hashed_data:str=hashlib.md5(data_str.encode()).hexdigest()
-
-
-
-    return hashed_data, data_str
-
-
-def remove_last_comma(s):
-    # Check if the string ends with a comma
-    if s.endswith(','):
-        # Remove the last character (the comma)
-        return s[:-1]
-    return s
 
 if __name__ == '__main__':
     main()

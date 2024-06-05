@@ -44,6 +44,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
         self.max_found_sat_path_extraction = 20
+        self.max_found_unsat_path_extraction = 20
         self.max_found_path_extraction = 20
 
         # systematic search control
@@ -80,15 +81,20 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                        }
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
-        self.check_termination_condition_map = {"termination_condition_0": self.early_termination_condition_0,
+        self.check_termination_condition_map = {
                                                 # no limit
-                                                "termination_condition_1": self.early_termination_condition_1,
+                                                "termination_condition_0": self.early_termination_condition_0,
                                                 # restart
+                                                "termination_condition_1": self.early_termination_condition_1,
+                                                # max depth
                                                 "termination_condition_2": self.early_termination_condition_2,
-                                                # max deepth
-                                                "termination_condition_3": self.early_termination_condition_3,
                                                 # found path
-                                                "termination_condition_4": self.early_termination_condition_4}  # found sat path
+                                                "termination_condition_3": self.early_termination_condition_3,
+                                                # found sat path
+                                                "termination_condition_4": self.early_termination_condition_4,
+                                                # found unsat path
+                                                "termination_condition_5":self.early_termination_condition_5
+                                                }
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
 
@@ -114,7 +120,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # initialize the tree with a node
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
-                "back_track_count": 0})
+                "back_track_count": 0,"gnn_call":False})
         self.nodes.append(initial_node)
 
         try:
@@ -209,7 +215,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             return (satisfiability, current_formula, current_node)
         else:
             # systematic search training data by using "order_equations_method": "fixed"
-            current_formula = self.order_equations_func_wrapper(current_formula)
+            current_formula = self.order_equations_func_wrapper(current_formula,current_node)
 
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
@@ -365,6 +371,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
     def early_termination_condition_4(self, current_depth: int):
         if self.found_sat_path >= self.max_found_sat_path_extraction or current_depth > self.termination_condition_max_depth:
+            return UNKNOWN
+
+    def early_termination_condition_5(self, current_depth: int):
+        if self.found_unsat_path >= self.max_found_unsat_path_extraction or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def stochastic_termination(self, current_depth):

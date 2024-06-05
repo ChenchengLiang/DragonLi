@@ -1,5 +1,4 @@
 from src.process_benchmarks.utils import run_on_one_problem
-from src.solver.Solver import Solver
 from src.solver.algorithms import ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
@@ -378,3 +377,5 @@ def prepare_and_save_datasets_task_3(parameters):
     # Compress pickle files into ZIP files
     compress_to_zip(pickle_file_2)
     compress_to_zip(pickle_file_3)
+
+

@@ -1,4 +1,5 @@
 import copy
+import hashlib
 from collections import deque
 from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 
@@ -164,6 +165,7 @@ class Equation:
     def deepcopy(self):
         return copy.deepcopy(self)
 
+
     @property
     def term_list(self) -> List[Term]:
         return self.left_terms + self.right_terms
@@ -226,10 +228,6 @@ class Equation:
     def terminal_numbers_without_empty_terminal(self):
         return len(self.termimal_list_without_empty_terminal)
 
-    @property
-    def eq_str(self) -> str:
-        return "".join([t.get_value_str for t in self.left_terms]) + " = " + "".join(
-            [t.get_value_str for t in self.right_terms])
 
     @property
     def eq_left_str(self) -> str:
@@ -238,6 +236,10 @@ class Equation:
     @property
     def eq_right_str(self) -> str:
         return "".join([t.get_value_str for t in self.right_terms])
+
+    @property
+    def eq_str(self) -> str:
+        return self.eq_left_str + " = " + self.eq_right_str
 
     @property
     def number_of_special_symbols(self) -> int:

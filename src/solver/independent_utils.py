@@ -1,4 +1,4 @@
-from typing import Iterable, List,Callable
+from typing import Iterable, List, Callable, Dict
 import json
 import re
 import os
@@ -363,3 +363,42 @@ def initialize_one_hot_category_count(label_size):
         category[i] = 1
         category_count[tuple(category)] = 0
     return category_count
+
+
+
+
+def hash_graph_with_glob_info(nodes,edges):
+    data_str = f"nodes:{str(nodes)}|edges:{str(edges)}"
+    hashed_data = hashlib.md5(data_str.encode()).hexdigest()
+    return hashed_data, data_str
+
+
+def hash_one_dgl_data(graph_list)->(str,str):
+    first = graph_list[0]
+    data_str= f"nodes:{first.nodes()}|node_types:{first.ndata['feat']}|edges:{first.all_edges()} -> "
+    for index, g in enumerate(graph_list[1:]):
+        data_str += f"nodes:{g.nodes()}|node_types:{g.ndata['feat']}|edges:{g.all_edges()},"
+    data_str = remove_last_comma(data_str)
+    hashed_data: str = hashlib.md5(data_str.encode()).hexdigest()
+    return hashed_data, data_str
+
+
+def hash_one_data(graph_list:List[Dict])->(str,str):
+    first=graph_list[0]
+    data_str = f"nodes:{str(first['nodes'])}|node_types:{str(first['node_types'])}|edges:{str(sorted(first['edges']))} -> "
+    for index, g in enumerate(graph_list[1:]):
+        data_str += f"nodes:{str(g['nodes'])}|node_types:{str(g['node_types'])}|edges:{str(sorted(g['edges']))},"
+    data_str=remove_last_comma(data_str)
+
+    # Hash the string representation
+    hashed_data:str=hashlib.md5(data_str.encode()).hexdigest()
+
+    return hashed_data, data_str
+
+
+def remove_last_comma(s):
+    # Check if the string ends with a comma
+    if s.endswith(','):
+        # Remove the last character (the comma)
+        return s[:-1]
+    return s
