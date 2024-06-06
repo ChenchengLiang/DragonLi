@@ -26,7 +26,8 @@ import torch.nn as nn
 import numpy as np
 import random
 from src.solver.rank_task_models.train_utils import read_dataset_from_zip, initialize_model
-from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model
+from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model, \
+    training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 
 
 def main():
@@ -78,7 +79,8 @@ def train_wrapper(parameters):
     ############### Initialize training parameters ################
     parameters["batch_size"] = 1000
     parameters["learning_rate"] = 0.001
-    train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
+    #train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
+    get_data_distribution(dataset, parameters)
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
     loss_function = nn.CrossEntropyLoss()
     best_model = None
@@ -87,8 +89,8 @@ def train_wrapper(parameters):
     epoch_info_log = ""
 
     ############### Training ################
-    parameters["num_epochs"] = 10
-    parameters["train_step"] = 10
+    parameters["num_epochs"] = 50
+    parameters["train_step"] = 50
     start_epoch = 0
     classification_type = "multi_classification"
     parameters["label_size"] = 2
@@ -100,12 +102,19 @@ def train_wrapper(parameters):
     parameters["current_train_folder"] = "divided_1"
 
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"] + 1)):
+
         # Training Phase
-        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
+        model, avg_train_loss = training_phase_without_loader(model, dataset["train"], loss_function, optimizer, parameters)
 
         # Validation Phase
-        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
+        model, avg_valid_loss, valid_accuracy = validation_phase_without_loader(model,  dataset["valid"], loss_function,
                                                                  classification_type, parameters)
+        # # Training Phase
+        # model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
+        #
+        # # Validation Phase
+        # model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
+        #                                                          classification_type, parameters)
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,

@@ -167,8 +167,12 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             current_eq, separated_formula = self.get_first_eq(current_formula)
-            color_print(f"{current_eq.eq_str}, gnn_call {self.total_gnn_call}, category_call {self.total_category_call},dgl_hash_table_hit {self.dgl_hash_table_hit}, predicted_data_hash_table_hit {self.predicted_data_hash_table_hit}",
+            color_print(f"{current_eq.eq_str}, gnn_call {self.total_gnn_call}, category_call {self.total_category_call}",
                         "green")
+            color_print(f"dgl_hash_table_hit:{self.dgl_hash_table_hit}", "green")
+            color_print(f"dgl_hash_table size:{len(self.dgl_hash_table)}", "green")
+            color_print(f"predicted_data_hash_table_hit:{self.predicted_data_hash_table_hit}", "green")
+            color_print(f"predicted_data_hash_table size:{len(self.predicted_data_hash_table)}", "green")
 
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -280,7 +284,8 @@ class SplitEquations(AbstractAlgorithm):
                     one_data_prediction = self.predicted_data_hash_table[hashed_data]
                     self.predicted_data_hash_table_hit += 1
                 else:
-                    one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
+                    one_data_prediction = self.gnn_rank_model(g_G_dgl).squeeze()
+                    #one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
                     self.predicted_data_hash_table[hashed_data] = one_data_prediction
 
                 rank_list.append(one_data_prediction)

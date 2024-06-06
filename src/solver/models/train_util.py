@@ -352,6 +352,61 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
     mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_{label_size}_statistics.txt")
     return dataset
 
+
+def training_phase_without_loader(model, dataset, loss_function, optimizer, parameters:Dict):
+    # Training Phase
+    model.to(parameters["device"])
+    model.train()
+    train_loss = 0.0
+    for (batch_index,one_data) in enumerate(dataset):
+        graphs=one_data[0]
+        labels = one_data[1]
+        graphs_cuda = [graph.to(parameters["device"]) for graph in graphs]
+        labels = labels.clone().detach().to(parameters["device"])
+
+        pred = model(graphs_cuda)  # Squeeze to remove the extra dimension
+
+        pred_final, labels = squeeze_labels(pred, labels)
+
+        loss = loss_function(pred_final, labels)  # labels are not squeezed
+
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        train_loss += loss.item()
+
+
+    avg_train_loss = train_loss / len(dataset)
+    return model,avg_train_loss
+
+def validation_phase_without_loader(model,dataset,loss_function,model_type,parameters:Dict):
+    model.eval()
+    model.to(parameters["device"])
+    valid_loss = 0.0
+    num_correct = 0
+    num_valids = 0
+    with torch.no_grad():
+        for one_datain in dataset:
+            graphs=one_datain[0]
+            labels=one_datain[1]
+            graphs_cuda = [graph.to(parameters["device"]) for graph in graphs]
+            labels = labels.clone().detach().to(parameters["device"])
+
+            pred = model(graphs_cuda)
+            pred_final, labels = squeeze_labels(pred, labels)
+
+            loss = loss_function(pred_final, labels)
+            valid_loss += loss.item()
+
+            # Compute accuracy for binary classification
+            num_correct, num_valids = compute_num_correct(pred_final, num_correct, num_valids, labels,
+                                                          model_type=model_type)
+
+    avg_valid_loss = valid_loss / len(dataset)
+    valid_accuracy = num_correct / num_valids
+    return model,avg_valid_loss,valid_accuracy
+
 def training_phase(model, train_dataloader, loss_function, optimizer, parameters:Dict):
     # Training Phase
     model.to(parameters["device"])
@@ -519,10 +574,14 @@ def compute_num_correct(pred_final,num_correct,num_valids,labels,model_type="bin
         num_correct += (predicted_labels == labels).sum().item()
         num_valids += len(labels)
     elif model_type=="multi_classification":
-        predicted_labels = torch.argmax(pred_final, dim=1)
-        true_labels = torch.argmax(labels, dim=1)
+        predicted_labels = torch.argmax(pred_final)
+        true_labels = torch.argmax(labels)
         num_correct += (predicted_labels == true_labels).sum().item()
-        num_valids += len(predicted_labels)
+        num_valids += 1
+        # predicted_labels = torch.argmax(pred_final, dim=1)
+        # true_labels = torch.argmax(labels, dim=1)
+        # num_correct += (predicted_labels == true_labels).sum().item()
+        # num_valids += len(predicted_labels)
     return num_correct,num_valids
 
 
@@ -716,6 +775,45 @@ def data_loader_1(dataset, parameters):# separate train and valid data here by s
     return train_dataloader, valid_dataloader
 
 
+def get_data_distribution(dataset,parameters:Dict):
+    print(dataset["train"][0])
+    first_label = dataset["train"][0][1]
+    label_size = dataset['train']._label_size
+    parameters["label_size"] = label_size
+
+    is_binary_classification = len(first_label.shape) == 0 or (
+            len(first_label.shape) == 1 and first_label.shape[0] == 1)
+
+    # Process labels based on the classification type
+    if is_binary_classification:
+        # Binary classification
+        train_labels = [int(row[1].item()) for row in dataset["train"]]
+        valid_labels = [int(row[1].item()) for row in dataset["valid"]]
+
+    else:
+        # Multi-class classification
+        category_count = initialize_one_hot_category_count(dataset["train"]._label_size)
+
+        train_category_count = category_count.copy()
+        valid_category_count = category_count.copy()
+
+        for row in dataset["train"]:
+            train_category_count[tuple(row[1].numpy())] += 1
+
+        for row in dataset["valid"]:
+            valid_category_count[tuple(row[1].numpy())] += 1
+
+        train_label_distribution = train_category_count
+        valid_label_distribution = valid_category_count
+
+        # train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
+        # valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
+        # # Calculate label distributions
+        # train_label_distribution = Counter(train_labels)
+        # valid_label_distribution = Counter(valid_labels)
+
+    get_distribution_strings(label_size, train_label_distribution, valid_label_distribution)
+
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
 
@@ -731,48 +829,13 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
 
         return batched_graphs, torch.stack(batched_labels)
 
-    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
-    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
+    # train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
+    # valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 
-    print(dataset["train"][0])
-    first_label = dataset["train"][0][1]
-    label_size =dataset['train']._label_size
-    parameters["label_size"]=label_size
+    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
+    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
 
-
-    is_binary_classification = len(first_label.shape) == 0 or (
-            len(first_label.shape) == 1 and first_label.shape[0] == 1)
-
-    # Process labels based on the classification type
-    if is_binary_classification:
-        # Binary classification
-        train_labels=[int(row[1].item()) for row in dataset["train"]]
-        valid_labels=[int(row[1].item()) for row in dataset["valid"]]
-
-    else:
-        # Multi-class classification
-        category_count = initialize_one_hot_category_count(dataset["train"]._label_size)
-
-        train_category_count= category_count.copy()
-        valid_category_count= category_count.copy()
-
-        for row in dataset["train"]:
-            train_category_count[tuple(row[1].numpy())] += 1
-
-        for row in dataset["valid"]:
-            valid_category_count[tuple(row[1].numpy())] += 1
-
-        train_label_distribution=train_category_count
-        valid_label_distribution=valid_category_count
-
-
-        # train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
-        # valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
-        # # Calculate label distributions
-        # train_label_distribution = Counter(train_labels)
-        # valid_label_distribution = Counter(valid_labels)
-
-    get_distribution_strings(label_size,train_label_distribution,valid_label_distribution)
+    get_data_distribution(dataset,parameters)
 
     return train_dataloader, valid_dataloader
 
