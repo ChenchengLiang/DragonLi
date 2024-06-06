@@ -278,16 +278,17 @@ class SplitEquations(AbstractAlgorithm):
         with torch.no_grad():
             rank_list = []
             for g_G_dgl in input_eq_graph_list_dgl:
-                # hash one data
-                hashed_data, data_str=hash_one_dgl_data(g_G_dgl)
-                if hashed_data in self.predicted_data_hash_table:
-                    one_data_prediction = self.predicted_data_hash_table[hashed_data]
-                    self.predicted_data_hash_table_hit += 1
-                else:
-                    one_data_prediction = self.gnn_rank_model(g_G_dgl).squeeze()
-                    #one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
-                    self.predicted_data_hash_table[hashed_data] = one_data_prediction
+                # # hash one data
+                # hashed_data, data_str=hash_one_dgl_data(g_G_dgl)
+                # if hashed_data in self.predicted_data_hash_table:
+                #     one_data_prediction = self.predicted_data_hash_table[hashed_data]
+                #     self.predicted_data_hash_table_hit += 1
+                # else:
+                #     one_data_prediction = self.gnn_rank_model(g_G_dgl).squeeze()
+                #     #one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
+                #     self.predicted_data_hash_table[hashed_data] = one_data_prediction
 
+                one_data_prediction = self.gnn_rank_model(g_G_dgl).squeeze()
                 rank_list.append(one_data_prediction)
 
             # transform multiple one-hot encoded binary classification prediction to one score
