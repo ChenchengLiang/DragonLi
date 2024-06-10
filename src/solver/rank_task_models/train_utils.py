@@ -26,6 +26,8 @@ def initialize_model(parameters):
     )
     # Initialize GraphClassifiers with the respective GNN models
     model = GraphClassifier(gnn_model, classifier_2)
+
+
     return model
 
 

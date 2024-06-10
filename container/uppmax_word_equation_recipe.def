@@ -34,6 +34,7 @@ From: continuumio/miniconda3
     # Any additional setup can go here
     pip install -r requirement/requirements.txt
     pip install mlflow torch
+    pip install lightning
 
 
     #install z3

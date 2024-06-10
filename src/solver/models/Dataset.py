@@ -3,8 +3,6 @@ import os
 import sys
 import zipfile
 
-from src.solver.independent_utils import color_print
-
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
 import dgl
@@ -16,7 +14,7 @@ from src.solver.Constants import SAT,UNKNOWN,UNSAT,RED,COLORRESET
 from typing import Dict, List
 from tqdm import tqdm
 import time
-
+from src.solver.independent_utils import color_print
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])

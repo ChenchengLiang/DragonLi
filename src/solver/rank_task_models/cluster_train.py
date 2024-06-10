@@ -2,6 +2,8 @@ import configparser
 import os
 import sys
 
+
+
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -25,7 +27,7 @@ from src.solver.models.train_util import train_one_model, train_multiple_models_
 import torch.nn as nn
 from src.solver.models.utils import device_info
 from src.solver.rank_task_models.train_utils import read_dataset_from_zip, initialize_model
-
+from torch.utils.data import DataLoader
 
 
 def main():
@@ -72,7 +74,11 @@ def main():
 @time_it
 def train_a_model(train_config, mlflow_run):
     device_info()
-    train_config["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        train_config["device"] = torch.device("cuda")
+        print(f"exists {torch.cuda.device_count()} GPUs")
+    else:
+        device = torch.device("cpu")
     train_config["run_id"] = mlflow_run.info.run_id
     train_config["experiment_id"] = mlflow_run.info.experiment_id
     if len(mlflow_run.data.params) == 0:
@@ -89,7 +95,7 @@ def train_continuously(parameters):
     train_dataset = read_dataset_from_zip(parameters, os.path.basename(parameters["current_train_folder"]),get_data_statistics=get_data_statistics)
     valid_dataset = read_dataset_from_zip(parameters, "valid_data",get_data_statistics=get_data_statistics)
     dataset = {"train": train_dataset, "valid": valid_dataset}
-    #train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
+    train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
     get_data_distribution(dataset, parameters)
 
     # initialize model
@@ -110,21 +116,13 @@ def train_continuously(parameters):
     # training
     for index, epoch in enumerate(range(start_epoch, parameters["num_epochs"] + 1)):
 
+
         # Training Phase
-        model, avg_train_loss = training_phase_without_loader(model, dataset["train"], loss_function, optimizer, parameters)
+        model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
 
         # Validation Phase
-        model, avg_valid_loss, valid_accuracy = validation_phase_without_loader(model, dataset["valid"], loss_function,
+        model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
                                                                  classification_type, parameters)
-
-
-
-        # # Training Phase
-        # model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
-        #
-        # # Validation Phase
-        # model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
-        #                                                          classification_type, parameters)
 
         # Save based on specified criterion
         best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,

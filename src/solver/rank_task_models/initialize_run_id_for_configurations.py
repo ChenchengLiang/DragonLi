@@ -12,7 +12,7 @@ os.environ["DGLBACKEND"] = "pytorch"
 import dgl
 import dgl.data
 import torch
-from typing import Dict
+from typing import Dict, List, Any
 from src.solver.Constants import project_folder
 import mlflow
 import argparse
@@ -26,10 +26,16 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
                                           validation_phase,
                                           initialize_train_objects, log_and_save_best_model, save_checkpoint,
                                           update_config_file, data_loader_2, get_data_distribution,
-                                          training_phase_without_loader, validation_phase_without_loader)
+                                          training_phase_without_loader, validation_phase_without_loader, data_loader_3,
+                                          log_metrics_with_lock)
 
 from src.solver.models.utils import device_info
 from src.solver.rank_task_models.train_utils import initialize_model, read_dataset_from_zip
+from torch.nn.parallel import DistributedDataParallel as DDP
+
+import torch.distributed as dist
+import torch.multiprocessing as mp
+from torch.multiprocessing import SimpleQueue
 
 def main():
     # parse argument
@@ -99,7 +105,8 @@ def train_one_epoch_and_get_run_id(parameters):
     train_dataset = read_dataset_from_zip(parameters,os.path.basename(parameters["current_train_folder"]) )
     valid_dataset = read_dataset_from_zip(parameters,"valid_data")
     dataset = {"train": train_dataset, "valid": valid_dataset}
-    #train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
+    get_data_distribution(dataset, parameters)
+    train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
     get_data_distribution(dataset, parameters)
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
     loss_function = nn.CrossEntropyLoss()
@@ -111,20 +118,28 @@ def train_one_epoch_and_get_run_id(parameters):
     classification_type = "multi_classification"
     epoch=1
     index=1
+    #
+    # torch.multiprocessing.set_sharing_strategy('file_system')
+    # world_size = torch.cuda.device_count()
+    # queue = SimpleQueue()
+    # mp.spawn(train_and_valid, args=(world_size, queue, parameters,model,best_model,best_valid_loss,
+    #                                 best_valid_accuracy,dataset,loss_function,optimizer,
+    #                                 classification_type,check_point_model_path,epoch_info_log,epoch,index),
+    #          nprocs=world_size, join=True)
+    # results = [queue.get() for _ in range(world_size)]
+    # return results[-1]
+    #
 
-    ############### Training ################
+
+    parameters["device"]=f"cuda:{0}"
+    model.to(parameters["device"])
+
     # Training Phase
-    model, avg_train_loss = training_phase_without_loader(model, dataset["train"], loss_function, optimizer, parameters)
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
 
     # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase_without_loader(model, dataset["valid"], loss_function,
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
                                                              classification_type, parameters)
-    # # Training Phase
-    # model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
-    #
-    # # Validation Phase
-    # model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
-    #                                                          classification_type, parameters)
 
     # Save based on specified criterion
     best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
@@ -152,94 +167,65 @@ def train_one_epoch_and_get_run_id(parameters):
     print("-" * 10, "train finished", "-" * 10)
     return parameters
 
+def init_process(rank, world_size, backend='nccl'):
+    dist.init_process_group(backend, rank=rank, world_size=world_size)
 
-def train_multiple_models_separately_get_run_id(parameters, benchmark_folder):
+def train_and_valid(rank, world_size,queue,parameters,model,best_model,best_valid_loss,
+                    best_valid_accuracy,dataset,loss_function,
+                    optimizer,classification_type,check_point_model_path,epoch_info_log,epoch,index):
+    # Initialize the process group
+    init_process(rank, world_size)
 
+    # Set the device
+    torch.cuda.set_device(rank)
+    device = torch.device(f'cuda:{rank}')
+    model.to(device)
 
-    model_2 = initialize_model(parameters)
+    # Wrap the model
+    model = DDP(model, device_ids=[rank])
 
-    parameters["model_save_path"] = os.path.join(project_folder, "Models",
-                                                 f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
-    dataset_2 = load_train_and_valid_dataset(parameters, benchmark_folder, 2)
-    #best_model_2, metrics_2 = train_binary_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
-    best_model_2, metrics_2 = train_multi_classification_get_run_id(dataset_2, model=model_2, parameters=parameters)
+    train_dataloader, valid_dataloader = data_loader_3(dataset, parameters)
 
-
-    metrics = {**metrics_2, **metrics_2}
-    mlflow.log_metrics(metrics)
-
-    #record current training process in configuration file
-    parameters["train_data_folder_epoch_map"][os.path.basename(parameters["current_train_folder"])]=1
-    print("-" * 10, "train finished", "-" * 10)
-    return parameters
-
-def train_binary_classification_get_run_id(dataset, model, parameters: Dict):
-    epoch=1
-    model_type = "binary_classification"
-    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
-        dataset, parameters, model, model_type=model_type)
-    # Training Phase
-    model, avg_train_loss = training_phase_without_loader(model, dataset["train"], loss_function, optimizer, parameters)
-    # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase_without_loader(model, dataset["valid"], loss_function, model_type,
-                                                             parameters)
-    # # Training Phase
-    # model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer,parameters)
-    # # Validation Phase
-    # model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type,parameters)
-    # Save based on specified criterion
-    best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
-                                                                                               best_model, model,
-                                                                                               "binary", 2,
-                                                                                               avg_train_loss,
-                                                                                               avg_valid_loss,
-                                                                                               valid_accuracy,
-                                                                                               best_valid_loss,
-                                                                                               best_valid_accuracy,
-                                                                                               epoch_info_log,1)
-    save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
-                    filename=check_point_model_path)
-    # Return the trained model and the best metrics
-    best_metrics = {"best_valid_loss_binary": best_valid_loss, "best_valid_accuracy_binary": best_valid_accuracy}
-    return best_model, best_metrics
-def train_multi_classification_get_run_id(dataset, model, parameters: Dict):
-    epoch=1
-    model_type = "multi_classification"
-    train_dataloader, valid_dataloader, optimizer, loss_function, best_model, best_valid_loss, best_valid_accuracy, epoch_info_log, check_point_model_path = initialize_train_objects(
-        dataset, parameters, model, model_type=model_type)
 
     # Training Phase
-    model, avg_train_loss = training_phase_without_loader(model, dataset["train"], loss_function, optimizer, parameters)
+    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters,device=device)
 
     # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase_without_loader(model, dataset["valid"], loss_function, model_type,
-                                                             parameters)
+    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
+                                                             classification_type, parameters,device=device)
 
-    # # Training Phase
-    # model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer,parameters)
-    #
-    # # Validation Phase
-    # model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function, model_type,parameters)
 
-    # Save based on specified criterion
+
+
     best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
                                                                                                best_model, model,
                                                                                                "multi_class",
-                                                                                               parameters["label_size"],
+                                                                                               parameters[
+                                                                                                   "label_size"],
                                                                                                avg_train_loss,
                                                                                                avg_valid_loss,
                                                                                                valid_accuracy,
                                                                                                best_valid_loss,
                                                                                                best_valid_accuracy,
-                                                                                               epoch_info_log,1)
+                                                                                               epoch_info_log,
+                                                                                               index)
     save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
                     filename=check_point_model_path)
+
     # Return the trained model and the best metrics
     best_metrics = {f"best_valid_loss_multi_class_{parameters['label_size']}": best_valid_loss,
                     f"best_valid_accuracy_multi_class_{parameters['label_size']}": best_valid_accuracy}
-    return best_model, best_metrics
 
+    #log_metrics_with_lock(best_metrics, lock_file=os.path.join(project_folder, "Models", "best_metrics_each_epoch.lock"))
+    mlflow.log_metrics(best_metrics)
 
+    parameters["train_data_folder_epoch_map"][os.path.basename(parameters["current_train_folder"])] = 1
+    print("-" * 10, "train finished", "-" * 10)
+
+    queue.put(parameters)
+
+    dist.destroy_process_group()
+    #return parameters
 
 
 if __name__ == '__main__':

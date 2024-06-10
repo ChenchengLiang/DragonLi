@@ -13,6 +13,8 @@ import functools
 import sys
 import io
 
+
+
 def check_list_consistence(target_list):
     consitence_list = []
     for one_answer in target_list:
@@ -406,3 +408,4 @@ def remove_last_comma(s):
         # Remove the last character (the comma)
         return s[:-1]
     return s
+

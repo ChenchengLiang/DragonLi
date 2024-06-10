@@ -1,3 +1,5 @@
+import time
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,51 +18,96 @@ class GNNRankTask1(nn.Module):
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
-        self.gnn_hidden_dim=gnn_hidden_dim
+        self.gnn_hidden_dim = gnn_hidden_dim
 
         self.single_dgl_hash_table = {}
         self.single_dgl_hash_table_hit = 0
 
-    def forward(self, graphs, is_test=False):
+    # dealing batch graphs
+    def forward(self, batch_graphs, is_test=False):
         # todo these operations may be optimized
+        # print("inside model: single_dgl_hash_table_hit", self.single_dgl_hash_table_hit)
+        # print("inside model: single_dgl_hash_table size", len(self.single_dgl_hash_table))
 
-        embeddings = []
-        for g in graphs:
-            if is_test:  # infer
-                hashed_data, _ = hash_one_dgl_graph(g)
-                if hashed_data in self.single_dgl_hash_table:
-                    dgl_embedding = self.single_dgl_hash_table[hashed_data]
-                    self.single_dgl_hash_table_hit += 1
-                    # print("--inside model: single_dgl_hash_table_hit", self.single_dgl_hash_table_hit)
-                    # print("--inside model: single_dgl_hash_table", len(self.single_dgl_hash_table))
-                else:
-                    dgl_embedding = self.embedding(g)
-                    self.single_dgl_hash_table[hashed_data] = dgl_embedding
+        batch_result_list = []
+        for one_data in batch_graphs:
+            one_data_unbatched = dgl.unbatch(one_data)
+            embeddings = []
 
-                embeddings.append(dgl_embedding)
-            else:  # train and validation
-                embeddings.append(self.embedding(g))
+            for g in one_data_unbatched:
+                if is_test:  # infer
+                    hashed_data, _ = hash_one_dgl_graph(g)
 
-        first_element = embeddings[0]
-        summed_tensor = torch.zeros(1, 1, self.gnn_hidden_dim, device=first_element[0].device)
-        for e in embeddings[1:]:
-            summed_tensor += e
-        summed_tensor = summed_tensor / len(embeddings[1:])
+                    if hashed_data in self.single_dgl_hash_table:
+                        dgl_embedding = self.single_dgl_hash_table[hashed_data]
+                        self.single_dgl_hash_table_hit += 1
 
-        concatenated_embedding = torch.cat([first_element, summed_tensor], dim=2)
+                    else:
+                        dgl_embedding = self.embedding(g)
+                        self.single_dgl_hash_table[hashed_data] = dgl_embedding
 
-        # concatenated_embedding_list = []
-        # for i, emb in enumerate(embeddings):
-        #     first_element = emb[0]
-        #     stacked_tensors = torch.stack([e for e in emb[1:]], dim=0)
-        #     # summed_embeddings = torch.sum(stacked_tensors, dim=0)
-        #     summed_embeddings = torch.mean(stacked_tensors, dim=0)
-        #     concatenated_embedding = torch.cat([first_element, summed_embeddings], dim=1)
-        #     concatenated_embedding_list.append(concatenated_embedding)
+                    embeddings.append(dgl_embedding)
+                else:  # train and validation
+                    embeddings.append(self.embedding(g))
 
-        # concatenated_embedding_list = torch.stack(concatenated_embedding_list, dim=0)
 
-        return concatenated_embedding
+            first_element = embeddings[0]
+            summed_tensor = torch.zeros(1, 1, self.gnn_hidden_dim, device=first_element[0].device)
+            for e in embeddings[1:]:
+                summed_tensor += e
+            summed_tensor = summed_tensor / len(embeddings[1:])
+
+            concatenated_embedding = torch.cat([first_element, summed_tensor], dim=2)
+            batch_result_list.append(concatenated_embedding)
+
+
+
+
+
+        batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
+        return batch_result_list_stacked
+
+    # # dealing single graph
+    # def forward(self, graphs, is_test=False):
+    #     # todo these operations may be optimized
+    #
+    #     embeddings = []
+    #     for g in graphs:
+    #         if is_test:  # infer
+    #             hashed_data, _ = hash_one_dgl_graph(g)
+    #             if hashed_data in self.single_dgl_hash_table:
+    #                 dgl_embedding = self.single_dgl_hash_table[hashed_data]
+    #                 self.single_dgl_hash_table_hit += 1
+    #                 # print("--inside model: single_dgl_hash_table_hit", self.single_dgl_hash_table_hit)
+    #                 # print("--inside model: single_dgl_hash_table", len(self.single_dgl_hash_table))
+    #             else:
+    #                 dgl_embedding = self.embedding(g)
+    #                 self.single_dgl_hash_table[hashed_data] = dgl_embedding
+    #
+    #             embeddings.append(dgl_embedding)
+    #         else:  # train and validation
+    #             embeddings.append(self.embedding(g))
+    #
+    #     first_element = embeddings[0]
+    #     summed_tensor = torch.zeros(1, 1, self.gnn_hidden_dim, device=first_element[0].device)
+    #     for e in embeddings[1:]:
+    #         summed_tensor += e
+    #     summed_tensor = summed_tensor / len(embeddings[1:])
+    #
+    #     concatenated_embedding = torch.cat([first_element, summed_tensor], dim=2)
+    #
+    #     # concatenated_embedding_list = []
+    #     # for i, emb in enumerate(embeddings):
+    #     #     first_element = emb[0]
+    #     #     stacked_tensors = torch.stack([e for e in emb[1:]], dim=0)
+    #     #     # summed_embeddings = torch.sum(stacked_tensors, dim=0)
+    #     #     summed_embeddings = torch.mean(stacked_tensors, dim=0)
+    #     #     concatenated_embedding = torch.cat([first_element, summed_embeddings], dim=1)
+    #     #     concatenated_embedding_list.append(concatenated_embedding)
+    #
+    #     # concatenated_embedding_list = torch.stack(concatenated_embedding_list, dim=0)
+    #
+    #     return concatenated_embedding
 
 
 ############################################# Branch Task 3 #############################################

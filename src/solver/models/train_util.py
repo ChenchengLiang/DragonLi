@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from collections import Counter
+from collections import Counter, OrderedDict
 from typing import Dict, Union
 
 import dgl
@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from dgl.dataloading import GraphDataLoader
+from torch.utils.data import DistributedSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from src.solver.models.Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
@@ -19,7 +20,8 @@ from src.solver.independent_utils import load_from_pickle_within_zip, time_it, c
     initialize_one_hot_category_count
 from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs, \
     GraphClassifier, SharedGNN, Classifier
-
+from filelock import FileLock, Timeout
+import time
 
 def train_multiple_models(parameters, benchmark_folder):
     print("-" * 10, "train", "-" * 10)
@@ -354,8 +356,9 @@ def load_one_dataset(parameters, benchmark_folder,label_size,data_folder):
 
 
 def training_phase_without_loader(model, dataset, loss_function, optimizer, parameters:Dict):
+
+
     # Training Phase
-    model.to(parameters["device"])
     model.train()
     train_loss = 0.0
     for (batch_index,one_data) in enumerate(dataset):
@@ -365,7 +368,6 @@ def training_phase_without_loader(model, dataset, loss_function, optimizer, para
         labels = labels.clone().detach().to(parameters["device"])
 
         pred = model(graphs_cuda)  # Squeeze to remove the extra dimension
-
         pred_final, labels = squeeze_labels(pred, labels)
 
         loss = loss_function(pred_final, labels)  # labels are not squeezed
@@ -382,7 +384,6 @@ def training_phase_without_loader(model, dataset, loss_function, optimizer, para
 
 def validation_phase_without_loader(model,dataset,loss_function,model_type,parameters:Dict):
     model.eval()
-    model.to(parameters["device"])
     valid_loss = 0.0
     num_correct = 0
     num_valids = 0
@@ -407,9 +408,8 @@ def validation_phase_without_loader(model,dataset,loss_function,model_type,param
     valid_accuracy = num_correct / num_valids
     return model,avg_valid_loss,valid_accuracy
 
-def training_phase(model, train_dataloader, loss_function, optimizer, parameters:Dict):
+def training_phase(model, train_dataloader, loss_function, optimizer, parameters:Dict,device="cuda:0"):
     # Training Phase
-    model.to(parameters["device"])
     model.train()
     train_loss = 0.0
     for (batch_index,(batched_graph, labels)) in enumerate(train_dataloader):
@@ -444,9 +444,8 @@ def training_phase(model, train_dataloader, loss_function, optimizer, parameters
     avg_train_loss = train_loss / len(train_dataloader)
     return model,avg_train_loss
 
-def validation_phase(model,valid_dataloader,loss_function,model_type,parameters:Dict):
+def validation_phase(model,valid_dataloader,loss_function,model_type,parameters:Dict,device="cuda:0"):
     model.eval()
-    model.to(parameters["device"])
     valid_loss = 0.0
     num_correct = 0
     num_valids = 0
@@ -574,14 +573,14 @@ def compute_num_correct(pred_final,num_correct,num_valids,labels,model_type="bin
         num_correct += (predicted_labels == labels).sum().item()
         num_valids += len(labels)
     elif model_type=="multi_classification":
-        predicted_labels = torch.argmax(pred_final)
-        true_labels = torch.argmax(labels)
-        num_correct += (predicted_labels == true_labels).sum().item()
-        num_valids += 1
-        # predicted_labels = torch.argmax(pred_final, dim=1)
-        # true_labels = torch.argmax(labels, dim=1)
+        predicted_labels = torch.argmax(pred_final, dim=1)
+        true_labels = torch.argmax(labels,dim=1)
+
         # num_correct += (predicted_labels == true_labels).sum().item()
-        # num_valids += len(predicted_labels)
+        # num_valids += 1
+        num_correct=(predicted_labels == true_labels).sum()
+        num_valids=len(true_labels)
+
     return num_correct,num_valids
 
 
@@ -601,6 +600,9 @@ def save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accurac
     run_id = parameters["run_id"]
     checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
     torch.save(checkpoint, checkpoint_path)
+
+    # log_metrics_with_lock(checkpoint_path,
+    #                       lock_file=os.path.join(project_folder, "Models", "checkpoint_path.lock"))
     mlflow.log_artifact(checkpoint_path)
     print(f"Checkpoint saved: {filename}")
 
@@ -611,8 +613,15 @@ def load_checkpoint(model, optimizer, parameters, filename='model_checkpoint.pth
         checkpoint_path = f"{checkpoint_folder}/{run_id}_{filename}"
 
         checkpoint = torch.load(checkpoint_path,map_location=parameters["device"])
+        #checkpoint = torch.load(checkpoint_path)
+
+        # load model
         model.load_state_dict(checkpoint['state_dict'])
-        #model.to(parameters["device"]) # this has been done in training_phase and validation_phase
+        # if torch.cuda.device_count() > 1:
+        #     model = torch.nn.DataParallel(model, device_ids=[0, 1])
+
+        model.to(parameters["device"])
+
 
         optimizer.load_state_dict(checkpoint['optimizer'])
         # Ensure optimizer's state is correctly moved to the GPU (if it has tensors)
@@ -662,6 +671,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
         current_epoch_info = f"Model: {model_type}_{parameters['label_size']} | Epoch: {epoch:05d} | Train Loss: {avg_train_loss:.4f} | Validation Loss: {avg_valid_loss:.4f} | Validation Accuracy: {valid_accuracy:.4f}"
         print(current_epoch_info)
         epoch_info_log = epoch_info_log + "\n" + current_epoch_info
+
         mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{label_size}.txt")
     if "divided" in parameters["current_train_folder"]:
         current_folder_number=int(os.path.basename(parameters["current_train_folder"]).split("_")[1])
@@ -676,6 +686,7 @@ def log_and_save_best_model(parameters, epoch, best_model, model, model_type, la
     metrics = {f"train_loss_{model_type}_{parameters['label_size']}": avg_train_loss, f"valid_loss_{model_type}_{parameters['label_size']}": avg_valid_loss,
                f"best_valid_accuracy_{model_type}_{parameters['label_size']}": best_valid_accuracy, f"valid_accuracy_{model_type}_{parameters['label_size']}": valid_accuracy,
                "epoch": epoch,"current_folder":current_folder_number,"total_epoch":total_epoch}
+    #log_metrics_with_lock(metrics,lock_file=os.path.join(project_folder,"Models","log_and_save_best_model.lock"))
     mlflow.log_metrics(metrics)
     return best_model, best_valid_loss, best_valid_accuracy, epoch_info_log
 
@@ -829,15 +840,67 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
 
         return batched_graphs, torch.stack(batched_labels)
 
-    # train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
-    # valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
+    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
+    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 
-    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
-    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
+    # train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
+    # valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
 
     get_data_distribution(dataset,parameters)
 
     return train_dataloader, valid_dataloader
+
+
+@time_it
+def data_loader_3(dataset, parameters,world_size,rank): # load separated train and valid data here
+
+    def custom_collate_fn(batch):
+        batched_graphs = []
+        batched_labels = []
+
+        # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
+        for graphs, labels in batch:
+            # Batch all graphs in this sample together
+            batched_graphs.append(dgl.batch(graphs))
+            batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
+
+        return batched_graphs, torch.stack(batched_labels)
+
+    train_sampler = DistributedSampler(dataset["train"], num_replicas=world_size, rank=rank)
+    valid_sampler = DistributedSampler(dataset["valid"], num_replicas=world_size, rank=rank)
+
+
+    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"],sampler=train_sampler, drop_last=False,collate_fn=custom_collate_fn)
+    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"],sampler=valid_sampler, drop_last=False,collate_fn=custom_collate_fn)
+
+    # train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
+    # valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
+
+
+
+    return train_dataloader, valid_dataloader
+
+
+
+def log_metrics_with_lock(metrics, lock_file="mlflow_log.lock", timeout=10):
+    """
+    Logs metrics to MLflow ensuring that no other process is logging simultaneously.
+
+    Parameters:
+    - metrics (dict): The metrics to log.
+    - lock_file (str): The path to the lock file.
+    - timeout (int): The timeout for acquiring the lock (in seconds).
+    """
+    lock = FileLock(lock_file)
+
+    try:
+        with lock.acquire(timeout=timeout):
+            print("Lock acquired. Logging metrics...")
+            mlflow.log_metrics(metrics)
+            print("Metrics logged successfully.")
+    except Timeout:
+        print("Could not acquire lock. Another process might be logging metrics.")
+
 
 @time_it
 def get_distribution_strings(label_size,train_label_distribution,valid_label_distribution):
