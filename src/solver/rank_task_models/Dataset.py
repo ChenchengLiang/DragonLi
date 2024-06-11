@@ -28,7 +28,7 @@ def get_one_dgl_graph_concatenated_with_other_graphs():
 
 
 
-#
+
 #
 #
 # class MnistDataModule(pl.LightningDataModule):

@@ -1,5 +1,6 @@
 import time
 
+import mlflow
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -44,9 +45,11 @@ class GraphClassifierLightning(pl.LightningModule):
 
         self.loss_fn = nn.CrossEntropyLoss()
         self.accuracy = MyAccuracy()#torchmetrics.Accuracy(task="multiclass", num_classes=classifier.output_dim)
-        self.f1_score = torchmetrics.F1Score(task="multiclass", num_classes=classifier.output_dim)
+
 
         self.best_val_accuracy= 0
+        self.best_epoch=0
+
 
 
         self.is_test = False
@@ -61,23 +64,29 @@ class GraphClassifierLightning(pl.LightningModule):
         loss, scores, y = self._common_step(batch, batch_idx)
 
         accuracy = self.accuracy(scores, y)
-        f1_score = self.f1_score(scores, y)
-        self.log_dict({'train_loss': loss, 'train_accuracy': accuracy, 'train_f1_score': f1_score},
+        self.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
                       on_step=False, on_epoch=True, prog_bar=True)
         return {'loss': loss, "scores": scores, "y": y}
 
     def validation_step(self, batch, batch_idx):
+
         loss, scores, y = self._common_step(batch, batch_idx)
         accuracy = self.accuracy(scores, y)
-        f1_score = self.f1_score(scores, y)
-        self.log_dict({'val_loss': loss, 'val_accuracy': accuracy, 'val_f1_score': f1_score},
+
+
+        result_dict={'current_epoch':int(self.current_epoch),'val_loss': loss,
+                     'val_accuracy': accuracy,"best_val_accuracy":self.best_val_accuracy ,
+                     "best_epoch":self.best_epoch}
+        self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=True)
+        mlflow.log_metrics(result_dict)
 
         #store best model
         if accuracy > self.best_val_accuracy:
             self.best_val_accuracy=accuracy
+            self.best_epoch=self.current_epoch
             save_model_local_and_mlflow(self.model_parameters,self.classifier.output_dim,self)
-            color_print(f"best_val_accuracy: {self.best_val_accuracy}, Save model\n", "green")
+            color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, Save model\n", "green")
 
 
         return {'loss': loss, "scores": scores, "y": y}
