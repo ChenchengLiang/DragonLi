@@ -799,20 +799,32 @@ def get_data_distribution(dataset,parameters:Dict):
 
     get_distribution_strings(label_size, train_label_distribution, valid_label_distribution)
 
+def custom_collate_fn(batch):
+    batched_graphs = []
+    batched_labels = []
+
+    # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
+    for graphs, labels in batch:
+        # Batch all graphs in this sample together
+        batched_graphs.append(dgl.batch(graphs))
+        batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
+
+    return batched_graphs, torch.stack(batched_labels)
+
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
 
-    def custom_collate_fn(batch):
-        batched_graphs = []
-        batched_labels = []
-
-        # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
-        for graphs, labels in batch:
-            # Batch all graphs in this sample together
-            batched_graphs.append(dgl.batch(graphs))
-            batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
-
-        return batched_graphs, torch.stack(batched_labels)
+    # def custom_collate_fn(batch):
+    #     batched_graphs = []
+    #     batched_labels = []
+    #
+    #     # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
+    #     for graphs, labels in batch:
+    #         # Batch all graphs in this sample together
+    #         batched_graphs.append(dgl.batch(graphs))
+    #         batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
+    #
+    #     return batched_graphs, torch.stack(batched_labels)
 
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)

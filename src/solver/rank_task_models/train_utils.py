@@ -1,5 +1,5 @@
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning
-
+from pytorch_lightning.callbacks import EarlyStopping, Callback
 
 def get_gnn_and_classifier(parameters):
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
@@ -36,3 +36,13 @@ def initialize_model(parameters):
     return model
 
 
+
+class MyPrintingCallback(Callback):
+    def __init__(self):
+        super().__init__()
+
+    def on_train_start(self, trainer, pl_module):
+        print("\n----- Starting to train -----\n")
+
+    def on_train_end(self, trainer, pl_module):
+        print("\n----- Training is done -----\n")

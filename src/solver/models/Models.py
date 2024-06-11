@@ -79,7 +79,7 @@ class GraphClassifierLightning(pl.LightningModule):
                      "best_epoch":self.best_epoch}
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=True)
-        mlflow.log_metrics(result_dict)
+        #mlflow.log_metrics(result_dict)
 
         #store best model
         if accuracy > self.best_val_accuracy:

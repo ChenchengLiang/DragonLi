@@ -5,6 +5,8 @@ import zipfile
 
 import mlflow
 
+from src.solver.models.train_util import get_data_distribution, custom_collate_fn
+
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
 import dgl
@@ -20,67 +22,42 @@ from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.independent_utils import time_it, load_from_pickle_within_zip, color_print
 from src.solver.independent_utils import color_print, initialize_one_hot_category_count
 import pytorch_lightning as pl
+from dgl.dataloading import GraphDataLoader
+
 
 def get_one_dgl_graph_concatenated_with_other_graphs():
     pass
 
 
+class DGLDataModule(pl.LightningDataModule):
+    def __init__(self, parameters, batch_size, num_workers):
+        super().__init__()
 
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.parameters = parameters
 
+    def prepare_data(self):
+        pass
 
+    def setup(self, stage):
+        self.train_ds = read_dataset_from_zip(self.parameters,
+                                              os.path.basename(self.parameters["current_train_folder"]))
+        self.val_ds = read_dataset_from_zip(self.parameters, "valid_data")
+        dataset = {"train": self.train_ds, "valid": self.val_ds}
 
-#
-#
-# class MnistDataModule(pl.LightningDataModule):
-#     def __init__(self, parameters, batch_size, num_workers):
-#         super().__init__()
-#
-#         self.batch_size = batch_size
-#         self.num_workers = num_workers
-#         self.parameters=parameters
-#
-#     def prepare_data(self):
-#         train_dataset = read_dataset_from_zip(self.parameters, os.path.basename(self.parameters["current_train_folder"]))
-#         valid_dataset = read_dataset_from_zip(self.parameters, "valid_data")
-#
-#
-#     def setup(self, stage):
-#         entire_dataset = datasets.MNIST(
-#             root=self.data_dir,
-#             train=True,
-#             transform=transforms.ToTensor(),
-#             download=False,
-#         )
-#         self.train_ds, self.val_ds = random_split(entire_dataset, [50000, 10000])
-#         self.test_ds = datasets.MNIST(
-#             root=self.data_dir,
-#             train=False,
-#             transform=transforms.ToTensor(),
-#             download=False,
-#         )
-#
-#     def train_dataloader(self):
-#         return DataLoader(
-#             self.train_ds,
-#             batch_size=self.batch_size,
-#             num_workers=self.num_workers,
-#             shuffle=True,
-#         )
-#
-#     def val_dataloader(self):
-#         return DataLoader(
-#             self.val_ds,
-#             batch_size=self.batch_size,
-#             num_workers=self.num_workers,
-#             shuffle=False,
-#         )
-#
-#     def test_dataloader(self):
-#         return self.val_dataloader()
-#
+        get_data_distribution(dataset, self.parameters)
 
+    def train_dataloader(self):
+        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False,
+                               collate_fn=custom_collate_fn)
 
+    def val_dataloader(self):
+        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False,
+                               collate_fn=custom_collate_fn, shuffle=False)
 
+    def test_dataloader(self):
+        return self.val_dataloader()
 
 
 class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
@@ -120,8 +97,6 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
                 rank_label = [1, 0] if label_list[index] == 1 else [0, 1]
                 self.graphs.append(one_train_data)
                 self.labels.append(rank_label)
-
-
 
         self.labels = torch.Tensor(self.labels)
 
@@ -173,7 +148,6 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
         for label in self.labels:
             category_count[tuple(label.numpy())] += 1
 
-
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
 
@@ -193,8 +167,6 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
                     else:
                         unknown_label_number += 1
 
-
-
         result_str = (f"label size: {self._label_size}, split_number: {split_number}, \n"
                       f"sat_label_number: {sat_label_number}, unsat_label_number: {unsat_label_number}, unknown_label_number: {unknown_label_number} \n")
         result_str += f"label distribution: {category_count.__str__()} \n"
@@ -207,8 +179,7 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
         return result_str
 
 
-def read_dataset_from_zip(parameters,data_folder,get_data_statistics=True):
-
+def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
     pickle_folder = os.path.join(bench_folder, parameters["benchmark_folder"], data_folder)
     graph_type = parameters["graph_type"]
 
@@ -220,7 +191,7 @@ def read_dataset_from_zip(parameters,data_folder,get_data_statistics=True):
         pickle_name = f"dataset_{graph_type}.pkl"
         # Load the datasets directly from ZIP files
         dataset = load_from_pickle_within_zip(zip_file, pickle_name)
-        if get_data_statistics==True:
+        if get_data_statistics == True:
             dataset_statistics = dataset.statistics()
             mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
         else:
@@ -230,5 +201,5 @@ def read_dataset_from_zip(parameters,data_folder,get_data_statistics=True):
         dataset = None
         dataset_statistics = ""
 
-    #mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
+    # mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
     return dataset
