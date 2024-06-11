@@ -21,12 +21,12 @@ import subprocess
 from src.solver.independent_utils import color_print, load_from_pickle_within_zip
 from src.solver.Constants import project_folder, bench_folder, RED
 import signal
-from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask
+from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, read_dataset_from_zip
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN
 import torch.nn as nn
 import numpy as np
 import random
-from src.solver.rank_task_models.train_utils import read_dataset_from_zip, initialize_model
+from src.solver.rank_task_models.train_utils import initialize_model
 from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model, \
     training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 from torch.utils.data import DataLoader

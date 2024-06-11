@@ -173,3 +173,4 @@ cython_debug/
 *.csv#
 *.pth
 *.sif
+lightning_logs

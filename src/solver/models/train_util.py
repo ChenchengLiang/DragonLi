@@ -1,7 +1,5 @@
 import json
 import os
-import time
-from collections import Counter, OrderedDict
 from typing import Dict, Union
 
 import dgl
@@ -21,7 +19,9 @@ from src.solver.independent_utils import load_from_pickle_within_zip, time_it, c
 from src.solver.models.Models import GCNWithNFFNN, GATWithNFFNN, GINWithNFFNN, GCNWithGAPFFNN, MultiGNNs, \
     GraphClassifier, SharedGNN, Classifier
 from filelock import FileLock, Timeout
-import time
+
+from src.solver.models.utils import squeeze_labels, save_model_local_and_mlflow
+
 
 def train_multiple_models(parameters, benchmark_folder):
     print("-" * 10, "train", "-" * 10)
@@ -641,17 +641,6 @@ def load_checkpoint(model, optimizer, parameters, filename='model_checkpoint.pth
         return model, optimizer, 0, float('inf'), float('-inf')  # Assuming you want to start with high loss
 
 
-def squeeze_labels(pred, labels):
-    # Convert labels to float for BCELoss
-    labels = labels.float()
-    pred_squeezed = torch.squeeze(pred)
-    if len(labels) == 1:
-        pred_final = torch.unsqueeze(pred_squeezed, 0)
-    else:
-        pred_final = pred_squeezed
-    return pred_final, labels
-
-
 def log_and_save_best_model(parameters, epoch, best_model, model, model_type, label_size, avg_train_loss,
                             avg_valid_loss, valid_accuracy, best_valid_loss, best_valid_accuracy, epoch_info_log,index):
     if parameters["save_criterion"] == "valid_loss" and avg_valid_loss < best_valid_loss:
@@ -697,23 +686,8 @@ def add_log_and_save_model(parameters, epoch, model, avg_train_loss, avg_valid_l
     print(current_epoch_info)
     best_model = model
 
-    #rounded_valid_accuracy = round(valid_accuracy, 4)
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
-        "model_", f"model_{model_index}_")
-    if os.path.exists(best_model_path):
-        os.remove(best_model_path)
-    torch.save(best_model, best_model_path)
+    save_model_local_and_mlflow(parameters, model_index, best_model)
 
-    best_model_path_save_locally=parameters["model_save_path"].replace(
-        "model_", f"model_{model_index}_")
-    if os.path.exists(best_model_path_save_locally):
-        os.remove(best_model_path_save_locally)
-    torch.save(best_model, best_model_path_save_locally)
-
-
-
-    mlflow.log_artifact(best_model_path)
-    os.remove(best_model_path)
     epoch_info_log = epoch_info_log + "\n" + current_epoch_info
     mlflow.log_text(epoch_info_log, artifact_file=f"model_log_{model_index}.txt")
     return best_model, epoch_info_log

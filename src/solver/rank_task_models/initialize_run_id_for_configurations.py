@@ -30,7 +30,8 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
                                           log_metrics_with_lock)
 
 from src.solver.models.utils import device_info
-from src.solver.rank_task_models.train_utils import initialize_model, read_dataset_from_zip
+from src.solver.rank_task_models.train_utils import initialize_model
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 import torch.distributed as dist

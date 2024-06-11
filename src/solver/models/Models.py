@@ -10,52 +10,98 @@ from dgl.nn.pytorch import SumPooling
 from src.solver.independent_utils import color_print, hash_one_dgl_graph
 
 from torch import nn, optim
-#import pytorch_lightning as pl
+import pytorch_lightning as pl
+
+from src.solver.models.utils import squeeze_labels, save_model_local_and_mlflow
+import torchmetrics
+from torchmetrics import Metric
 ############################################# Rank task 1 #############################################
-#
-#
-# class GraphClassifierLightning(pl.LightningModule):
-#     def __init__(self, shared_gnn, classifier):
-#         super(GraphClassifier, self).__init__()
-#         self.shared_gnn = shared_gnn
-#         self.classifier = classifier
-#         self.is_test = False
-#
-#     def forward(self, graphs):
-#         gnn_output = self.shared_gnn(graphs, is_test=self.is_test)
-#         final_output = self.classifier(gnn_output)
-#         return final_output
-#
-#
-#     def training_step(self, batch, batch_idx):
-#         loss, scores, y = self._common_step(batch, batch_idx)
-#         self.log('train_loss', loss)
-#         return loss
-#
-#     def validation_step(self, batch, batch_idx):
-#         loss, scores, y = self._common_step(batch, batch_idx)
-#         self.log('val_loss', loss)
-#         return loss
-#
-#     def test_step(self, batch, batch_idx):
-#         loss, scores, y = self._common_step(batch, batch_idx)
-#         self.log('test_loss', loss)
-#         return loss
-#
-#     def _common_step(self, batch, batch_idx):
-#         x, y = batch
-#         scores = self.forward(x)
-#         loss = self.loss_fn(scores, y)
-#         return loss, scores, y
-#
-#     def predict_step(self, batch, batch_idx):
-#         x, y = batch
-#         scores = self.forward(x)
-#         preds = torch.argmax(scores, dim=1)
-#         return preds
-#
-#     def configure_optimizers(self):
-#         return optim.Adam(self.parameters(), lr=0.001)
+
+
+class MyAccuracy(Metric):
+    def __init__(self):
+        super().__init__()
+        self.add_state("total", default=torch.tensor(0), dist_reduce_fx="sum")
+        self.add_state("correct", default=torch.tensor(0), dist_reduce_fx="sum")
+
+    def update(self, preds, target):
+        preds = torch.argmax(preds, dim=1)
+        target = torch.argmax(target, dim=1)
+        assert preds.shape == target.shape
+        self.correct += torch.sum(preds == target)
+        self.total += target.numel()
+
+    def compute(self):
+        return self.correct.float() / self.total.float()
+
+class GraphClassifierLightning(pl.LightningModule):
+    def __init__(self, shared_gnn, classifier,model_parameters):
+        super().__init__()
+
+        self.shared_gnn = shared_gnn
+        self.classifier = classifier
+        self.model_parameters=model_parameters
+
+        self.loss_fn = nn.CrossEntropyLoss()
+        self.accuracy = MyAccuracy()#torchmetrics.Accuracy(task="multiclass", num_classes=classifier.output_dim)
+        self.f1_score = torchmetrics.F1Score(task="multiclass", num_classes=classifier.output_dim)
+
+        self.best_val_accuracy= 0
+
+
+        self.is_test = False
+
+    def forward(self, graphs):
+        gnn_output = self.shared_gnn(graphs, is_test=self.is_test)
+        final_output = self.classifier(gnn_output)
+        return final_output
+
+
+    def training_step(self, batch, batch_idx):
+        loss, scores, y = self._common_step(batch, batch_idx)
+
+        accuracy = self.accuracy(scores, y)
+        f1_score = self.f1_score(scores, y)
+        self.log_dict({'train_loss': loss, 'train_accuracy': accuracy, 'train_f1_score': f1_score},
+                      on_step=False, on_epoch=True, prog_bar=True)
+        return {'loss': loss, "scores": scores, "y": y}
+
+    def validation_step(self, batch, batch_idx):
+        loss, scores, y = self._common_step(batch, batch_idx)
+        accuracy = self.accuracy(scores, y)
+        f1_score = self.f1_score(scores, y)
+        self.log_dict({'val_loss': loss, 'val_accuracy': accuracy, 'val_f1_score': f1_score},
+                      on_step=False, on_epoch=True, prog_bar=True)
+
+        #store best model
+        if accuracy > self.best_val_accuracy:
+            self.best_val_accuracy=accuracy
+            save_model_local_and_mlflow(self.model_parameters,self.classifier.output_dim,self)
+            color_print(f"best_val_accuracy: {self.best_val_accuracy}, Save model\n", "green")
+
+
+        return {'loss': loss, "scores": scores, "y": y}
+
+    def test_step(self, batch, batch_idx):
+        loss, scores, y = self._common_step(batch, batch_idx)
+        self.log('test_loss', loss)
+        return loss
+
+    def _common_step(self, batch, batch_idx):
+        x, y = batch
+        scores = self.forward(x)
+        scores, y = squeeze_labels(scores, y)
+        loss = self.loss_fn(scores, y)
+        return loss, scores, y
+
+    def predict_step(self, batch, batch_idx):
+        x, y = batch
+        scores = self.forward(x)
+        preds = torch.argmax(scores, dim=1)
+        return preds
+
+    def configure_optimizers(self):
+        return optim.Adam(self.parameters(), lr=self.model_parameters["learning_rate"])
 
 
 

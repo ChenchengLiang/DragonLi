@@ -26,7 +26,8 @@ from src.solver.models.train_util import train_one_model, train_multiple_models_
     save_checkpoint, training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 import torch.nn as nn
 from src.solver.models.utils import device_info
-from src.solver.rank_task_models.train_utils import read_dataset_from_zip, initialize_model
+from src.solver.rank_task_models.train_utils import initialize_model
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip
 from torch.utils.data import DataLoader
 
 

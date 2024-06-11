@@ -1,9 +1,10 @@
+import os
+
+import mlflow
 import torch
 from src.solver.Constants import project_folder
 from src.solver.independent_utils import color_print
-from src.solver.models.Models import GraphClassifier
-import argparse
-import json
+
 import dgl
 def load_model(model_path) :
     #color_print(text=f"load model from {model_path}", color="green")
@@ -25,3 +26,31 @@ def device_info():
     color_print(f"torch vesion: {torch.__version__}", "green")
     color_print(f"dgl backend: {dgl.backend.backend_name}", "green")
     print("-" * 10)
+
+
+def squeeze_labels(pred, labels):
+    # Convert labels to float for BCELoss
+    labels = labels.float()
+    pred_squeezed = torch.squeeze(pred)
+    if len(labels) == 1:
+        pred_final = torch.unsqueeze(pred_squeezed, 0)
+    else:
+        pred_final = pred_squeezed
+    return pred_final, labels
+
+
+def save_model_local_and_mlflow(parameters,model_index,best_model):
+    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
+        "model_", f"model_{model_index}_")
+    if os.path.exists(best_model_path):
+        os.remove(best_model_path)
+    torch.save(best_model, best_model_path)
+
+    best_model_path_save_locally = parameters["model_save_path"].replace(
+        "model_", f"model_{model_index}_")
+    if os.path.exists(best_model_path_save_locally):
+        os.remove(best_model_path_save_locally)
+    torch.save(best_model, best_model_path_save_locally)
+
+    mlflow.log_artifact(best_model_path)
+    os.remove(best_model_path)

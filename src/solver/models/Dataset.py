@@ -3,6 +3,7 @@ import os
 import sys
 import zipfile
 
+
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
 import dgl
@@ -15,6 +16,8 @@ from typing import Dict, List
 from tqdm import tqdm
 import time
 from src.solver.independent_utils import color_print
+
+
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
@@ -37,6 +40,14 @@ def get_edge_src_and_dst_list(edges):
         edges_src.append(e[0])
         edges_dst.append(e[1])
     return torch.from_numpy(pd.DataFrame(edges_src).to_numpy().flatten()), torch.from_numpy(pd.DataFrame(edges_dst).to_numpy().flatten())
+
+
+
+
+
+
+
+
 
 class WordEquationDatasetBinaryClassification(DGLDataset):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=1):

@@ -21,3 +21,5 @@ if is_cuda_available:
         print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
         
 print(f"torch vesion: {torch.__version__}")
+print("dgl version:",dgl.__version__)
+
