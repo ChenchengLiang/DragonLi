@@ -7,6 +7,7 @@ from src.solver.Constants import bench_folder, RED
 from src.solver.independent_utils import load_from_pickle_within_zip, color_print
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier
 
+
 def initialize_model(parameters):
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                               ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
@@ -26,6 +27,7 @@ def initialize_model(parameters):
     )
     # Initialize GraphClassifiers with the respective GNN models
     model = GraphClassifier(gnn_model, classifier_2)
+    #model =  GraphClassifierLightning(gnn_model, classifier_2)
 
 
     return model

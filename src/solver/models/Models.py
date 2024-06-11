@@ -9,8 +9,55 @@ from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
 from src.solver.independent_utils import color_print, hash_one_dgl_graph
 
-
+from torch import nn, optim
+#import pytorch_lightning as pl
 ############################################# Rank task 1 #############################################
+#
+#
+# class GraphClassifierLightning(pl.LightningModule):
+#     def __init__(self, shared_gnn, classifier):
+#         super(GraphClassifier, self).__init__()
+#         self.shared_gnn = shared_gnn
+#         self.classifier = classifier
+#         self.is_test = False
+#
+#     def forward(self, graphs):
+#         gnn_output = self.shared_gnn(graphs, is_test=self.is_test)
+#         final_output = self.classifier(gnn_output)
+#         return final_output
+#
+#
+#     def training_step(self, batch, batch_idx):
+#         loss, scores, y = self._common_step(batch, batch_idx)
+#         self.log('train_loss', loss)
+#         return loss
+#
+#     def validation_step(self, batch, batch_idx):
+#         loss, scores, y = self._common_step(batch, batch_idx)
+#         self.log('val_loss', loss)
+#         return loss
+#
+#     def test_step(self, batch, batch_idx):
+#         loss, scores, y = self._common_step(batch, batch_idx)
+#         self.log('test_loss', loss)
+#         return loss
+#
+#     def _common_step(self, batch, batch_idx):
+#         x, y = batch
+#         scores = self.forward(x)
+#         loss = self.loss_fn(scores, y)
+#         return loss, scores, y
+#
+#     def predict_step(self, batch, batch_idx):
+#         x, y = batch
+#         scores = self.forward(x)
+#         preds = torch.argmax(scores, dim=1)
+#         return preds
+#
+#     def configure_optimizers(self):
+#         return optim.Adam(self.parameters(), lr=0.001)
+
+
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
@@ -67,47 +114,6 @@ class GNNRankTask1(nn.Module):
         batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
         return batch_result_list_stacked
 
-    # # dealing single graph
-    # def forward(self, graphs, is_test=False):
-    #     # todo these operations may be optimized
-    #
-    #     embeddings = []
-    #     for g in graphs:
-    #         if is_test:  # infer
-    #             hashed_data, _ = hash_one_dgl_graph(g)
-    #             if hashed_data in self.single_dgl_hash_table:
-    #                 dgl_embedding = self.single_dgl_hash_table[hashed_data]
-    #                 self.single_dgl_hash_table_hit += 1
-    #                 # print("--inside model: single_dgl_hash_table_hit", self.single_dgl_hash_table_hit)
-    #                 # print("--inside model: single_dgl_hash_table", len(self.single_dgl_hash_table))
-    #             else:
-    #                 dgl_embedding = self.embedding(g)
-    #                 self.single_dgl_hash_table[hashed_data] = dgl_embedding
-    #
-    #             embeddings.append(dgl_embedding)
-    #         else:  # train and validation
-    #             embeddings.append(self.embedding(g))
-    #
-    #     first_element = embeddings[0]
-    #     summed_tensor = torch.zeros(1, 1, self.gnn_hidden_dim, device=first_element[0].device)
-    #     for e in embeddings[1:]:
-    #         summed_tensor += e
-    #     summed_tensor = summed_tensor / len(embeddings[1:])
-    #
-    #     concatenated_embedding = torch.cat([first_element, summed_tensor], dim=2)
-    #
-    #     # concatenated_embedding_list = []
-    #     # for i, emb in enumerate(embeddings):
-    #     #     first_element = emb[0]
-    #     #     stacked_tensors = torch.stack([e for e in emb[1:]], dim=0)
-    #     #     # summed_embeddings = torch.sum(stacked_tensors, dim=0)
-    #     #     summed_embeddings = torch.mean(stacked_tensors, dim=0)
-    #     #     concatenated_embedding = torch.cat([first_element, summed_embeddings], dim=1)
-    #     #     concatenated_embedding_list.append(concatenated_embedding)
-    #
-    #     # concatenated_embedding_list = torch.stack(concatenated_embedding_list, dim=0)
-    #
-    #     return concatenated_embedding
 
 
 ############################################# Branch Task 3 #############################################

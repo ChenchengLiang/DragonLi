@@ -45,7 +45,9 @@ train, val = data.random_split(dataset, [55000,5000])
 # -------------------
 # Step 3: Train
 # -------------------
+precision=16
+torch.set_float32_matmul_precision("medium")
 autoencoder = LitAutoEncoder()
 devices_list=[i for i in range(0,torch.cuda.device_count())]
-trainer = L.Trainer(devices=devices_list,max_epochs=20)
+trainer = L.Trainer(devices=devices_list,max_epochs=20,precision=precision)
 trainer.fit(autoencoder, data.DataLoader(train), data.DataLoader(val))
