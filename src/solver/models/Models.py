@@ -16,6 +16,8 @@ import pytorch_lightning as pl
 from src.solver.models.utils import squeeze_labels, save_model_local_and_mlflow
 import torchmetrics
 from torchmetrics import Metric
+
+
 ############################################# Rank task 1 #############################################
 
 
@@ -35,22 +37,22 @@ class MyAccuracy(Metric):
     def compute(self):
         return self.correct.float() / self.total.float()
 
+
 class GraphClassifierLightning(pl.LightningModule):
-    def __init__(self, shared_gnn, classifier,model_parameters):
+    def __init__(self, shared_gnn, classifier, model_parameters):
         super().__init__()
 
         self.shared_gnn = shared_gnn
         self.classifier = classifier
-        self.model_parameters=model_parameters
+        self.model_parameters = model_parameters
 
         self.loss_fn = nn.CrossEntropyLoss()
-        self.accuracy = MyAccuracy()#torchmetrics.Accuracy(task="multiclass", num_classes=classifier.output_dim)
+        self.accuracy = MyAccuracy()  # torchmetrics.Accuracy(task="multiclass", num_classes=classifier.output_dim)
 
-
-        self.best_val_accuracy= 0
-        self.best_epoch=0
-
-
+        self.best_val_accuracy = 0
+        self.best_epoch = 0
+        self.last_train_loss = float("inf")
+        self.last_train_accuracy = 0
 
         self.is_test = False
 
@@ -59,37 +61,40 @@ class GraphClassifierLightning(pl.LightningModule):
         final_output = self.classifier(gnn_output)
         return final_output
 
-
     def training_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)
 
         accuracy = self.accuracy(scores, y)
         self.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
-                      on_step=False, on_epoch=True, prog_bar=True)
+                      on_step=False, on_epoch=True, prog_bar=False)
+        self.last_train_loss=loss
+        self.last_train_accuracy=accuracy
         return {'loss': loss, "scores": scores, "y": y}
 
     def validation_step(self, batch, batch_idx):
-
         loss, scores, y = self._common_step(batch, batch_idx)
         accuracy = self.accuracy(scores, y)
 
-
-        result_dict={'current_epoch':int(self.current_epoch),'val_loss': loss,
-                     'val_accuracy': accuracy,"best_val_accuracy":self.best_val_accuracy ,
-                     "best_epoch":self.best_epoch}
+        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': loss,
+                       'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
+                       "best_epoch": self.best_epoch}
         self.log_dict(result_dict,
-                      on_step=False, on_epoch=True, prog_bar=True)
-        #mlflow.log_metrics(result_dict)
+                      on_step=False, on_epoch=True, prog_bar=False)
 
-        #store best model
+        print(
+            f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
+            f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}")
+        # mlflow.log_metrics(result_dict)
+
+        # store best model
         if accuracy > self.best_val_accuracy:
-            self.best_val_accuracy=accuracy
-            self.best_epoch=self.current_epoch
-            save_model_local_and_mlflow(self.model_parameters,self.classifier.output_dim,self)
-            color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, Save model\n", "green")
+            self.best_val_accuracy = accuracy
+            self.best_epoch = self.current_epoch
+            save_model_local_and_mlflow(self.model_parameters, self.classifier.output_dim, self)
+            color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}, Save model\n",
+                        "green")
 
-
-        return {'loss': loss, "scores": scores, "y": y}
+        return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
     def test_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)
@@ -111,7 +116,6 @@ class GraphClassifierLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.model_parameters["learning_rate"])
-
 
 
 class GNNRankTask1(nn.Module):
@@ -152,7 +156,6 @@ class GNNRankTask1(nn.Module):
                 else:  # train and validation
                     embeddings.append(self.embedding(g))
 
-
             first_element = embeddings[0]
             summed_tensor = torch.zeros(1, 1, self.gnn_hidden_dim, device=first_element[0].device)
             for e in embeddings[1:]:
@@ -162,13 +165,8 @@ class GNNRankTask1(nn.Module):
             concatenated_embedding = torch.cat([first_element, summed_tensor], dim=2)
             batch_result_list.append(concatenated_embedding)
 
-
-
-
-
         batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
         return batch_result_list_stacked
-
 
 
 ############################################# Branch Task 3 #############################################

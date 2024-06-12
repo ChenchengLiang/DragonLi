@@ -13,7 +13,7 @@ import dgl
 import dgl.data
 import torch
 from typing import Dict, List, Any
-from src.solver.Constants import project_folder
+from src.solver.Constants import project_folder, checkpoint_folder
 import mlflow
 import argparse
 import json
@@ -34,7 +34,7 @@ from src.solver.rank_task_models.train_utils import initialize_model, initialize
 from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule
 from pytorch_lightning.loggers import MLFlowLogger
 import pytorch_lightning as pl
-
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 def main():
     # parse argument
@@ -98,7 +98,7 @@ def train_one_epoch_and_get_run_id(parameters):
     ############### Initialize training parameters ################
     model = initialize_model_lightning(parameters)
 
-    epoch=1
+
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
 
@@ -113,71 +113,33 @@ def train_one_epoch_and_get_run_id(parameters):
 
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
+
+
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=checkpoint_folder,  # Path where the checkpoints will be saved
+        filename=f"{parameters['run_id']}_model_checkpoint",  # Naming convention using epoch and validation loss
+        save_top_k=1,
+        save_last=True,  # Additionally, always save the last completed epoch checkpoint
+        # save_top_k=1,  # Save the top 3 models according to monitored value
+        # monitor='best_val_accuracy',  # Metric to monitor for improvement
+        # mode='min',  # `min` mode saves the model if the monitored value decreases
+        verbose=True
+    )
+
     trainer = pl.Trainer(
         profiler=profiler,
         accelerator="gpu",
         devices=1,
         min_epochs=1,
         max_epochs=1,
-        precision=16,
-        callbacks=MyPrintingCallback(),
+        #precision=16,
+        callbacks=[MyPrintingCallback(),checkpoint_callback],
         logger=logger
     )
     trainer.fit(model, dm)
     trainer.validate(model, dm)
 
-    # save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
-    #                 filename=check_point_model_path)
 
-
-
-
-    train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
-    get_data_distribution(dataset, parameters)
-    optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
-    loss_function = nn.CrossEntropyLoss()
-    best_model = None
-    best_valid_loss = float('inf')  # Initialize with a high value
-    best_valid_accuracy = float('-inf')  # Initialize with a low value
-    epoch_info_log = ""
-    check_point_model_path = parameters["run_id"] + f"_checkpoint_model_{parameters['label_size']}.pth"
-    classification_type = "multi_classification"
-    epoch=1
-    index=1
-
-
-
-    parameters["device"]=f"cuda:{0}"
-    model.to(parameters["device"])
-
-    # Training Phase
-    model, avg_train_loss = training_phase(model, train_dataloader, loss_function, optimizer, parameters)
-
-    # Validation Phase
-    model, avg_valid_loss, valid_accuracy = validation_phase(model, valid_dataloader, loss_function,
-                                                             classification_type, parameters)
-
-    # Save based on specified criterion
-    best_model, best_valid_loss, best_valid_accuracy, epoch_info_log = log_and_save_best_model(parameters, epoch,
-                                                                                               best_model, model,
-                                                                                               "multi_class",
-                                                                                               parameters[
-                                                                                                   "label_size"],
-                                                                                               avg_train_loss,
-                                                                                               avg_valid_loss,
-                                                                                               valid_accuracy,
-                                                                                               best_valid_loss,
-                                                                                               best_valid_accuracy,
-                                                                                               epoch_info_log,
-                                                                                               index)
-    save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
-                    filename=check_point_model_path)
-
-    # Return the trained model and the best metrics
-    best_metrics = {f"best_valid_loss_multi_class_{parameters['label_size']}": best_valid_loss,
-                    f"best_valid_accuracy_multi_class_{parameters['label_size']}": best_valid_accuracy}
-
-    mlflow.log_metrics(best_metrics)
 
     parameters["train_data_folder_epoch_map"][os.path.basename(parameters["current_train_folder"])] = 1
     print("-" * 10, "train finished", "-" * 10)
