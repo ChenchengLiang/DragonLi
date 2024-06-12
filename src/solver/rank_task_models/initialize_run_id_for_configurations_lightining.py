@@ -30,8 +30,10 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
                                           log_metrics_with_lock)
 
 from src.solver.models.utils import device_info
-from src.solver.rank_task_models.train_utils import initialize_model
-from src.solver.rank_task_models.Dataset import read_dataset_from_zip
+from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule
+from pytorch_lightning.loggers import MLFlowLogger
+import pytorch_lightning as pl
 
 
 def main():
@@ -94,7 +96,9 @@ def initiate_run_id_for_a_configuration(train_config):
 
 def train_one_epoch_and_get_run_id(parameters):
     ############### Initialize training parameters ################
-    model = initialize_model(parameters)
+    model = initialize_model_lightning(parameters)
+
+    epoch=1
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
                                                  f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
 
@@ -103,6 +107,31 @@ def train_one_epoch_and_get_run_id(parameters):
     valid_dataset = read_dataset_from_zip(parameters,"valid_data")
     dataset = {"train": train_dataset, "valid": valid_dataset}
     get_data_distribution(dataset, parameters)
+
+    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
+    profiler = "simple"
+
+    dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+
+    trainer = pl.Trainer(
+        profiler=profiler,
+        accelerator="gpu",
+        devices=1,
+        min_epochs=1,
+        max_epochs=1,
+        precision=16,
+        callbacks=MyPrintingCallback(),
+        logger=logger
+    )
+    trainer.fit(model, dm)
+    trainer.validate(model, dm)
+
+    # save_checkpoint(model, optimizer, epoch, best_valid_loss, best_valid_accuracy, parameters,
+    #                 filename=check_point_model_path)
+
+
+
+
     train_dataloader, valid_dataloader = data_loader_2(dataset, parameters)
     get_data_distribution(dataset, parameters)
     optimizer = torch.optim.Adam(model.parameters(), lr=parameters["learning_rate"])
@@ -115,17 +144,7 @@ def train_one_epoch_and_get_run_id(parameters):
     classification_type = "multi_classification"
     epoch=1
     index=1
-    #
-    # torch.multiprocessing.set_sharing_strategy('file_system')
-    # world_size = torch.cuda.device_count()
-    # queue = SimpleQueue()
-    # mp.spawn(train_and_valid, args=(world_size, queue, parameters,model,best_model,best_valid_loss,
-    #                                 best_valid_accuracy,dataset,loss_function,optimizer,
-    #                                 classification_type,check_point_model_path,epoch_info_log,epoch,index),
-    #          nprocs=world_size, join=True)
-    # results = [queue.get() for _ in range(world_size)]
-    # return results[-1]
-    #
+
 
 
     parameters["device"]=f"cuda:{0}"

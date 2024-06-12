@@ -8,7 +8,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 from dgl.dataloading import GraphDataLoader
-from torch.utils.data import DistributedSampler
 from torch.utils.data.sampler import SubsetRandomSampler
 
 from src.solver.models.Dataset import WordEquationDatasetBinaryClassification, WordEquationDatasetMultiModels, \
@@ -814,17 +813,7 @@ def custom_collate_fn(batch):
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
 
-    # def custom_collate_fn(batch):
-    #     batched_graphs = []
-    #     batched_labels = []
-    #
-    #     # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
-    #     for graphs, labels in batch:
-    #         # Batch all graphs in this sample together
-    #         batched_graphs.append(dgl.batch(graphs))
-    #         batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
-    #
-    #     return batched_graphs, torch.stack(batched_labels)
+
 
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
@@ -836,35 +825,6 @@ def data_loader_2(dataset, parameters): # load separated train and valid data he
 
     return train_dataloader, valid_dataloader
 
-
-@time_it
-def data_loader_3(dataset, parameters,world_size,rank): # load separated train and valid data here
-
-    def custom_collate_fn(batch):
-        batched_graphs = []
-        batched_labels = []
-
-        # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
-        for graphs, labels in batch:
-            # Batch all graphs in this sample together
-            batched_graphs.append(dgl.batch(graphs))
-            batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
-
-        return batched_graphs, torch.stack(batched_labels)
-
-    train_sampler = DistributedSampler(dataset["train"], num_replicas=world_size, rank=rank)
-    valid_sampler = DistributedSampler(dataset["valid"], num_replicas=world_size, rank=rank)
-
-
-    train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"],sampler=train_sampler, drop_last=False,collate_fn=custom_collate_fn)
-    valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"],sampler=valid_sampler, drop_last=False,collate_fn=custom_collate_fn)
-
-    # train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False)
-    # valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False)
-
-
-
-    return train_dataloader, valid_dataloader
 
 
 
