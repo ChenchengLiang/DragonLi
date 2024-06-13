@@ -25,11 +25,11 @@ import torch.nn as nn
 from src.solver.models.train_util import (initialize_model_structure, load_train_and_valid_dataset, training_phase,
                                           validation_phase,
                                           initialize_train_objects, log_and_save_best_model, save_checkpoint,
-                                          update_config_file, data_loader_2, get_data_distribution,
+                                          data_loader_2, get_data_distribution,
                                           training_phase_without_loader, validation_phase_without_loader,
                                           log_metrics_with_lock)
 
-from src.solver.models.utils import device_info
+from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model
 from src.solver.rank_task_models.Dataset import read_dataset_from_zip
 

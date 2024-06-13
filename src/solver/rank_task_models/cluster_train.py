@@ -22,10 +22,10 @@ import subprocess
 from src.solver.independent_utils import color_print, time_it
 import signal
 from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists, \
-    update_config_file, load_checkpoint, training_phase, validation_phase, log_and_save_best_model, data_loader_2, \
+    load_checkpoint, training_phase, validation_phase, log_and_save_best_model, data_loader_2, \
     save_checkpoint, training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 import torch.nn as nn
-from src.solver.models.utils import device_info
+from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model
 from src.solver.rank_task_models.Dataset import read_dataset_from_zip
 from torch.utils.data import DataLoader

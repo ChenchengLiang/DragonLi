@@ -19,8 +19,8 @@ import datetime
 import subprocess
 from src.solver.independent_utils import color_print
 import signal
-from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists, \
-    update_config_file
+from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists
+from src.solver.models.utils import update_config_file
 
 
 def main():

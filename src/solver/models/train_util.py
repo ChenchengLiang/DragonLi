@@ -1,4 +1,3 @@
-import json
 import os
 from typing import Dict, Union
 
@@ -890,7 +889,3 @@ def check_experiment_exists(experiment_id):
         return False
 
 
-def update_config_file(configuration_file,train_config):
-    with open(configuration_file, 'w') as f:
-        train_config["device"] = str(train_config["device"])  # change tensor to string so can dump it to json
-        json.dump(train_config, f, indent=4)

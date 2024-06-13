@@ -20,10 +20,10 @@ import subprocess
 from src.solver.independent_utils import color_print, time_it
 import signal
 from src.solver.models.train_util import train_one_model, train_multiple_models_separately, check_run_exists, \
-    update_config_file, load_checkpoint, training_phase, validation_phase, log_and_save_best_model, data_loader_2, \
+    load_checkpoint, training_phase, validation_phase, log_and_save_best_model, data_loader_2, \
     save_checkpoint, training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 import torch.nn as nn
-from src.solver.models.utils import device_info
+from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model, MyPrintingCallback, initialize_model_lightning, \
     get_gnn_and_classifier
 from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule
@@ -100,7 +100,7 @@ def train_a_model(train_config, mlflow_run):
 def train_continuously(parameters):
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
-    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
+    #logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
     check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
@@ -110,23 +110,19 @@ def train_continuously(parameters):
                                                           classifier=classifier_2,
                                                           model_parameters=parameters)
 
-    # checkpoint_callback = ModelCheckpoint(
-    #     dirpath=checkpoint_folder,  # Path where the checkpoints will be saved
-    #     filename=f"{parameters['run_id']}_model_checkpoint",  # Naming convention using epoch and validation loss
-    #     save_top_k=1,  # Save all models at each epoch
-    #     save_last=True,  # Additionally, always save the last completed epoch checkpoint
-    #     verbose=True
-    # )
 
-    print("Resuming training from epoch", model.current_epoch)
+    print(f"Resuming training from epoch {model.total_epoch}, "
+          f"last best validation accuracy {model.best_val_accuracy}, best epoch {model.best_epoch}  ")
+    devices_list = [i for i in range(0, torch.cuda.device_count())]
 
     trainer = pl.Trainer(accelerator="gpu",
-                         devices=1,
+                         devices=devices_list,
                          callbacks=[MyPrintingCallback()],
-                         logger=logger,
+                         #logger=logger,
                          min_epochs=parameters["train_step"],
                          max_epochs=parameters["train_step"],
-                         enable_progress_bar=False
+                         enable_progress_bar=False,
+                         enable_checkpointing=True,
                          )
 
     # Resume training
@@ -134,6 +130,7 @@ def train_continuously(parameters):
     #trainer.validate(model, dm)
 
     print(f"Saving the check point to {check_point_model_path}")
+    os.remove(check_point_model_path)
     trainer.save_checkpoint(check_point_model_path)
 
 

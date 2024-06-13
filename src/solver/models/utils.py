@@ -1,3 +1,4 @@
+import json
 import os
 
 import mlflow
@@ -44,7 +45,9 @@ def save_model_local_and_mlflow(parameters,model_index,best_model):
         "model_", f"model_{model_index}_")
     if os.path.exists(best_model_path):
         os.remove(best_model_path)
-    torch.save(best_model, best_model_path)
+        torch.save(best_model, best_model_path)
+        mlflow.log_artifact(best_model_path)
+        os.remove(best_model_path)
 
     best_model_path_save_locally = parameters["model_save_path"].replace(
         "model_", f"model_{model_index}_")
@@ -52,5 +55,8 @@ def save_model_local_and_mlflow(parameters,model_index,best_model):
         os.remove(best_model_path_save_locally)
     torch.save(best_model, best_model_path_save_locally)
 
-    mlflow.log_artifact(best_model_path)
-    os.remove(best_model_path)
+
+def update_config_file(configuration_file,train_config):
+    with open(configuration_file, 'w') as f:
+        train_config["device"] = str(train_config["device"])  # change tensor to string so can dump it to json
+        json.dump(train_config, f, indent=4)

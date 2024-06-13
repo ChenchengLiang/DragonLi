@@ -41,6 +41,7 @@ From: continuumio/miniconda3
     pip install mlflow torch
     pip install lightning
     pip install torchmetrics
+    pip install deepspeed
 
 
 

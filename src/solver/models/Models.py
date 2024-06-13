@@ -1,4 +1,6 @@
+import signal
 import time
+from typing import Dict, Any
 
 import mlflow
 import torch
@@ -8,15 +10,19 @@ import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
-from src.solver.independent_utils import color_print, hash_one_dgl_graph
+from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders
 
 from torch import nn, optim
 import pytorch_lightning as pl
 
-from src.solver.models.utils import squeeze_labels, save_model_local_and_mlflow
-import torchmetrics
+from src.solver.models.utils import squeeze_labels, save_model_local_and_mlflow, device_info, update_config_file
 from torchmetrics import Metric
-
+from pytorch_lightning.utilities.rank_zero import rank_zero_only
+import datetime
+import subprocess
+import os
+from src.solver.Constants import project_folder, bench_folder
+from pytorch_lightning.loggers import MLFlowLogger
 
 ############################################# Rank task 1 #############################################
 
@@ -51,8 +57,12 @@ class GraphClassifierLightning(pl.LightningModule):
 
         self.best_val_accuracy = 0
         self.best_epoch = 0
+        self.total_epoch = 0
+
         self.last_train_loss = float("inf")
         self.last_train_accuracy = 0
+
+        self.mlflow_ui_process=None
 
         self.is_test = False
 
@@ -62,29 +72,31 @@ class GraphClassifierLightning(pl.LightningModule):
         return final_output
 
     def training_step(self, batch, batch_idx):
+        self.total_epoch += 1
         loss, scores, y = self._common_step(batch, batch_idx)
 
-        accuracy = self.accuracy(scores, y)
+        accuracy = float(self.accuracy(scores, y))
         self.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
                       on_step=False, on_epoch=True, prog_bar=False)
-        self.last_train_loss=loss
-        self.last_train_accuracy=accuracy
+        self.last_train_loss = float(loss)
+        self.last_train_accuracy = accuracy
         return {'loss': loss, "scores": scores, "y": y}
 
     def validation_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)
-        accuracy = self.accuracy(scores, y)
+        accuracy = float(self.accuracy(scores, y))
 
-        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': loss,
+        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss), "train_loss": self.last_train_loss,
+                       "train_accuracy": self.last_train_accuracy,
                        'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
-                       "best_epoch": self.best_epoch}
+                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch)}
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=False)
 
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}")
-        # mlflow.log_metrics(result_dict)
+        mlflow.log_metrics(result_dict)
 
         # store best model
         if accuracy > self.best_val_accuracy:
@@ -116,6 +128,73 @@ class GraphClassifierLightning(pl.LightningModule):
 
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=self.model_parameters["learning_rate"])
+
+    @rank_zero_only
+    def on_save_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        checkpoint["best_val_accuracy"] = self.best_val_accuracy
+        checkpoint["best_epoch"] = self.best_epoch
+        checkpoint["total_epoch"] = self.total_epoch
+
+    @rank_zero_only
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        self.best_val_accuracy = checkpoint["best_val_accuracy"]
+        self.best_epoch = checkpoint["best_epoch"]
+        self.total_epoch = checkpoint["total_epoch"]
+
+
+
+    def on_train_start(self):
+
+
+
+        device_info()
+        self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        benchmark_folder = bench_folder
+        today = datetime.date.today().strftime("%Y-%m-%d")
+        self.mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
+
+        benchmark_folder_list = get_folders(benchmark_folder + "/" + self.model_parameters["benchmark"])
+        train_folder_list = [folder for folder in benchmark_folder_list if "divided" in folder]
+        experiment_name = today + "-" + self.model_parameters["benchmark"]
+        if "divided_1" in train_folder_list:
+            train_data_folder_epoch_map: Dict[str, int] = {folder: 0 for folder in train_folder_list}
+        else:
+            train_data_folder_epoch_map: Dict[str, int] = {self.model_parameters["benchmark"]: 0}
+        self.model_parameters["train_data_folder_epoch_map"] = train_data_folder_epoch_map
+        self.model_parameters["experiment_name"] = experiment_name
+
+
+        mlflow.set_experiment(experiment_name)
+        mlflow.set_tracking_uri("http://127.0.0.1:5000")
+        torch.autograd.set_detect_anomaly(True)
+
+        if mlflow.active_run() is not None:
+            mlflow.start_run()
+        self.model_parameters["run_id"] = mlflow.active_run().info.run_id
+        self.model_parameters["experiment_id"] = mlflow.active_run().info.experiment_id
+        self.model_parameters["current_train_folder"] = self.model_parameters["benchmark"] + "/" + \
+                                               list(self.model_parameters["train_data_folder_epoch_map"].items())[0][0]
+
+        self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
+                                                       f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
+
+        self.model_parameters["benchmark_folder"] = self.model_parameters["benchmark"]
+        mlflow.log_params(self.model_parameters)
+
+
+        self.trainer.logger = MLFlowLogger(experiment_name=self.model_parameters["experiment_name"],
+                                   run_id=self.model_parameters["run_id"])
+
+    @rank_zero_only
+    def on_train_end(self):
+        pid=self.mlflow_ui_process.pid
+        mlflow.end_run()
+        self.mlflow_ui_process.terminate()
+        os.killpg(os.getpgid(pid), signal.SIGTERM)
+
+        update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
+        print("done")
+
 
 
 class GNNRankTask1(nn.Module):

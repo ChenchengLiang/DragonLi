@@ -2,7 +2,7 @@ import configparser
 import os
 import sys
 
-from src.solver.models.utils import device_info
+from src.solver.models.utils import device_info, update_config_file
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -25,8 +25,7 @@ from src.solver.independent_utils import color_print,get_folders
 import signal
 from src.solver.models.train_util import (initialize_model_structure, load_train_and_valid_dataset, training_phase,
                                           validation_phase,
-                                          initialize_train_objects, log_and_save_best_model, save_checkpoint,
-                                          update_config_file)
+                                          initialize_train_objects, log_and_save_best_model, save_checkpoint)
 def main():
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
