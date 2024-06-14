@@ -145,55 +145,42 @@ class GraphClassifierLightning(pl.LightningModule):
 
     def on_train_start(self):
 
-
-
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        benchmark_folder = bench_folder
-        today = datetime.date.today().strftime("%Y-%m-%d")
-        self.mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
 
-        benchmark_folder_list = get_folders(benchmark_folder + "/" + self.model_parameters["benchmark"])
-        train_folder_list = [folder for folder in benchmark_folder_list if "divided" in folder]
-        experiment_name = today + "-" + self.model_parameters["benchmark"]
-        if "divided_1" in train_folder_list:
-            train_data_folder_epoch_map: Dict[str, int] = {folder: 0 for folder in train_folder_list}
-        else:
-            train_data_folder_epoch_map: Dict[str, int] = {self.model_parameters["benchmark"]: 0}
-        self.model_parameters["train_data_folder_epoch_map"] = train_data_folder_epoch_map
-        self.model_parameters["experiment_name"] = experiment_name
+        # today = datetime.date.today().strftime("%Y-%m-%d")
+        # experiment_name = today + "-" + self.model_parameters["benchmark"]
+        # self.model_parameters["experiment_name"] = experiment_name
+        # mlflow.set_experiment(experiment_name)
+        # mlflow.set_tracking_uri("http://127.0.0.1:5000")
+        # self.mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
+        #
+        #
+        # if mlflow.active_run() is not None:
+        #     mlflow.end_run()
+        #     mlflow.start_run()
 
+        # self.model_parameters["run_id"] = mlflow.active_run().info.run_id
+        # self.model_parameters["experiment_id"] = mlflow.active_run().info.experiment_id
+        # self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
+        #                                                f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
 
-        mlflow.set_experiment(experiment_name)
-        mlflow.set_tracking_uri("http://127.0.0.1:5000")
-        torch.autograd.set_detect_anomaly(True)
-
-        if mlflow.active_run() is not None:
-            mlflow.start_run()
-        self.model_parameters["run_id"] = mlflow.active_run().info.run_id
-        self.model_parameters["experiment_id"] = mlflow.active_run().info.experiment_id
-        self.model_parameters["current_train_folder"] = self.model_parameters["benchmark"] + "/" + \
-                                               list(self.model_parameters["train_data_folder_epoch_map"].items())[0][0]
-
-        self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
-                                                       f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
-
-        self.model_parameters["benchmark_folder"] = self.model_parameters["benchmark"]
         mlflow.log_params(self.model_parameters)
 
-
+        torch.autograd.set_detect_anomaly(True)
         self.trainer.logger = MLFlowLogger(experiment_name=self.model_parameters["experiment_name"],
                                    run_id=self.model_parameters["run_id"])
 
     @rank_zero_only
     def on_train_end(self):
-        pid=self.mlflow_ui_process.pid
-        mlflow.end_run()
-        self.mlflow_ui_process.terminate()
-        os.killpg(os.getpgid(pid), signal.SIGTERM)
-
-        update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
-        print("done")
+        pass
+        # pid=self.mlflow_ui_process.pid
+        # mlflow.end_run()
+        # self.mlflow_ui_process.terminate()
+        # os.killpg(os.getpgid(pid), signal.SIGTERM)
+        #
+        # update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
+        # print("done")
 
 
 
