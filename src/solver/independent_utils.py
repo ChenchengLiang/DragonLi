@@ -1,3 +1,4 @@
+import subprocess
 from typing import Iterable, List, Callable, Dict
 import json
 import re
@@ -409,3 +410,9 @@ def remove_last_comma(s):
         return s[:-1]
     return s
 
+def kill_gunicorn_processes():
+    try:
+        subprocess.run(['pkill', '-f', 'gunicorn'], check=True)
+        print("Successfully killed gunicorn processes.")
+    except subprocess.CalledProcessError:
+        print("Failed to kill gunicorn processes or no gunicorn process was running.")

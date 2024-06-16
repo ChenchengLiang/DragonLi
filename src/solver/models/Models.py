@@ -10,7 +10,7 @@ import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
-from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders
+from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders, kill_gunicorn_processes
 
 from torch import nn, optim
 import pytorch_lightning as pl
@@ -21,7 +21,7 @@ from pytorch_lightning.utilities.rank_zero import rank_zero_only
 import datetime
 import subprocess
 import os
-from src.solver.Constants import project_folder, bench_folder
+from src.solver.Constants import project_folder, bench_folder, checkpoint_folder
 from pytorch_lightning.loggers import MLFlowLogger
 
 ############################################# Rank task 1 #############################################
@@ -62,7 +62,6 @@ class GraphClassifierLightning(pl.LightningModule):
         self.last_train_loss = float("inf")
         self.last_train_accuracy = 0
 
-        self.mlflow_ui_process=None
 
         self.is_test = False
 
@@ -96,14 +95,17 @@ class GraphClassifierLightning(pl.LightningModule):
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}")
-        mlflow.log_metrics(result_dict)
+        #mlflow.log_metrics(result_dict)
+        self.logger.log_metrics(result_dict)
 
         # store best model
         if accuracy > self.best_val_accuracy:
             self.best_val_accuracy = accuracy
             self.best_epoch = self.current_epoch
             save_model_local_and_mlflow(self.model_parameters, self.classifier.output_dim, self)
-            color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}, Save model\n",
+
+
+            color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
                         "green")
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
@@ -141,9 +143,10 @@ class GraphClassifierLightning(pl.LightningModule):
         self.best_epoch = checkpoint["best_epoch"]
         self.total_epoch = checkpoint["total_epoch"]
 
-
-
+    @rank_zero_only
     def on_train_start(self):
+
+
 
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -151,36 +154,44 @@ class GraphClassifierLightning(pl.LightningModule):
         # today = datetime.date.today().strftime("%Y-%m-%d")
         # experiment_name = today + "-" + self.model_parameters["benchmark"]
         # self.model_parameters["experiment_name"] = experiment_name
-        # mlflow.set_experiment(experiment_name)
-        # mlflow.set_tracking_uri("http://127.0.0.1:5000")
-        # self.mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
         #
         #
-        # if mlflow.active_run() is not None:
-        #     mlflow.end_run()
+        # self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
+        #                                              f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
+        #
+        # if mlflow.active_run() is None:
+        #     mlflow.set_experiment(experiment_name)
+        #     mlflow.set_tracking_uri("http://127.0.0.1:5000")
+        #     # mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
         #     mlflow.start_run()
-
+        #
+        #
+        #
         # self.model_parameters["run_id"] = mlflow.active_run().info.run_id
         # self.model_parameters["experiment_id"] = mlflow.active_run().info.experiment_id
-        # self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
-        #                                                f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
+        #
 
-        mlflow.log_params(self.model_parameters)
+
 
         torch.autograd.set_detect_anomaly(True)
-        self.trainer.logger = MLFlowLogger(experiment_name=self.model_parameters["experiment_name"],
-                                   run_id=self.model_parameters["run_id"])
+        # self.trainer.logger = MLFlowLogger(experiment_name=self.model_parameters["experiment_name"],
+        #                            run_id=self.model_parameters["run_id"])
+
+        self.logger.log_hyperparams(self.model_parameters)
+        #mlflow.log_params(self.model_parameters)
 
     @rank_zero_only
     def on_train_end(self):
-        pass
-        # pid=self.mlflow_ui_process.pid
-        # mlflow.end_run()
-        # self.mlflow_ui_process.terminate()
-        # os.killpg(os.getpgid(pid), signal.SIGTERM)
-        #
-        # update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
-        # print("done")
+        check_point_model_path = f"{checkpoint_folder}/{self.model_parameters['run_id']}_model_checkpoint.ckpt"
+        self.trainer.save_checkpoint(check_point_model_path)
+        color_print(f"save checkpoint to {check_point_model_path}", "green")
+
+
+        update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
+        color_print("update_config_file done", "green")
+
+        #mlflow.end_run()
+        #kill_gunicorn_processes()
 
 
 

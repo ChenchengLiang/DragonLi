@@ -44,5 +44,6 @@ class MyPrintingCallback(Callback):
     def on_train_start(self, trainer, pl_module):
         print("\n----- Starting to train -----\n")
 
+
     def on_train_end(self, trainer, pl_module):
         print("\n----- Training is done -----\n")
