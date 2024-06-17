@@ -30,7 +30,7 @@ from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataMo
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
-from src.solver.Constants import checkpoint_folder
+from src.solver.Constants import checkpoint_folder, project_folder
 from src.solver.models.Models import GraphClassifierLightning
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import MLFlowLogger
@@ -50,43 +50,54 @@ def main():
             train_config = json.load(f)
 
 
-    with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
-        color_print(text=f"use the existing run id {mlflow_run.info.run_id}", color="yellow")
-        # pick one unfinished train
-        train_config["current_train_folder"] = None
-        for key, value in train_config["train_data_folder_epoch_map"].items():
-            if value < train_config["num_epochs"]:
-                train_config["current_train_folder"] = train_config["benchmark"] + "/" + key
-                break
+    #with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
+    color_print(text=f"use the existing run id {train_config['run_id']}", color="yellow")
+    # pick one unfinished train
+    train_config["current_train_folder"] = None
+    for key, value in train_config["train_data_folder_epoch_map"].items():
+        if value < train_config["num_epochs"]:
+            train_config["current_train_folder"] = train_config["benchmark"] + "/" + key
+            break
 
-        if train_config["current_train_folder"] is None:
-            color_print(text=f"all training folders are done", color="green")
-        else:
-            color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
-            train_a_model(train_config, mlflow_run)
-            train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
-                train_config["train_step"]
-            # update configuration file
-            update_config_file(configuration_file, train_config)
+    if train_config["current_train_folder"] is None:
+        color_print(text=f"all training folders are done", color="green")
+    else:
+        color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
+        train_a_model(train_config)
+
+        train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
+            train_config["train_step"]
+        # update configuration file
+        update_config_file(configuration_file, train_config)
 
 
 
 
 @time_it
-def train_a_model(parameters, mlflow_run):
+def train_a_model(parameters):
     device_info()
 
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
-    # logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
+    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
+    model_name=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}.ckpt"
+    check_point_model_path = f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{model_name}"
     gnn_model, classifier_2 = get_gnn_and_classifier(parameters)
     model = GraphClassifierLightning.load_from_checkpoint(checkpoint_path=check_point_model_path,
                                                           shared_gnn=gnn_model,
                                                           classifier=classifier_2,
                                                           model_parameters=parameters)
+
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts",
+        filename=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}",
+        save_top_k=1,
+        verbose=True,
+        monitor='best_val_accuracy',  # or another metric
+        mode='min'
+    )
 
     print(f"Resuming training from epoch {model.total_epoch}, "
           f"last best validation accuracy {model.best_val_accuracy}, best epoch {model.best_epoch}  ")
@@ -94,8 +105,8 @@ def train_a_model(parameters, mlflow_run):
 
     trainer = pl.Trainer(accelerator="gpu",
                          devices=devices_list,
-                         callbacks=[MyPrintingCallback()],
-                         # logger=logger,
+                         callbacks=[MyPrintingCallback(),checkpoint_callback],
+                         logger=logger,
                          min_epochs=parameters["train_step"],
                          max_epochs=parameters["train_step"],
                          enable_progress_bar=False,
@@ -106,9 +117,7 @@ def train_a_model(parameters, mlflow_run):
     trainer.fit(model, datamodule=dm)
     # trainer.validate(model, dm)
 
-    print(f"Saving the check point to {check_point_model_path}")
-    os.remove(check_point_model_path)
-    trainer.save_checkpoint(check_point_model_path)
+
 
 
 
