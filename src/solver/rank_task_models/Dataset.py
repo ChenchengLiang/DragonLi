@@ -14,7 +14,7 @@ from dgl.data import DGLDataset
 import pandas as pd
 import glob
 import json
-from src.solver.Constants import SAT, UNKNOWN, UNSAT, RED, COLORRESET, bench_folder
+from src.solver.Constants import SAT, UNKNOWN, UNSAT, RED, COLORRESET, bench_folder, project_folder
 from typing import Dict, List
 from tqdm import tqdm
 import time
@@ -46,7 +46,8 @@ class DGLDataModule(pl.LightningDataModule):
         self.val_ds = read_dataset_from_zip(self.parameters, "valid_data")
         dataset = {"train": self.train_ds, "valid": self.val_ds}
 
-        get_data_distribution(dataset, self.parameters)
+        data_distribution_str=get_data_distribution(dataset, self.parameters)
+        self.parameters["data_distribution_str"]=data_distribution_str
 
     def train_dataloader(self):
         return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False,
@@ -193,7 +194,10 @@ def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
         dataset = load_from_pickle_within_zip(zip_file, pickle_name)
         if get_data_statistics == True:
             dataset_statistics = dataset.statistics()
-            mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
+            # with open(f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{data_folder}_dataset_statistics.txt", 'w') as file:
+            #     file.write(dataset_statistics)
+            parameters["dataset_statistics_str"]=dataset_statistics
+            #mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
         else:
             dataset_statistics = ""
     else:
@@ -201,5 +205,4 @@ def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
         dataset = None
         dataset_statistics = ""
 
-    # mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
     return dataset

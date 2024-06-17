@@ -42,23 +42,26 @@ def squeeze_labels(pred, labels):
 
 
 def save_model_local_and_mlflow(parameters,model_index,best_model):
-    best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
-        "model_", f"model_{model_index}_")
+    # best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
+    #     "model_", f"model_{model_index}_")
+    #
+    # if os.path.exists(best_model_path):
+    #     os.remove(best_model_path)
+    #
+    # torch.save(best_model, best_model_path)
 
-    if os.path.exists(best_model_path):
-        os.remove(best_model_path)
-
-    torch.save(best_model, best_model_path)
-
-    shutil.move(best_model_path,f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts")
+    # target_path=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{best_model_path}"
+    # if os.path.exists(target_path):
+    #     os.remove(target_path)
+    # shutil.move(best_model_path,f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts")
 
     #best_model.logger.experiment.log_artifact(run_id=best_model.logger.run_id, local_path=best_model_path)
     #mlflow.log_artifact(best_model_path)
 
-    color_print(f"Save model {best_model_path} to {best_model.logger.run_id}\n","green")
+    #color_print(f"Save model {best_model_path} to {best_model.logger.run_id}\n","green")
 
-    if os.path.exists(best_model_path):
-        os.remove(best_model_path)
+    # if os.path.exists(best_model_path):
+    #     os.remove(best_model_path)
 
 
     best_model_path_save_locally = parameters["model_save_path"].replace(

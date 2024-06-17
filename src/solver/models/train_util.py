@@ -795,7 +795,7 @@ def get_data_distribution(dataset,parameters:Dict):
         # train_label_distribution = Counter(train_labels)
         # valid_label_distribution = Counter(valid_labels)
 
-    get_distribution_strings(label_size, train_label_distribution, valid_label_distribution)
+    return get_distribution_strings(parameters,label_size, train_label_distribution, valid_label_distribution)
 
 def custom_collate_fn(batch):
     batched_graphs = []
@@ -848,7 +848,7 @@ def log_metrics_with_lock(metrics, lock_file="mlflow_log.lock", timeout=10):
 
 
 @time_it
-def get_distribution_strings(label_size,train_label_distribution,valid_label_distribution):
+def get_distribution_strings(parameters,label_size,train_label_distribution,valid_label_distribution):
 
     train_distribution_str = "Training label distribution: " + str(
         train_label_distribution) + "\nBase accuracy: " + str(
@@ -860,8 +860,19 @@ def get_distribution_strings(label_size,train_label_distribution,valid_label_dis
     print(train_distribution_str)
     print(valid_distribution_str)
 
-    mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str,
-                    artifact_file=f"data_distribution_{label_size}.txt")
+
+    # mlflow.log_text(train_distribution_str + "\n" + valid_distribution_str,
+    #                 artifact_file=f"data_distribution_{label_size}.txt")
+
+    # store_directory=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts"
+    # if os.path.exists(store_directory):
+    #     with open(
+    #             f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/data_distribution_{label_size}.txt",
+    #             'w') as file:
+    #         file.write(train_distribution_str + "\n" + valid_distribution_str)
+
+    distributed_str = train_distribution_str + "\n" + valid_distribution_str
+    return distributed_str
 
 
 def one_hot_to_class_indices(one_hot_labels):

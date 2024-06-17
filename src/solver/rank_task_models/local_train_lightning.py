@@ -127,7 +127,7 @@ def train_wrapper(parameters):
         devices=1,
         min_epochs=1,
         max_epochs=3,
-        precision=16,
+        precision=32,
         callbacks=MyPrintingCallback(),
         logger=logger
     )

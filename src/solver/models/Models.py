@@ -85,18 +85,11 @@ class GraphClassifierLightning(pl.LightningModule):
         loss, scores, y = self._common_step(batch, batch_idx)
         accuracy = float(self.accuracy(scores, y))
 
-        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss), "train_loss": self.last_train_loss,
-                       "train_accuracy": self.last_train_accuracy,
-                       'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
-                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch)}
-        self.log_dict(result_dict,
-                      on_step=False, on_epoch=True, prog_bar=False)
 
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}")
-        #mlflow.log_metrics(result_dict)
-        self.logger.log_metrics(result_dict)
+
 
         # store best model
         if accuracy > self.best_val_accuracy:
@@ -107,6 +100,18 @@ class GraphClassifierLightning(pl.LightningModule):
 
             color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
                         "green")
+
+        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss),
+                       "train_loss": self.last_train_loss,
+                       "train_accuracy": self.last_train_accuracy,
+                       'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
+                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch)}
+        self.log_dict(result_dict,
+                      on_step=False, on_epoch=True, prog_bar=False)
+
+        if self.trainer.global_rank == 0:
+            #mlflow.log_metrics(result_dict)
+            self.logger.log_metrics(result_dict)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
@@ -146,36 +151,21 @@ class GraphClassifierLightning(pl.LightningModule):
     @rank_zero_only
     def on_train_start(self):
 
-
-
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        # today = datetime.date.today().strftime("%Y-%m-%d")
-        # experiment_name = today + "-" + self.model_parameters["benchmark"]
-        # self.model_parameters["experiment_name"] = experiment_name
-        #
-        #
-        # self.model_parameters["model_save_path"] = os.path.join(project_folder, "Models",
-        #                                              f"model_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.pth")
-        #
-        # if mlflow.active_run() is None:
-        #     mlflow.set_experiment(experiment_name)
-        #     mlflow.set_tracking_uri("http://127.0.0.1:5000")
-        #     # mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-        #     mlflow.start_run()
-        #
-        #
-        #
-        # self.model_parameters["run_id"] = mlflow.active_run().info.run_id
-        # self.model_parameters["experiment_id"] = mlflow.active_run().info.experiment_id
-        #
-
-
-
         torch.autograd.set_detect_anomaly(True)
-        # self.trainer.logger = MLFlowLogger(experiment_name=self.model_parameters["experiment_name"],
-        #                            run_id=self.model_parameters["run_id"])
+
+        with open(
+                f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/data_distribution_{self.model_parameters['label_size']}.txt",
+                'w') as file:
+            file.write(self.model_parameters["data_distribution_str"])
+
+        with open(
+                f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
+                'w') as file:
+            file.write(self.model_parameters["dataset_statistics_str"])
+
 
         self.logger.log_hyperparams(self.model_parameters)
         #mlflow.log_params(self.model_parameters)
@@ -189,9 +179,6 @@ class GraphClassifierLightning(pl.LightningModule):
 
         update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
         color_print("update_config_file done", "green")
-
-        #mlflow.end_run()
-        #kill_gunicorn_processes()
 
 
 

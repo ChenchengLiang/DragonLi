@@ -108,6 +108,16 @@ def train_in_parallel(parameters):
     parameters["run_id"] = logger.run_id
     parameters["experiment_id"] = logger.experiment_id
 
+
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts",
+        filename=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}",#'best-checkpoint',
+        save_top_k=1,
+        verbose=True,
+        monitor='best_val_accuracy',  # or another metric
+        mode='min'
+    )
+
     profiler = "simple"
 
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
@@ -123,7 +133,7 @@ def train_in_parallel(parameters):
         min_epochs=1,
         max_epochs=1,
         precision=32,
-        #callbacks=[MyPrintingCallback()],
+        callbacks=[MyPrintingCallback(),checkpoint_callback],
         enable_progress_bar=False,
         # enable_checkpointing=True,
     )

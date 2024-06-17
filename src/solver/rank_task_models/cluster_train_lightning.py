@@ -49,58 +49,36 @@ def main():
         with open(configuration_file) as f:
             train_config = json.load(f)
 
-    mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    mlflow.set_experiment(train_config["experiment_name"])
-    mlflow.set_tracking_uri("http://127.0.0.1:5000")
-    torch.autograd.set_detect_anomaly(True)
-    if check_run_exists(train_config["run_id"]):  # continuos training
-        with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
-            color_print(text=f"use the existing run id {mlflow_run.info.run_id}", color="yellow")
-            # pick one unfinished train
-            train_config["current_train_folder"] = None
-            for key, value in train_config["train_data_folder_epoch_map"].items():
-                if value < train_config["num_epochs"]:
-                    train_config["current_train_folder"] = train_config["benchmark"] + "/" + key
-                    break
 
-            if train_config["current_train_folder"] is None:
-                color_print(text=f"all training folders are done", color="green")
-            else:
-                color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
-                train_config = train_a_model(train_config, mlflow_run)
-                train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
-                    train_config["train_step"]
-                # update configuration file
-                update_config_file(configuration_file, train_config)
+    with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
+        color_print(text=f"use the existing run id {mlflow_run.info.run_id}", color="yellow")
+        # pick one unfinished train
+        train_config["current_train_folder"] = None
+        for key, value in train_config["train_data_folder_epoch_map"].items():
+            if value < train_config["num_epochs"]:
+                train_config["current_train_folder"] = train_config["benchmark"] + "/" + key
+                break
 
-    mlflow_ui_process.terminate()
-    os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
-    print("done")
+        if train_config["current_train_folder"] is None:
+            color_print(text=f"all training folders are done", color="green")
+        else:
+            color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
+            train_a_model(train_config, mlflow_run)
+            train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
+                train_config["train_step"]
+            # update configuration file
+            update_config_file(configuration_file, train_config)
+
+
 
 
 @time_it
-def train_a_model(train_config, mlflow_run):
+def train_a_model(parameters, mlflow_run):
     device_info()
-    if torch.cuda.is_available():
-        train_config["device"] = torch.device("cuda")
-        print(f"exists {torch.cuda.device_count()} GPUs")
-    else:
-        device = torch.device("cpu")
-    train_config["run_id"] = mlflow_run.info.run_id
-    train_config["experiment_id"] = mlflow_run.info.experiment_id
-    if len(mlflow_run.data.params) == 0:
-        mlflow.log_params(train_config)
 
-    train_continuously(train_config)
-
-    return train_config
-
-
-@time_it
-def train_continuously(parameters):
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
-    #logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
+    # logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
     check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
@@ -110,7 +88,6 @@ def train_continuously(parameters):
                                                           classifier=classifier_2,
                                                           model_parameters=parameters)
 
-
     print(f"Resuming training from epoch {model.total_epoch}, "
           f"last best validation accuracy {model.best_val_accuracy}, best epoch {model.best_epoch}  ")
     devices_list = [i for i in range(0, torch.cuda.device_count())]
@@ -118,7 +95,7 @@ def train_continuously(parameters):
     trainer = pl.Trainer(accelerator="gpu",
                          devices=devices_list,
                          callbacks=[MyPrintingCallback()],
-                         #logger=logger,
+                         # logger=logger,
                          min_epochs=parameters["train_step"],
                          max_epochs=parameters["train_step"],
                          enable_progress_bar=False,
@@ -127,11 +104,13 @@ def train_continuously(parameters):
 
     # Resume training
     trainer.fit(model, datamodule=dm)
-    #trainer.validate(model, dm)
+    # trainer.validate(model, dm)
 
     print(f"Saving the check point to {check_point_model_path}")
     os.remove(check_point_model_path)
     trainer.save_checkpoint(check_point_model_path)
+
+
 
 
 if __name__ == '__main__':
