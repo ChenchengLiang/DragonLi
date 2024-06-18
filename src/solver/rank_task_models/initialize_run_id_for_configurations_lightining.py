@@ -126,7 +126,7 @@ def train_in_parallel(parameters):
         precision=32,
         callbacks=[MyPrintingCallback(),checkpoint_callback],
         enable_progress_bar=False,
-        # enable_checkpointing=True,
+        enable_checkpointing=True,
     )
 
     model = initialize_model_lightning(parameters)
@@ -135,7 +135,12 @@ def train_in_parallel(parameters):
     trainer.validate(model, dm)
 
 
-    print("-" * 10, "train finished", "-" * 10)
+
+    if "run_id" in parameters and parameters["run_id"] is not None:
+        check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
+        trainer.save_checkpoint(check_point_model_path)
+        color_print(f"save checkpoint to {check_point_model_path}", "green")
+
 
 
 

@@ -10,11 +10,56 @@ from src.solver.independent_utils import color_print
 import dgl
 
 
+def load_model_torch_script(model_path) :
+    from src.solver.models.Models import GraphClassifierLightning
+    from src.solver.rank_task_models.train_utils import get_gnn_and_classifier
+    from src.solver.models.Models import GraphClassifier
+
+    color_print(text=f"load model from {model_path}", color="green")
+    loaded_model = torch.load(model_path, map_location=torch.device('cpu'))
+    loaded_model.eval()  # Set the model to evaluation mode
+
+    # Save the state dictionary
+    torch.save(loaded_model.state_dict(), model_path.replace(".pth", "_state_dict.pth"))
+
+    # Define the same model architecture
+    config_list = os.path.basename(model_path).split("_")
+    graph_type = config_list[2] + "_" + config_list[3]
+    model_type = config_list[4].split(".")[0]
+    label_size = int(config_list[1])
+    configuration_file = f"{project_folder}/Models/configuration_model_{label_size}_{graph_type}_{model_type}.json"
+
+    with open(configuration_file) as f:
+        model_parameters = json.load(f)
+
+    gnn_model, classifier_2 = get_gnn_and_classifier(model_parameters)
+    original_model = GraphClassifierLightning(shared_gnn=gnn_model, classifier=classifier_2,
+                                              model_parameters=model_parameters)
+
+    original_model.load_state_dict(torch.load(model_path.replace(".pth", "_state_dict.pth")))
+    original_model.eval()
+
+    # Wrap the model to remove Trainer dependency
+    simplified_model = GraphClassifier(shared_gnn=original_model.shared_gnn,
+                                                 classifier=original_model.classifier)
+
+    # Optimize model with TorchScript
+    scripted_model = torch.jit.script(simplified_model)
+    scripted_model.save(model_path.replace(".pth", ".pt"))
+
+    # Load the optimized model
+    optimized_model = torch.jit.load(model_path.replace(".pth", ".pt"))
+
+    return optimized_model
+
+
+
 def load_model(model_path) :
-    #color_print(text=f"load model from {model_path}", color="green")
+    color_print(text=f"load model from {model_path}", color="green")
     loaded_model = torch.load(model_path,map_location=torch.device('cpu'))
     #print(loaded_model.keys())
     loaded_model.eval()  # Set the model to evaluation mode
+
     return loaded_model
 
 
@@ -45,34 +90,18 @@ def squeeze_labels(pred, labels):
 
 
 def save_model_local_and_mlflow(parameters,model_index,best_model):
-    # best_model_path = parameters["model_save_path"].replace(".pth", "_" + parameters["run_id"] + ".pth").replace(
-    #     "model_", f"model_{model_index}_")
-    #
-    # if os.path.exists(best_model_path):
-    #     os.remove(best_model_path)
-    #
-    # torch.save(best_model, best_model_path)
-
-    # target_path=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{best_model_path}"
-    # if os.path.exists(target_path):
-    #     os.remove(target_path)
-    # shutil.move(best_model_path,f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts")
-
-    #best_model.logger.experiment.log_artifact(run_id=best_model.logger.run_id, local_path=best_model_path)
-    #mlflow.log_artifact(best_model_path)
-
-    #color_print(f"Save model {best_model_path} to {best_model.logger.run_id}\n","green")
-
-    # if os.path.exists(best_model_path):
-    #     os.remove(best_model_path)
 
 
-    best_model_path_save_locally = parameters["model_save_path"].replace(
-        "model_", f"model_{model_index}_")
-    # if os.path.exists(best_model_path_save_locally):
-    #     os.remove(best_model_path_save_locally)
+    model_name = f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}.pth"
+    local_dir = f"{project_folder}/Models"
+    best_model_path_local=f"{local_dir}/{model_name}"
+    torch.save(best_model, best_model_path_local)
 
-    torch.save(best_model, best_model_path_save_locally)
+
+    mlflow_dir = f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts"
+    best_model_path_mlflow=f"{mlflow_dir}/{model_name}"
+    torch.save(best_model, best_model_path_mlflow)
+    color_print(f"Save best model to {best_model_path_mlflow}\n", "green")
 
 
 

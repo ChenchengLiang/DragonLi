@@ -85,7 +85,6 @@ class GraphClassifierLightning(pl.LightningModule):
         loss, scores, y = self._common_step(batch, batch_idx)
         accuracy = float(self.accuracy(scores, y))
 
-
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}, total_epoch: {self.total_epoch}")
@@ -95,7 +94,8 @@ class GraphClassifierLightning(pl.LightningModule):
         if accuracy > self.best_val_accuracy:
             self.best_val_accuracy = accuracy
             self.best_epoch = self.current_epoch
-            save_model_local_and_mlflow(self.model_parameters, self.classifier.output_dim, self)
+            if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
+                save_model_local_and_mlflow(self.model_parameters, self.classifier.output_dim, self)
 
 
             color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
@@ -109,9 +109,8 @@ class GraphClassifierLightning(pl.LightningModule):
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=False)
 
-        if self.trainer.global_rank == 0:
-            #mlflow.log_metrics(result_dict)
-            self.logger.log_metrics(result_dict)
+
+        self.logger.log_metrics(result_dict)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
@@ -150,39 +149,33 @@ class GraphClassifierLightning(pl.LightningModule):
 
     @rank_zero_only
     def on_train_start(self):
-
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        #torch.autograd.set_detect_anomaly(True)
-
-        if self.trainer.max_epochs == 1:
+        if self.total_epoch < 1: # indicating initial training
+        #if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
+            artifact_folder = f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts"
             with open(
-                    f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/data_distribution_{self.model_parameters['label_size']}.txt",
+                    f"{artifact_folder}/data_distribution_{self.model_parameters['label_size']}.txt",
                     'w') as file:
                 file.write(self.model_parameters["data_distribution_str"])
 
             with open(
-                    f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
+                    f"{artifact_folder}/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
                     'w') as file:
                 file.write(self.model_parameters["dataset_statistics_str"])
+            #store configuration file to artifact folder
+            update_config_file(f"{artifact_folder}/configuration_model_{self.model_parameters['label_size']}_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.json", self.model_parameters)
 
             self.logger.log_hyperparams(self.model_parameters)
             #mlflow.log_params(self.model_parameters)
 
     @rank_zero_only
     def on_train_end(self):
-        self.model_parameters['run_id']
-        check_point_model_path=f"{checkpoint_folder}/{self.model_parameters['run_id']}_model_checkpoint.ckpt"
 
-
-        self.trainer.save_checkpoint(check_point_model_path)
-        color_print(f"save checkpoint to {check_point_model_path}", "green")
-
-        if self.trainer.max_epochs!=1:
+        if self.total_epoch >1: # indicating not initial training
             self.model_parameters["train_data_folder_epoch_map"][os.path.basename(self.model_parameters["current_train_folder"])] += \
                 self.model_parameters["train_step"]
-
 
 
         update_config_file(self.model_parameters["configuration_file"], self.model_parameters)

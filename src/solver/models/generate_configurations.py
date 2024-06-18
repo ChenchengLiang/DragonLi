@@ -24,7 +24,7 @@ def main():
     task="rank_task_1"#"task_3"
     node_type=5
     learning_rate=0.001
-    train_step=20
+    train_step=10
     label_size=2
     configurations = []
     for benchmark in ["choose_eq_train"]:
