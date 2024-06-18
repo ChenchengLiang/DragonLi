@@ -88,7 +88,7 @@ class GraphClassifierLightning(pl.LightningModule):
 
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
-            f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}")
+            f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}, total_epoch: {self.total_epoch}")
 
 
         # store best model
@@ -154,27 +154,35 @@ class GraphClassifierLightning(pl.LightningModule):
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        torch.autograd.set_detect_anomaly(True)
+        #torch.autograd.set_detect_anomaly(True)
 
-        with open(
-                f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/data_distribution_{self.model_parameters['label_size']}.txt",
-                'w') as file:
-            file.write(self.model_parameters["data_distribution_str"])
+        if self.trainer.max_epochs == 1:
+            with open(
+                    f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/data_distribution_{self.model_parameters['label_size']}.txt",
+                    'w') as file:
+                file.write(self.model_parameters["data_distribution_str"])
 
-        with open(
-                f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
-                'w') as file:
-            file.write(self.model_parameters["dataset_statistics_str"])
+            with open(
+                    f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
+                    'w') as file:
+                file.write(self.model_parameters["dataset_statistics_str"])
 
-
-        self.logger.log_hyperparams(self.model_parameters)
-        #mlflow.log_params(self.model_parameters)
+            self.logger.log_hyperparams(self.model_parameters)
+            #mlflow.log_params(self.model_parameters)
 
     @rank_zero_only
     def on_train_end(self):
-        check_point_model_path = f"{checkpoint_folder}/{self.model_parameters['run_id']}_model_checkpoint.ckpt"
+        self.model_parameters['run_id']
+        check_point_model_path=f"{checkpoint_folder}/{self.model_parameters['run_id']}_model_checkpoint.ckpt"
+
+
         self.trainer.save_checkpoint(check_point_model_path)
         color_print(f"save checkpoint to {check_point_model_path}", "green")
+
+        if self.trainer.max_epochs!=1:
+            self.model_parameters["train_data_folder_epoch_map"][os.path.basename(self.model_parameters["current_train_folder"])] += \
+                self.model_parameters["train_step"]
+
 
 
         update_config_file(self.model_parameters["configuration_file"], self.model_parameters)

@@ -65,10 +65,10 @@ def main():
         color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
         train_a_model(train_config)
 
-        train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
-            train_config["train_step"]
+        # train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
+        #     train_config["train_step"]
         # update configuration file
-        update_config_file(configuration_file, train_config)
+        #update_config_file(configuration_file, train_config)
 
 
 
@@ -82,14 +82,16 @@ def train_a_model(parameters):
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    model_name=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}.ckpt"
-    check_point_model_path = f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{model_name}"
+    #load from checkpoint folder
+    check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
+    color_print(f"load check point from {check_point_model_path}", color="yellow")
     gnn_model, classifier_2 = get_gnn_and_classifier(parameters)
     model = GraphClassifierLightning.load_from_checkpoint(checkpoint_path=check_point_model_path,
                                                           shared_gnn=gnn_model,
                                                           classifier=classifier_2,
                                                           model_parameters=parameters)
 
+    # save for best model in mlflow
     checkpoint_callback = ModelCheckpoint(
         dirpath=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts",
         filename=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}",
@@ -107,6 +109,7 @@ def train_a_model(parameters):
                          devices=devices_list,
                          callbacks=[MyPrintingCallback(),checkpoint_callback],
                          logger=logger,
+                         precision=32,
                          min_epochs=parameters["train_step"],
                          max_epochs=parameters["train_step"],
                          enable_progress_bar=False,

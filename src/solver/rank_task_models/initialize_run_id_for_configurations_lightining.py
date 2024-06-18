@@ -92,21 +92,12 @@ def train_in_parallel(parameters):
                                                             f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
 
 
-
-
-    # mlflow_ui_process = subprocess.Popen(['mlflow', 'ui'], preexec_fn=os.setpgrp)
-    #mlflow.set_experiment(experiment_name)
-    #mlflow.set_tracking_uri("http://127.0.0.1:5000")
-    # with mlflow.start_run() as run:
-    #     run_id = run.info.run_id
-    #     experiment_id = run.info.experiment_id
-
-    #mlflow.set_experiment(experiment_name)
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"],tracking_uri='http://127.0.0.1:5000')
 
     color_print(text=f"use the existing run id {logger.run_id}", color="yellow")
     parameters["run_id"] = logger.run_id
     parameters["experiment_id"] = logger.experiment_id
+
 
 
     checkpoint_callback = ModelCheckpoint(
@@ -143,19 +134,9 @@ def train_in_parallel(parameters):
     trainer.fit(model, dm)
     trainer.validate(model, dm)
 
-    # check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
-    # trainer.save_checkpoint(check_point_model_path)
 
     print("-" * 10, "train finished", "-" * 10)
 
-    #pid = mlflow_ui_process.pid
-
-    #mlflow_ui_process.terminate()
-    #os.killpg(os.getpgid(pid), signal.SIGTERM)
-
-    # mlflow.end_run()
-    # update_config_file(parameters["configuration_file"], parameters)
-    # print("done")
 
 
 

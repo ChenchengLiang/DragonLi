@@ -8,6 +8,8 @@ from src.solver.Constants import project_folder
 from src.solver.independent_utils import color_print
 
 import dgl
+
+
 def load_model(model_path) :
     #color_print(text=f"load model from {model_path}", color="green")
     loaded_model = torch.load(model_path,map_location=torch.device('cpu'))
@@ -27,6 +29,7 @@ def device_info():
     color_print(f"torch.cuda.is_available: {torch.cuda.is_available()}", "green")
     color_print(f"torch vesion: {torch.__version__}", "green")
     color_print(f"dgl backend: {dgl.backend.backend_name}", "green")
+    color_print(f"dgl version: {dgl.__version__}", "green")
     print("-" * 10)
 
 
