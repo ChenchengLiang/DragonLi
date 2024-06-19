@@ -44,6 +44,7 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
+        self.each_n_iterations = 10
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
@@ -52,6 +53,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_random": order_equations_category_random,
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
+                                         "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "gnn": self._order_equations_gnn,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random
@@ -222,6 +224,25 @@ class SplitEquations(AbstractAlgorithm):
 
         return Formula(sorted_eq_list), category_call
 
+    def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+
+        # Check if the equation categories are only 5 and 6
+        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+
+        if only_5_and_6 == True and len(categoried_eq_list) > 1:
+            if self.total_rank_call % self.each_n_iterations == 0:
+                ordered_formula, category_call = self._order_equations_gnn(f, category_call)
+                sorted_eq_list = ordered_formula.eq_list
+            else:
+                category_call += 1
+                sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
+        else:
+            category_call += 1
+            sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
+
+        return Formula(sorted_eq_list), category_call
+
     def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
         if probability < HYBRID_ORDER_EQUATION_RATE:
@@ -289,7 +310,7 @@ class SplitEquations(AbstractAlgorithm):
             #     rank_list.append(one_data_prediction)
             # # transform multiple one-hot encoded binary classification prediction to one score
             # rank_list = [torch.sigmoid(x)[0] for x in rank_list]
-            
+
         end = time.time() - start
         print("predict time", end)
 

@@ -216,7 +216,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         else:
             # systematic search training data by using "order_equations_method": "fixed"
             current_formula = self.order_equations_func_wrapper(current_formula,current_node)
-
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
