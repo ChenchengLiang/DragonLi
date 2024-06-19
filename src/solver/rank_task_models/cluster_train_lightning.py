@@ -82,9 +82,11 @@ def train_a_model(parameters):
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    #load from checkpoint folder
-    check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
+    #load from checkpoint
+    #check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt" #load from checkpoint folder
+    check_point_model_path = f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/last.ckpt"  # load from mlflow folder last
     color_print(f"load check point from {check_point_model_path}", color="yellow")
+
     gnn_model, classifier_2 = get_gnn_and_classifier(parameters)
     model = GraphClassifierLightning.load_from_checkpoint(checkpoint_path=check_point_model_path,
                                                           shared_gnn=gnn_model,
@@ -96,6 +98,8 @@ def train_a_model(parameters):
         dirpath=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts",
         filename=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}",
         save_top_k=1,
+        save_last=True,
+        enable_version_counter=False,
         verbose=True,
         monitor='best_val_accuracy',  # or another metric
         mode='min'
@@ -104,6 +108,8 @@ def train_a_model(parameters):
     print(f"Resuming training from epoch {model.total_epoch}, "
           f"last best validation accuracy {model.best_val_accuracy}, best epoch {model.best_epoch}  ")
     devices_list = [i for i in range(0, torch.cuda.device_count())]
+
+    torch.set_float32_matmul_precision('medium')
 
     trainer = pl.Trainer(accelerator="gpu",
                          devices=devices_list,

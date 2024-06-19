@@ -61,6 +61,8 @@ class GraphClassifierLightning(pl.LightningModule):
 
         self.last_train_loss = float("inf")
         self.last_train_accuracy = 0
+        self.last_val_loss = float("inf")
+        self.last_val_accuracy = 0
 
 
         self.is_test = False
@@ -84,6 +86,8 @@ class GraphClassifierLightning(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)
         accuracy = float(self.accuracy(scores, y))
+        self.last_val_loss = float(loss)
+        self.last_val_accuracy = accuracy
 
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
@@ -140,12 +144,22 @@ class GraphClassifierLightning(pl.LightningModule):
         checkpoint["best_val_accuracy"] = self.best_val_accuracy
         checkpoint["best_epoch"] = self.best_epoch
         checkpoint["total_epoch"] = self.total_epoch
+        checkpoint['last_train_loss'] = self.last_train_loss
+        checkpoint['last_train_accuracy'] = self.last_train_accuracy
+        checkpoint['last_val_loss'] = self.last_val_loss
+        checkpoint['last_val_accuracy'] = self.last_val_accuracy
+
 
     @rank_zero_only
     def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
         self.best_val_accuracy = checkpoint["best_val_accuracy"]
         self.best_epoch = checkpoint["best_epoch"]
         self.total_epoch = checkpoint["total_epoch"]
+        self.last_train_loss = checkpoint['last_train_loss']
+        self.last_train_accuracy = checkpoint['last_train_accuracy']
+        self.last_val_loss = checkpoint['last_val_loss']
+        self.last_val_accuracy = checkpoint['last_val_accuracy']
+
 
     @rank_zero_only
     def on_train_start(self):

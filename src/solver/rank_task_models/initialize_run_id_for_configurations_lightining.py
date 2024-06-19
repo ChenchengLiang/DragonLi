@@ -104,6 +104,8 @@ def train_in_parallel(parameters):
         dirpath=f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts",
         filename=f"model_{parameters['label_size']}_{parameters['graph_type']}_{parameters['model_type']}",#'best-checkpoint',
         save_top_k=1,
+        save_last=True,
+        enable_version_counter=False,
         verbose=True,
         monitor='best_val_accuracy',  # or another metric
         mode='min'
@@ -114,7 +116,7 @@ def train_in_parallel(parameters):
     dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
     devices_list = [i for i in range(0, torch.cuda.device_count())]
-
+    torch.set_float32_matmul_precision('medium')
     trainer = pl.Trainer(
         #strategy="ddp",  # ddp
         # profiler=profiler,
@@ -136,11 +138,11 @@ def train_in_parallel(parameters):
 
 
 
-    if "run_id" in parameters and parameters["run_id"] is not None:
-        check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
-        trainer.save_checkpoint(check_point_model_path)
-        color_print(f"save checkpoint to {check_point_model_path}", "green")
-
+    # if "run_id" in parameters and parameters["run_id"] is not None:
+    #     check_point_model_path = f"{checkpoint_folder}/{parameters['run_id']}_model_checkpoint.ckpt"
+    #     trainer.save_checkpoint(check_point_model_path)
+    #     color_print(f"save checkpoint to {check_point_model_path}", "green")
+    #
 
 
 
