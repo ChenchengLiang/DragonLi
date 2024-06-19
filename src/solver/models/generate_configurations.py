@@ -27,8 +27,8 @@ def main():
     train_step=10
     label_size=2
     configurations = []
-    for benchmark in ["choose_eq_train"]:
-    #for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"]:
+    #for benchmark in ["choose_eq_train"]:
+    for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"]:
         for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:#[2,8]:
                 for ffnn_layer_num in [2]:

@@ -9,18 +9,10 @@ from src.solver.independent_utils import color_print
 
 import dgl
 
-
-def load_model_torch_script(model_path) :
+def restore_model_structure(model_path):
     from src.solver.models.Models import GraphClassifierLightning
     from src.solver.rank_task_models.train_utils import get_gnn_and_classifier
     from src.solver.models.Models import GraphClassifier
-
-    color_print(text=f"load model from {model_path}", color="green")
-    loaded_model = torch.load(model_path, map_location=torch.device('cpu'))
-    loaded_model.eval()  # Set the model to evaluation mode
-
-    # Save the state dictionary
-    torch.save(loaded_model.state_dict(), model_path.replace(".pth", "_state_dict.pth"))
 
     # Define the same model architecture
     config_list = os.path.basename(model_path).split("_")
@@ -35,6 +27,20 @@ def load_model_torch_script(model_path) :
     gnn_model, classifier_2 = get_gnn_and_classifier(model_parameters)
     original_model = GraphClassifierLightning(shared_gnn=gnn_model, classifier=classifier_2,
                                               model_parameters=model_parameters)
+    return original_model
+
+
+def load_model_torch_script(model_path) :
+    from src.solver.models.Models import GraphClassifier
+
+    color_print(text=f"load model from {model_path}", color="green")
+    loaded_model = torch.load(model_path, map_location=torch.device('cpu'))
+    loaded_model.eval()  # Set the model to evaluation mode
+
+    # Save the state dictionary
+    torch.save(loaded_model.state_dict(), model_path.replace(".pth", "_state_dict.pth"))
+
+    original_model = restore_model_structure(model_path)
 
     original_model.load_state_dict(torch.load(model_path.replace(".pth", "_state_dict.pth")))
     original_model.eval()
@@ -44,13 +50,13 @@ def load_model_torch_script(model_path) :
                                                  classifier=original_model.classifier)
 
     # Optimize model with TorchScript
-    scripted_model = torch.jit.script(simplified_model)
-    scripted_model.save(model_path.replace(".pth", ".pt"))
+    # scripted_model = torch.jit.script(simplified_model)
+    # scripted_model.save(model_path.replace(".pth", ".pt"))
+    #
+    # # Load the optimized model
+    # optimized_model = torch.jit.load(model_path.replace(".pth", ".pt"))
 
-    # Load the optimized model
-    optimized_model = torch.jit.load(model_path.replace(".pth", ".pt"))
-
-    return optimized_model
+    return simplified_model
 
 
 

@@ -59,11 +59,10 @@ class SplitEquations(AbstractAlgorithm):
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
-            gnn_model_path=parameters["gnn_model_path"].replace("_0_", "_2_")
-            #self.gnn_rank_model = load_model(gnn_model_path) # this is a GraphClassifier class
-            self.gnn_rank_model = load_model_torch_script(gnn_model_path)
+            gnn_model_path = parameters["gnn_model_path"].replace("_0_", "_2_")
+            self.gnn_rank_model = load_model(gnn_model_path)  # this is a GraphClassifier class
+            # self.gnn_rank_model = load_model_torch_script(gnn_model_path)
             self.gnn_rank_model.is_test = True
-
 
             self.graph_func = parameters["graph_func"]
 
@@ -137,8 +136,8 @@ class SplitEquations(AbstractAlgorithm):
         # notice that the name "Total explore_paths call" is for summary script to parse
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call,
-                        "predicted_data_hash_table_hit":self.predicted_data_hash_table_hit,
-                        "dgl_hash_table_hit":self.dgl_hash_table_hit}
+                        "predicted_data_hash_table_hit": self.predicted_data_hash_table_hit,
+                        "dgl_hash_table_hit": self.dgl_hash_table_hit}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -169,7 +168,6 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             current_eq, separated_formula = self.get_first_eq(current_formula)
-
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
@@ -256,7 +254,6 @@ class SplitEquations(AbstractAlgorithm):
                 dgl_graph, _ = get_one_dgl_graph(graph_dict)
                 self.dgl_hash_table[hashed_eq] = dgl_graph
 
-
             G_list_dgl.append(dgl_graph)
             if self.visualize_gnn_input == True:
                 draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
@@ -272,22 +269,27 @@ class SplitEquations(AbstractAlgorithm):
         start = time.time()
         # predict
         with torch.no_grad():
-            rank_list = []
-            for g_G_dgl in input_eq_graph_list_dgl:
-                # # hash one data
-                # hashed_data, data_str=hash_one_dgl_data(g_G_dgl)
-                # if hashed_data in self.predicted_data_hash_table:
-                #     one_data_prediction = self.predicted_data_hash_table[hashed_data]
-                #     self.predicted_data_hash_table_hit += 1
-                # else:
-                #     one_data_prediction = self.gnn_rank_model(g_G_dgl).squeeze()
-                #     #one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
-                #     self.predicted_data_hash_table[hashed_data] = one_data_prediction
-                one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
-                rank_list.append(one_data_prediction)
+            #batch wise prediction
+            batch_eqs = [dgl.batch(g_G_dgl) for g_G_dgl in input_eq_graph_list_dgl]
+            predicted_batch=self.gnn_rank_model(batch_eqs).squeeze()
+            rank_list = [torch.sigmoid(x)[0] for x in predicted_batch]
 
-            # transform multiple one-hot encoded binary classification prediction to one score
-            rank_list = [torch.sigmoid(x)[0] for x in rank_list]
+            # single wise prediction with hash
+            # rank_list = []
+            # for g_G_dgl in input_eq_graph_list_dgl:
+            #     # hash one data
+            #     hashed_data, data_str=hash_one_dgl_data(g_G_dgl)
+            #     if hashed_data in self.predicted_data_hash_table:
+            #         one_data_prediction = self.predicted_data_hash_table[hashed_data]
+            #         self.predicted_data_hash_table_hit += 1
+            #     else:
+            #         one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
+            #         self.predicted_data_hash_table[hashed_data] = one_data_prediction
+            #     #one_data_prediction = self.gnn_rank_model([dgl.batch(g_G_dgl)]).squeeze()
+            #     rank_list.append(one_data_prediction)
+            # # transform multiple one-hot encoded binary classification prediction to one score
+            # rank_list = [torch.sigmoid(x)[0] for x in rank_list]
+            
         end = time.time() - start
         print("predict time", end)
 
