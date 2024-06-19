@@ -19,7 +19,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
     order_branches_hybrid_fixed_random
-from src.solver.models.utils import load_model, load_model_torch_script
+from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
 from ..models.Dataset import get_one_dgl_graph
 import torch
 
@@ -65,8 +65,9 @@ class SplitEquations(AbstractAlgorithm):
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
             gnn_model_path = parameters["gnn_model_path"].replace("_0_", "_2_")
-            self.gnn_rank_model = load_model(gnn_model_path)  # this is a GraphClassifier class
-            # self.gnn_rank_model = load_model_torch_script(gnn_model_path)
+            #self.gnn_rank_model = load_model(gnn_model_path)  # this is a GraphClassifier class
+            self.gnn_rank_model = load_model_torch_script(gnn_model_path)
+            #self.gnn_rank_model = load_model_onnx(gnn_model_path)
             self.gnn_rank_model.is_test = True
 
             self.graph_func = parameters["graph_func"]

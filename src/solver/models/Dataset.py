@@ -44,11 +44,6 @@ def get_edge_src_and_dst_list(edges):
 
 
 
-
-
-
-
-
 class WordEquationDatasetBinaryClassification(DGLDataset):
     def __init__(self,graph_folder="",data_fold="train",node_type=3,graphs_from_memory=[],label_size=1):
         self._data_fold = data_fold
