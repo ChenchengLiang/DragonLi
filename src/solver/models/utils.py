@@ -7,12 +7,10 @@ import mlflow
 import torch
 from src.solver.Constants import project_folder
 
-
+import multiprocessing
 from src.solver.independent_utils import color_print
-import torch.onnx
 import dgl
 
-import onnxruntime as ort
 
 def restore_model_structure(model_path):
     from src.solver.models.Models import GraphClassifierLightning
@@ -103,7 +101,10 @@ def get_example_input(model_path):
 
     batch_eqs = [dgl.batch(g_G_dgl) for g_G_dgl in input_eq_graph_list_dgl]
     return batch_eqs
+
 def load_model_onnx(model_path) :
+    import onnxruntime as ort
+    import torch.onnx
     color_print(text=f"load model from {model_path}", color="green")
     loaded_model = torch.load(model_path,map_location=torch.device('cpu'))
     #print(loaded_model.keys())
@@ -133,6 +134,17 @@ def load_model_onnx(model_path) :
     return ort_session
 
 def load_model(model_path) :
+    # Determine the number of cores available
+    num_cores = multiprocessing.cpu_count()
+    use_cores= int(num_cores - 2)
+    print(f"Number of cores CPU: {num_cores}, Number of cores used: {use_cores}")
+    # Set the number of threads for PyTorch
+    torch.set_num_threads(use_cores)
+    # Set the number of threads for OpenMP (used by some libraries including DGL)
+    os.environ["OMP_NUM_THREADS"] = str(use_cores)
+    # Optionally, adjust the number of interop threads in PyTorch
+    #torch.set_num_interop_threads(max(2, use_cores))  # Example strategy
+
     color_print(text=f"load model from {model_path}", color="green")
     loaded_model = torch.load(model_path,map_location=torch.device('cpu'))
     #print(loaded_model.keys())

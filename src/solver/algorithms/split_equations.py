@@ -65,8 +65,8 @@ class SplitEquations(AbstractAlgorithm):
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:
             gnn_model_path = parameters["gnn_model_path"].replace("_0_", "_2_")
-            #self.gnn_rank_model = load_model(gnn_model_path)  # this is a GraphClassifier class
-            self.gnn_rank_model = load_model_torch_script(gnn_model_path)
+            self.gnn_rank_model = load_model(gnn_model_path)  # this is a GraphClassifier class
+            #self.gnn_rank_model = load_model_torch_script(gnn_model_path)
             #self.gnn_rank_model = load_model_onnx(gnn_model_path)
             self.gnn_rank_model.is_test = True
 

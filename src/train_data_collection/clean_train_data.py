@@ -22,6 +22,7 @@ import json
 import os
 import argparse
 
+
 def main():
     # read graph type from command line
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
@@ -29,29 +30,29 @@ def main():
     args = arg_parser.parse_args()
     graph_type = args.graph_type
 
-
-    benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"
+    benchmark = "choose_eq_train"
+    # benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"
 
     benchmark_path = bench_folder + "/" + benchmark
     folder_list = [folder for folder in get_folders(benchmark_path) if
                    "divided" in folder or "valid" in folder]
 
-    log=False
+    log = False
 
-    zip_file_name=graph_type
-    hash_table=get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
+    zip_file_name = graph_type
+    hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
     check_hash_table_label_consistency(hash_table)
 
-    unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=log)
+    unify_labels(benchmark_path, folder_list, graph_type, hash_table, log=log)
 
-    zip_file_name=graph_type
+    zip_file_name = graph_type
     hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
-    check_hash_table_label_consistency(hash_table,log=log)
+    check_hash_table_label_consistency(hash_table, log=log)
 
 
-def unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=False):
-    print_count={}
-    data_str_head_dict={}
+def unify_labels(benchmark_path, folder_list, graph_type, hash_table, log=False):
+    print_count = {}
+    data_str_head_dict = {}
     for folder in folder_list:
         current_folder = benchmark_path + "/" + folder
         input_zip_file_path = current_folder + f"/{graph_type}.zip"
@@ -71,12 +72,12 @@ def unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=False):
                         for key, value in json_data.items():
                             if isinstance(value, dict):
                                 G.append(value)
-                        G=sorted(G,key=lambda x: x['nodes'])
+                        G = sorted(G, key=lambda x: x['nodes'])
 
                         # check each data
                         for g in G:
                             one_data = [g] + G
-                            hashed_data,data_str = hash_one_data(one_data)
+                            hashed_data, data_str = hash_one_data(one_data)
                             # Check hash table
                             if hashed_data in hash_table:
 
@@ -89,22 +90,22 @@ def unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=False):
                             else:
                                 color_print(f"Hashed data not found in hash table {hashed_data}", "red")
 
-                            if log==True:
+                            if log == True:
                                 if hashed_data in print_count:
                                     pass
                                 else:
-                                    print_count[hashed_data]=True
+                                    print_count[hashed_data] = True
                                     print(f"hashed_data:{hashed_data}")
                                     print(data_str)
                                     print(g["label"])
-                                    data_str_head=data_str.split("->")[0]
+                                    data_str_head = data_str.split("->")[0]
                                     if data_str_head in data_str_head_dict:
-                                        if data_str_head_dict[data_str_head]!=g["label"]:
+                                        if data_str_head_dict[data_str_head] != g["label"]:
                                             color_print(f"Data head label inconsistent {data_str_head}", "red")
                                             print(data_str_head_dict[data_str_head])
                                             print(g["label"])
                                     else:
-                                        data_str_head_dict[data_str_head]=g["label"]
+                                        data_str_head_dict[data_str_head] = g["label"]
 
                         # Convert modified dict back to JSON bytes
                         modified_content = json.dumps(json_data).encode('utf-8')
@@ -117,14 +118,13 @@ def unify_labels(benchmark_path, folder_list, graph_type, hash_table,log=False):
 
         print(f"Modification complete {folder} {graph_type}")
 
-        #replace original zip file
+        # replace original zip file
         os.remove(input_zip_file_path)
         os.rename(output_zip_file_path, input_zip_file_path)
         print(f"File replaced {folder} {graph_type}")
 
 
-
-def get_data_label_hash_table(benchmark_path, folder_list,zip_file_name:str)->Dict:
+def get_data_label_hash_table(benchmark_path, folder_list, zip_file_name: str) -> Dict:
     # get hash table
     hash_table: Dict = {}  # {hashed_data:label_count}, label_count={0:0,1:0}
     for folder in folder_list:
@@ -145,7 +145,7 @@ def get_data_label_hash_table(benchmark_path, folder_list,zip_file_name:str)->Di
                         # hash one data to hash table
                         for g in G:
                             one_data = [g] + G
-                            hashed_data,data_str = hash_one_data(one_data)
+                            hashed_data, data_str = hash_one_data(one_data)
                             label = g["label"]
 
                             if hashed_data in hash_table:
@@ -162,18 +162,18 @@ def get_data_label_hash_table(benchmark_path, folder_list,zip_file_name:str)->Di
     return hash_table
 
 
-def check_hash_table_label_consistency(hash_table,log=False):
-    insistent_count=0
-    consistent_count=0
+def check_hash_table_label_consistency(hash_table, log=False):
+    insistent_count = 0
+    consistent_count = 0
     for key, value in hash_table.items():
         label_count = value
-        if label_count[0] != 0 and label_count[1]!=0:
-            insistent_count+=1
-            if log==True:
+        if label_count[0] != 0 and label_count[1] != 0:
+            insistent_count += 1
+            if log == True:
                 color_print(f"Inconsistent label count, {key}", "red")
                 print(label_count)
         else:
-            consistent_count+=1
+            consistent_count += 1
             if log == True:
                 color_print(f"Consistent label count, {key}", "green")
                 print(label_count)

@@ -81,6 +81,8 @@ class GraphClassifierLightning(pl.LightningModule):
                       on_step=False, on_epoch=True, prog_bar=False)
         self.last_train_loss = float(loss)
         self.last_train_accuracy = accuracy
+        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.total_epoch)
+
         return {'loss': loss, "scores": scores, "y": y}
 
     def validation_step(self, batch, batch_idx):
@@ -106,15 +108,13 @@ class GraphClassifierLightning(pl.LightningModule):
                         "green")
 
         result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss),
-                       "train_loss": self.last_train_loss,
-                       "train_accuracy": self.last_train_accuracy,
                        'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
                        "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch)}
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=False)
 
 
-        self.logger.log_metrics(result_dict)
+        self.logger.log_metrics(result_dict, step=self.total_epoch)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
@@ -196,6 +196,25 @@ class GraphClassifierLightning(pl.LightningModule):
         color_print("update_config_file done", "green")
 
 
+
+
+class GNNRankTask0(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+        self.gnn_hidden_dim = gnn_hidden_dim
+
+        self.single_dgl_hash_table = {}
+        self.single_dgl_hash_table_hit = 0
+
+    # dealing batch graphs
+    def forward(self, batch_graphs, is_test=False):
+        embedded_graphs=self.embedding(batch_graphs)
+
+
+        batch_result_list_stacked = torch.stack(embedded_graphs, dim=0)
+        return batch_result_list_stacked
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
