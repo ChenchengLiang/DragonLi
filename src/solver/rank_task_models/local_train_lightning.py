@@ -2,7 +2,6 @@ import configparser
 import os
 import sys
 
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -21,12 +20,14 @@ from src.solver.independent_utils import color_print, load_from_pickle_within_zi
 from src.solver.Constants import project_folder, bench_folder, RED
 import signal
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, read_dataset_from_zip, \
-    DGLDataModule
-from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN
+    DGLDataModule, DGLDataModuleRank0
+from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN, GraphClassifierLightning, \
+    GNNRankTask0
 import torch.nn as nn
 import numpy as np
 import random
-from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback
+from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback, \
+    get_gnn_and_classifier
 from src.solver.models.train_util import data_loader_2, training_phase, validation_phase, log_and_save_best_model, \
     training_phase_without_loader, validation_phase_without_loader, get_data_distribution
 from torch.utils.data import DataLoader
@@ -61,13 +62,8 @@ def train_wrapper(parameters):
 
     parameters["graph_type"] = "graph_1"
 
-
-    train_dataset = read_dataset_from_zip(parameters,"divided_1")
-    if not os.path.exists(os.path.join(bench_folder, parameters["benchmark_folder"], "valid_data")):
-        valid_dataset=train_dataset
-    else:
-        valid_dataset = read_dataset_from_zip(parameters,"valid_data")
-    dataset = {"train": train_dataset, "valid": valid_dataset}
+    parameters["train_data_folder_epoch_map"]={"divided_1":0}
+    parameters["configuration_file"]=f"{project_folder}/Models/configurations/config_0.json"
 
     ############### Model initialization ################
     dropout_rate = 0
@@ -94,48 +90,47 @@ def train_wrapper(parameters):
 
     parameters["num_epochs"] = 10
     parameters["train_step"] = 10
-    model = initialize_model_lightning(parameters)
 
 
 
-    get_data_distribution(dataset, parameters)
+    first_layer_ffnn_hidden_dim_factor = 1
+    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
+                              first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
+                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"], parent_node=False)
 
+    # Decide on the GNN type based on parameters
+    embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
+    if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
+        raise ValueError("Unsupported model type")
 
+    gnn_model = GNNRankTask0(
+        input_feature_dim=parameters["node_type"],
+        gnn_hidden_dim=parameters["gnn_hidden_dim"],
+        gnn_layer_num=parameters["gnn_layer_num"],
+        gnn_dropout_rate=parameters["gnn_dropout_rate"],
+        embedding_type=embedding_type
+    )
+    model = GraphClassifierLightning(gnn_model, classifier_2, model_parameters=parameters)
 
-
-    if torch.cuda.is_available():
-        parameters["device"]="cuda:0"
-    else:
-        parameters["device"]="cpu"
-
-    print("device:", parameters["device"])
-    print("Have", torch.cuda.device_count(), "GPUs!")
-    print("CUDA version:", torch.version.cuda)
-    # Print PyTorch version
-    print("PyTorch version:", torch.__version__)
-    # Print DGL version
-    print("DGL version:", dgl.__version__)
-
-    logger=MLFlowLogger(experiment_name=parameters["experiment_name"],run_id=parameters["run_id"])
+    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    dm=DGLDataModule(parameters,parameters["batch_size"],num_workers=4)
+    dm = DGLDataModuleRank0(parameters, parameters["batch_size"], num_workers=4)
 
     trainer = pl.Trainer(
         profiler=profiler,
         accelerator="gpu",
         devices=1,
-        min_epochs=1,
-        max_epochs=3,
+        min_epochs=10,
+        max_epochs=10,
         precision=32,
         callbacks=MyPrintingCallback(),
         logger=logger
     )
     trainer.fit(model, dm)
     trainer.validate(model, dm)
-    #trainer.test(model, valid_dataloader)
-
-
+    # trainer.test(model, valid_dataloader)
 
 
 def mlflow_wrapper(parameters):
@@ -146,14 +141,12 @@ def mlflow_wrapper(parameters):
     mlflow.set_tracking_uri("http://127.0.0.1:5000")
     with mlflow.start_run() as mlflow_run:
         parameters["run_id"] = mlflow_run.info.run_id
-        parameters["experiment_name"]=experiment_name
+        parameters["experiment_name"] = experiment_name
+        parameters["experiment_id"] = mlflow_run.info.experiment_id
         train_wrapper(parameters)
 
     mlflow_ui_process.terminate()
     os.killpg(os.getpgid(mlflow_ui_process.pid), signal.SIGTERM)
-
-
-
 
 
 if __name__ == '__main__':

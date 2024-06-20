@@ -812,8 +812,6 @@ def custom_collate_fn(batch):
 @time_it
 def data_loader_2(dataset, parameters): # load separated train and valid data here
 
-
-
     train_dataloader = GraphDataLoader(dataset["train"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
     valid_dataloader = GraphDataLoader(dataset["valid"], batch_size=parameters["batch_size"], drop_last=False,collate_fn=custom_collate_fn)
 

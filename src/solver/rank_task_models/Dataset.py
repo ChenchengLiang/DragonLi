@@ -29,6 +29,8 @@ def get_one_dgl_graph_concatenated_with_other_graphs():
     pass
 
 
+
+
 class DGLDataModule(pl.LightningDataModule):
     def __init__(self, parameters, batch_size, num_workers):
         super().__init__()
@@ -59,6 +61,19 @@ class DGLDataModule(pl.LightningDataModule):
 
     def test_dataloader(self):
         return self.val_dataloader()
+
+
+class DGLDataModuleRank0(DGLDataModule):
+    def __init__(self, parameters, batch_size, num_workers):
+        super().__init__(parameters, batch_size, num_workers)
+
+    def train_dataloader(self):
+        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False)
+
+    def val_dataloader(self):
+        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
+
+
 
 
 class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
@@ -178,6 +193,37 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
 
         print(result_str)
         return result_str
+
+
+class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiClassificationRankTask):
+    def __init__(self, graph_folder="", graphs_from_memory: List[Dict] = [],
+                 label_size=2):
+        super().__init__(graph_folder=graph_folder, graphs_from_memory=graphs_from_memory, label_size=label_size)
+
+    def process(self):
+        self.graphs = []
+        self.labels = []
+
+        graph_generator = self.get_graph_list_from_folder() if len(
+            self._graphs_from_memory) == 0 else self._graphs_from_memory
+
+        for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
+            G_list = []
+            label_list = []
+            for index, g in graphs_to_rank.items():
+                if isinstance(g, dict):
+                    dgl_graph, label = get_one_dgl_graph(g)
+                    G_list.append(dgl_graph)
+                    label_list.append(label)
+
+            # form each graph and label for training
+            for index, g in enumerate(G_list):
+                one_train_data = g
+                rank_label = [1, 0] if label_list[index] == 1 else [0, 1]
+                self.graphs.append(one_train_data)
+                self.labels.append(rank_label)
+
+        self.labels = torch.Tensor(self.labels)
 
 
 def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):

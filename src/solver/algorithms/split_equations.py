@@ -56,7 +56,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "hybrid_category_gnn_random_each_n_iterations":self._order_equations_hybrid_category_gnn_random_each_n_iterations,
-                                         "gnn": self._order_equations_gnn,
+                                         "gnn": self._order_equations_gnn_rank_model_0, #self._order_equations_gnn,
                                          "gnn_each_n_iterations":self._order_equations_gnn_each_n_iterations,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
                                          "hybrid_gnn_random_each_n_iterations":self._order_equations_hybrid_gnn_random_each_n_iterations
@@ -273,6 +273,59 @@ class SplitEquations(AbstractAlgorithm):
             return f, category_call
 
 
+    def _order_equations_gnn_rank_model_0(self, f: Formula, category_call=0) -> (Formula, int):
+        self.total_gnn_call += 1
+        self.gnn_call_flag = True
+
+        # form input graphs
+        global_info = _get_global_info(f.eq_list)
+
+        start = time.time()
+        G_list_dgl = []
+
+        for index, eq in enumerate(f.eq_list):
+
+            split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms, global_info)
+
+            # hash eq+global info to dgl
+            hashed_eq, _ = hash_graph_with_glob_info(split_eq_nodes, split_eq_edges)
+            if hashed_eq in self.dgl_hash_table:
+                dgl_graph = self.dgl_hash_table[hashed_eq]
+                self.dgl_hash_table_hit += 1
+            else:
+                graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
+                dgl_graph, _ = get_one_dgl_graph(graph_dict)
+                self.dgl_hash_table[hashed_eq] = dgl_graph
+
+            G_list_dgl.append(dgl_graph)
+            if self.visualize_gnn_input == True:
+                draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
+                           filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
+        end = time.time() - start
+        print("G_list time", end)
+
+        start = time.time()
+        # predict
+        with torch.no_grad():
+            # Rank 0 task prediction
+            predicted_list = []
+            for g in G_list_dgl:
+                predicted_list.append(self.gnn_rank_model(g).squeeze())
+            rank_list = [torch.sigmoid(x)[0] for x in predicted_list]
+
+        end = time.time() - start
+        print("predict time", end)
+
+        # sort
+        prediction_list = []
+        for pred, split_eq in zip(rank_list, f.eq_list):
+            prediction_list.append([pred, split_eq])
+
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+
+        formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
+        return formula_with_sorted_eq_list, category_call
+
     def _order_equations_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         self.total_gnn_call += 1
         self.gnn_call_flag = True
@@ -312,6 +365,8 @@ class SplitEquations(AbstractAlgorithm):
         start = time.time()
         # predict
         with torch.no_grad():
+
+
             #batch wise prediction
             batch_eqs = [dgl.batch(g_G_dgl) for g_G_dgl in input_eq_graph_list_dgl]
             predicted_batch=self.gnn_rank_model(batch_eqs).squeeze()
