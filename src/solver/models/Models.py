@@ -207,11 +207,14 @@ class GNNRankTask0(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
+        embedded_graphs=[]
+        batch_graphs=dgl.unbatch(batch_graphs)
+        for g in batch_graphs:
+            embedded_graphs.append(self.embedding(g))
 
+        embedded_graphs=torch.stack(embedded_graphs, dim=0)
 
-        embedded_graphs=self.embedding(batch_graphs)
-
-
+        # embedded_graphs=self.embedding(batch_graphs)
         return embedded_graphs
 
 class GNNRankTask0HashTable(nn.Module):
@@ -240,8 +243,7 @@ class GNNRankTask0HashTable(nn.Module):
             else:
                 embeddings.append(self.embedding(g))
 
-        batch_result_list_stacked = torch.stack(embeddings, dim=0)
-        return batch_result_list_stacked
+        return embeddings
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
@@ -310,18 +312,12 @@ class GraphClassifier(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim,ffnn_dropout_rate=0.5,first_layer_ffnn_hidden_dim_factor=2, parent_node=True):
+    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim,ffnn_dropout_rate=0.5,first_layer_ffnn_hidden_dim_factor=2):
         super(Classifier, self).__init__()
         self.output_dim = output_dim
         self.layers = nn.ModuleList()
         self.layers.append(nn.Linear(ffnn_hidden_dim * first_layer_ffnn_hidden_dim_factor, ffnn_hidden_dim))
-        # if output_dim == 1:  # adapt to BCELoss
-        #     self.layers.append(nn.Linear(ffnn_hidden_dim * 2, ffnn_hidden_dim))
-        # else:
-        #     if parent_node == True:
-        #         self.layers.append(nn.Linear(ffnn_hidden_dim * (output_dim + 1), ffnn_hidden_dim))  # with parent node
-        #     else:
-        #         self.layers.append(nn.Linear(ffnn_hidden_dim * (output_dim), ffnn_hidden_dim))  # without parent node
+
         for _ in range(ffnn_layer_num):
             self.layers.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
 

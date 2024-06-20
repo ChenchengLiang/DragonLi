@@ -4,6 +4,7 @@ from typing import List, Dict, Tuple, Callable
 
 import dgl
 
+
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
@@ -307,11 +308,10 @@ class SplitEquations(AbstractAlgorithm):
         start = time.time()
         # predict
         with torch.no_grad():
-            # Rank 0 task prediction
-            predicted_list = []
-            for g in G_list_dgl:
-                predicted_list.append(self.gnn_rank_model(g).squeeze())
-            rank_list = [torch.sigmoid(x)[0] for x in predicted_list]
+            predicted_list=self.gnn_rank_model(dgl.batch(G_list_dgl)).squeeze()
+
+
+        rank_list = [torch.sigmoid(x)[0] for x in predicted_list]
 
         end = time.time() - start
         print("predict time", end)

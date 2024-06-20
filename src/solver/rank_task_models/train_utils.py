@@ -4,7 +4,7 @@ from pytorch_lightning.callbacks import EarlyStopping, Callback
 def get_gnn_and_classifier(parameters):
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                               ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"], parent_node=False)
+                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
 
     # Decide on the GNN type based on parameters
     embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
