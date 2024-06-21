@@ -22,7 +22,7 @@ import signal
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, read_dataset_from_zip, \
     DGLDataModule, DGLDataModuleRank0
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN, GraphClassifierLightning, \
-    GNNRankTask0
+    GNNRankTask0, GNNRankTask0HashTable
 import torch.nn as nn
 import numpy as np
 import random
@@ -91,32 +91,33 @@ def train_wrapper(parameters):
     parameters["num_epochs"] = 10
     parameters["train_step"] = 10
 
-
-
-    first_layer_ffnn_hidden_dim_factor = 1
-    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-                              first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
-                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-
     # Decide on the GNN type based on parameters
     embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
     if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
         raise ValueError("Unsupported model type")
 
-    gnn_model = GNNRankTask0(
+    gnn_model = GNNRankTask1(
         input_feature_dim=parameters["node_type"],
         gnn_hidden_dim=parameters["gnn_hidden_dim"],
         gnn_layer_num=parameters["gnn_layer_num"],
         gnn_dropout_rate=parameters["gnn_dropout_rate"],
         embedding_type=embedding_type
     )
+    first_layer_ffnn_hidden_dim_factor= 2 if type(gnn_model) == GNNRankTask1 else 1
+
+
+    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
+                              first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
+                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+
+
     model = GraphClassifierLightning(gnn_model, classifier_2, model_parameters=parameters)
 
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    dm = DGLDataModuleRank0(parameters, parameters["batch_size"], num_workers=4)
+    dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
 
     trainer = pl.Trainer(
         profiler=profiler,

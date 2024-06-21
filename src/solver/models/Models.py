@@ -207,6 +207,18 @@ class GNNRankTask0(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
+        embedded_graphs=self.embedding(batch_graphs)
+        return embedded_graphs
+
+class GNNRankTask0UnbachLoop(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+        super(GNNRankTask0, self).__init__()
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+
+    # dealing batch graphs
+    def forward(self, batch_graphs, is_test=False):
         embedded_graphs=[]
         batch_graphs=dgl.unbatch(batch_graphs)
         for g in batch_graphs:
@@ -214,20 +226,21 @@ class GNNRankTask0(nn.Module):
 
         embedded_graphs=torch.stack(embedded_graphs, dim=0)
 
-        # embedded_graphs=self.embedding(batch_graphs)
         return embedded_graphs
 
 class GNNRankTask0HashTable(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+        super(GNNRankTask0HashTable, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
 
         self.single_dgl_hash_table = {}
         self.single_dgl_hash_table_hit = 0
-    # dealing batch graphs
+
     def forward(self, batch_graphs, is_test=False):
-        embeddings=[]
+        embedded_graphs=[]
+        batch_graphs=dgl.unbatch(batch_graphs)
         for g in batch_graphs:
             if is_test:  # infer
                 hashed_data, _ = hash_one_dgl_graph(g)
@@ -238,12 +251,15 @@ class GNNRankTask0HashTable(nn.Module):
                 else:
                     dgl_embedding = self.embedding(g)
                     self.single_dgl_hash_table[hashed_data] = dgl_embedding
-
-                embeddings.append(dgl_embedding)
+                embedded_graphs.append(dgl_embedding)
             else:
-                embeddings.append(self.embedding(g))
+                embedded_graphs.append(self.embedding(g))
 
-        return embeddings
+        embedded_graphs=torch.stack(embedded_graphs, dim=0)
+
+        # embedded_graphs=self.embedding(batch_graphs)
+        return embedded_graphs
+
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):

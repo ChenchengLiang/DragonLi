@@ -57,7 +57,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "hybrid_category_gnn_random_each_n_iterations":self._order_equations_hybrid_category_gnn_random_each_n_iterations,
-                                         "gnn": self._order_equations_gnn_rank_model_0, #self._order_equations_gnn,
+                                         "gnn": self._order_equations_gnn, #self._order_equations_gnn,
                                          "gnn_each_n_iterations":self._order_equations_gnn_each_n_iterations,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
                                          "hybrid_gnn_random_each_n_iterations":self._order_equations_hybrid_gnn_random_each_n_iterations
@@ -368,8 +368,8 @@ class SplitEquations(AbstractAlgorithm):
 
 
             #batch wise prediction
-            batch_eqs = [dgl.batch(g_G_dgl) for g_G_dgl in input_eq_graph_list_dgl]
-            predicted_batch=self.gnn_rank_model(batch_eqs).squeeze()
+            batched_input_eq_graph_list_dgl = [dgl.batch(x) for x in input_eq_graph_list_dgl]
+            predicted_batch=self.gnn_rank_model(batched_input_eq_graph_list_dgl).squeeze()
             rank_list = [torch.sigmoid(x)[0] for x in predicted_batch]
 
             # single wise prediction with hash
