@@ -22,7 +22,7 @@ import signal
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, read_dataset_from_zip, \
     DGLDataModule, DGLDataModuleRank0
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN, GraphClassifierLightning, \
-    GNNRankTask0, GNNRankTask0HashTable
+    GNNRankTask0, GNNRankTask0HashTable, GNNRankTask1BatchProcess
 import torch.nn as nn
 import numpy as np
 import random
@@ -96,14 +96,14 @@ def train_wrapper(parameters):
     if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
         raise ValueError("Unsupported model type")
 
-    gnn_model = GNNRankTask1(
+    gnn_model = GNNRankTask1BatchProcess(
         input_feature_dim=parameters["node_type"],
         gnn_hidden_dim=parameters["gnn_hidden_dim"],
         gnn_layer_num=parameters["gnn_layer_num"],
         gnn_dropout_rate=parameters["gnn_dropout_rate"],
         embedding_type=embedding_type
     )
-    first_layer_ffnn_hidden_dim_factor= 2 if type(gnn_model) == GNNRankTask1 else 1
+    first_layer_ffnn_hidden_dim_factor= 2 if type(gnn_model) == GNNRankTask1 or type(gnn_model)==GNNRankTask1BatchProcess else 1
 
 
     classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],

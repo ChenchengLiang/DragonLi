@@ -3,6 +3,7 @@ from src.solver.DataTypes import Variable, Terminal, Operator, Node, Edge, Equat
     IsomorphicTailSymbol, GlobalTerminalOccurrenceSymbol, GlobalVariableOccurrenceSymbol
 from src.solver.Constants import UNKNOWN
 
+import math
 
 def concatenate_eqs(eq_list: List[Equation]):
     left_terms = []
@@ -59,3 +60,7 @@ def merge_graphs(eq_node_list_1, eq_edge_list_1, split_node_list_2, split_edge_l
     # merged_edge_list.append(eq_node_edge)
 
     return merged_node_list, merged_edge_list
+
+# Function to apply sigmoid
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))

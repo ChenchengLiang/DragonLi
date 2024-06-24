@@ -3,13 +3,14 @@ import time
 from typing import List, Dict, Tuple, Callable
 
 import dgl
-
+from dgl.dataloading import GraphDataLoader
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
 from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula
 from . import graph_to_gnn_format
+from .utils import sigmoid
 from ..independent_utils import log_control, strip_file_name_suffix, color_print, time_it, hash_one_data, \
     hash_graph_with_glob_info, hash_one_dgl_data
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
@@ -23,6 +24,8 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
 from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
 from ..models.Dataset import get_one_dgl_graph
 import torch
+
+from ..models.train_util import custom_collate_fn
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -331,9 +334,9 @@ class SplitEquations(AbstractAlgorithm):
         self.gnn_call_flag = True
 
         # form input graphs
-        global_info = _get_global_info(f.eq_list)
-
         start = time.time()
+
+        global_info = _get_global_info(f.eq_list)
         G_list_dgl = []
 
         for index, eq in enumerate(f.eq_list):
@@ -357,20 +360,42 @@ class SplitEquations(AbstractAlgorithm):
         end = time.time() - start
         print("G_list time", end)
 
-        input_eq_graph_list_dgl = []
-        for index, g_dgl in enumerate(G_list_dgl):
-            one_eq_data_dgl = [g_dgl] + G_list_dgl
-            input_eq_graph_list_dgl.append(one_eq_data_dgl)
-
         start = time.time()
         # predict
         with torch.no_grad():
 
+            # use different module of gnn_rank_model
+            #embedding output [n,1,128]
+            G_list_embeddings=self.gnn_rank_model.shared_gnn.embedding(dgl.batch(G_list_dgl))
+
+            # concat target output [n,1,256]
+            summed_tensor=torch.sum(G_list_embeddings, dim=0) #[1,128]
+            input_eq_embeddings_list = []
+            for g in G_list_embeddings:
+                input_eq_embeddings_list.append(torch.concat([g, summed_tensor], dim=1))
+            input_eq_embeddings_list= torch.stack(input_eq_embeddings_list)
+
+            # classifier
+            classifier_output=self.gnn_rank_model.classifier(input_eq_embeddings_list) #[n,1,2]
+            classifier_output_list = [item[0] for item in classifier_output.tolist()]
+
+            rank_list=[]
+            for rank in classifier_output_list:
+                sigmoid_rank=[sigmoid(r) for r in rank]
+                rank_list.append(sigmoid_rank[0])
+
+            print("----")
+
+            #form input list
+            # input_eq_graph_list_dgl = []
+            # for index, g_dgl in enumerate(G_list_dgl):
+            #     one_eq_data_dgl = [g_dgl] + G_list_dgl
+            #     input_eq_graph_list_dgl.append(one_eq_data_dgl)
 
             #batch wise prediction
-            batched_input_eq_graph_list_dgl = [dgl.batch(x) for x in input_eq_graph_list_dgl]
-            predicted_batch=self.gnn_rank_model(batched_input_eq_graph_list_dgl).squeeze()
-            rank_list = [torch.sigmoid(x)[0] for x in predicted_batch]
+            # batched_input_eq_graph_list_dgl = [dgl.batch(x) for x in input_eq_graph_list_dgl]
+            # predicted_batch=self.gnn_rank_model(batched_input_eq_graph_list_dgl).squeeze()
+            # rank_list = [torch.sigmoid(x)[0] for x in predicted_batch]
 
             # single wise prediction with hash
             # rank_list = []

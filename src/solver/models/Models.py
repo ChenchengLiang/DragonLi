@@ -24,6 +24,7 @@ import os
 from src.solver.Constants import project_folder, bench_folder, checkpoint_folder
 from pytorch_lightning.loggers import MLFlowLogger
 
+
 ############################################# Rank task 1 #############################################
 
 
@@ -58,12 +59,13 @@ class GraphClassifierLightning(pl.LightningModule):
         self.best_val_accuracy = 0
         self.best_epoch = 0
         self.total_epoch = 0
+        self.best_global_step = 0
+        self.step = 0
 
         self.last_train_loss = float("inf")
         self.last_train_accuracy = 0
         self.last_val_loss = float("inf")
         self.last_val_accuracy = 0
-
 
         self.is_test = False
 
@@ -81,7 +83,7 @@ class GraphClassifierLightning(pl.LightningModule):
                       on_step=False, on_epoch=True, prog_bar=False)
         self.last_train_loss = float(loss)
         self.last_train_accuracy = accuracy
-        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.total_epoch)
+        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.global_step)
 
         return {'loss': loss, "scores": scores, "y": y}
 
@@ -95,26 +97,31 @@ class GraphClassifierLightning(pl.LightningModule):
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}, total_epoch: {self.total_epoch}")
 
+        current_folder_number = self.model_parameters["current_train_folder"].split("_")[-1]
+        base_step = int(self.model_parameters["train_data_folder_epoch_map"][
+                            os.path.basename(self.model_parameters["current_train_folder"])])
+        self.step = base_step + self.global_step
 
         # store best model
         if accuracy > self.best_val_accuracy:
             self.best_val_accuracy = accuracy
-            self.best_epoch = self.current_epoch
+            self.best_epoch = self.total_epoch
+            self.best_global_step = self.step
             if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
                 save_model_local_and_mlflow(self.model_parameters, self.classifier.output_dim, self)
-
 
             color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
                         "green")
 
         result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss),
                        'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
-                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch)}
+                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch),
+                       "folder": int(current_folder_number), "global_step": int(self.step),
+                       "best_global_step": int(self.best_global_step)}
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=False)
 
-
-        self.logger.log_metrics(result_dict, step=self.total_epoch)
+        self.logger.log_metrics(result_dict, step=self.global_step)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
@@ -144,30 +151,30 @@ class GraphClassifierLightning(pl.LightningModule):
         checkpoint["best_val_accuracy"] = self.best_val_accuracy
         checkpoint["best_epoch"] = self.best_epoch
         checkpoint["total_epoch"] = self.total_epoch
+        checkpoint["best_global_step"] = self.best_global_step
         checkpoint['last_train_loss'] = self.last_train_loss
         checkpoint['last_train_accuracy'] = self.last_train_accuracy
         checkpoint['last_val_loss'] = self.last_val_loss
         checkpoint['last_val_accuracy'] = self.last_val_accuracy
-
 
     @rank_zero_only
     def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
         self.best_val_accuracy = checkpoint["best_val_accuracy"]
         self.best_epoch = checkpoint["best_epoch"]
         self.total_epoch = checkpoint["total_epoch"]
+        self.best_global_step = checkpoint["best_global_step"]
         self.last_train_loss = checkpoint['last_train_loss']
         self.last_train_accuracy = checkpoint['last_train_accuracy']
         self.last_val_loss = checkpoint['last_val_loss']
         self.last_val_accuracy = checkpoint['last_val_accuracy']
-
 
     @rank_zero_only
     def on_train_start(self):
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        if self.total_epoch < 1: # indicating initial training
-        #if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
+        if self.total_epoch < 1:  # indicating initial training
+            # if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
             artifact_folder = f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts"
             with open(
                     f"{artifact_folder}/data_distribution_{self.model_parameters['label_size']}.txt",
@@ -178,24 +185,24 @@ class GraphClassifierLightning(pl.LightningModule):
                     f"{artifact_folder}/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
                     'w') as file:
                 file.write(self.model_parameters["dataset_statistics_str"])
-            #store configuration file to artifact folder
-            update_config_file(f"{artifact_folder}/configuration_model_{self.model_parameters['label_size']}_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.json", self.model_parameters)
+            # store configuration file to artifact folder
+            update_config_file(
+                f"{artifact_folder}/configuration_model_{self.model_parameters['label_size']}_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.json",
+                self.model_parameters)
 
             self.logger.log_hyperparams(self.model_parameters)
-            #mlflow.log_params(self.model_parameters)
+        # mlflow.log_params(self.model_parameters)
 
     @rank_zero_only
     def on_train_end(self):
 
-        if self.total_epoch >1: # indicating not initial training
-            self.model_parameters["train_data_folder_epoch_map"][os.path.basename(self.model_parameters["current_train_folder"])] += \
+        if self.total_epoch > 1:  # indicating not initial training
+            self.model_parameters["train_data_folder_epoch_map"][
+                os.path.basename(self.model_parameters["current_train_folder"])] += \
                 self.model_parameters["train_step"]
-
 
         update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
         color_print("update_config_file done", "green")
-
-
 
 
 class GNNRankTask0(nn.Module):
@@ -207,26 +214,28 @@ class GNNRankTask0(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-        embedded_graphs=self.embedding(batch_graphs)
+        embedded_graphs = self.embedding(batch_graphs)
         return embedded_graphs
+
 
 class GNNRankTask0UnbachLoop(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
-        super(GNNRankTask0, self).__init__()
+        super(GNNRankTask0UnbachLoop, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-        embedded_graphs=[]
-        batch_graphs=dgl.unbatch(batch_graphs)
+        embedded_graphs = []
+        batch_graphs = dgl.unbatch(batch_graphs)
         for g in batch_graphs:
             embedded_graphs.append(self.embedding(g))
 
-        embedded_graphs=torch.stack(embedded_graphs, dim=0)
+        embedded_graphs = torch.stack(embedded_graphs, dim=0)
 
         return embedded_graphs
+
 
 class GNNRankTask0HashTable(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
@@ -239,8 +248,8 @@ class GNNRankTask0HashTable(nn.Module):
         self.single_dgl_hash_table_hit = 0
 
     def forward(self, batch_graphs, is_test=False):
-        embedded_graphs=[]
-        batch_graphs=dgl.unbatch(batch_graphs)
+        embedded_graphs = []
+        batch_graphs = dgl.unbatch(batch_graphs)
         for g in batch_graphs:
             if is_test:  # infer
                 hashed_data, _ = hash_one_dgl_graph(g)
@@ -255,11 +264,47 @@ class GNNRankTask0HashTable(nn.Module):
             else:
                 embedded_graphs.append(self.embedding(g))
 
-        embedded_graphs=torch.stack(embedded_graphs, dim=0)
+        embedded_graphs = torch.stack(embedded_graphs, dim=0)
 
         # embedded_graphs=self.embedding(batch_graphs)
         return embedded_graphs
 
+
+
+class GNNRankTask1BatchProcess(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+        super(GNNRankTask1BatchProcess, self).__init__()
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+        self.gnn_hidden_dim = gnn_hidden_dim
+
+        self.single_dgl_hash_table = {}
+        self.single_dgl_hash_table_hit = 0
+
+    # dealing batch graphs
+    def forward(self, batch_graphs, is_test=False):
+
+        batch_result_list = []
+        for one_data in batch_graphs:
+
+            start=time.time()
+            embeddings = self.embedding(one_data)
+            print("embedding time:",time.time()-start)
+
+            start=time.time()
+            #g concat GNN embeddings
+            first_element = embeddings[0]
+            summed_tensor = torch.zeros(1, self.gnn_hidden_dim, device=first_element[0].device)
+            for e in embeddings[1:]:
+                summed_tensor += e
+            summed_tensor = summed_tensor / len(embeddings[1:])
+            concatenated_embedding = torch.cat([first_element, summed_tensor], dim=1)
+            batch_result_list.append(concatenated_embedding)
+            print("concat time:",time.time()-start)
+
+        batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
+        return batch_result_list_stacked
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
@@ -328,7 +373,8 @@ class GraphClassifier(nn.Module):
 
 
 class Classifier(nn.Module):
-    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim,ffnn_dropout_rate=0.5,first_layer_ffnn_hidden_dim_factor=2):
+    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim, ffnn_dropout_rate=0.5,
+                 first_layer_ffnn_hidden_dim_factor=2):
         super(Classifier, self).__init__()
         self.output_dim = output_dim
         self.layers = nn.ModuleList()
