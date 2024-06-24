@@ -341,7 +341,18 @@ class SplitEquations(AbstractAlgorithm):
 
         for index, eq in enumerate(f.eq_list):
 
+            graph_func_time=time.time()
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms, global_info)
+            graph_func_time_end=time.time()-graph_func_time
+            if graph_func_time_end>0.1:
+                print("graph_func_time", time.time()-graph_func_time,"eq length",eq.term_length)
+                #print(eq.eq_str)
+                #print("split_eq_nodes",len(split_eq_nodes))
+                #print("split_eq_edges",len(split_eq_edges))
+                graph_func_time_again_start=time.time()
+                split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms, global_info)
+                print("draw same graph again time",time.time()-graph_func_time_again_start)
+                print("---")
 
             # hash eq+global info to dgl
             hashed_eq, _ = hash_graph_with_glob_info(split_eq_nodes, split_eq_edges)

@@ -6,7 +6,7 @@ from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
 from src.solver.independent_utils import remove_duplicates, color_print
 from src.solver.visualize_util import draw_graph
-
+import time
 
 class Operator:
     def __init__(self, value: str):
@@ -475,6 +475,7 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
                                          local_right_terms, equation_node, global_node_counter, global_info=global_info)
 
+
     return nodes, edges
 
 
@@ -549,6 +550,7 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
 
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
                    global_node_counter, global_info: Dict = {}):
+
     while len(term_list) > 0:
         current_term = term_list.popleft()
         current_node = Node(id=global_node_counter, type=current_term.value_type,
@@ -556,6 +558,7 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         global_node_counter += 1
         nodes.append(current_node)
         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+
 
         # add global info
         if global_info == {}:  # no global info
@@ -608,6 +611,8 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             else:
                 pass
 
+
+
         if graph_type == "graph_2" and current_node.type != SeparateSymbol and current_node.type != IsomorphicTailSymbol:  # add edge back to equation node
             edges.append(Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
 
@@ -626,6 +631,8 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                     break
 
         previous_node = current_node
+
+
 
     return global_node_counter
 
