@@ -40,51 +40,51 @@ From: continuumio/miniconda3
 
 
     #install z3
-    apt-get -y update
-    apt-get -y install pip
-    conda install pip
-    pip install tqdm
-    apt-get update && apt-get install -y build-essential python python-dev python-setuptools git
-    git clone https://github.com/Z3Prover/z3.git
-    cd z3
-    python scripts/mk_make.py
-    cd build
-    make
-    make install
-    cd ../..
+    #apt-get -y update
+    #apt-get -y install pip
+    #conda install pip
+    #pip install tqdm
+    #apt-get update && apt-get install -y build-essential python python-dev python-setuptools git
+    #git clone https://github.com/Z3Prover/z3.git
+    #cd z3
+    #python scripts/mk_make.py
+    #cd build
+    #make
+    #make install
+    #cd ../..
 
 
     # Install z3 Noodler
-    apt-get -y update
-    apt-get -y install git build-essential cmake  # Add cmake here
+    #apt-get -y update
+    #apt-get -y install git build-essential cmake  # Add cmake here
 
     # Install z3 Noodler dependencies
-    git clone 'https://github.com/VeriFIT/mata.git'
-    cd mata
-    make release
-    make install
-    cd ..
+    #git clone 'https://github.com/VeriFIT/mata.git'
+    #cd mata
+    #make release
+    #make install
+    #cd ..
 
     # Install z3 Noodler
-    git clone 'https://github.com/VeriFIT/z3-noodler.git'
-    mkdir z3-noodler/build
-    cd z3-noodler/build
-    cmake -DCMAKE_BUILD_TYPE=Release ..
-    make
+    #git clone 'https://github.com/VeriFIT/z3-noodler.git'
+    #mkdir z3-noodler/build
+    #cd z3-noodler/build
+    #cmake -DCMAKE_BUILD_TYPE=Release ..
+    #make
 
 
     #ostrich environment
-    apt-get install libgmp-dev -y
-    apt-get update
-    apt-get install unzip
-    apt-get install apt-transport-https curl gnupg -yqq
-    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list
-    echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list
-    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
-    chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
-    apt-get update
-    apt-get install sbt -y
-    apt-get install default-jdk -y
+    #apt-get install libgmp-dev -y
+    #apt-get update
+    #apt-get install unzip
+    #apt-get install apt-transport-https curl gnupg -yqq
+    #echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list
+    #echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list
+    #curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
+    #chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+    #apt-get update
+    #apt-get install sbt -y
+    #apt-get install default-jdk -y
 
 
 
@@ -93,6 +93,16 @@ From: continuumio/miniconda3
 
 %environment
     export PATH=/opt/conda/bin:$PATH
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+    export PATH=/opt/conda/bin:$PATH
+
+    #libcusparse.so.12
+    export LD_LIBRARY_PATH=/apps/.skylake/Alvis/software/NVHPC/23.7-CUDA-12.1.1/Linux_x86_64/23.7/REDIST/math_libs/12.2/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
+    #libnvJitLink.so.12
+    export LD_LIBRARY_PATH=/apps/.skylake/Alvis/software/NVHPC/23.7-CUDA-12.1.1/Linux_x86_64/23.7/cuda/12.2/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
+    #export LD_LIBRARY_PATH=/apps/Common/software/CUDA/12.1.1/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
 
 
 %runscript
