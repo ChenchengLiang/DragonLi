@@ -1,4 +1,5 @@
-from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning
+from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning, \
+    GNNRankTask1BatchProcess
 from pytorch_lightning.callbacks import EarlyStopping, Callback
 
 def get_gnn_and_classifier(parameters):
@@ -11,7 +12,7 @@ def get_gnn_and_classifier(parameters):
     if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
         raise ValueError("Unsupported model type")
 
-    gnn_model = GNNRankTask1(
+    gnn_model = GNNRankTask1BatchProcess(
         input_feature_dim=parameters["node_type"],
         gnn_hidden_dim=parameters["gnn_hidden_dim"],
         gnn_layer_num=parameters["gnn_layer_num"],

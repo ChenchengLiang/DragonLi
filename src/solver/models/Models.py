@@ -75,7 +75,7 @@ class GraphClassifierLightning(pl.LightningModule):
         return final_output
 
     def training_step(self, batch, batch_idx):
-        self.total_epoch += 1
+        #self.total_epoch += 1
         loss, scores, y = self._common_step(batch, batch_idx)
 
         accuracy = float(self.accuracy(scores, y))
@@ -203,6 +203,9 @@ class GraphClassifierLightning(pl.LightningModule):
 
         update_config_file(self.model_parameters["configuration_file"], self.model_parameters)
         color_print("update_config_file done", "green")
+
+    def on_train_epoch_end(self):
+        self.total_epoch += 1
 
 
 class GNNRankTask0(nn.Module):
