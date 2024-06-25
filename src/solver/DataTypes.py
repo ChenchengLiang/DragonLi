@@ -446,6 +446,85 @@ class Edge:
         return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
 
 
+
+
+def _construct_graph_for_prediction(left_terms: List[Term], right_terms: List[Term], global_info: Dict = {}):
+    global_node_counter = 0
+    nodes = []
+    edges = []
+
+    equation_node,global_node_counter=_add_a_node_no_object(nodes,global_node_counter)
+    # Construct left tree
+    global_node_counter = _construct_tree_no_object(nodes,edges, left_terms, equation_node, global_node_counter, global_info=global_info)
+    # Construct right tree
+    global_node_counter = _construct_tree_no_object(nodes, edges, right_terms, equation_node, global_node_counter, global_info=global_info)
+    return global_node_counter
+
+
+def _add_a_node_no_object(nodes,global_node_counter):
+    current_node=global_node_counter
+    nodes.append(current_node)
+    global_node_counter += 1
+    return current_node,global_node_counter
+
+def _construct_tree_no_object(nodes, edges,term_list, previous_node, global_node_counter, global_info: Dict = {}):
+    for current_term in term_list:
+        current_node=global_node_counter
+        global_node_counter += 1
+        nodes.append(current_node)
+        edges.append([previous_node,current_node])
+
+        # add global info
+        if global_info == {}:  # no global info
+            pass
+        else:
+            if current_term.value_type == Variable and current_term.value in global_info["variable_global_occurrences"]:
+
+                add_global_variable_start = time.time()
+                current_variable_occurrence_node = current_node
+                for i in range(global_info["variable_global_occurrences"][current_term.value] - 1):
+                    new_variable_occurrence_node = global_node_counter
+                    global_node_counter += 1
+                    nodes.append(new_variable_occurrence_node)
+                    edges.append([new_variable_occurrence_node,current_variable_occurrence_node])
+                    current_variable_occurrence_node = new_variable_occurrence_node
+
+                add_global_variable_time = time.time() - add_global_variable_start
+                if add_global_variable_time > 0.1:
+                    print("add_global_variable_time", add_global_variable_time)
+                    print("current_term.value", current_term.value)
+                    print("variable_global_occurrences", global_info["variable_global_occurrences"][current_term.value])
+
+
+
+
+            elif current_term.value_type == Terminal and current_term.value in global_info[
+                "terminal_global_occurrences"]:
+
+                add_global_terminal_start = time.time()
+
+                current_terminal_occurrence_node = current_node
+                for i in range(global_info["terminal_global_occurrences"][current_term.value] - 1):
+                    new_terminal_occurrence_node = global_node_counter
+                    global_node_counter += 1
+                    nodes.append(new_terminal_occurrence_node)
+                    edges.append([new_terminal_occurrence_node,current_terminal_occurrence_node])
+                    current_terminal_occurrence_node = new_terminal_occurrence_node
+
+                add_global_terminal_time = time.time() - add_global_terminal_start
+                if add_global_terminal_time > 0.1:
+                    print("add_global_terminal_time", add_global_terminal_time)
+                    print("current_term.value", current_term.get_value_str)
+                    print("terminal_global_occurrences", global_info["terminal_global_occurrences"][current_term.value])
+                    print("nodes length", len(nodes))
+                    print("edges length", len(edges))
+            else:
+                pass
+
+        previous_node = current_node
+
+    return global_node_counter
+
 def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str, global_info: Dict = {}):
     global_node_counter = 0
     nodes = []
@@ -464,16 +543,13 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
         global_node_counter = add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter)
         global_node_counter = add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter)
 
-    # copy.deepcopy
-    local_left_terms = deque(copy.deepcopy(left_terms))
-    local_right_terms = deque(copy.deepcopy(right_terms))
 
     # Construct left tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         local_left_terms, equation_node, global_node_counter, global_info=global_info)
+                                         left_terms, equation_node, global_node_counter, global_info=global_info)
     # Construct right tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         local_right_terms, equation_node, global_node_counter, global_info=global_info)
+                                         right_terms, equation_node, global_node_counter, global_info=global_info)
 
 
     return nodes, edges
@@ -548,17 +624,19 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
 #         return construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
 #                                        term_list, current_node, global_node_counter)
 
+
+
+
+
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
                    global_node_counter, global_info: Dict = {}):
 
-    while len(term_list) > 0:
-        current_term = term_list.popleft()
+    for current_term in term_list:
         current_node = Node(id=global_node_counter, type=current_term.value_type,
                             content=current_term.get_value_str, label=None)
         global_node_counter += 1
         nodes.append(current_node)
         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
-
 
         # add global info
         if global_info == {}:  # no global info
@@ -587,7 +665,6 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
 
 
 
-
             elif current_term.value_type == Terminal and current_term.value in global_info[
                 "terminal_global_occurrences"]:
                 # add node and edge
@@ -598,6 +675,7 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                 # edges.append(
                 #     Edge(source=current_terminal_occurrence_node.id, target=current_node.id, type=None, content="",
                 #          label=None))
+
                 current_terminal_occurrence_node = current_node
                 for i in range(global_info["terminal_global_occurrences"][current_term.value] - 1):
                     new_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
@@ -610,7 +688,6 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                     current_terminal_occurrence_node = new_terminal_occurrence_node
             else:
                 pass
-
 
 
         if graph_type == "graph_2" and current_node.type != SeparateSymbol and current_node.type != IsomorphicTailSymbol:  # add edge back to equation node
@@ -631,8 +708,6 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                     break
 
         previous_node = current_node
-
-
 
     return global_node_counter
 
