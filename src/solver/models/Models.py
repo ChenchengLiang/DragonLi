@@ -282,9 +282,6 @@ class GNNRankTask1BatchProcess(nn.Module):
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
         self.gnn_hidden_dim = gnn_hidden_dim
 
-        self.single_dgl_hash_table = {}
-        self.single_dgl_hash_table_hit = 0
-
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
 
