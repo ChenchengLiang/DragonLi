@@ -263,14 +263,14 @@ class SplitEquations(AbstractAlgorithm):
         if self.total_rank_call % self.each_n_iterations == 0:
             return self._order_equations_gnn(f, category_call)
         else:
-            return self.order_equations_random(f, category_call)
+            return order_equations_random(f, category_call)
 
     def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
         if probability < HYBRID_ORDER_EQUATION_RATE:
             return self._order_equations_gnn(f, category_call)
         else:
-            return self.order_equations_random(f, category_call)
+            return order_equations_random(f, category_call)
 
     def _order_equations_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         if self.total_rank_call % self.each_n_iterations == 0:
