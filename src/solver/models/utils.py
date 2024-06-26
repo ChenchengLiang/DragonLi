@@ -134,16 +134,7 @@ def load_model_onnx(model_path) :
     return ort_session
 
 def load_model(model_path) :
-    # Determine the number of cores available
-    num_cores = multiprocessing.cpu_count()
-    use_cores= int(num_cores - 2)
-    print(f"Number of cores CPU: {num_cores}, Number of cores used: {use_cores}")
-    # Set the number of threads for PyTorch
-    torch.set_num_threads(use_cores)
-    # Set the number of threads for OpenMP (used by some libraries including DGL)
-    os.environ["OMP_NUM_THREADS"] = str(use_cores)
-    # Optionally, adjust the number of interop threads in PyTorch
-    #torch.set_num_interop_threads(max(2, use_cores))  # Example strategy
+    #cpu_cores_setting()
 
     color_print(text=f"load model from {model_path}", color="green")
     loaded_model = torch.load(model_path,map_location=torch.device('cpu'))
@@ -158,6 +149,17 @@ def load_model_from_mlflow(experiment_id,run_id):
     return load_model(model_path)
 
 
+def cpu_cores_setting():
+    # Determine the number of cores available
+    num_cores = multiprocessing.cpu_count()
+    use_cores = int(num_cores - 2)
+    print(f"Number of cores CPU: {num_cores}, Number of cores used: {use_cores}")
+    # Set the number of threads for PyTorch
+    torch.set_num_threads(use_cores)
+    # Set the number of threads for OpenMP (used by some libraries including DGL)
+    os.environ["OMP_NUM_THREADS"] = str(use_cores)
+    # Optionally, adjust the number of interop threads in PyTorch
+    # torch.set_num_interop_threads(max(2, use_cores))  # Example strategy
 
 def device_info():
     print("-" * 10)

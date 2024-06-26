@@ -371,7 +371,7 @@ class SplitEquations(AbstractAlgorithm):
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
         return formula_with_sorted_eq_list, category_call
 
-    @time_it
+
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()
         global_info = _get_global_info(f.eq_list)
@@ -408,7 +408,7 @@ class SplitEquations(AbstractAlgorithm):
         gc.enable()
         return G_list_dgl
 
-    @time_it
+
     def _get_rank_list(self, G_list_dgl):
         with torch.no_grad():
 
