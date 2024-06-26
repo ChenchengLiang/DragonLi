@@ -50,6 +50,7 @@ class SplitEquations(AbstractAlgorithm):
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
         self.each_n_iterations = 10
+        self.first_n_itarations = 1
 
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
@@ -59,12 +60,16 @@ class SplitEquations(AbstractAlgorithm):
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
+                                         "category_gnn_first_n_iterations":self._order_equations_category_gnn_first_n_iterations,
                                          "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
+                                         "hybrid_category_gnn_random_first_n_iterations": self._order_equations_hybrid_category_gnn_random_first_n_iterations,
                                          "gnn": self._order_equations_gnn,  # self._order_equations_gnn,
                                          "gnn_each_n_iterations": self._order_equations_gnn_each_n_iterations,
+                                         "gnn_first_n_iterations": self._order_equations_gnn_first_n_iterations,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
-                                         "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations
+                                         "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
+                                         "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
@@ -218,6 +223,12 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_category_random(f, category_call)
 
+    def _order_equations_hybrid_category_gnn_random_first_n_iterations(self, f: Formula, category_call=0) -> (
+    Formula, int):
+        if self.total_gnn_call < self.first_n_itarations:
+            return self._order_equations_category_gnn(f, category_call)
+        else:
+            return order_equations_category_random(f, category_call)
     def _order_equations_hybrid_category_gnn_random_each_n_iterations(self, f: Formula, category_call=0) -> (
     Formula, int):
         if self.total_rank_call % self.each_n_iterations == 0:
@@ -234,6 +245,25 @@ class SplitEquations(AbstractAlgorithm):
         if only_5_and_6 == True and len(categoried_eq_list) > 1:
             ordered_formula, category_call = self._order_equations_gnn(f, category_call)
             sorted_eq_list = ordered_formula.eq_list
+        else:
+            category_call += 1
+            sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
+
+        return Formula(sorted_eq_list), category_call
+
+    def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+
+        # Check if the equation categories are only 5 and 6
+        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+
+        if only_5_and_6 == True and len(categoried_eq_list) > 1:
+            if self.total_gnn_call < self.first_n_itarations:
+                ordered_formula, category_call = self._order_equations_gnn(f, category_call)
+                sorted_eq_list = ordered_formula.eq_list
+            else:
+                category_call += 1
+                sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
         else:
             category_call += 1
             sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
@@ -259,6 +289,12 @@ class SplitEquations(AbstractAlgorithm):
 
         return Formula(sorted_eq_list), category_call
 
+    def _order_equations_hybrid_gnn_random_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+
+        if self.total_gnn_call < self.first_n_itarations:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return order_equations_random(f, category_call)
     def _order_equations_hybrid_gnn_random_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
 
         if self.total_rank_call % self.each_n_iterations == 0:
@@ -273,6 +309,11 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_random(f, category_call)
 
+    def _order_equations_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        if self.total_gnn_call < self.first_n_itarations:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return f, category_call
     def _order_equations_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         if self.total_rank_call % self.each_n_iterations == 0:
             return self._order_equations_gnn(f, category_call)
