@@ -295,11 +295,9 @@ class GNNRankTask1BatchProcess(nn.Module):
 
             #g concat GNN embeddings
             first_element = embeddings[0]
-            summed_tensor = torch.zeros(1, self.gnn_hidden_dim, device=first_element[0].device)
-            for e in embeddings[1:]:
-                summed_tensor += e
-            summed_tensor = summed_tensor / len(embeddings[1:])
-            concatenated_embedding = torch.cat([first_element, summed_tensor], dim=1)
+            embed_slice=embeddings[1:]
+            mean_tensor = torch.mean(embed_slice, dim=0)
+            concatenated_embedding = torch.cat([first_element, mean_tensor], dim=1)
             batch_result_list.append(concatenated_embedding)
 
         batch_result_list_stacked = torch.stack(batch_result_list, dim=0)

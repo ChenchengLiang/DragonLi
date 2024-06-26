@@ -24,6 +24,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
 from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
 from ..models.Dataset import get_one_dgl_graph
 import torch
+import gc
 
 from ..models.train_util import custom_collate_fn
 
@@ -331,6 +332,7 @@ class SplitEquations(AbstractAlgorithm):
 
     @time_it
     def _get_G_list_dgl(self, f: Formula):
+        gc.disable()
         global_info = _get_global_info(f.eq_list)
         G_list_dgl = []
 
@@ -362,6 +364,7 @@ class SplitEquations(AbstractAlgorithm):
                 draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
                            filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
 
+        gc.enable()
         return G_list_dgl
 
     @time_it
@@ -372,16 +375,19 @@ class SplitEquations(AbstractAlgorithm):
             # embedding output [n,1,128]
             G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(dgl.batch(G_list_dgl))
 
+
             # concat target output [n,1,256]
-            summed_tensor = torch.sum(G_list_embeddings, dim=0)  # [1,128]
+            mean_tensor = torch.mean(G_list_embeddings, dim=0)  # [1,128]
             input_eq_embeddings_list = []
             for g in G_list_embeddings:
-                input_eq_embeddings_list.append(torch.concat([g, summed_tensor], dim=1))
+                input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
             input_eq_embeddings_list = torch.stack(input_eq_embeddings_list)
+
 
             # classifier
             classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,1,2]
             classifier_output_list = [item[0] for item in classifier_output.tolist()]
+
 
 
             rank_list = []
@@ -402,7 +408,6 @@ class SplitEquations(AbstractAlgorithm):
 
         # predict
         rank_list = self._get_rank_list(G_list_dgl)
-
 
         # sort
         prediction_list = []
