@@ -10,7 +10,7 @@ from src.solver.Constants import recursion_limit, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
 from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula, _construct_graph_for_prediction
 from . import graph_to_gnn_format
-from .utils import sigmoid
+from .utils import sigmoid,softmax
 from ..independent_utils import log_control, strip_file_name_suffix, color_print, time_it, hash_one_data, \
     hash_graph_with_glob_info, hash_one_dgl_data
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
@@ -427,17 +427,15 @@ class SplitEquations(AbstractAlgorithm):
 
             # classifier
             classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,1,2]
-            classifier_output_list = [item[0] for item in classifier_output.tolist()]
 
-
-
+            # transform [x,y] to one score
+            classifier_output_list = [item[0] for item in classifier_output.tolist()] #[n,2]
             rank_list = []
-            for rank in classifier_output_list:
-                sigmoid_rank = [sigmoid(r) for r in rank]
-                rank_list.append(sigmoid_rank[0])
+            for rank in classifier_output_list: #rank [2]
+                rank_softmax=softmax(rank)
+                rank_list.append(rank_softmax[0])
 
         return rank_list
-
 
 
     def _order_equations_gnn(self, f: Formula, category_call=0) -> (Formula, int):

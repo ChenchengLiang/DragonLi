@@ -4,6 +4,7 @@ from src.solver.DataTypes import Variable, Terminal, Operator, Node, Edge, Equat
 from src.solver.Constants import UNKNOWN
 
 import math
+import numpy as np
 
 def concatenate_eqs(eq_list: List[Equation]):
     left_terms = []
@@ -64,3 +65,7 @@ def merge_graphs(eq_node_list_1, eq_edge_list_1, split_node_list_2, split_edge_l
 # Function to apply sigmoid
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
+
+def softmax(logits):
+    exps = np.exp(logits - np.max(logits))  # Subtract max for numerical stability
+    return exps / np.sum(exps)
