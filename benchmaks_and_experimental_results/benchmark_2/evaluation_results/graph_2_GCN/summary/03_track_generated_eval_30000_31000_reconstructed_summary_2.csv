@@ -1,0 +1,10 @@
+solver,SAT,UNSAT,UNKNOWN,Total,sat_average_split_number,unsat_average_split_number,sat_average_solving_time,unsat_average_solving_time,sat_average_split_number_common_solved 1,sat_average_solving_time_common_solved 1,unsat_average_split_number_common_solved 0,unsat_average_solving_time_common_solved 0,sat_unique_solved,unsat_unique_solved
+this:gnn:fixed_termination_condition_0_graph_2_GCNSplit,46,0,954,1000,1049.0,0,16.71272910159567,0,7.0,4.726953744888306,0,0,3,0
+this:gnn:random_termination_condition_1_graph_2_GCNSplit,50,0,950,1000,4232.54,0,29.374348077774048,0,6.0,5.394816637039185,0,0,2,0
+this:gnn_termination_condition_1_graph_2_GCNSplit,53,0,947,1000,1719.9811320754718,0,35.834874665962076,0,7.0,4.699647903442383,0,0,0,0
+this:gnn:fixed_termination_condition_1_graph_2_GCNSplit,40,0,960,1000,5288.9,0,26.95543305873871,0,7.0,4.580782413482666,0,0,2,0
+this:gnn_termination_condition_0_graph_2_GCNSplit,49,0,951,1000,1252.2857142857142,0,26.234990737876114,0,7.0,4.998700857162476,0,0,0,0
+this:gnn:random_termination_condition_0_graph_2_GCNSplit,41,0,959,1000,3198.0,0,22.867886357191132,0,6.0,4.668163299560547,0,0,3,0
+this:gnn:fixed_termination_condition_2_graph_2_GCNSplit,3,0,997,1000,4186.666666666667,0,18.734458367029827,0,7.0,5.354097127914429,0,0,0,0
+this:gnn:random_termination_condition_2_graph_2_GCNSplit,3,0,997,1000,29.333333333333332,0,5.658456087112427,0,7.0,5.324466943740845,0,0,0,0
+this:gnn_termination_condition_2_graph_2_GCNSplit,3,0,997,1000,99.0,0,6.820921262105306,0,7.0,4.885526418685913,0,0,0,0

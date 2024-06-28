@@ -1,0 +1,6 @@
+solver,SAT,UNSAT,UNKNOWN,Total,sat_average_split_number,unsat_average_split_number,sat_average_solving_time,unsat_average_solving_time,sat_average_split_number_common_solved 1,sat_average_solving_time_common_solved 1,unsat_average_split_number_common_solved 0,unsat_average_solving_time_common_solved 0,sat_unique_solved,unsat_unique_solved
+cvc5:,4,2,994,1000,0,0,1.9816969633102417,0.04850435256958008,0.0,0.05844688415527344,0,0,2,2
+ostrich:,14,43,943,1000,0,0,40.74647583280291,31.81178069114685,0.0,2.494961977005005,0,0,2,43
+woorpje:,23,0,927,950,0,0,38.34492608775263,0,0.0,0.0963737964630127,0,0,7,0
+z3:,6,0,994,1000,0,0,0.13162855307261148,0,0,0,0,0,4,0
+z3-noodler:,19,0,881,900,0,0,45.84603012235541,0,0,0,0,0,3,0

@@ -1,0 +1,16 @@
+solver,SAT,UNSAT,UNKNOWN,Total,sat_average_split_number,unsat_average_split_number,sat_average_solving_time,unsat_average_solving_time,sat_average_split_number_common_solved 0,sat_average_solving_time_common_solved 0,unsat_average_split_number_common_solved 0,unsat_average_solving_time_common_solved 0,sat_unique_solved,unsat_unique_solved
+this:gnn:random_execute_termination_condition_1_graph_2_GCNSplit,34,72,894,1000,1129.5882352941176,1910.0972222222222,10.350759667508742,80.1524588863055,0,0,0,0,2,0
+this:gnn_execute_termination_condition_0_graph_2_GCNSplit,34,66,900,1000,1433.3235294117646,1477.8636363636363,16.500572926857892,85.43678003007716,0,0,0,0,0,0
+this:gnn:random_execute_termination_condition_0_graph_2_GCNSplit,32,71,897,1000,2701.28125,1905.1267605633802,17.212404638528824,77.01085756194423,0,0,0,0,0,0
+this:gnn:fixed_execute_termination_condition_2_graph_2_GCNSplit,0,0,1000,1000,0,0,0,0,0,0,0,0,0,0
+this:fixed_execute_termination_condition_2,0,0,1000,1000,0,0,0,0,0,0,0,0,0,0
+this:gnn:fixed_execute_termination_condition_1_graph_2_GCNSplit,32,71,897,1000,2268.875,1905.1267605633802,14.982075788080692,73.58233983415953,0,0,0,0,0,0
+this:random_execute_termination_condition_0,33,81,886,1000,2542.909090909091,4254.938271604939,6.9661172520030625,69.60904212056855,0,0,0,0,1,0
+this:fixed_execute_termination_condition_1,32,80,888,1000,1946.21875,4262.25,5.394438490271568,67.92653616666794,0,0,0,0,0,1
+this:random_execute_termination_condition_2,0,0,1000,1000,0,0,0,0,0,0,0,0,0,0
+this:gnn:random_execute_termination_condition_2_graph_2_GCNSplit,0,0,1000,1000,0,0,0,0,0,0,0,0,0,0
+this:fixed_execute_termination_condition_0,32,81,887,1000,1946.21875,4254.938271604939,5.428313203155994,69.38226804615539,0,0,0,0,0,0
+this:random_execute_termination_condition_1,31,83,886,1000,3967.032258064516,4465.325301204819,7.464648962020874,73.17627579045583,0,0,0,0,0,2
+this:gnn:fixed_execute_termination_condition_0_graph_2_GCNSplit,32,71,897,1000,1881.5,1905.1267605633802,11.092126533389091,75.50550542415029,0,0,0,0,0,0
+this:gnn_execute_termination_condition_2_graph_2_GCNSplit,0,0,1000,1000,0,0,0,0,0,0,0,0,0,0
+this:gnn_execute_termination_condition_1_graph_2_GCNSplit,34,65,901,1000,1433.3235294117646,1488.446153846154,17.12947984302745,86.12525085669297,0,0,0,0,0,0

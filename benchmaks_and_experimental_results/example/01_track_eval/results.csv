@@ -1,0 +1,11 @@
+file,consistency,this:ElimilateVariablesRecursive-config_0,this:ElimilateVariablesRecursive-config_1,this:ElimilateVariablesRecursive-config_2,this:ElimilateVariablesRecursive-config_3,this:ElimilateVariablesRecursive-config_4
+01_track_4.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_6.eq,True,SAT,UNKNOWN,SAT,SAT,SAT
+01_track_9.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_7.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_10.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_3.eq,True,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN,UNKNOWN
+01_track_1.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_2.eq,True,SAT,SAT,SAT,SAT,SAT
+01_track_8.eq,True,SAT,UNKNOWN,SAT,SAT,SAT
+01_track_5.eq,True,SAT,SAT,SAT,SAT,SAT
