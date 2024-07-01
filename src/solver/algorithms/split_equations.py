@@ -7,7 +7,7 @@ from dgl.dataloading import GraphDataLoader
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
-    RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE
+    RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE, RANDOM_SEED
 from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula, _construct_graph_for_prediction
 from . import graph_to_gnn_format
 from .utils import sigmoid,softmax
@@ -82,7 +82,6 @@ class SplitEquations(AbstractAlgorithm):
 
             self.graph_func = parameters["graph_func"]
 
-        self.hybrid_branch_method_rate = 0.5
         self.branch_method_func_map = {"fixed": order_branches_fixed,
                                        "random": order_branches_random,
                                        "hybrid_fixed_random": order_branches_hybrid_fixed_random,
@@ -111,6 +110,7 @@ class SplitEquations(AbstractAlgorithm):
 
     @log_control
     def run(self):
+        random.seed(RANDOM_SEED)
         original_formula = Formula(self.equation_list)
 
         if self.parameters["termination_condition"] == "termination_condition_1":

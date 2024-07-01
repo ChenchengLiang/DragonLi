@@ -83,7 +83,7 @@ class GraphClassifierLightning(pl.LightningModule):
                       on_step=False, on_epoch=True, prog_bar=False)
         self.last_train_loss = float(loss)
         self.last_train_accuracy = accuracy
-        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.global_step)
+        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.total_epoch)
 
         return {'loss': loss, "scores": scores, "y": y}
 
@@ -121,7 +121,7 @@ class GraphClassifierLightning(pl.LightningModule):
         self.log_dict(result_dict,
                       on_step=False, on_epoch=True, prog_bar=False)
 
-        self.logger.log_metrics(result_dict, step=self.global_step)
+        self.logger.log_metrics(result_dict, step=self.total_epoch)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
