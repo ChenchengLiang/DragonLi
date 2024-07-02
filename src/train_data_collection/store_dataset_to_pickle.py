@@ -12,7 +12,7 @@ sys.path.append(path)
 os.environ["DGLBACKEND"] = "pytorch"
 import argparse
 from src.solver.independent_utils import get_folders
-from src.solver.Constants import bench_folder, recursion_limit
+from src.solver.Constants import bench_folder, recursion_limit, rank_task_label_size_map, rank_task_node_type_map
 from src.train_data_collection.utils import store_dataset_to_pickle_one_folder, prepare_and_save_datasets_rank
 
 def main():
@@ -32,12 +32,10 @@ def main():
 
     benchmark = "choose_eq_train_rank_2"#"choose_eq_train"
     rank_task=2
-    if rank_task == 0:
-        parameters = {"node_type": 5,"rank_task":0,"label_size": 2}
-    elif rank_task ==1:
-        parameters = {"node_type": 5,"rank_task":1,"label_size": 2}
-    elif rank_task ==2:
-        parameters = {"node_type": 6,"rank_task":2,"label_size": 100}
+
+    parameters={}
+    parameters["node_type"] = rank_task_node_type_map[rank_task]
+    parameters["label_size"]=rank_task_label_size_map[rank_task]
 
     func= prepare_and_save_datasets_rank
 

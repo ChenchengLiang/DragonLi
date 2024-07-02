@@ -93,10 +93,6 @@ class GraphClassifierLightning(pl.LightningModule):
         self.last_val_loss = float(loss)
         self.last_val_accuracy = accuracy
 
-        print(
-            f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
-            f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {loss:.4f}, val_accuracy: {accuracy:.4f}, total_epoch: {self.total_epoch}")
-
         current_folder_number = self.model_parameters["current_train_folder"].split("_")[-1]
         base_step = int(self.model_parameters["train_data_folder_epoch_map"][
                             os.path.basename(self.model_parameters["current_train_folder"])])
@@ -206,7 +202,44 @@ class GraphClassifierLightning(pl.LightningModule):
 
     def on_train_epoch_end(self):
         self.total_epoch += 1
+    def on_validation_epoch_end(self) -> None:
+        print(
+            f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
+            f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {self.last_val_loss:.4f},"
+            f" val_accuracy: {self.last_val_accuracy:.4f}, best_val_accuracy: {self.best_val_accuracy:.4f}, total_epoch: {self.total_epoch}")
 
+
+class GNNRankTask2(nn.Module):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',pooling_type='mean'):
+        super(GNNRankTask2, self).__init__()
+        embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
+        self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+        if pooling_type == 'mean':
+            self.pooling = self.mean_gnn_embeddings
+        elif pooling_type == 'concat':
+            self.pooling = self.concat_gnn_embeddings
+
+    def concat_gnn_embeddings(self, embedding_list):
+        return embedding_list.view(-1)
+    def mean_gnn_embeddings(self, embedding_list):
+        embedding_mean = embedding_list.mean(dim=0)  # Compute mean along dimension 0
+        return embedding_mean.squeeze(0)
+
+    # dealing batch graphs
+    def forward(self, batch_graphs, is_test=False):
+        batch_vector_list=[]
+        for one_data in batch_graphs:
+            embedding_list=self.embedding(one_data)
+            pooled_embedding=self.pooling(embedding_list)
+            batch_vector_list.append(pooled_embedding)
+
+
+
+
+        batch_vector_stack=torch.stack(batch_vector_list)
+
+        return batch_vector_stack
 
 class GNNRankTask0(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):

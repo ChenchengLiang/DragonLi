@@ -1,8 +1,8 @@
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning, \
-    GNNRankTask1BatchProcess, GNNRankTask0
+    GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2
 from pytorch_lightning.callbacks import EarlyStopping, Callback
 
-from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModule
+from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModule, DGLDataModuleRank2
 
 
 def get_dm(parameters):
@@ -10,8 +10,10 @@ def get_dm(parameters):
         dm = DGLDataModuleRank0(parameters, parameters["batch_size"], num_workers=4)
     elif parameters["rank_task"] == 1:
         dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+    elif parameters["rank_task"] == 2:
+        dm = DGLDataModuleRank2(parameters, parameters["batch_size"], num_workers=4)
     else:
-        raise ValueError("rank_task should be 0 or 1")
+        raise ValueError("rank_task should be 0,1,2")
     return dm
 
 def get_gnn_and_classifier(parameters):
@@ -43,6 +45,25 @@ def get_gnn_and_classifier(parameters):
         classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                   ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
                                   ffnn_dropout_rate=parameters["ffnn_dropout_rate"],first_layer_ffnn_hidden_dim_factor=2)
+    elif parameters["rank_task"] == 2:
+        gnn_model = GNNRankTask2(
+            input_feature_dim=parameters["node_type"],
+            gnn_hidden_dim=parameters["gnn_hidden_dim"],
+            gnn_layer_num=parameters["gnn_layer_num"],
+            gnn_dropout_rate=parameters["gnn_dropout_rate"],
+            embedding_type=embedding_type,
+            pooling_type=parameters["pooling_type"]
+        )
+        if parameters["pooling_type"] == "mean":
+            first_layer_ffnn_hidden_dim_factor=1
+        elif parameters["pooling_type"] == "concat":
+            first_layer_ffnn_hidden_dim_factor=parameters["label_size"]
+        else:
+            raise ValueError("Unsupported pooling type")
+        classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+                                  ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=parameters["label_size"],
+                                  ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
+                                  first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor)
     else:
         raise ValueError("Unsupported rank task")
 

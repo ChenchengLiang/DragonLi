@@ -5,7 +5,7 @@ import zipfile
 
 import mlflow
 
-from src.solver.models.train_util import get_data_distribution, custom_collate_fn
+from src.solver.models.train_util import get_data_distribution, custom_collate_fn, custom_collate_fn_rank_task_2
 
 os.environ["DGLBACKEND"] = "pytorch"
 import torch
@@ -68,12 +68,22 @@ class DGLDataModuleRank0(DGLDataModule):
         super().__init__(parameters, batch_size, num_workers)
 
     def train_dataloader(self):
-        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False)
+        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
 
     def val_dataloader(self):
         return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
 
+class DGLDataModuleRank2(DGLDataModule):
+    def __init__(self, parameters, batch_size, num_workers):
+        super().__init__(parameters, batch_size, num_workers)
 
+    def train_dataloader(self):
+        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"],
+                               drop_last=False,shuffle=False,collate_fn=custom_collate_fn_rank_task_2)
+
+    def val_dataloader(self):
+        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"],
+                               drop_last=False, shuffle=False,collate_fn=custom_collate_fn_rank_task_2)
 
 
 class WordEquationDatasetMultiClassificationRankTask(DGLDataset):

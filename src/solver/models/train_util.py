@@ -777,6 +777,7 @@ def get_data_distribution(dataset,parameters:Dict):
         # Multi-class classification
         category_count = initialize_one_hot_category_count(dataset["train"]._label_size)
 
+
         train_category_count = category_count.copy()
         valid_category_count = category_count.copy()
 
@@ -788,6 +789,7 @@ def get_data_distribution(dataset,parameters:Dict):
 
         train_label_distribution = train_category_count
         valid_label_distribution = valid_category_count
+
 
         # train_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["train"]])
         # valid_labels=one_hot_to_class_indices([row[1].numpy() for row in dataset["valid"]])
@@ -806,6 +808,19 @@ def custom_collate_fn(batch):
         # Batch all graphs in this sample together
         batched_graphs.append(dgl.batch(graphs))
         batched_labels.append(torch.tensor(labels))  # Assuming labels are stored in a way that matches the graphs
+
+    return batched_graphs, torch.stack(batched_labels)
+
+def custom_collate_fn_rank_task_2(batch):
+    batched_graphs = []
+    batched_labels = []
+
+    # Iterate over each sample in the batch (each is a list of graphs and their corresponding labels)
+    for graphs, labels in batch:
+        # Batch all graphs in this sample together
+        batched_graphs.append(dgl.batch(graphs))
+        batched_labels.append(labels)  # Assuming labels are stored in a way that matches the graphs
+
 
     return batched_graphs, torch.stack(batched_labels)
 
