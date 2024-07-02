@@ -228,14 +228,12 @@ class GNNRankTask2(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
+        #todo can cache the embeddings
         batch_vector_list=[]
         for one_data in batch_graphs:
             embedding_list=self.embedding(one_data)
             pooled_embedding=self.pooling(embedding_list)
             batch_vector_list.append(pooled_embedding)
-
-
-
 
         batch_vector_stack=torch.stack(batch_vector_list)
 
@@ -284,25 +282,23 @@ class GNNRankTask0HashTable(nn.Module):
         self.single_dgl_hash_table_hit = 0
 
     def forward(self, batch_graphs, is_test=False):
-        embedded_graphs = []
-        batch_graphs = dgl.unbatch(batch_graphs)
-        for g in batch_graphs:
-            if is_test:  # infer
+        if is_test:
+            embedded_graphs = []
+            batch_graphs = dgl.unbatch(batch_graphs)
+            for g in batch_graphs:
                 hashed_data, _ = hash_one_dgl_graph(g)
                 if hashed_data in self.single_dgl_hash_table:
                     dgl_embedding = self.single_dgl_hash_table[hashed_data]
                     self.single_dgl_hash_table_hit += 1
-
                 else:
                     dgl_embedding = self.embedding(g)
                     self.single_dgl_hash_table[hashed_data] = dgl_embedding
                 embedded_graphs.append(dgl_embedding)
-            else:
-                embedded_graphs.append(self.embedding(g))
+            embedded_graphs = torch.stack(embedded_graphs, dim=0)
+        else:
+            embedded_graphs=self.embedding(batch_graphs)
 
-        embedded_graphs = torch.stack(embedded_graphs, dim=0)
 
-        # embedded_graphs=self.embedding(batch_graphs)
         return embedded_graphs
 
 

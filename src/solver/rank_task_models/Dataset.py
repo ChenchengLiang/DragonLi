@@ -53,7 +53,7 @@ class DGLDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False,
-                               collate_fn=custom_collate_fn)
+                               collate_fn=custom_collate_fn, shuffle=False)
 
     def val_dataloader(self):
         return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False,

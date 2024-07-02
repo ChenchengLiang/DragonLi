@@ -1,5 +1,5 @@
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning, \
-    GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2
+    GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2, GNNRankTask0HashTable
 from pytorch_lightning.callbacks import EarlyStopping, Callback
 
 from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModule, DGLDataModuleRank2
@@ -23,13 +23,22 @@ def get_gnn_and_classifier(parameters):
         raise ValueError("Unsupported model type")
 
     if parameters["rank_task"] == 0:
-        gnn_model = GNNRankTask0(
+        # gnn_model = GNNRankTask0(
+        #     input_feature_dim=parameters["node_type"],
+        #     gnn_hidden_dim=parameters["gnn_hidden_dim"],
+        #     gnn_layer_num=parameters["gnn_layer_num"],
+        #     gnn_dropout_rate=parameters["gnn_dropout_rate"],
+        #     embedding_type=embedding_type
+        # )
+        gnn_model = GNNRankTask0HashTable(
             input_feature_dim=parameters["node_type"],
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
             gnn_dropout_rate=parameters["gnn_dropout_rate"],
             embedding_type=embedding_type
         )
+
+
         classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                   ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
                                   ffnn_dropout_rate=parameters["ffnn_dropout_rate"],

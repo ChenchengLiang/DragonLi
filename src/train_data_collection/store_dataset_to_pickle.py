@@ -30,10 +30,13 @@ def main():
     # func=prepare_and_save_datasets_task_3
     graph_type = args.graph_type
 
-    benchmark = "choose_eq_train_rank_2"#"choose_eq_train"
-    rank_task=2
+    rank_task = 0
+    #benchmark = "choose_eq_train_rank_2"
+    benchmark = "choose_eq_train_rank_0"
+    #benchmark = "choose_eq_train"
 
-    parameters={}
+
+    parameters={"rank_task":rank_task}
     parameters["node_type"] = rank_task_node_type_map[rank_task]
     parameters["label_size"]=rank_task_label_size_map[rank_task]
 
