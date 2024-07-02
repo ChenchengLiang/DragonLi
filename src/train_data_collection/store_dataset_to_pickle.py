@@ -30,8 +30,8 @@ def main():
     # func=prepare_and_save_datasets_task_3
     graph_type = args.graph_type
 
-    benchmark = "choose_eq_train"#"choose_eq_train"
-    parameters = {"node_type": 5}
+    benchmark = "choose_eq_train_rank_0"#"choose_eq_train"
+    parameters = {"node_type": 5,"rank_task":0}
     func= prepare_and_save_datasets_rank
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if

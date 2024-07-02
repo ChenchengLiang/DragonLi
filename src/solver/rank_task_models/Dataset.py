@@ -208,20 +208,12 @@ class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiCl
             self._graphs_from_memory) == 0 else self._graphs_from_memory
 
         for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
-            G_list = []
-            label_list = []
             for index, g in graphs_to_rank.items():
                 if isinstance(g, dict):
                     dgl_graph, label = get_one_dgl_graph(g)
-                    G_list.append(dgl_graph)
-                    label_list.append(label)
-
-            # form each graph and label for training
-            for index, g in enumerate(G_list):
-                one_train_data = g
-                rank_label = [1, 0] if label_list[index] == 1 else [0, 1]
-                self.graphs.append(one_train_data)
-                self.labels.append(rank_label)
+                    rank_label=[1,0] if label == 1 else [0,1]
+                    self.graphs.append(dgl_graph)
+                    self.labels.append(rank_label)
 
         self.labels = torch.Tensor(self.labels)
 

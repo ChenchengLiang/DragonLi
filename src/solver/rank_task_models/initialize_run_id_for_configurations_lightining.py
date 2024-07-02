@@ -32,8 +32,9 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
                                           log_metrics_with_lock)
 
 from src.solver.models.utils import device_info, update_config_file
-from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback
-from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule
+from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback, \
+    get_dm
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule, DGLDataModuleRank0
 from pytorch_lightning.loggers import MLFlowLogger
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -113,7 +114,8 @@ def train_in_parallel(parameters):
 
     profiler = "simple"
 
-    dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+    dm = get_dm(parameters)
+
 
     devices_list = [i for i in range(0, torch.cuda.device_count())]
     torch.set_float32_matmul_precision('medium')

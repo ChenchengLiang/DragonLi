@@ -351,8 +351,12 @@ def _get_benchmark_folder_and_graph_folder(parameters):
 def prepare_and_save_datasets_rank(parameters):
     benchmark_folder, graph_folder, graph_type = _get_benchmark_folder_and_graph_folder(parameters)
     pickle_file = os.path.join(benchmark_folder, f"dataset_{graph_type}.pkl")
-    dataset = WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
-    #dataset = WordEquationDatasetMultiClassificationRankTask0(graph_folder=graph_folder)
+    if parameters["rank_task"]==0:
+        dataset=WordEquationDatasetMultiClassificationRankTask0(graph_folder=graph_folder)
+    elif parameters["rank_task"]==1:
+        dataset=WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
+    else:
+        raise ValueError("rank_task should be 0 or 1")
     # Save the datasets to pickle files
     save_to_pickle(dataset, pickle_file)
     # Compress pickle files into ZIP files

@@ -34,7 +34,7 @@ def main():
     # func=prepare_and_save_datasets_task_3
 
 
-    parameters = {"node_type": 5}
+    parameters = {"node_type": 5,"rank_task":0}
     func= prepare_and_save_datasets_rank
 
     store_dataset_to_pickle_one_folder(graph_type, benchmark + "/" + folder, parameters, func)

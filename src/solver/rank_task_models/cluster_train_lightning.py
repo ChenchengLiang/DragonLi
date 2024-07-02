@@ -25,8 +25,8 @@ from src.solver.models.train_util import train_one_model, train_multiple_models_
 import torch.nn as nn
 from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model, MyPrintingCallback, initialize_model_lightning, \
-    get_gnn_and_classifier
-from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule
+    get_gnn_and_classifier, get_dm
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule, DGLDataModuleRank0
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 
@@ -65,19 +65,14 @@ def main():
         color_print(text=f"current training folder:{train_config['current_train_folder']}", color="yellow")
         train_a_model(train_config)
 
-        # train_config["train_data_folder_epoch_map"][os.path.basename(train_config["current_train_folder"])] += \
-        #     train_config["train_step"]
-        # update configuration file
-        #update_config_file(configuration_file, train_config)
-
-
 
 
 @time_it
 def train_a_model(parameters):
     device_info()
 
-    dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+    dm = get_dm(parameters)
+
 
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
