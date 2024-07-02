@@ -9,7 +9,7 @@ import glob
 
 from src.solver.models.Dataset import WordEquationDatasetMultiClassification
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, \
-    WordEquationDatasetMultiClassificationRankTask0
+    WordEquationDatasetMultiClassificationRankTask0, WordEquationDatasetMultiClassificationRankTask2
 from src.solver.utils import graph_func_map
 from typing import List, Callable
 import os
@@ -75,7 +75,7 @@ def _read_label_and_eqs_for_rank(zip, f, parser):
     split_eq_list: List[Equation] = [parser.parse(split_eq_file, zip)["equation_list"][0] for split_eq_file in
                                      rank_eq_file_list]
 
-    #isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
+    # isomorphic_differentiated_eq_list = differentiate_isomorphic_equations(split_eq_list)
 
     return split_eq_list, rank_eq_file_list, json_dict["label_list"], json_dict[
         "satisfiability_list"]
@@ -93,7 +93,7 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
                         zip(rank_eq_list, rank_eq_file_list, label_list, satisfiability_list)):
-                    #add global information
+                    # add global information
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms, global_info)
 
                     if visualize == True:
@@ -208,16 +208,16 @@ def get_parser():
 
 def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
     algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
-                     "SplitEquations": SplitEquations,"SplitEquationsExtractData":SplitEquationsExtractData}
-    graph_type="graph_1"
+                     "SplitEquations": SplitEquations, "SplitEquationsExtractData": SplitEquationsExtractData}
+    graph_type = "graph_1"
     if algorithm == "SplitEquationsExtractData":
-        parameters_list=["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm SplitEquations",
-                  f"--order_equations_method category"
-                  ]
+        parameters_list = ["fixed", "--termination_condition termination_condition_0",
+                           f"--graph_type {graph_type}",
+                           f"--algorithm SplitEquations",
+                           f"--order_equations_method category"
+                           ]
     else:
-        parameters_list=["fixed", f"--algorithm {algorithm}",f"--termination_condition termination_condition_0"]
+        parameters_list = ["fixed", f"--algorithm {algorithm}", f"--termination_condition termination_condition_0"]
 
     # prepare train folder
     all_eq_folder = folder + "/SAT"
@@ -290,14 +290,13 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
             #
             # result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
-
     # compress
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")
     shutil.rmtree(train_eq_folder)
     print("done")
 
 
-def draw_graph_for_one_folder(graph_type, benchmark_path, task,visualize=False):
+def draw_graph_for_one_folder(graph_type, benchmark_path, task, visualize=False):
     if task == "task_1":
         draw_func = output_eq_graphs  # task 1
     elif task == "task_2":
@@ -351,12 +350,15 @@ def _get_benchmark_folder_and_graph_folder(parameters):
 def prepare_and_save_datasets_rank(parameters):
     benchmark_folder, graph_folder, graph_type = _get_benchmark_folder_and_graph_folder(parameters)
     pickle_file = os.path.join(benchmark_folder, f"dataset_{graph_type}.pkl")
-    if parameters["rank_task"]==0:
-        dataset=WordEquationDatasetMultiClassificationRankTask0(graph_folder=graph_folder)
-    elif parameters["rank_task"]==1:
-        dataset=WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
+    if parameters["rank_task"] == 0:
+        dataset = WordEquationDatasetMultiClassificationRankTask0(graph_folder=graph_folder)
+    elif parameters["rank_task"] == 1:
+        dataset = WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
+    elif parameters["rank_task"] == 2:
+        dataset = WordEquationDatasetMultiClassificationRankTask2(graph_folder=graph_folder,label_size=parameters["label_size"])
     else:
-        raise ValueError("rank_task should be 0 or 1")
+        raise ValueError("rank_task should be 0,1,2")
+
     # Save the datasets to pickle files
     save_to_pickle(dataset, pickle_file)
     # Compress pickle files into ZIP files
@@ -383,5 +385,3 @@ def prepare_and_save_datasets_task_3(parameters):
     # Compress pickle files into ZIP files
     compress_to_zip(pickle_file_2)
     compress_to_zip(pickle_file_3)
-
-

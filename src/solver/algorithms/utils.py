@@ -1,6 +1,6 @@
 from typing import List
 from src.solver.DataTypes import Variable, Terminal, Operator, Node, Edge, Equation, Term, SeparateSymbol, \
-    IsomorphicTailSymbol, GlobalTerminalOccurrenceSymbol, GlobalVariableOccurrenceSymbol
+    IsomorphicTailSymbol, GlobalTerminalOccurrenceSymbol, GlobalVariableOccurrenceSymbol, EmptyNode
 from src.solver.Constants import UNKNOWN
 
 import math
@@ -22,7 +22,7 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, s
     "label": 1}
     '''
     node_type_to_int_map = {Operator: 0, Terminal: 1, Variable: 2, SeparateSymbol:3, IsomorphicTailSymbol:3,
-                            GlobalVariableOccurrenceSymbol:3,GlobalTerminalOccurrenceSymbol:4}
+                            GlobalVariableOccurrenceSymbol:3,GlobalTerminalOccurrenceSymbol:4,EmptyNode:5}
     edge_type_to_int_map = {None: 1}
     graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
                   "label": label,"satisfiability":satisfiability}

@@ -416,3 +416,15 @@ def kill_gunicorn_processes():
         print("Successfully killed gunicorn processes.")
     except subprocess.CalledProcessError:
         print("Failed to kill gunicorn processes or no gunicorn process was running.")
+
+
+def keep_first_one(numbers):
+    # Find the first occurrence of 1
+    try:
+        first_one_index = numbers.index(1)
+        # Set all elements after the first 1 to 0
+        numbers[first_one_index + 1:] = [0] * (len(numbers) - first_one_index - 1)
+    except ValueError:
+        # If there is no 1 in the list, do nothing
+        pass
+    return numbers

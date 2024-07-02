@@ -92,11 +92,13 @@ class IsomorphicTailSymbol(Symbol):
 class SeparateSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
 
-
 class GlobalVariableOccurrenceSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
 
 class GlobalTerminalOccurrenceSymbol(Symbol):
+    pass  # All necessary methods are inherited from Symbol
+
+class EmptyNode(Symbol):
     pass  # All necessary methods are inherited from Symbol
 
 

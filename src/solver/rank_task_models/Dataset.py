@@ -19,7 +19,7 @@ from typing import Dict, List
 from tqdm import tqdm
 import time
 from src.solver.models.Dataset import get_one_dgl_graph
-from src.solver.independent_utils import time_it, load_from_pickle_within_zip, color_print
+from src.solver.independent_utils import time_it, load_from_pickle_within_zip, color_print, keep_first_one
 from src.solver.independent_utils import color_print, initialize_one_hot_category_count
 import pytorch_lightning as pl
 from dgl.dataloading import GraphDataLoader
@@ -216,6 +216,59 @@ class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiCl
                     self.labels.append(rank_label)
 
         self.labels = torch.Tensor(self.labels)
+
+
+
+class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiClassificationRankTask):
+    def __init__(self, graph_folder="", graphs_from_memory: List[Dict] = [],
+                 label_size=2):
+        super().__init__(graph_folder=graph_folder, graphs_from_memory=graphs_from_memory, label_size=label_size)
+        self._label_size = label_size
+
+    def process(self):
+        self.graphs = []
+        self.labels = []
+
+        graph_generator = self.get_graph_list_from_folder() if len(
+            self._graphs_from_memory) == 0 else self._graphs_from_memory
+        empty_graph_dict = {"nodes": [0], "node_types": [5], "edges": [[0,0]],
+                           "edge_types": [1],
+                           "label": 0,"satisfiability": SAT}
+
+        for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
+            one_data_graph_list = []
+            one_data_label_list = []
+            # prepare one data
+            for index, g in graphs_to_rank.items():
+                if isinstance(g, dict):
+                    dgl_graph, label = get_one_dgl_graph(g)
+                    one_data_graph_list.append(dgl_graph)
+                    one_data_label_list.append(label)
+            # pad to the same size
+            while len(one_data_graph_list)<self._label_size:
+                dgl_graph, label = get_one_dgl_graph(empty_graph_dict)
+                one_data_graph_list.append(dgl_graph)
+                one_data_label_list.append(label)
+            #trim to the same size
+            if len(one_data_graph_list)>self._label_size:
+                one_data_graph_list=one_data_graph_list[:self._label_size]
+                one_data_label_list=one_data_label_list[:self._label_size]
+
+            #ensure sum(label)==1
+            one_data_label_list=keep_first_one(one_data_label_list)
+            if sum(one_data_label_list)!=1:
+                color_print(f"graph number: {len(one_data_graph_list)}","yellow")
+                color_print(f"label number: {len(one_data_label_list)}","yellow")
+                color_print(f"sum labels: {sum(one_data_label_list)}","yellow")
+                color_print(str(one_data_label_list),"yellow")
+
+            # form one for training
+            self.graphs.append(one_data_graph_list)
+            self.labels.append(one_data_label_list)
+
+
+        self.labels = torch.Tensor(self.labels)
+
 
 
 def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
