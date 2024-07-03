@@ -2,17 +2,17 @@ import os
 import sys
 import configparser
 
-
+from src.solver.Constants import rank_task_label_size_map
 
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
-path = config.get('Path','local')
+path = config.get('Path', 'local')
 sys.path.append(path)
 
 from src.solver.Parser import Parser, EqParser, EqReader
 from src.solver.Solver import Solver
-from src.solver.utils import print_results,graph_func_map
+from src.solver.utils import print_results, graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, \
     ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
@@ -21,20 +21,22 @@ import argparse
 
 def main(args):
     algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
-                     "SplitEquations": SplitEquations,"SplitEquationsExtractData":SplitEquationsExtractData}
+                     "SplitEquations": SplitEquations, "SplitEquationsExtractData": SplitEquationsExtractData}
 
-    #parse argument
+    # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
 
     arg_parser.add_argument('file_path', type=str, help='Path to the file')
-    arg_parser.add_argument('branch_method', type=str, #choices=['gnn', 'random', 'fixed'],
-                        help='Branching method to be used')
+    arg_parser.add_argument('branch_method', type=str,  # choices=['gnn', 'random', 'fixed'],
+                            help='Branching method to be used')
     arg_parser.add_argument('--graph_type', type=str, default=None,
-                        help='Type of graph (optional)')
-    arg_parser.add_argument('--gnn_model_path', type=str,  default=None,
+                            help='Type of graph (optional)')
+    arg_parser.add_argument('--gnn_model_path', type=str, default=None,
                             help='path to .pth file')
     arg_parser.add_argument('--gnn_task', type=str, default=None,
                             help='task_1, task_2,...')
+    arg_parser.add_argument('--rank_task', type=str, default=None,
+                            help='0, 1,...')
     arg_parser.add_argument('--termination_condition', type=str, default="termination_condition_0",
                             help='termination_condition_0,termination_condition_1,termination_condition_2,...')
     arg_parser.add_argument('--order_equations_method', type=str, default="fixed",
@@ -44,7 +46,6 @@ def main(args):
     arg_parser.add_argument('--output_train_data', type=str, default="False",
                             help='True, False')
 
-
     args = arg_parser.parse_args()
 
     # Accessing the arguments
@@ -52,30 +53,31 @@ def main(args):
     branch_method = args.branch_method
     graph_type = args.graph_type
     gnn_model_path = args.gnn_model_path
-    task=args.gnn_task
-    termination_condition=args.termination_condition
-    algorithm=algorithm_map[args.algorithm]
-    order_equations_method=args.order_equations_method
-    output_train_data= True if args.output_train_data=="True" else False
+    task = args.gnn_task
+    rank_task = args.rank_task
+    termination_condition = args.termination_condition
+    algorithm = algorithm_map[args.algorithm]
+    order_equations_method = args.order_equations_method
+    output_train_data = True if args.output_train_data == "True" else False
 
     print(file_path, branch_method, graph_type)
 
-
-    #parse file
+    # parse file
     parser_type = EqParser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
+    label_size = rank_task_label_size_map[rank_task]
 
-    algorithm_parameters = {"branch_method":branch_method,"graph_type":graph_type,"task":task,
-                            "graph_func":graph_func_map[graph_type],"gnn_model_path":gnn_model_path,
-                            "termination_condition":termination_condition,
-                            "order_equations_method":order_equations_method} # branch_method [gnn,random,fixed]
+    algorithm_parameters = {"branch_method": branch_method, "graph_type": graph_type, "task": task,
+                            "graph_func": graph_func_map[graph_type], "gnn_model_path": gnn_model_path,
+                            "termination_condition": termination_condition,
+                            "order_equations_method": order_equations_method, "label_size": label_size,
+                            "rank_task": rank_task}  # branch_method [gnn,random,fixed]
 
+    solver = Solver(algorithm=algorithm, algorithm_parameters=algorithm_parameters)
 
-    solver = Solver(algorithm=algorithm,algorithm_parameters=algorithm_parameters)
-
-    result_dict = solver.solve(parsed_content, visualize=False,output_train_data=output_train_data)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=output_train_data)
 
     print_results(result_dict)
 

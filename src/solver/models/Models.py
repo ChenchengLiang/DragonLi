@@ -220,6 +220,9 @@ class GNNRankTask2(nn.Module):
         elif pooling_type == 'concat':
             self.pooling = self.concat_gnn_embeddings
 
+        self.single_dgl_hash_table = {}
+        self.single_dgl_hash_table_hit = 0
+
     def concat_gnn_embeddings(self, embedding_list):
         return embedding_list.view(-1)
     def mean_gnn_embeddings(self, embedding_list):
@@ -228,14 +231,33 @@ class GNNRankTask2(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-        #todo can cache the embeddings
-        batch_vector_list=[]
-        for one_data in batch_graphs:
-            embedding_list=self.embedding(one_data)
-            pooled_embedding=self.pooling(embedding_list)
-            batch_vector_list.append(pooled_embedding)
+        if is_test==True:
+            #print(f"hash table length {len(self.single_dgl_hash_table)}","single_dgl_hash_table_hit",self.single_dgl_hash_table_hit)
+            batch_vector_list = []
+            embedding_list=[]
+            for one_eq_graph in batch_graphs:
+                hashed_data,_=hash_one_dgl_graph(one_eq_graph)
+                if hashed_data in self.single_dgl_hash_table:
+                    dgl_embedding = self.single_dgl_hash_table[hashed_data]
+                    self.single_dgl_hash_table_hit+=1
+                else:
+                    dgl_embedding = self.embedding(one_eq_graph)
+                    self.single_dgl_hash_table[hashed_data]=dgl_embedding
+                embedding_list.append(dgl_embedding)
+            embedding_list=torch.stack(embedding_list,dim=0)
 
-        batch_vector_stack=torch.stack(batch_vector_list)
+            pooled_embedding = self.pooling(embedding_list)
+            batch_vector_list.append(pooled_embedding)
+            batch_vector_stack = torch.stack(batch_vector_list)
+
+        else:
+            batch_vector_list=[]
+            for one_data in batch_graphs:
+                embedding_list=self.embedding(one_data)
+                pooled_embedding=self.pooling(embedding_list)
+                batch_vector_list.append(pooled_embedding)
+
+            batch_vector_stack=torch.stack(batch_vector_list)
 
         return batch_vector_stack
 

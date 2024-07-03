@@ -244,6 +244,7 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
         empty_graph_dict = {"nodes": [0], "node_types": [5], "edges": [[0,0]],
                            "edge_types": [1],
                            "label": 0,"satisfiability": SAT}
+        empty_dgl_graph,empty_dgl_graph_label=get_one_dgl_graph(empty_graph_dict)
 
         for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
             one_data_graph_list = []
@@ -256,9 +257,8 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
                     one_data_label_list.append(label)
             # pad to the same size
             while len(one_data_graph_list)<self._label_size:
-                dgl_graph, label = get_one_dgl_graph(empty_graph_dict)
-                one_data_graph_list.append(dgl_graph)
-                one_data_label_list.append(label)
+                one_data_graph_list.append(empty_dgl_graph)
+                one_data_label_list.append(empty_dgl_graph_label)
             #trim to the same size
             if len(one_data_graph_list)>self._label_size:
                 one_data_graph_list=one_data_graph_list[:self._label_size]
