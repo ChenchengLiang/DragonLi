@@ -2,7 +2,6 @@ import configparser
 import os
 import sys
 
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -14,6 +13,7 @@ import argparse
 from src.solver.independent_utils import get_folders
 from src.solver.Constants import bench_folder, recursion_limit, rank_task_label_size_map, rank_task_node_type_map
 from src.train_data_collection.utils import store_dataset_to_pickle_one_folder, prepare_and_save_datasets_rank
+
 
 def main():
     # draw graphs from train folder
@@ -31,16 +31,15 @@ def main():
     graph_type = args.graph_type
 
     rank_task = 0
-    #benchmark = "choose_eq_train_rank_2"
+    # benchmark = "choose_eq_train_rank_2"
     benchmark = "choose_eq_train_rank_0"
-    #benchmark = "choose_eq_train"
+    # benchmark = "choose_eq_train"
 
-
-    parameters={"rank_task":rank_task}
+    parameters = {"rank_task": rank_task}
     parameters["node_type"] = rank_task_node_type_map[rank_task]
-    parameters["label_size"]=rank_task_label_size_map[rank_task]
+    parameters["label_size"] = rank_task_label_size_map[rank_task]
 
-    func= prepare_and_save_datasets_rank
+    func = prepare_and_save_datasets_rank
 
     folder_list = [folder for folder in get_folders(bench_folder + "/" + benchmark) if
                    "divided" in folder or "valid" in folder]

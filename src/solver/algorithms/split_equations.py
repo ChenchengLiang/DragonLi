@@ -453,7 +453,7 @@ class SplitEquations(AbstractAlgorithm):
         G_list_dgl = self._get_G_list_dgl(f)
 
         # predict
-        predict_time_start = time.time()
+        #predict_time_start = time.time()
         if len(G_list_dgl) < self.parameters["label_size"]:  # pad list
             while len(G_list_dgl) < self.parameters["label_size"]:
                 G_list_dgl.append(self.empty_dgl_graph)
@@ -465,7 +465,7 @@ class SplitEquations(AbstractAlgorithm):
         with torch.no_grad():
             classifier_output = self.gnn_rank_model(G_list_dgl).squeeze()
         rank_list = classifier_output.tolist()
-        print("predict time:", time.time() - predict_time_start)
+        #print("predict time:", time.time() - predict_time_start)
 
         # sort
         formula_with_sorted_eq_list = self._sort_eq_list_by_prediction(rank_list, f.eq_list)

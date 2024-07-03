@@ -30,6 +30,7 @@ def main():
     args = arg_parser.parse_args()
     graph_type = args.graph_type
 
+    #benchmark = "choose_eq_train_rank_0"
     #benchmark = "choose_eq_train"
     benchmark = "choose_eq_train_rank_2"
     # benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"
