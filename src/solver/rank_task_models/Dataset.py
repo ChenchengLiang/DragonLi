@@ -31,7 +31,7 @@ def get_one_dgl_graph_concatenated_with_other_graphs():
 
 
 
-class DGLDataModule(pl.LightningDataModule):
+class DGLDataModuleRank1(pl.LightningDataModule):
     def __init__(self, parameters, batch_size, num_workers):
         super().__init__()
 
@@ -53,17 +53,17 @@ class DGLDataModule(pl.LightningDataModule):
 
     def train_dataloader(self):
         return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False,
-                               collate_fn=custom_collate_fn, shuffle=False)
+                               collate_fn=custom_collate_fn)
 
     def val_dataloader(self):
         return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False,
-                               collate_fn=custom_collate_fn, shuffle=False)
+                               collate_fn=custom_collate_fn)
 
     def test_dataloader(self):
         return self.val_dataloader()
 
 
-class DGLDataModuleRank0(DGLDataModule):
+class DGLDataModuleRank0(DGLDataModuleRank1):
     def __init__(self, parameters, batch_size, num_workers):
         super().__init__(parameters, batch_size, num_workers)
 
@@ -73,7 +73,7 @@ class DGLDataModuleRank0(DGLDataModule):
     def val_dataloader(self):
         return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
 
-class DGLDataModuleRank2(DGLDataModule):
+class DGLDataModuleRank2(DGLDataModuleRank1):
     def __init__(self, parameters, batch_size, num_workers):
         super().__init__(parameters, batch_size, num_workers)
 
@@ -86,7 +86,7 @@ class DGLDataModuleRank2(DGLDataModule):
                                drop_last=False, shuffle=False,collate_fn=custom_collate_fn_rank_task_2)
 
 
-class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
+class WordEquationDatasetMultiClassificationRankTask1(DGLDataset):
     def __init__(self, graph_folder="", graphs_from_memory: List[Dict] = [],
                  label_size=2):
         self._graph_folder = graph_folder
@@ -205,7 +205,7 @@ class WordEquationDatasetMultiClassificationRankTask(DGLDataset):
         return result_str
 
 
-class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiClassificationRankTask):
+class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiClassificationRankTask1):
     def __init__(self, graph_folder="", graphs_from_memory: List[Dict] = [],
                  label_size=2):
         super().__init__(graph_folder=graph_folder, graphs_from_memory=graphs_from_memory, label_size=label_size)
@@ -229,7 +229,7 @@ class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiCl
 
 
 
-class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiClassificationRankTask):
+class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiClassificationRankTask1):
     def __init__(self, graph_folder="", graphs_from_memory: List[Dict] = [],
                  label_size=2):
         super().__init__(graph_folder=graph_folder, graphs_from_memory=graphs_from_memory, label_size=label_size)

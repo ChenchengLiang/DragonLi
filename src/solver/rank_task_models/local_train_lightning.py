@@ -19,8 +19,8 @@ import subprocess
 from src.solver.independent_utils import color_print, load_from_pickle_within_zip
 from src.solver.Constants import project_folder, bench_folder, RED
 import signal
-from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, read_dataset_from_zip, \
-    DGLDataModule, DGLDataModuleRank0
+from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask1, read_dataset_from_zip, \
+    DGLDataModuleRank1, DGLDataModuleRank0
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, SharedGNN, GraphClassifierLightning, \
     GNNRankTask0, GNNRankTask0HashTable, GNNRankTask1BatchProcess
 import torch.nn as nn
@@ -117,7 +117,7 @@ def train_wrapper(parameters):
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"
 
-    dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+    dm = DGLDataModuleRank1(parameters, parameters["batch_size"], num_workers=4)
 
     trainer = pl.Trainer(
         profiler=profiler,

@@ -8,7 +8,7 @@ from src.solver.Parser import Parser, EqParser
 import glob
 
 from src.solver.models.Dataset import WordEquationDatasetMultiClassification
-from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask, \
+from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask1, \
     WordEquationDatasetMultiClassificationRankTask0, WordEquationDatasetMultiClassificationRankTask2
 from src.solver.utils import graph_func_map
 from typing import List, Callable
@@ -353,7 +353,7 @@ def prepare_and_save_datasets_rank(parameters):
     if parameters["rank_task"] == 0:
         dataset = WordEquationDatasetMultiClassificationRankTask0(graph_folder=graph_folder)
     elif parameters["rank_task"] == 1:
-        dataset = WordEquationDatasetMultiClassificationRankTask(graph_folder=graph_folder)
+        dataset = WordEquationDatasetMultiClassificationRankTask1(graph_folder=graph_folder)
     elif parameters["rank_task"] == 2:
         dataset = WordEquationDatasetMultiClassificationRankTask2(graph_folder=graph_folder,label_size=parameters["label_size"])
     else:

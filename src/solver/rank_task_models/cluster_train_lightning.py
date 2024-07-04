@@ -26,7 +26,7 @@ import torch.nn as nn
 from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model, MyPrintingCallback, initialize_model_lightning, \
     get_gnn_and_classifier, get_dm
-from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule, DGLDataModuleRank0
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModuleRank1, DGLDataModuleRank0
 from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 

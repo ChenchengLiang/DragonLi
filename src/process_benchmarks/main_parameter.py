@@ -2,8 +2,6 @@ import os
 import sys
 import configparser
 
-from src.solver.Constants import rank_task_label_size_map
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -17,6 +15,7 @@ from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsin
     ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 import argparse
+from src.solver.Constants import rank_task_label_size_map
 
 
 def main(args):
@@ -54,7 +53,7 @@ def main(args):
     graph_type = args.graph_type
     gnn_model_path = args.gnn_model_path
     task = args.gnn_task
-    rank_task = args.rank_task
+    rank_task = int(args.rank_task)
     termination_condition = args.termination_condition
     algorithm = algorithm_map[args.algorithm]
     order_equations_method = args.order_equations_method

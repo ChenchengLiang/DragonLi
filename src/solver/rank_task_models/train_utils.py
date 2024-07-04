@@ -2,14 +2,14 @@ from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, 
     GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2, GNNRankTask0HashTable
 from pytorch_lightning.callbacks import EarlyStopping, Callback
 
-from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModule, DGLDataModuleRank2
+from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModuleRank1, DGLDataModuleRank2
 
 
 def get_dm(parameters):
     if parameters["rank_task"] == 0:
         dm = DGLDataModuleRank0(parameters, parameters["batch_size"], num_workers=4)
     elif parameters["rank_task"] == 1:
-        dm = DGLDataModule(parameters, parameters["batch_size"], num_workers=4)
+        dm = DGLDataModuleRank1(parameters, parameters["batch_size"], num_workers=4)
     elif parameters["rank_task"] == 2:
         dm = DGLDataModuleRank2(parameters, parameters["batch_size"], num_workers=4)
     else:

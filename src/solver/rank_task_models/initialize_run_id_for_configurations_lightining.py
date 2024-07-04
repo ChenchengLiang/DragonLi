@@ -34,7 +34,7 @@ from src.solver.models.train_util import (initialize_model_structure, load_train
 from src.solver.models.utils import device_info, update_config_file
 from src.solver.rank_task_models.train_utils import initialize_model, initialize_model_lightning, MyPrintingCallback, \
     get_dm
-from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModule, DGLDataModuleRank0
+from src.solver.rank_task_models.Dataset import read_dataset_from_zip, DGLDataModuleRank1, DGLDataModuleRank0
 from pytorch_lightning.loggers import MLFlowLogger
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint

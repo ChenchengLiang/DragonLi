@@ -92,9 +92,9 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type = "graph_1"
+    graph_type = "graph_2"
     task = "task_3"
-    rank_task = 2
+    rank_task = 1
     label_size = rank_task_label_size_map[rank_task]
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"

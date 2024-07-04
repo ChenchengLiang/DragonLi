@@ -75,17 +75,14 @@ class GraphClassifierLightning(pl.LightningModule):
         return final_output
 
     def training_step(self, batch, batch_idx):
-        #self.total_epoch += 1
+        # self.total_epoch += 1
         loss, scores, y = self._common_step(batch, batch_idx)
 
         accuracy = float(self.accuracy(scores, y))
-        self.log_dict({'train_loss': loss, 'train_accuracy': accuracy},
-                      on_step=False, on_epoch=True, prog_bar=False)
         self.last_train_loss = float(loss)
         self.last_train_accuracy = accuracy
-        self.logger.log_metrics({'train_loss': float(loss), 'train_accuracy': accuracy}, step=self.total_epoch)
 
-        return {'loss': loss, "scores": scores, "y": y}
+        return {'loss': loss, "scores": scores, "y": y,"accuracy":accuracy}
 
     def validation_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)
@@ -93,7 +90,6 @@ class GraphClassifierLightning(pl.LightningModule):
         self.last_val_loss = float(loss)
         self.last_val_accuracy = accuracy
 
-        current_folder_number = self.model_parameters["current_train_folder"].split("_")[-1]
         base_step = int(self.model_parameters["train_data_folder_epoch_map"][
                             os.path.basename(self.model_parameters["current_train_folder"])])
         self.step = base_step + self.global_step
@@ -108,16 +104,6 @@ class GraphClassifierLightning(pl.LightningModule):
 
             color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
                         "green")
-
-        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(loss),
-                       'val_accuracy': accuracy, "best_val_accuracy": self.best_val_accuracy,
-                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch),
-                       "folder": int(current_folder_number), "global_step": int(self.step),
-                       "best_global_step": int(self.best_global_step)}
-        self.log_dict(result_dict,
-                      on_step=False, on_epoch=True, prog_bar=False)
-
-        self.logger.log_metrics(result_dict, step=self.total_epoch)
 
         return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
 
@@ -169,6 +155,7 @@ class GraphClassifierLightning(pl.LightningModule):
         device_info()
         self.model_parameters["device"] = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
         if self.total_epoch < 1:  # indicating initial training
             # if "run_id" in self.model_parameters and self.model_parameters["run_id"] is not None:
             artifact_folder = f"{project_folder}/mlruns/{self.model_parameters['experiment_id']}/{self.model_parameters['run_id']}/artifacts"
@@ -202,15 +189,30 @@ class GraphClassifierLightning(pl.LightningModule):
 
     def on_train_epoch_end(self):
         self.total_epoch += 1
+
     def on_validation_epoch_end(self) -> None:
         print(
             f"Epoch {self.current_epoch}: train_loss: {self.last_train_loss:.4f}, "
             f"train_accuracy: {self.last_train_accuracy:.4f}, val_loss: {self.last_val_loss:.4f},"
             f" val_accuracy: {self.last_val_accuracy:.4f}, best_val_accuracy: {self.best_val_accuracy:.4f}, total_epoch: {self.total_epoch}")
 
+        current_folder_number = self.model_parameters["current_train_folder"].split("_")[-1]
+        result_dict = {'current_epoch': int(self.current_epoch), 'val_loss': float(self.last_val_loss),
+                       'val_accuracy': self.last_val_accuracy, "best_val_accuracy": self.best_val_accuracy,
+                       "best_epoch": self.best_epoch, "total_epoch": int(self.total_epoch),
+                       "folder": int(current_folder_number), "global_step": int(self.step),
+                       "best_global_step": int(self.best_global_step), "train_loss": float(self.last_train_loss),
+                       "train_accuracy": self.last_train_accuracy}
+        # self.log_dict(result_dict,
+        #               on_step=False, on_epoch=True, prog_bar=False,sync_dist=True)
+        self.log('best_val_accuracy', self.best_val_accuracy, on_step=False, on_epoch=True)
+
+        self.logger.log_metrics(result_dict,step=self.total_epoch)
+
 
 class GNNRankTask2(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',pooling_type='mean'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',
+                 pooling_type='mean'):
         super(GNNRankTask2, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
@@ -225,41 +227,43 @@ class GNNRankTask2(nn.Module):
 
     def concat_gnn_embeddings(self, embedding_list):
         return embedding_list.view(-1)
+
     def mean_gnn_embeddings(self, embedding_list):
         embedding_mean = embedding_list.mean(dim=0)  # Compute mean along dimension 0
         return embedding_mean.squeeze(0)
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-        if is_test==True:
-            #print(f"hash table length {len(self.single_dgl_hash_table)}","single_dgl_hash_table_hit",self.single_dgl_hash_table_hit)
+        if is_test == True:
+            # print(f"hash table length {len(self.single_dgl_hash_table)}","single_dgl_hash_table_hit",self.single_dgl_hash_table_hit)
             batch_vector_list = []
-            embedding_list=[]
+            embedding_list = []
             for one_eq_graph in batch_graphs:
-                hashed_data,_=hash_one_dgl_graph(one_eq_graph)
+                hashed_data, _ = hash_one_dgl_graph(one_eq_graph)
                 if hashed_data in self.single_dgl_hash_table:
                     dgl_embedding = self.single_dgl_hash_table[hashed_data]
-                    self.single_dgl_hash_table_hit+=1
+                    self.single_dgl_hash_table_hit += 1
                 else:
                     dgl_embedding = self.embedding(one_eq_graph)
-                    self.single_dgl_hash_table[hashed_data]=dgl_embedding
+                    self.single_dgl_hash_table[hashed_data] = dgl_embedding
                 embedding_list.append(dgl_embedding)
-            embedding_list=torch.stack(embedding_list,dim=0)
+            embedding_list = torch.stack(embedding_list, dim=0)
 
             pooled_embedding = self.pooling(embedding_list)
             batch_vector_list.append(pooled_embedding)
             batch_vector_stack = torch.stack(batch_vector_list)
 
         else:
-            batch_vector_list=[]
+            batch_vector_list = []
             for one_data in batch_graphs:
-                embedding_list=self.embedding(one_data)
-                pooled_embedding=self.pooling(embedding_list)
+                embedding_list = self.embedding(one_data)
+                pooled_embedding = self.pooling(embedding_list)
                 batch_vector_list.append(pooled_embedding)
 
-            batch_vector_stack=torch.stack(batch_vector_list)
+            batch_vector_stack = torch.stack(batch_vector_list)
 
         return batch_vector_stack
+
 
 class GNNRankTask0(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
@@ -318,11 +322,9 @@ class GNNRankTask0HashTable(nn.Module):
                 embedded_graphs.append(dgl_embedding)
             embedded_graphs = torch.stack(embedded_graphs, dim=0)
         else:
-            embedded_graphs=self.embedding(batch_graphs)
-
+            embedded_graphs = self.embedding(batch_graphs)
 
         return embedded_graphs
-
 
 
 class GNNRankTask1BatchProcess(nn.Module):
@@ -335,21 +337,20 @@ class GNNRankTask1BatchProcess(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-
         batch_result_list = []
         for one_data in batch_graphs:
-
             embeddings = self.embedding(one_data)
 
-            #g concat GNN embeddings
+            # g concat GNN embeddings
             first_element = embeddings[0]
-            embed_slice=embeddings[1:]
+            embed_slice = embeddings[1:]
             mean_tensor = torch.mean(embed_slice, dim=0)
             concatenated_embedding = torch.cat([first_element, mean_tensor], dim=1)
             batch_result_list.append(concatenated_embedding)
 
         batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
         return batch_result_list_stacked
+
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
