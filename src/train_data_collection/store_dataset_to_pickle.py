@@ -30,9 +30,9 @@ def main():
     # func=prepare_and_save_datasets_task_3
     graph_type = args.graph_type
 
-    rank_task = 0
+    rank_task = 2
     # benchmark = "choose_eq_train_rank_2"
-    benchmark = "choose_eq_train_rank_0"
+    benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"
     # benchmark = "choose_eq_train"
 
     parameters = {"rank_task": rank_task}

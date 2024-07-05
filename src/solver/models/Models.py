@@ -105,7 +105,7 @@ class GraphClassifierLightning(pl.LightningModule):
             color_print(f"\nbest_val_accuracy: {self.best_val_accuracy}, best_epoch: {self.best_epoch}\n",
                         "green")
 
-        return {'loss': loss, "scores": scores, "y": y, "best_val_accuracy": self.best_val_accuracy}
+        return {'loss': loss, "scores": scores, "y": y, "accuracy":accuracy}
 
     def test_step(self, batch, batch_idx):
         loss, scores, y = self._common_step(batch, batch_idx)

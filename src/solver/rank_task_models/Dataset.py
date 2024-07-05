@@ -172,7 +172,9 @@ class WordEquationDatasetMultiClassificationRankTask1(DGLDataset):
         min_node_number = sys.maxsize
         category_count = initialize_one_hot_category_count(self._label_size)
         for label in self.labels:
-            category_count[tuple(label.numpy())] += 1
+            label_list= [int(l) for l in label.numpy()]
+            category_count[tuple(label_list)] += 1
+            #category_count[tuple(label.numpy())] += 1
 
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
@@ -238,6 +240,8 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
     def process(self):
         self.graphs = []
         self.labels = []
+        total_trim_count=0
+        empty_label_count=0
 
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
@@ -263,6 +267,7 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
             if len(one_data_graph_list)>self._label_size:
                 one_data_graph_list=one_data_graph_list[:self._label_size]
                 one_data_label_list=one_data_label_list[:self._label_size]
+                total_trim_count+=1
 
             #ensure sum(label)==1
             one_data_label_list=keep_first_one(one_data_label_list)
@@ -271,12 +276,15 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
                 color_print(f"label number: {len(one_data_label_list)}","yellow")
                 color_print(f"sum labels: {sum(one_data_label_list)}","yellow")
                 color_print(str(one_data_label_list),"yellow")
+                empty_label_count+=1
+                continue
 
             # form one for training
             self.graphs.append(one_data_graph_list)
             self.labels.append(one_data_label_list)
 
-
+        print("total_trim_count",total_trim_count)
+        print("empty_label_count",empty_label_count)
         self.labels = torch.Tensor(self.labels)
 
 

@@ -136,7 +136,7 @@ def train_in_parallel(parameters):
     model = initialize_model_lightning(parameters)
 
     trainer.fit(model, dm)
-    trainer.validate(model, dm)
+    #trainer.validate(model, dm)
 
 
 
