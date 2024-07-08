@@ -26,6 +26,8 @@ def main():
     rank_task=2
     pooling_type="concat" #conat, mean
     learning_rate=0.001
+    valid_batch_size_factor=2
+    valid_batch_size=10000
     node_type = rank_task_node_type_map[rank_task]
     label_size=rank_task_label_size_map[rank_task]
     configurations = []
@@ -36,12 +38,12 @@ def main():
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
     #for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
     for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
-        for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:#[2,8]:
-                for ffnn_layer_num in [2]:
+                for ffnn_layer_num in [2,8]:
                     for hidden_dim in [128]:#[128,256]:
                         for dropout_rate in [0.2]:
-                            for batch_size in [10,100,1000]:
+                            for batch_size in [5000]:
                                 for model_type in ["GCNSplit"]:#["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                     for share_gnn in [False]:
                                         if model_type == "GAT":
@@ -52,7 +54,8 @@ def main():
                                                     "save_criterion": "valid_accuracy", "batch_size": batch_size, "gnn_hidden_dim": hidden_dim,
                                                     "gnn_layer_num": gnn_layer_num, "num_heads": num_heads, "gnn_dropout_rate": dropout_rate,
                                                     "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num,"label_size":label_size,
-                                                    "ffnn_dropout_rate": dropout_rate,"node_type":node_type,"train_step":train_step,"share_gnn":share_gnn,"pooling_type":pooling_type
+                                                    "ffnn_dropout_rate": dropout_rate,"node_type":node_type,"train_step":train_step,
+                                                    "share_gnn":share_gnn,"pooling_type":pooling_type,"valid_batch_size_factor":valid_batch_size_factor,"valid_batch_size":valid_batch_size
                                                 })
                                         else:
                                             configurations.append({
@@ -62,7 +65,8 @@ def main():
                                                 "save_criterion": "valid_accuracy", "batch_size": batch_size, "gnn_hidden_dim": hidden_dim,
                                                 "gnn_layer_num": gnn_layer_num, "num_heads": 0, "gnn_dropout_rate": dropout_rate,
                                                 "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num,"label_size":label_size,
-                                                "ffnn_dropout_rate": dropout_rate,"node_type":node_type,"train_step":train_step,"share_gnn":share_gnn,"pooling_type":pooling_type
+                                                "ffnn_dropout_rate": dropout_rate,"node_type":node_type,"train_step":train_step,
+                                                "share_gnn":share_gnn,"pooling_type":pooling_type,"valid_batch_size_factor":valid_batch_size_factor,"valid_batch_size":valid_batch_size
                                             })
 
     # Writing the dictionary to a JSON file

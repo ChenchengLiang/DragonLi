@@ -29,8 +29,6 @@ def get_one_dgl_graph_concatenated_with_other_graphs():
     pass
 
 
-
-
 class DGLDataModuleRank1(pl.LightningDataModule):
     def __init__(self, parameters, batch_size, num_workers):
         super().__init__()
@@ -48,15 +46,17 @@ class DGLDataModuleRank1(pl.LightningDataModule):
         self.val_ds = read_dataset_from_zip(self.parameters, "valid_data")
         dataset = {"train": self.train_ds, "valid": self.val_ds}
 
-        data_distribution_str=get_data_distribution(dataset, self.parameters)
-        self.parameters["data_distribution_str"]=data_distribution_str
+        data_distribution_str = get_data_distribution(dataset, self.parameters)
+        self.parameters["data_distribution_str"] = data_distribution_str
 
     def train_dataloader(self):
-        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False,
+        return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False,
                                collate_fn=custom_collate_fn)
 
     def val_dataloader(self):
-        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False,
+        return GraphDataLoader(self.val_ds,
+                               batch_size=self.parameters["valid_batch_size"],
+                               drop_last=False, shuffle=False,
                                collate_fn=custom_collate_fn)
 
     def test_dataloader(self):
@@ -71,7 +71,10 @@ class DGLDataModuleRank0(DGLDataModuleRank1):
         return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
 
     def val_dataloader(self):
-        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"], drop_last=False, shuffle=False)
+        return GraphDataLoader(self.val_ds,
+                               batch_size=self.parameters["valid_batch_size"],
+                               drop_last=False, shuffle=False)
+
 
 class DGLDataModuleRank2(DGLDataModuleRank1):
     def __init__(self, parameters, batch_size, num_workers):
@@ -79,11 +82,12 @@ class DGLDataModuleRank2(DGLDataModuleRank1):
 
     def train_dataloader(self):
         return GraphDataLoader(self.train_ds, batch_size=self.parameters["batch_size"],
-                               drop_last=False,shuffle=False,collate_fn=custom_collate_fn_rank_task_2)
+                               drop_last=False, shuffle=False, collate_fn=custom_collate_fn_rank_task_2)
 
     def val_dataloader(self):
-        return GraphDataLoader(self.val_ds, batch_size=self.parameters["batch_size"],
-                               drop_last=False, shuffle=False,collate_fn=custom_collate_fn_rank_task_2)
+        return GraphDataLoader(self.val_ds,
+                               batch_size=self.parameters["batch_size"] * self.parameters["valid_batch_size_factor"],
+                               drop_last=False, shuffle=False, collate_fn=custom_collate_fn_rank_task_2)
 
 
 class WordEquationDatasetMultiClassificationRankTask1(DGLDataset):
@@ -172,9 +176,9 @@ class WordEquationDatasetMultiClassificationRankTask1(DGLDataset):
         min_node_number = sys.maxsize
         category_count = initialize_one_hot_category_count(self._label_size)
         for label in self.labels:
-            label_list= [int(l) for l in label.numpy()]
+            label_list = [int(l) for l in label.numpy()]
             category_count[tuple(label_list)] += 1
-            #category_count[tuple(label.numpy())] += 1
+            # category_count[tuple(label.numpy())] += 1
 
         for graphs in self.get_graph_list_from_folder():
             split_number += 1
@@ -219,16 +223,16 @@ class WordEquationDatasetMultiClassificationRankTask0(WordEquationDatasetMultiCl
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
 
-        for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
+        for graphs_to_rank in tqdm(graph_generator,
+                                   desc="Processing graphs"):  # graphs_to_rank represent a list of eq graphs
             for index, g in graphs_to_rank.items():
                 if isinstance(g, dict):
                     dgl_graph, label = get_one_dgl_graph(g)
-                    rank_label=[1,0] if label == 1 else [0,1]
+                    rank_label = [1, 0] if label == 1 else [0, 1]
                     self.graphs.append(dgl_graph)
                     self.labels.append(rank_label)
 
         self.labels = torch.Tensor(self.labels)
-
 
 
 class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiClassificationRankTask1):
@@ -240,17 +244,18 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
     def process(self):
         self.graphs = []
         self.labels = []
-        total_trim_count=0
-        empty_label_count=0
+        total_trim_count = 0
+        empty_label_count = 0
 
         graph_generator = self.get_graph_list_from_folder() if len(
             self._graphs_from_memory) == 0 else self._graphs_from_memory
-        empty_graph_dict = {"nodes": [0], "node_types": [5], "edges": [[0,0]],
-                           "edge_types": [1],
-                           "label": 0,"satisfiability": SAT}
-        empty_dgl_graph,empty_dgl_graph_label=get_one_dgl_graph(empty_graph_dict)
+        empty_graph_dict = {"nodes": [0], "node_types": [5], "edges": [[0, 0]],
+                            "edge_types": [1],
+                            "label": 0, "satisfiability": SAT}
+        empty_dgl_graph, empty_dgl_graph_label = get_one_dgl_graph(empty_graph_dict)
 
-        for graphs_to_rank in tqdm(graph_generator, desc="Processing graphs"): #graphs_to_rank represent a list of eq graphs
+        for graphs_to_rank in tqdm(graph_generator,
+                                   desc="Processing graphs"):  # graphs_to_rank represent a list of eq graphs
             one_data_graph_list = []
             one_data_label_list = []
             # prepare one data
@@ -260,33 +265,32 @@ class WordEquationDatasetMultiClassificationRankTask2(WordEquationDatasetMultiCl
                     one_data_graph_list.append(dgl_graph)
                     one_data_label_list.append(label)
             # pad to the same size
-            while len(one_data_graph_list)<self._label_size:
+            while len(one_data_graph_list) < self._label_size:
                 one_data_graph_list.append(empty_dgl_graph)
                 one_data_label_list.append(empty_dgl_graph_label)
-            #trim to the same size
-            if len(one_data_graph_list)>self._label_size:
-                one_data_graph_list=one_data_graph_list[:self._label_size]
-                one_data_label_list=one_data_label_list[:self._label_size]
-                total_trim_count+=1
+            # trim to the same size
+            if len(one_data_graph_list) > self._label_size:
+                one_data_graph_list = one_data_graph_list[:self._label_size]
+                one_data_label_list = one_data_label_list[:self._label_size]
+                total_trim_count += 1
 
-            #ensure sum(label)==1
-            one_data_label_list=keep_first_one(one_data_label_list)
-            if sum(one_data_label_list)!=1:
-                color_print(f"graph number: {len(one_data_graph_list)}","yellow")
-                color_print(f"label number: {len(one_data_label_list)}","yellow")
-                color_print(f"sum labels: {sum(one_data_label_list)}","yellow")
-                color_print(str(one_data_label_list),"yellow")
-                empty_label_count+=1
+            # ensure sum(label)==1
+            one_data_label_list = keep_first_one(one_data_label_list)
+            if sum(one_data_label_list) != 1:
+                color_print(f"graph number: {len(one_data_graph_list)}", "yellow")
+                color_print(f"label number: {len(one_data_label_list)}", "yellow")
+                color_print(f"sum labels: {sum(one_data_label_list)}", "yellow")
+                color_print(str(one_data_label_list), "yellow")
+                empty_label_count += 1
                 continue
 
             # form one for training
             self.graphs.append(one_data_graph_list)
             self.labels.append(one_data_label_list)
 
-        print("total_trim_count",total_trim_count)
-        print("empty_label_count",empty_label_count)
+        print("total_trim_count", total_trim_count)
+        print("empty_label_count", empty_label_count)
         self.labels = torch.Tensor(self.labels)
-
 
 
 def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
@@ -305,8 +309,8 @@ def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
             dataset_statistics = dataset.statistics()
             # with open(f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{data_folder}_dataset_statistics.txt", 'w') as file:
             #     file.write(dataset_statistics)
-            parameters["dataset_statistics_str"]=dataset_statistics
-            #mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
+            parameters["dataset_statistics_str"] = dataset_statistics
+            # mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
         else:
             dataset_statistics = ""
     else:

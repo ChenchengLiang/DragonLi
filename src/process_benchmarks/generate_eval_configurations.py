@@ -15,8 +15,8 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     model_folder = project_folder + "/" + "Models/"
     task = "rank_task_1"  # "task_3"
-    rank_task = 0
-    graph_type = "graph_1"
+    rank_task = 2
+    graph_type = "graph_2"
     model_type = "GCNSplit"  # "GINSplit"
     benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     algorithm = "SplitEquations"
