@@ -86,7 +86,7 @@ class DGLDataModuleRank2(DGLDataModuleRank1):
 
     def val_dataloader(self):
         return GraphDataLoader(self.val_ds,
-                               batch_size=self.parameters["batch_size"] * self.parameters["valid_batch_size_factor"],
+                               batch_size=self.parameters["valid_batch_size"],
                                drop_last=False, shuffle=False, collate_fn=custom_collate_fn_rank_task_2)
 
 

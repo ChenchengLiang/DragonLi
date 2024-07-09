@@ -107,7 +107,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "shortest",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}
@@ -126,9 +126,9 @@ def main():
                                                       "graph_func": graph_func_map[graph_type],
                                                       "task": "dynamic_embedding", "label_size": label_size,"rank_task":rank_task}
 
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
     # solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    # solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

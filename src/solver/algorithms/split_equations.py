@@ -20,7 +20,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random
+    order_branches_hybrid_fixed_random, order_equations_shortest
 from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -58,6 +58,7 @@ class SplitEquations(AbstractAlgorithm):
 
         self._order_equations_gnn = self.rank_task_gnn_func_map[parameters["rank_task"]]
         self.order_equations_func_map = {"fixed": order_equations_fixed,
+                                         "shortest":order_equations_shortest,
                                          "random": order_equations_random,
                                          "hybrid_fixed_random": order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,

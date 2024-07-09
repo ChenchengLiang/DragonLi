@@ -21,11 +21,11 @@ from typing import List, Tuple
 
 def main():
     # generate track
-    start_idx = 35001
-    end_idx = 40000
-    track_name = f"03_track_train_task_3_{start_idx}_{end_idx}"
+    start_idx = 1
+    end_idx = 1000
+    track_name = f"conjunctive_03_track_train_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
@@ -231,6 +231,23 @@ def generate_one_track_3(file_name, index):
 
     return result, variables, terminals, [(new_equation_left_str, new_equation_right_str)]
 
+
+def generate_conjunctive_track_03(file_name, index):
+    eq_number = random.randint(2, 20)
+    eq_list = []
+    variable_list = []
+    terminal_list = []
+    for i in range(eq_number):
+        result, variables, terminals, eqs = generate_one_track_3(file_name, index)
+        left_str = eqs[0][0]
+        right_str = eqs[0][1]
+        variable_list.extend(variables)
+        terminal_list.extend(terminals)
+        variable_list = remove_duplicates(variable_list)
+        terminal_list = remove_duplicates(terminal_list)
+        eq_list.append((left_str, right_str))
+    result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
+    return result, variable_list, terminal_list, eq_list
 
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
