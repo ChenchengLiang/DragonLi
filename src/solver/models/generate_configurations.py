@@ -24,7 +24,7 @@ def main():
     num_epochs = 100
     train_step = 20
     task = "rank_task_1"  # "task_3"
-    rank_task = 2
+    rank_task = 0
     pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     valid_batch_size_factor = 2
@@ -36,10 +36,10 @@ def main():
     # for benchmark in ["choose_eq_train_rank_0"]:
     # for benchmark in ["choose_eq_train"]:
     # for benchmark in ["choose_eq_train_rank_2"]:
-    # for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
+    for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
     # for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
-    for benchmark in [
-        "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
+    # for benchmark in [
+    #     "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
         for graph_type in ["graph_1"]:  # ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for gnn_layer_num in [2]:  # [2,8]:
                 for ffnn_layer_num in [2,16,32]:

@@ -366,18 +366,23 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
     for pairwise_dict in pairwise_dict_list:
         first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows, satisfiability_dict = _construct_first_and_second_summary(
             summary_folder, pairwise_dict)
-        compute_measurement_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
-                                                       first_summary_solver_row, second_summary_title_row,
-                                                       second_summary_data_rows)
+        common_solved_sat_problem_list, common_solved_unsat_problem_list = compute_measurement_for_common_solved_problems(
+            first_summary_data_rows, first_summary_title_row,
+            first_summary_solver_row, second_summary_title_row,
+            second_summary_data_rows)
 
-        compute_measurement_for_unique_solved_problems(first_summary_data_rows, first_summary_title_row,
-                                                       first_summary_solver_row, second_summary_title_row,
-                                                       second_summary_data_rows)
+        unique_solver_dict = compute_measurement_for_unique_solved_problems(
+            first_summary_data_rows, first_summary_title_row,
+            first_summary_solver_row, second_summary_title_row,
+            second_summary_data_rows)
+        common_and_unique_solved_dict = {"common_solved_sat_number": len(common_solved_sat_problem_list),
+                                         "common_solved_unsat_number": len(common_solved_unsat_problem_list)}
+        common_and_unique_solved_dict.update(unique_solver_dict)
         # print(pairwise_dict)
 
         track_name = "-".join([k for k in pairwise_dict])
         one_pairwise_folder = os.path.join(pairwise_folder, track_name)
-        create_folder(one_pairwise_folder)
+        create_folder(one_pairwise_folder, log=False)
         _write_summary_to_cvs(one_pairwise_folder, track_name, first_summary_title_row, first_summary_solver_row,
                               first_summary_data_rows, second_summary_title_row, second_summary_data_rows)
         # print("first_summary_title_row")
@@ -385,22 +390,24 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
         # print("first_summary_solver_row")
         # print(first_summary_solver_row)
         # print("first_summary_data_rows")
-        # print(first_summary_data_rows)
+        # print(first_summary_data_rows[0])
 
         # scatters for pairs
-        use_time_column=2
-        _one_pair_measurement(use_time_column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
-                              one_pairwise_folder)
+        use_time_column = 2
+        _one_pair_measurement(use_time_column, first_summary_title_row, first_summary_solver_row,
+                              first_summary_data_rows,
+                              one_pairwise_folder, common_and_unique_solved_dict)
+
         split_number_column = 3
         _one_pair_measurement(split_number_column, first_summary_title_row, first_summary_solver_row,
                               first_summary_data_rows,
-                              one_pairwise_folder)
-
+                              one_pairwise_folder, common_and_unique_solved_dict)
 
     print("----------------------- pairwise comparison done ----------------------------")
 
 
-def _one_pair_measurement(column,first_summary_title_row,first_summary_solver_row,first_summary_data_rows,one_pairwise_folder):
+def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
+                          one_pairwise_folder, common_and_unique_solved_dict):
     column_index_solver_1 = column
 
     offset_column = 3
@@ -418,13 +425,20 @@ def _one_pair_measurement(column,first_summary_title_row,first_summary_solver_ro
         solver_1_data_list.append(_convert_string(row[column_index_solver_1]))
         solver_2_data_list.append(_convert_string(row[column_index_solver_2]))
 
+    if all(x == 0 for x in solver_1_data_list):
+        return None
+    if all(x == 0 for x in solver_2_data_list):
+        return None
+
     data_dict = {"measurement": measure_criteria, "x_title": solver_1_name, "y_title": solver_2_name,
                  "x_data": solver_1_data_list, "y_data": solver_2_data_list,
                  "satisfiability_list": satisfiability_list,
                  "x_data_mean": mean(solver_1_data_list), "y_data_mean": mean(solver_2_data_list),
                  "x_data_min": min(solver_1_data_list), "y_data_min": min(solver_2_data_list),
                  "x_data_max": max(solver_1_data_list), "y_data_max": max(solver_2_data_list)}
+    data_dict.update(common_and_unique_solved_dict)
     plot_scatter(one_pairwise_folder, data_dict)
+
 
 def plot_scatter(save_directory, data_dict):
     import plotly.graph_objects as go
@@ -450,11 +464,13 @@ def plot_scatter(save_directory, data_dict):
                 symbol=shapes  # Apply shape settings here
             )))
 
-
     title = (
         f"{data_dict['measurement']} - {data_dict['x_title']} vs {data_dict['y_title']} <br>"
         f"x_mean: {data_dict['x_data_mean']}, x_min: {data_dict['x_data_min']}, x_max: {data_dict['x_data_max']} <br>"
-        f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']}"
+        f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']} <br>"
+        f"common solved SAT: {data_dict['common_solved_sat_number']}, UNSAT: {data_dict['common_solved_unsat_number']} <br>"
+        f"{data_dict['unique_0']} <br>"
+        f"{data_dict['unique_1']}"
     )
     # Update the layout to add more customization or styling
     fig.update_layout(title=title,
@@ -524,8 +540,9 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
     solver_list.remove("file_names")
     unique_sat_problem_list = []
     unique_unsat_problem_list = []
+    unique_solver_dict={}
 
-    for current_solver in solver_list:
+    for index,current_solver in enumerate(solver_list):
         current_solver_unique_solved_sat_count = 0
         current_solver_unique_solved_unsat_count = 0
         for row in first_summary_data_rows:
@@ -547,6 +564,7 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
                 current_solver_unique_solved_sat_count += 1
             if current_solver_solvability == UNSAT and other_solver_solvability == UNKNOWN:
                 current_solver_unique_solved_unsat_count += 1
+        unique_solver_dict[f"unique_{index}"]=f"{current_solver} unique solved SAT {current_solver_unique_solved_sat_count}, UNSAT {current_solver_unique_solved_unsat_count}"
         unique_sat_problem_list.append(current_solver_unique_solved_sat_count)
         unique_unsat_problem_list.append(current_solver_unique_solved_unsat_count)
     # print("unique_sat_problem_list", unique_sat_problem_list)
@@ -560,6 +578,8 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
     second_summary_title_row += ["unsat_unique_solved"]
     for unique_solved_number, summary_row in zip(unique_unsat_problem_list, second_summary_data_rows):
         summary_row.append(unique_solved_number)
+
+    return unique_solver_dict
 
 
 def compute_measurement_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
@@ -639,6 +659,8 @@ def compute_measurement_for_common_solved_problems(first_summary_data_rows, firs
     second_summary_title_row += ["unsat_average_solving_time_common_solved " + str(len(common_unsat_problem_list))]
     for summary_row in second_summary_data_rows:
         summary_row.append(mean([float(x) for x in sat_average_solving_time_common_solved_dict[summary_row[0]]]))
+
+    return common_sat_problem_list, common_unsat_problem_list
 
 
 def extract_one_csv_data(summary_folder, summary_file, first_summary_solver_row, solver):
