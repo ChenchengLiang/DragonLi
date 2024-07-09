@@ -53,7 +53,7 @@ def main(args):
     graph_type = args.graph_type
     gnn_model_path = args.gnn_model_path
     task = args.gnn_task
-    rank_task = int(args.rank_task)
+    rank_task = int(args.rank_task) if args.rank_task is not None else None
     termination_condition = args.termination_condition
     algorithm = algorithm_map[args.algorithm]
     order_equations_method = args.order_equations_method

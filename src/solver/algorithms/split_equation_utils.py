@@ -74,6 +74,12 @@ def order_equations_shortest(f: Formula, category_call=0) -> (Formula,int):
 
     return Formula([eq for eq, _ in sorted_eq_list]),category_call
 
+def order_equations_longest(f: Formula, category_call=0) -> (Formula,int):
+    eq_list_with_length: List[Tuple[Equation, int]] = [(e,e.term_length) for e in f.eq_list]
+    sorted_eq_list = sorted(eq_list_with_length, key=lambda x: x[1],reverse=True)
+
+    return Formula([eq for eq, _ in sorted_eq_list]),category_call
+
 def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
     categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 

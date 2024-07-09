@@ -44,8 +44,12 @@ def main():
                 if solver == "this":
                     summary_file_dict[solver+":"+parameter_str]=solver+"_"+parameter_str+"_"+track+"_summary.csv"
                 else:
-                    summary_file_dict[
-                        solver + ":" + parameter_str] = solver  + "_" + track + "_summary.csv"
+                    if parameter_str=="":
+                        summary_file_dict[
+                            solver] = solver + "_" + track + "_summary.csv"
+                    else:
+                        summary_file_dict[
+                            solver + ":" + parameter_str] = solver  + "_" + track + "_summary.csv"
         print(summary_file_dict)
         summary_one_track(summary_folder, summary_file_dict, track)
 
