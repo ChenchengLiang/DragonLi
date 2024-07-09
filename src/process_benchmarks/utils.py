@@ -350,21 +350,18 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
     _write_summary_to_cvs(summary_folder, track_name, first_summary_title_row, first_summary_solver_row,
                           first_summary_data_rows, second_summary_title_row, second_summary_data_rows)
 
-
     #################### pair-wise comparison ########################
     print("----------------------- pairwise comparison ----------------------------")
-    #create folder
-    pairwise_folder=os.path.join(summary_folder, "pairwise_comparison")
+    # create folder
+    pairwise_folder = os.path.join(summary_folder, "pairwise_comparison")
     create_folder(pairwise_folder)
-
 
     # get pairwise combinations
     from itertools import combinations
     key_combinations = combinations(summary_file_dict.keys(), 2)
     pairwise_dict_list = [{k: summary_file_dict[k] for k in combo} for combo in key_combinations]
-    print("summary_file_dict len",len(summary_file_dict))
-    print("pairwise_dict_list len",len(pairwise_dict_list))
-
+    print("summary_file_dict len", len(summary_file_dict))
+    print("pairwise_dict_list len", len(pairwise_dict_list))
 
     for pairwise_dict in pairwise_dict_list:
         first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows, satisfiability_dict = _construct_first_and_second_summary(
@@ -376,18 +373,120 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
         compute_measurement_for_unique_solved_problems(first_summary_data_rows, first_summary_title_row,
                                                        first_summary_solver_row, second_summary_title_row,
                                                        second_summary_data_rows)
-        #print(pairwise_dict)
+        # print(pairwise_dict)
 
-        track_name="-".join([k for k in pairwise_dict])
-        one_pairwise_folder=os.path.join(pairwise_folder,track_name)
+        track_name = "-".join([k for k in pairwise_dict])
+        one_pairwise_folder = os.path.join(pairwise_folder, track_name)
         create_folder(one_pairwise_folder)
         _write_summary_to_cvs(one_pairwise_folder, track_name, first_summary_title_row, first_summary_solver_row,
                               first_summary_data_rows, second_summary_title_row, second_summary_data_rows)
+        # print("first_summary_title_row")
+        # print(first_summary_title_row)
+        # print("first_summary_solver_row")
+        # print(first_summary_solver_row)
+        # print("first_summary_data_rows")
+        # print(first_summary_data_rows)
+
+        # scatters for pairs
+        use_time_column=2
+        _one_pair_measurement(use_time_column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
+                              one_pairwise_folder)
+        split_number_column = 3
+        _one_pair_measurement(split_number_column, first_summary_title_row, first_summary_solver_row,
+                              first_summary_data_rows,
+                              one_pairwise_folder)
+
 
     print("----------------------- pairwise comparison done ----------------------------")
 
 
-def _write_summary_to_cvs(summary_folder,name_prefix,first_summary_title_row,first_summary_solver_row,first_summary_data_rows,second_summary_title_row,second_summary_data_rows):
+def _one_pair_measurement(column,first_summary_title_row,first_summary_solver_row,first_summary_data_rows,one_pairwise_folder):
+    column_index_solver_1 = column
+
+    offset_column = 3
+    column_index_solver_2 = column_index_solver_1 + offset_column
+    satisfiability_column_index = 1
+
+    measure_criteria = first_summary_title_row[column_index_solver_1]
+    solver_1_name = first_summary_solver_row[column_index_solver_1]
+    solver_2_name = first_summary_solver_row[column_index_solver_2]
+    satisfiability_list = []
+    solver_1_data_list = []
+    solver_2_data_list = []
+    for row in first_summary_data_rows:
+        satisfiability_list.append(_convert_string(row[satisfiability_column_index]))
+        solver_1_data_list.append(_convert_string(row[column_index_solver_1]))
+        solver_2_data_list.append(_convert_string(row[column_index_solver_2]))
+
+    data_dict = {"measurement": measure_criteria, "x_title": solver_1_name, "y_title": solver_2_name,
+                 "x_data": solver_1_data_list, "y_data": solver_2_data_list,
+                 "satisfiability_list": satisfiability_list,
+                 "x_data_mean": mean(solver_1_data_list), "y_data_mean": mean(solver_2_data_list),
+                 "x_data_min": min(solver_1_data_list), "y_data_min": min(solver_2_data_list),
+                 "x_data_max": max(solver_1_data_list), "y_data_max": max(solver_2_data_list)}
+    plot_scatter(one_pairwise_folder, data_dict)
+
+def plot_scatter(save_directory, data_dict):
+    import plotly.graph_objects as go
+
+    # Define a color for each satisfiability category
+    color_map = {
+        "SAT": 'green',
+        "UNSAT": 'red',
+        "UNKNOWN": 'yellow'
+    }
+    shape_map = {
+        "SAT": 'circle',
+        "UNSAT": 'x',
+        "UNKNOWN": 'diamond'
+    }
+    colors = [color_map[sat] for sat in data_dict["satisfiability_list"]]
+    shapes = [shape_map[sat] for sat in data_dict["satisfiability_list"]]
+    # Create the scatter plot
+    fig = go.Figure(
+        data=go.Scatter(x=data_dict["x_data"], y=data_dict["y_data"], mode='markers',
+                        text=data_dict["satisfiability_list"], marker=dict(
+                color=colors,  # Apply color settings here
+                symbol=shapes  # Apply shape settings here
+            )))
+
+
+    title = (
+        f"{data_dict['measurement']} - {data_dict['x_title']} vs {data_dict['y_title']} <br>"
+        f"x_mean: {data_dict['x_data_mean']}, x_min: {data_dict['x_data_min']}, x_max: {data_dict['x_data_max']} <br>"
+        f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']}"
+    )
+    # Update the layout to add more customization or styling
+    fig.update_layout(title=title,
+                      xaxis=dict(
+                          title=data_dict["x_title"],
+                          type='log',  # Setting x-axis to logarithmic scale
+                          autorange=True
+                      ),
+                      yaxis=dict(
+                          title=data_dict["y_title"],
+                          type='log',  # Setting y-axis to logarithmic scale
+                          autorange=True
+                      ))
+
+    fig.write_html(f"{save_directory}/{data_dict['measurement']}_scatter_plot.html")
+
+
+def _convert_string(value):
+    try:
+        # First, try to convert to int
+        return int(value)
+    except ValueError:
+        # If int conversion fails, try to convert to float
+        try:
+            return float(value)
+        except ValueError:
+            # If neither conversion works, return the original value
+            return value
+
+
+def _write_summary_to_cvs(summary_folder, name_prefix, first_summary_title_row, first_summary_solver_row,
+                          first_summary_data_rows, second_summary_title_row, second_summary_data_rows):
     summary_path = os.path.join(summary_folder, name_prefix + "_reconstructed_summary_1.csv")
     if os.path.exists(summary_path):
         os.remove(summary_path)
@@ -431,8 +530,8 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
         current_solver_unique_solved_unsat_count = 0
         for row in first_summary_data_rows:
             file_name = row[0]
-            #print("-----------------------")
-            #print(file_name)
+            # print("-----------------------")
+            # print(file_name)
             current_solver_solvability = UNKNOWN
             other_solver_solvability = UNKNOWN
             for measurement, solver, value in zip(first_summary_title_row, first_summary_solver_row, row):
@@ -443,15 +542,15 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
                 # print("measurement:", measurement)
                 # print("solver:", solver)
                 # print("value:", value)
-            #print(current_solver_solvability, other_solver_solvability)
+            # print(current_solver_solvability, other_solver_solvability)
             if current_solver_solvability == SAT and other_solver_solvability == UNKNOWN:
                 current_solver_unique_solved_sat_count += 1
             if current_solver_solvability == UNSAT and other_solver_solvability == UNKNOWN:
                 current_solver_unique_solved_unsat_count += 1
         unique_sat_problem_list.append(current_solver_unique_solved_sat_count)
         unique_unsat_problem_list.append(current_solver_unique_solved_unsat_count)
-    #print("unique_sat_problem_list", unique_sat_problem_list)
-    #print("unique_unsat_problem_list", unique_unsat_problem_list)
+    # print("unique_sat_problem_list", unique_sat_problem_list)
+    # print("unique_unsat_problem_list", unique_unsat_problem_list)
 
     # write to summary 2 file
     second_summary_title_row += ["sat_unique_solved"]

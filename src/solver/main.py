@@ -30,7 +30,7 @@ def main():
     # file_path = bench_folder + "/debug-eval/g_03_track_27.eq"
     # file_path = "/home/cheli243/Desktop/CodeToGit/Woorpje_benchmarks/debug-eval-uppmax/ALL/divided_1/04_track_1.eq"
     # file_path = bench_folder + "/debug-rank/1/g_01_track_multi_word_equations_generated_eval_1001_2000_1685.eq" #UNSAT 83 eqs
-    file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
+    #file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
 
     # file_path = bench_folder +"/test/03_track_11.eq"
     # Woorpje_benchmarks path
@@ -83,6 +83,8 @@ def main():
     # file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
     # file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
     # file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
+
+    file_path = bench_folder + "/conjunctive_03_track_eval_rank_task_1_1000/ALL/ALL/g_conjunctive_03_track_train_rank_task_1_1000_1.eq"
 
     # smt format
     # file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
