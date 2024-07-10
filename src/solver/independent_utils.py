@@ -430,3 +430,6 @@ def keep_first_one(numbers):
         # If there is no 1 in the list, do nothing
         pass
     return numbers
+
+def identity_function(x):
+    return x

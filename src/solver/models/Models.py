@@ -10,7 +10,8 @@ import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
-from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders, kill_gunicorn_processes
+from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders, kill_gunicorn_processes, \
+    identity_function
 
 from torch import nn, optim
 import pytorch_lightning as pl
@@ -23,7 +24,7 @@ import subprocess
 import os
 from src.solver.Constants import project_folder, bench_folder, checkpoint_folder
 from pytorch_lightning.loggers import MLFlowLogger
-
+from functools import partial
 
 ############################################# Rank task 1 #############################################
 
@@ -443,6 +444,56 @@ class Classifier(nn.Module):
             return torch.sigmoid(self.final_fc(x))
         else:
             return self.final_fc(x)
+
+class ClassifierMultiFilter(nn.Module):
+    def __init__(self, ffnn_hidden_dim, ffnn_layer_num, output_dim, ffnn_dropout_rate=0.5,
+                 first_layer_ffnn_hidden_dim_factor=2,num_filters=1,pool_type="concat"):
+        super(ClassifierMultiFilter, self).__init__()
+        self.output_dim = output_dim
+        self.num_filters=num_filters
+        self.pool_type=pool_type
+
+        self.filters = nn.ModuleList()
+        for _ in range(num_filters):
+            one_filter = nn.ModuleList()
+            #first layer for one_filter
+            one_filter.append(nn.Linear(ffnn_hidden_dim * first_layer_ffnn_hidden_dim_factor, ffnn_hidden_dim))
+            for _ in range(ffnn_layer_num):
+                one_filter.append(nn.Linear(ffnn_hidden_dim, ffnn_hidden_dim))
+
+            self.filters.append(one_filter)
+
+        pool_size_map={"concat":num_filters*ffnn_hidden_dim,"max":ffnn_hidden_dim,"min":ffnn_hidden_dim}
+        pool_func_map={"concat":partial(torch.cat,dim=1),"max":partial(torch.max,dim=0),"min":partial(torch.min,dim=0)}
+        pool_func_stack_map = {"concat": identity_function, "max": torch.stack,"min":torch.stack}
+        self.pool_func_stack=pool_func_stack_map[pool_type]
+        pool_size=pool_size_map[pool_type]
+        self.pool_func=pool_func_map[pool_type]
+        self.final_fc = nn.Linear(pool_size, output_dim)
+        self.dropout = nn.Dropout(ffnn_dropout_rate)
+
+    def forward(self, x):
+
+        filter_outputs = []
+        for filter_layers in self.filters:
+            x_filter = x
+            for i, layer in enumerate(filter_layers):
+                x_filter = layer(x_filter)
+                x_filter = F.relu(self.dropout(x_filter))
+            filter_outputs.append(torch.squeeze(x_filter))
+
+        stacked_filter_output=self.pool_func_stack(filter_outputs)
+        if self.pool_type == "concat":
+            pooled_output = self.pool_func(stacked_filter_output)
+        else:
+            pooled_output=self.pool_func(stacked_filter_output)[0]
+        print("pooled_output",pooled_output.shape)
+
+        # Pass the pooled output through the final layer
+        if self.output_dim == 1:  # adapt to BCELoss
+            return torch.sigmoid(self.final_fc(pooled_output))
+        else:
+            return self.final_fc(pooled_output)
 
 
 class BaseEmbedding(nn.Module):

@@ -22,7 +22,7 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 1000
+    end_idx = 5000
     track_name = f"conjunctive_03_track_train_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
