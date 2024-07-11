@@ -54,18 +54,18 @@ def main():
 
     # multiple equations
     # file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
     # file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/7/test7.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/8/test8.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/9/test9.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
-    # file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
     # file_path = bench_folder + "/examples/multi_eqs/5/g_04_track_generated_train_1_1000_5.eq"  # UNSAT
@@ -84,7 +84,7 @@ def main():
     # file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
     # file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
 
-    file_path = bench_folder + "/conjunctive_03_track_eval_rank_task_1_1000/ALL/ALL/g_conjunctive_03_track_train_rank_task_1_1000_1.eq"
+    #file_path = bench_folder + "/conjunctive_03_track_eval_rank_task_1_1000/ALL/ALL/g_conjunctive_03_track_train_rank_task_1_1000_1.eq"
 
     # smt format
     # file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"
@@ -100,6 +100,7 @@ def main():
     label_size = rank_task_label_size_map[rank_task]
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
+    eq_satisfiability="UNSAT"
 
     algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "fixed", "task": task,
                                                         "graph_type": graph_type,
@@ -123,19 +124,20 @@ def main():
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                                       "order_equations_method": "category_random",
-                                                      "termination_condition": "termination_condition_4",
+                                                      "termination_condition": "termination_condition_0",
                                                       "graph_type": graph_type,
                                                       "graph_func": graph_func_map[graph_type],
-                                                      "task": "dynamic_embedding", "label_size": label_size,"rank_task":rank_task}
+                                                      "task": "dynamic_embedding", "label_size": label_size,
+                                                      "rank_task":rank_task,"eq_satisfiability":eq_satisfiability}
 
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    # solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
+    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=True)
 
     print_results(result_dict)
 

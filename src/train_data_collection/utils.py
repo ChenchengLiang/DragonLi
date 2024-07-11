@@ -263,19 +263,28 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
 
         print("satisfiability:", satisfiability)
 
-        if satisfiability == SAT or satisfiability == UNSAT:
-            if algorithm == "SplitEquationsExtractData":
-                parameters_list = ["fixed",
-                                   f"--termination_condition {algorithm_parameters['termination_condition']}",
-                                   f"--graph_type {graph_type}",
-                                   f"--algorithm {algorithm}",
-                                   f"--order_equations_method {algorithm_parameters['order_equations_method']}",
-                                   f"--output_train_data True"
-                                   ]
-            else:
-                parameters_list = ["fixed",
-                                   f"--termination_condition {algorithm_parameters['termination_condition']}",
-                                   f"--output_train_data True"]
+        if satisfiability==SAT:
+            parameters_list = ["fixed",
+                               f"--termination_condition termination_condition_4",
+                               f"--graph_type {graph_type}",
+                               f"--algorithm {algorithm}",
+                               f"--order_equations_method {algorithm_parameters['order_equations_method']}",
+                               f"--output_train_data True",
+                               f"--eq_satisfiability SAT"
+                               ]
+        elif satisfiability == UNSAT:
+            parameters_list = ["fixed",
+                               f"--termination_condition termination_condition_0",
+                               f"--graph_type {graph_type}",
+                               f"--algorithm {algorithm}",
+                               f"--order_equations_method {algorithm_parameters['order_equations_method']}",
+                               f"--output_train_data True",
+                               f"--eq_satisfiability UNSAT"
+                               ]
+        else:
+            print("UNKNOWN, no data extracted")
+
+
 
             result_dict = run_on_one_problem(file_path=file_path,
                                              parameters_list=parameters_list,

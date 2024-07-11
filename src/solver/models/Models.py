@@ -487,7 +487,7 @@ class ClassifierMultiFilter(nn.Module):
             pooled_output = self.pool_func(stacked_filter_output)
         else:
             pooled_output=self.pool_func(stacked_filter_output)[0]
-        print("pooled_output",pooled_output.shape)
+
 
         # Pass the pooled output through the final layer
         if self.output_dim == 1:  # adapt to BCELoss

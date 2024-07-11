@@ -14,7 +14,8 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 def main():
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
-    benchmark_name = "conjunctive_03_track_eval_rank_task_1_1000"
+    benchmark_name = "conjunctive_03_track_train_rank_task_1_5000"
+    #benchmark_name = "conjunctive_03_track_eval_rank_task_1_1000"
     rank_task = 2
     graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
@@ -40,13 +41,13 @@ def main():
         #           f"--algorithm {algorithm}",
         #           f"--order_equations_method hybrid_fixed_random"
         #           ]],
-        #
-        # # branch:fixed, order equations: category
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category"
-        #           ]],
+
+        # branch:fixed, order equations: category
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category"
+                  ]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -163,11 +164,11 @@ def main():
         #           f"--order_equations_method longest"
         #           ]],
 
-        #["z3", []],
+        ["z3", []],
         ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        # ["woorpje", []],
-        # ["ostrich", []],
-        # ["cvc5", []],
+        ["woorpje", []],
+        ["ostrich", []],
+        ["cvc5", []],
 
         # gnn based configurations
         # branch: fixed
