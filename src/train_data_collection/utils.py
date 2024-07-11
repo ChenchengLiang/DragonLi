@@ -206,7 +206,8 @@ def get_parser():
     return Parser(parser_type)
 
 
-def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
+def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,train_data_solvability):
+
     algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
                      "SplitEquations": SplitEquations, "SplitEquationsExtractData": SplitEquationsExtractData}
     graph_type = "graph_1"
@@ -220,7 +221,7 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters):
         parameters_list = ["fixed", f"--algorithm {algorithm}", f"--termination_condition termination_condition_0"]
 
     # prepare train folder
-    all_eq_folder = folder + "/SAT"
+    all_eq_folder = f"{folder}/{train_data_solvability}"
     train_eq_folder = folder + "/train"
 
     # copy answers from divide folder

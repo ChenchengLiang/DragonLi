@@ -16,24 +16,24 @@ import csv
 
 
 def main():
-    # collect_answers_from_divided_folders(benchmark="03_track_train_task_3_merged_1_40000")
+    collect_answers_from_divided_folders(benchmark="conjunctive_01_track_train_rank_task_1_100")
 
 
 
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_5001_10000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_5001_10000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_10001_15000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_10001_15000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_15001_20000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_15001_20000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_20001_25000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_20001_25000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_25001_30000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_25001_30000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_30001_35000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_30001_35000_summary.csv")
-    collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_35001_40000",
-                                     cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_35001_40000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_5001_10000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_5001_10000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_10001_15000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_10001_15000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_15001_20000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_15001_20000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_20001_25000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_20001_25000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_25001_30000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_25001_30000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_30001_35000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_30001_35000_summary.csv")
+    # collect_answers_from_summary_cvs(benchmark="03_track_train_task_3_35001_40000",
+    #                                  cvs_file="this_fixed_execute_termination_condition_0_03_track_train_task_3_35001_40000_summary.csv")
 
 
 

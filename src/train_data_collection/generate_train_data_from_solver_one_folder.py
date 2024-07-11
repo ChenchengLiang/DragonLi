@@ -37,11 +37,12 @@ def main():
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed", "order_equations_method": "category_random",
                             "termination_condition": "termination_condition_4", "task": "dynamic_embedding"}
+    train_data = "UNSAT"
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark
 
-    generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters)
+    generate_train_data_in_one_folder(benchmark_path + "/" + folder, algorithm, algorithm_parameters,train_data)
 
 
 if __name__ == '__main__':

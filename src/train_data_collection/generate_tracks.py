@@ -22,10 +22,10 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 5000
-    track_name = f"conjunctive_03_track_train_rank_task_{start_idx}_{end_idx}"
+    end_idx = 100
+    track_name = f"conjunctive_01_track_train_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
