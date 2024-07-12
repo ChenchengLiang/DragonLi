@@ -16,7 +16,8 @@ import csv
 
 
 def main():
-    collect_answers_from_divided_folders(benchmark="conjunctive_01_track_train_rank_task_1_100")
+    collect_answers_from_divided_folders(benchmark="01_track_multi_word_equations_generated_train_1_40000_for_rank_task_2")
+
 
 
 

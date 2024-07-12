@@ -287,18 +287,18 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
 
 
 
-            result_dict = run_on_one_problem(file_path=file_path,
-                                             parameters_list=parameters_list,
-                                             solver="this", solver_log=False)
+        result_dict = run_on_one_problem(file_path=file_path,
+                                         parameters_list=parameters_list,
+                                         solver="this", solver_log=False)
 
-            # parser_type = EqParser()
-            # parser = Parser(parser_type)
-            # parsed_content = parser.parse(file_path)
-            # # print("parsed_content:", parsed_content)
-            #
-            # solver = Solver(algorithm=algorithm_map[algorithm], algorithm_parameters=algorithm_parameters)
-            #
-            # result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
+        # parser_type = EqParser()
+        # parser = Parser(parser_type)
+        # parsed_content = parser.parse(file_path)
+        # # print("parsed_content:", parsed_content)
+        #
+        # solver = Solver(algorithm=algorithm_map[algorithm], algorithm_parameters=algorithm_parameters)
+        #
+        # result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
     # compress
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")

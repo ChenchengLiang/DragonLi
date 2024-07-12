@@ -16,14 +16,16 @@ import glob
 
 def main():
     # generate track
-    track_name="03_track_generated_train_1_20000_task_3_continuously_train"
+    track_name="conjunctive_01_track_train_rank_task_1_100"
     track_folder = bench_folder + "/"+track_name
 
+    satisfiability="UNSAT"
+
     # divide to train and valid folder
-    split_to_train_valid_set(source_folder=track_folder+"/SAT",train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
+    split_to_train_valid_set(source_folder=f"{track_folder}/{satisfiability}",train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
     #handle valid folder
     os.mkdir(track_folder+"/valid_data")
-    shutil.move(track_folder+"/valid",track_folder+"/valid_data/SAT")
+    shutil.move(track_folder+"/valid",f"{track_folder}/valid_data/{satisfiability}")
 
 
     # divide train to multiple folders
@@ -35,7 +37,7 @@ def main():
     for divided_folder in divided_folder_list:
         os.mkdir(track_folder+"/"+divided_folder)
     for divided_folder in divided_folder_list:
-        shutil.move(track_folder+"/train/"+divided_folder,track_folder+"/"+divided_folder+"/SAT")
+        shutil.move(track_folder+"/train/"+divided_folder,f"{track_folder}/{divided_folder}/{satisfiability}")
 
     shutil.rmtree(track_folder+"/train")
 
