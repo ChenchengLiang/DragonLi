@@ -352,6 +352,7 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
 
     #################### pair-wise comparison ########################
     print("----------------------- pairwise comparison ----------------------------")
+    #todo: exlude some pairwise comparison
     # create folder
     pairwise_folder = os.path.join(summary_folder, "pairwise_comparison")
     create_folder(pairwise_folder)

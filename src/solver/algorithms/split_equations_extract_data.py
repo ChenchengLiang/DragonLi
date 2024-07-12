@@ -1,5 +1,6 @@
 import os.path
 import random
+import time
 from collections import deque
 from typing import List, Dict, Tuple, Deque, Union, Callable
 
@@ -45,10 +46,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
         self.max_found_sat_path_extraction = 20
-        self.max_found_unsat_leaf_node_extraction = 100
+        self.max_found_unsat_leaf_node_extraction = 5000
         self.max_found_path_extraction = 20
-        self.max_found_unsat_first_layer_node = 20
+        self.max_found_unsat_first_layer_node = 10
+        self.max_total_split_eq_call=30000
         self.eq_satisfiability = parameters["eq_satisfiability"]
+        self.start_time=time.time()
 
         # systematic search control
         self.systematic_search = False
@@ -99,7 +102,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             # found unsat leaf node
             "termination_condition_5": self.early_termination_condition_5,
             # found unsat first layer node
-            "termination_condition_6": self.early_termination_condition_6
+            "termination_condition_6": self.early_termination_condition_6,
+            # total_split_eq_call
+            "termination_condition_7": self.early_termination_condition_7
         }
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
@@ -156,7 +161,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call,
                         "total_category_call": self.total_category_call, "found_sat_path": self.found_sat_path,
-                        "found_unsat_first_layer_node": self.found_unsat_first_layer_node}
+                        "found_unsat_first_layer_node": self.found_unsat_first_layer_node,"time consumption":time.time()-self.start_time}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -167,7 +172,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.total_split_eq_call += 1
 
         if self.total_split_eq_call % 10000 == 0:
-            print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
+            print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth}, spent time:{time.time()-self.start_time} -----")
 
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label)
 
@@ -336,8 +341,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         return total_branch_number
 
     def extract_dynamic_embedding_train_data_unsat(self, branch_eq_satisfiability_list, current_node):
-        satisfiability_list, label_list, back_track_count_list, middle_branch_eq_file_name_list, one_train_data_name = self.extract_dynamic_embedding_train_data_preprocess(
-            self, branch_eq_satisfiability_list, current_node)
+        satisfiability_list, label_list, back_track_count_list, middle_branch_eq_file_name_list, one_train_data_name = self.extract_dynamic_embedding_train_data_preprocess(branch_eq_satisfiability_list, current_node)
 
         # output one-hot encoding labels
         # mix unsat and unknown
@@ -454,6 +458,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
     def early_termination_condition_6(self, current_depth: int):
         if self.found_unsat_first_layer_node >= self.max_found_unsat_first_layer_node or current_depth > self.termination_condition_max_depth:
+            return UNKNOWN
+
+    def early_termination_condition_7(self, current_depth: int):
+        if self.total_split_eq_call >= self.max_total_split_eq_call or current_depth > self.termination_condition_max_depth:
             return UNKNOWN
 
     def stochastic_termination(self, current_depth):
