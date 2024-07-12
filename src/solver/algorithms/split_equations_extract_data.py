@@ -419,7 +419,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         self.train_data_count += 1
         return satisfiability_list, label_list
-   
+
 
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
         poped_eq = f.eq_list.pop(index)

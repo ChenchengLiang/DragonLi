@@ -36,7 +36,8 @@ def get_gnn_and_classifier(parameters):
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
             gnn_dropout_rate=parameters["gnn_dropout_rate"],
-            embedding_type=embedding_type
+            embedding_type=embedding_type, gnn_num_filters=parameters["gnn_num_filters"],
+            gnn_pool_type=parameters["gnn_pool_type"]
         )
 
         # classifier = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
@@ -56,7 +57,8 @@ def get_gnn_and_classifier(parameters):
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
             gnn_dropout_rate=parameters["gnn_dropout_rate"],
-            embedding_type=embedding_type
+            embedding_type=embedding_type, gnn_num_filters=parameters["gnn_num_filters"],
+            gnn_pool_type=parameters["gnn_pool_type"]
         )
         # classifier = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
         #                         ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
@@ -74,7 +76,8 @@ def get_gnn_and_classifier(parameters):
             gnn_layer_num=parameters["gnn_layer_num"],
             gnn_dropout_rate=parameters["gnn_dropout_rate"],
             embedding_type=embedding_type,
-            pooling_type=parameters["pooling_type"]
+            pooling_type=parameters["pooling_type"], gnn_num_filters=parameters["gnn_num_filters"],
+            gnn_pool_type=parameters["gnn_pool_type"]
         )
         if parameters["pooling_type"] == "mean":
             first_layer_ffnn_hidden_dim_factor = 1
@@ -88,7 +91,8 @@ def get_gnn_and_classifier(parameters):
         #                         first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor)
 
         classifier = ClassifierMultiFilter(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                                           ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=parameters["label_size"],
+                                           ffnn_layer_num=parameters["ffnn_layer_num"],
+                                           output_dim=parameters["label_size"],
                                            ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
                                            first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
                                            num_filters=parameters["classifier_num_filter"],

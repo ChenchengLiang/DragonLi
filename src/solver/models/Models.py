@@ -213,11 +213,11 @@ class GraphClassifierLightning(pl.LightningModule):
 
 class GNNRankTask2(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',
-                 pooling_type='mean'):
+                 pooling_type='mean',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask2, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         if pooling_type == 'mean':
             self.pooling = self.mean_gnn_embeddings
         elif pooling_type == 'concat':
@@ -267,11 +267,11 @@ class GNNRankTask2(nn.Module):
 
 
 class GNNRankTask0(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask0, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
@@ -280,11 +280,11 @@ class GNNRankTask0(nn.Module):
 
 
 class GNNRankTask0UnbachLoop(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask0UnbachLoop, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
@@ -299,11 +299,11 @@ class GNNRankTask0UnbachLoop(nn.Module):
 
 
 class GNNRankTask0HashTable(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask0HashTable, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
 
         self.single_dgl_hash_table = {}
         self.single_dgl_hash_table_hit = 0
@@ -329,11 +329,11 @@ class GNNRankTask0HashTable(nn.Module):
 
 
 class GNNRankTask1BatchProcess(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask1BatchProcess, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         self.gnn_hidden_dim = gnn_hidden_dim
 
     # dealing batch graphs
@@ -354,11 +354,11 @@ class GNNRankTask1BatchProcess(nn.Module):
 
 
 class GNNRankTask1(nn.Module):
-    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):
+    def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask1, self).__init__()
         embedding_class = GCNEmbedding if embedding_type == 'GCN' else GINEmbedding
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
-                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate)
+                                         num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         self.gnn_hidden_dim = gnn_hidden_dim
 
         self.single_dgl_hash_table = {}
@@ -497,12 +497,21 @@ class ClassifierMultiFilter(nn.Module):
 
 
 class BaseEmbedding(nn.Module):
-    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate,num_filters=1,pool_type="concat"):
         super(BaseEmbedding, self).__init__()
         self.node_embedding = nn.Embedding(num_node_types, hidden_feats)
         self.dropout = nn.Dropout(dropout_rate)
-        self.gnn_layers = nn.ModuleList()
-        self._build_layers(hidden_feats, num_gnn_layers)
+        self.num_filters=num_filters
+        self.pool_type=pool_type
+
+        self.transform_layer=nn.Linear(hidden_feats*num_filters, hidden_feats)
+
+        self.filters = nn.ModuleList()
+        for _ in range(num_filters):
+            self.gnn_layers = nn.ModuleList()
+            self._build_layers(hidden_feats, num_gnn_layers)
+            self.filters.append(self.gnn_layers)
+
 
         # self.gating_network = GatingNetwork(hidden_feats)
         # self.global_attention_pooling = GlobalAttentionPooling(self.gating_network)
@@ -515,13 +524,23 @@ class BaseEmbedding(nn.Module):
 
         h = self.node_embedding(g.ndata['feat'])
 
-        for i, layer in enumerate(self.gnn_layers):
-            h = self.apply_layer(g, h, layer, i)
+        filter_outputs = []
+        for filter_layers in self.filters:
+            h_filter = h
+            for i, layer in enumerate(filter_layers):
+                h_filter = self.apply_layer(g, h_filter, layer, i)
+            g.ndata['h'] = h_filter
+            # hg=self.global_attention_pooling(g, h)
+            hg = dgl.mean_nodes(g, 'h')
+            filter_outputs.append(torch.squeeze(hg))
 
-        g.ndata['h'] = h
-        # hg=self.global_attention_pooling(g, h)
-        hg = dgl.mean_nodes(g, 'h')
-        return hg
+        if self.pool_type == "concat":
+            pool_output=torch.cat(filter_outputs,dim=1)
+            pool_output=self.transform_layer(pool_output)
+
+
+
+        return pool_output
 
     def apply_layer(self, g, h, layer, layer_idx):
         h = layer(g, h)
@@ -533,8 +552,8 @@ class BaseEmbedding(nn.Module):
 
 
 class GCNEmbedding(BaseEmbedding):
-    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
-        super(GCNEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate,num_filters=1,pool_type="concat"):
+        super(GCNEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate,num_filters=num_filters,pool_type=pool_type)
         self._build_layers(hidden_feats, num_gnn_layers)
 
     def _build_layers(self, hidden_feats, num_gnn_layers):
@@ -544,8 +563,8 @@ class GCNEmbedding(BaseEmbedding):
 
 
 class GINEmbedding(BaseEmbedding):
-    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
-        super(GINEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate,num_filters=1,pool_type="concat"):
+        super(GINEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate,num_filters=num_filters,pool_type=pool_type)
         self._build_layers(hidden_feats, num_gnn_layers)
 
     def _build_layers(self, hidden_feats, num_gnn_layers):

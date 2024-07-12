@@ -16,7 +16,7 @@ import glob
 
 def main():
     # generate track
-    track_name="conjunctive_01_track_train_rank_task_1_100"
+    track_name="01_track_multi_word_equations_generated_train_1_40000_for_rank_task_2"
     track_folder = bench_folder + "/"+track_name
 
     satisfiability="UNSAT"
@@ -29,7 +29,7 @@ def main():
 
 
     # divide train to multiple folders
-    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=300)
+    dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=20000)
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
     print(divided_folder_list)
