@@ -36,7 +36,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
         self.found_sat_path = 0
         self.found_unsat_first_layer_node = 0
-        self.found_unsat_leaf_node=0
+        self.found_unsat_leaf_node = 0
         self.found_path = 0
         self.total_output_branches = 0
         self.total_category_call = 0
@@ -47,13 +47,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_found_sat_path_extraction = 20
         self.max_found_unsat_leaf_node_extraction = 100
         self.max_found_path_extraction = 20
-        self.max_found_unsat_first_layer_node=20
-        self.eq_satisfiability=parameters["eq_satisfiability"]
+        self.max_found_unsat_first_layer_node = 20
+        self.eq_satisfiability = parameters["eq_satisfiability"]
 
         # systematic search control
         self.systematic_search = False
         self.non_systematic_search_hybrid_control = True
-        self.hybrid_rate=0.5
+        self.hybrid_rate = 0.5
         # stochastic search control
         self.stochastic_termination_control = False
         self.stochastic_termination_denominator = self.termination_condition_max_depth  # todo this can be increased when long time without new sat path
@@ -61,7 +61,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # depth search control
         self.depth_termination_control = False
         self.return_depth = self.termination_condition_max_depth
-        self.return_depth_location = 1 # could be a stochastic number between 1 to last path depth
+        self.return_depth_location = 1  # could be a stochastic number between 1 to last path depth
         self.last_sat_path_depth = self.termination_condition_max_depth
         self.last_sat_path_depth_factor = 2
 
@@ -69,6 +69,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.train_data_count = 0
 
+        self.extract_dynamic_embedding_train_data = self.extract_dynamic_embedding_train_data_sat if self.eq_satisfiability == SAT else self.extract_dynamic_embedding_train_data_unsat
         self.order_equations_func_map = {"fixed": order_equations_fixed,
                                          "random": order_equations_random,
                                          "hybrid_fixed_random": order_equations_hybrid_fixed_random,
@@ -85,29 +86,29 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.order_branches_func: Callable = self.branch_method_func_map[self.parameters["branch_method"]]
 
         self.check_termination_condition_map = {
-                                                # no limit
-                                                "termination_condition_0": self.early_termination_condition_0,
-                                                # restart
-                                                "termination_condition_1": self.early_termination_condition_1,
-                                                # max depth
-                                                "termination_condition_2": self.early_termination_condition_2,
-                                                # found path
-                                                "termination_condition_3": self.early_termination_condition_3,
-                                                # found sat path
-                                                "termination_condition_4": self.early_termination_condition_4,
-                                                # found unsat leaf node
-                                                "termination_condition_5":self.early_termination_condition_5,
-                                                # found unsat first layer node
-                                                "termination_condition_6": self.early_termination_condition_6
-                                                }
+            # no limit
+            "termination_condition_0": self.early_termination_condition_0,
+            # restart
+            "termination_condition_1": self.early_termination_condition_1,
+            # max depth
+            "termination_condition_2": self.early_termination_condition_2,
+            # found path
+            "termination_condition_3": self.early_termination_condition_3,
+            # found sat path
+            "termination_condition_4": self.early_termination_condition_4,
+            # found unsat leaf node
+            "termination_condition_5": self.early_termination_condition_5,
+            # found unsat first layer node
+            "termination_condition_6": self.early_termination_condition_6
+        }
         self.check_termination_condition_func: Callable = self.check_termination_condition_map[
             self.parameters["termination_condition"]]
 
         self.stochastic_termination_func: Callable = self.stochastic_termination if self.stochastic_termination_control == True else self.return_none_func
         self.depth_termination_func: Callable = self.depth_termination if self.depth_termination_control == True else self.return_none_func
 
-        self.depth_extract_data_map={}
-        self.depth_branch_number_map={}
+        self.depth_extract_data_map = {}
+        self.depth_branch_number_map = {}
 
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -128,7 +129,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # initialize the tree with a node
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
-                "back_track_count": 0,"gnn_call":False})
+                "back_track_count": 0, "gnn_call": False})
         self.nodes.append(initial_node)
 
         try:
@@ -144,18 +145,18 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 satisfiability = RECURSION_ERROR
                 # print(RECURSION_ERROR)
 
-        #output UNSAT train data
-        for k,value in self.depth_extract_data_map.items():
-            (branch_eq_satisfiability_list,current_node)=value
-            _,_=self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,current_node)
+        # output UNSAT train data
+        for k, value in self.depth_extract_data_map.items():
+            (branch_eq_satisfiability_list, current_node) = value
+            _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
 
         # notice that the name "Total explore_paths call" is for summary script to parse
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call,
-                        "total_category_call": self.total_category_call,"found_sat_path":self.found_sat_path,
-                        "found_unsat_first_layer_node":self.found_unsat_first_layer_node}
+                        "total_category_call": self.total_category_call, "found_sat_path": self.found_sat_path,
+                        "found_unsat_first_layer_node": self.found_unsat_first_layer_node}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -207,9 +208,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 # control non-systematic search
                 if self.systematic_search == False:
                     self.stochastic_termination_denominator = current_depth * self.stochastic_termination_denominator_factor
-                    self.return_depth = self.return_depth_location # return to a fixed number
-                    #self.return_depth = random.randint(1, int(self.last_sat_path_depth/self.last_sat_path_depth_factor)) #return to a random number between 1 to last path depth
-                    if self. non_systematic_search_hybrid_control == True:
+                    self.return_depth = self.return_depth_location  # return to a fixed number
+                    # self.return_depth = random.randint(1, int(self.last_sat_path_depth/self.last_sat_path_depth_factor)) #return to a random number between 1 to last path depth
+                    if self.non_systematic_search_hybrid_control == True:
                         probability = random.random()
                         if probability < self.hybrid_rate:
                             self.stochastic_termination_control = True
@@ -230,7 +231,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             return (satisfiability, current_formula, current_node)
         else:
             # systematic search training data by using "order_equations_method": "fixed"
-            current_formula = self.order_equations_func_wrapper(current_formula,current_node)
+            current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
             for index, eq in enumerate(list(current_formula.eq_list)):
@@ -268,7 +269,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 else:
                     current_eq_node[1]["status"] = UNSAT
                     branch_eq_satisfiability_list.append((current_eq, UNSAT, current_eq_node[1]["back_track_count"]))
-                    if current_depth==0:
+                    if current_depth == 0:
                         self.found_unsat_first_layer_node += 1
 
             current_node[1]["back_track_count"] = split_back_track_count
@@ -279,12 +280,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
-
             if self.parameters["output_train_data"] == True:
 
-                if self.eq_satisfiability==SAT:
+                if self.eq_satisfiability == SAT:
                     # output labeled eqs according to order_equations_method
-                    if len(branch_eq_satisfiability_list) > 1: #todo lower the output rate when length is small
+                    if len(branch_eq_satisfiability_list) > 1:  # todo lower the output rate when length is small
 
                         # for no SAT eq case, only output some percentage of them
                         output_decision = False
@@ -296,12 +296,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
                         if output_decision == True:
                             if "category" in self.parameters["order_equations_method"]:  # category
-                                categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(current_formula)
+                                categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(
+                                    current_formula)
                                 # Check if the equation categories are only 5 and 6
                                 only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
                                 if only_5_and_6 == True:
-                                    _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
-                                                                                              current_node)
+                                    _, label_list = self.extract_dynamic_embedding_train_data(
+                                        branch_eq_satisfiability_list,
+                                        current_node)
                                     # print("total eqs", len(current_formula.eq_list))
                                     # for eq, label in zip(current_formula.eq_list, label_list):
                                     #     print(eq.eq_str, label)
@@ -311,8 +313,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                 # print("total eqs",len(current_formula.eq_list))
                                 # for eq,label in zip(current_formula.eq_list,label_list):
                                 #     print(eq.eq_str,label)
-                else: #self.eq_satisfiability==UNSAT
-                    if current_depth==0:
+                else:  # self.eq_satisfiability==UNSAT
+                    if current_depth == 0:
                         self.depth_extract_data_map[current_depth] = (branch_eq_satisfiability_list, current_node)
 
                     # if current_depth not in self.depth_extract_data_map:
@@ -325,31 +327,41 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     #         self.depth_branch_number_map[current_depth]=total_branch_number
                     #         self.depth_extract_data_map[current_depth]=(branch_eq_satisfiability_list,current_node)
 
-
             return (current_node[1]["status"], current_formula, current_node)
 
-    def compute_total_branch_number(self,branch_eq_satisfiability_list):
+    def compute_total_branch_number(self, branch_eq_satisfiability_list):
         total_branch_number = 0
         for index, (eq, satisfiability, branch_number) in enumerate(branch_eq_satisfiability_list):
             total_branch_number += branch_number
         return total_branch_number
-    def extract_dynamic_embedding_train_data(self, branch_eq_satisfiability_list, current_node):
-        node_id=current_node[0]
-        current_node[1]["output_to_file"] = True
-        self.total_output_branches += 1
 
-        label_list = [0] * len(branch_eq_satisfiability_list)
-        satisfiability_list = []
-        back_track_count_list = []
-        middle_branch_eq_file_name_list = []
-        one_train_data_name = f"{self.file_name}@{node_id}"
-        for index, (eq, satisfiability, branch_number) in enumerate(branch_eq_satisfiability_list):
-            satisfiability_list.append(satisfiability)
-            back_track_count_list.append(branch_number)
-            one_eq_file_name = f"{self.file_name}@{node_id}:{index}"
+    def extract_dynamic_embedding_train_data_unsat(self, branch_eq_satisfiability_list, current_node):
+        satisfiability_list, label_list, back_track_count_list, middle_branch_eq_file_name_list, one_train_data_name = self.extract_dynamic_embedding_train_data_preprocess(
+            self, branch_eq_satisfiability_list, current_node)
 
-            eq.output_eq_file_rank(one_eq_file_name, satisfiability)
-            middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name) + ".eq")
+        # output one-hot encoding labels
+        # mix unsat and unknown
+        if satisfiability_list.count(UNSAT) >= 1 and satisfiability_list.count(UNKNOWN) >= 1:
+            if satisfiability_list.count(UNSAT) == 1:
+                label_list[satisfiability_list.index(UNSAT)] = 1
+            else:  # satisfiability_list.count(UNSAT)>1
+                unsat_back_track_counts = [(index, back_track_count_list[index]) for index, value in
+                                             enumerate(satisfiability_list) if value == UNSAT]
+                min_back_track_count_index = min(unsat_back_track_counts, key=lambda x: x[1])[0]
+                label_list[min_back_track_count_index] = 1
+        else:  # only unsat or unknown
+            min_back_track_count_index = back_track_count_list.index(min(back_track_count_list))
+            label_list[min_back_track_count_index] = 1
+
+        assert sum(label_list) == 1
+
+        return self.extract_dynamic_embedding_train_data_postprocess(satisfiability_list, back_track_count_list,
+                                                                     label_list, middle_branch_eq_file_name_list,
+                                                                     one_train_data_name)
+
+
+    def extract_dynamic_embedding_train_data_sat(self, branch_eq_satisfiability_list, current_node):
+        satisfiability_list,label_list,back_track_count_list,middle_branch_eq_file_name_list,one_train_data_name=self.extract_dynamic_embedding_train_data_preprocess(self, branch_eq_satisfiability_list, current_node)
 
         # output one-hot encoding labels
         if satisfiability_list.count(SAT) == 1:
@@ -375,6 +387,31 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         assert sum(label_list) == 1
 
+        return self.extract_dynamic_embedding_train_data_postprocess(satisfiability_list, back_track_count_list,
+                                                                     label_list, middle_branch_eq_file_name_list,
+                                                                     one_train_data_name)
+
+    def extract_dynamic_embedding_train_data_preprocess(self, branch_eq_satisfiability_list, current_node):
+        node_id = current_node[0]
+        current_node[1]["output_to_file"] = True
+        self.total_output_branches += 1
+
+        label_list = [0] * len(branch_eq_satisfiability_list)
+        satisfiability_list = []
+        back_track_count_list = []
+        middle_branch_eq_file_name_list = []
+        one_train_data_name = f"{self.file_name}@{node_id}"
+        for index, (eq, satisfiability, branch_number) in enumerate(branch_eq_satisfiability_list):
+            satisfiability_list.append(satisfiability)
+            back_track_count_list.append(branch_number)
+            one_eq_file_name = f"{self.file_name}@{node_id}:{index}"
+
+            eq.output_eq_file_rank(one_eq_file_name, satisfiability)
+            middle_branch_eq_file_name_list.append(os.path.basename(one_eq_file_name) + ".eq")
+
+        return satisfiability_list,label_list,back_track_count_list,middle_branch_eq_file_name_list,one_train_data_name
+
+    def extract_dynamic_embedding_train_data_postprocess(self,satisfiability_list,back_track_count_list,label_list,middle_branch_eq_file_name_list,one_train_data_name):
         # write label_list to file
         label_dict = {"satisfiability_list": satisfiability_list, "back_track_count_list": back_track_count_list,
                       "label_list": label_list, "middle_branch_eq_file_name_list": middle_branch_eq_file_name_list}
@@ -382,6 +419,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         self.train_data_count += 1
         return satisfiability_list, label_list
+   
 
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
         poped_eq = f.eq_list.pop(index)
@@ -389,7 +427,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
-
 
     def early_termination_condition_0(self, current_depth: int):
         if current_depth > self.termination_condition_max_depth:
@@ -438,8 +475,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.return_depth = self.termination_condition_max_depth
         else:
             return None
-
-
 
     def visualize(self, file_path: str, graph_func: Callable):
         visualize_path_html(self.nodes, self.edges, file_path)
