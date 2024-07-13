@@ -49,9 +49,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_found_unsat_leaf_node_extraction = 5000
         self.max_found_path_extraction = 20
         self.max_found_unsat_first_layer_node = 10
-        self.max_total_split_eq_call=30000
+        self.max_total_split_eq_call=15000
         self.eq_satisfiability = parameters["eq_satisfiability"]
         self.start_time=time.time()
+        self.first_time_reach_termination_condition=False
 
         # systematic search control
         self.systematic_search = False
@@ -151,9 +152,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 # print(RECURSION_ERROR)
 
         # output UNSAT train data
-        for k, value in self.depth_extract_data_map.items():
-            (branch_eq_satisfiability_list, current_node) = value
-            _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
+        # if self.eq_satisfiability==UNSAT:
+        #     self.output_unsat_train_data()
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
 
@@ -193,7 +193,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.found_path += 1
             return (res, original_formula, current_node)  # terminate current branch
 
-        res = self.check_termination_condition_func(current_depth)
+        #res = self.check_termination_condition_func(current_depth)
+        res = self.early_termination_wrapper(current_depth)
         if res != None:  # None denote skip termination check
             current_node[1]["status"] = res
             current_node[1]["back_track_count"] = 1
@@ -300,27 +301,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                 output_decision = True
 
                         if output_decision == True:
-                            if "category" in self.parameters["order_equations_method"]:  # category
-                                categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(
-                                    current_formula)
-                                # Check if the equation categories are only 5 and 6
-                                only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
-                                if only_5_and_6 == True:
-                                    _, label_list = self.extract_dynamic_embedding_train_data(
-                                        branch_eq_satisfiability_list,
-                                        current_node)
-                                    # print("total eqs", len(current_formula.eq_list))
-                                    # for eq, label in zip(current_formula.eq_list, label_list):
-                                    #     print(eq.eq_str, label)
-                            else:  # fix or random
-                                _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
-                                                                                          current_node)
-                                # print("total eqs",len(current_formula.eq_list))
-                                # for eq,label in zip(current_formula.eq_list,label_list):
-                                #     print(eq.eq_str,label)
+                            self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
                 else:  # self.eq_satisfiability==UNSAT
-                    if current_depth == 0:
-                        self.depth_extract_data_map[current_depth] = (branch_eq_satisfiability_list, current_node)
+                    self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+
+                    # if current_depth == 0:
+                    #     self.depth_extract_data_map[current_depth] = (branch_eq_satisfiability_list, current_node)
 
                     # if current_depth not in self.depth_extract_data_map:
                     #     self.depth_extract_data_map[current_depth]=(branch_eq_satisfiability_list,current_node)
@@ -333,6 +319,27 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     #         self.depth_extract_data_map[current_depth]=(branch_eq_satisfiability_list,current_node)
 
             return (current_node[1]["status"], current_formula, current_node)
+
+
+    def output_one_train_data(self,current_formula,branch_eq_satisfiability_list,current_node):
+        if "category" in self.parameters["order_equations_method"]:  # category
+            categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(
+                current_formula)
+            # Check if the equation categories are only 5 and 6
+            only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+            if only_5_and_6 == True:
+                _, label_list = self.extract_dynamic_embedding_train_data(
+                    branch_eq_satisfiability_list,
+                    current_node)
+                # print("total eqs", len(current_formula.eq_list))
+                # for eq, label in zip(current_formula.eq_list, label_list):
+                #     print(eq.eq_str, label)
+        else:  # fix or random
+            _, label_list = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list,
+                                                                      current_node)
+            # print("total eqs",len(current_formula.eq_list))
+            # for eq,label in zip(current_formula.eq_list,label_list):
+            #     print(eq.eq_str,label)
 
     def compute_total_branch_number(self, branch_eq_satisfiability_list):
         total_branch_number = 0
@@ -425,12 +432,22 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         return satisfiability_list, label_list
 
 
+    def output_unsat_train_data(self):
+        for k, value in self.depth_extract_data_map.items():
+            (branch_eq_satisfiability_list, current_node) = value
+            _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
+
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
         poped_eq = f.eq_list.pop(index)
         return poped_eq, Formula(f.eq_list)
 
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
+
+    def early_termination_wrapper(self,current_depth):
+        res=self.check_termination_condition_func(current_depth)
+        return res
+
 
     def early_termination_condition_0(self, current_depth: int):
         if current_depth > self.termination_condition_max_depth:

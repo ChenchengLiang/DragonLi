@@ -297,7 +297,7 @@ def _construct_first_and_second_summary(summary_folder, summary_file_dict):
     return first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows, satisfiability_dict
 
 
-def summary_one_track(summary_folder, summary_file_dict, track_name):
+def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
     first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows, satisfiability_dict = _construct_first_and_second_summary(
         summary_folder, summary_file_dict)
 
@@ -352,7 +352,7 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
 
     #################### pair-wise comparison ########################
     print("----------------------- pairwise comparison ----------------------------")
-    #todo: exlude some pairwise comparison
+
     # create folder
     pairwise_folder = os.path.join(summary_folder, "pairwise_comparison")
     create_folder(pairwise_folder)
@@ -360,7 +360,22 @@ def summary_one_track(summary_folder, summary_file_dict, track_name):
     # get pairwise combinations
     from itertools import combinations
     key_combinations = combinations(summary_file_dict.keys(), 2)
-    pairwise_dict_list = [{k: summary_file_dict[k] for k in combo} for combo in key_combinations]
+    #pairwise_dict_list = [{k: summary_file_dict[k] for k in combo} for combo in key_combinations]
+    pairwise_dict_list=[]
+    other_solver_list=["z3","z3-noodler","woorpje","ostrich","cvc5"]
+
+    for combo in key_combinations:
+        if main_key=="":
+            if combo[0] in other_solver_list and combo[1] in other_solver_list:
+                pass
+            else:
+                pairwise_dict_list.append({k: summary_file_dict[k] for k in combo})
+        else:
+            if main_key in combo:
+                pairwise_dict_list.append({k: summary_file_dict[k] for k in combo})
+
+
+
     print("summary_file_dict len", len(summary_file_dict))
     print("pairwise_dict_list len", len(pairwise_dict_list))
 

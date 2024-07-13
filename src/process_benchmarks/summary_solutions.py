@@ -28,7 +28,7 @@ def main():
     if bench_name is None:
         bench_name="03_track_train_task_3_5001_10000"
 
-
+    main_key = "this:fixed_termination_condition_0_category"# empty will output all pair combinations
     summary_folder = project_folder+"/src/process_benchmarks/summary"
 
 
@@ -52,7 +52,7 @@ def main():
                     #     summary_file_dict[
                     #         solver + ":" + parameter_str] = solver  + "_" + track + "_summary.csv"
         print(summary_file_dict)
-        summary_one_track(summary_folder, summary_file_dict, track)
+        summary_one_track(summary_folder, summary_file_dict, track,main_key)
 
 
 
