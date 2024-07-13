@@ -275,7 +275,7 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
                                ]
         elif satisfiability == UNSAT:
             parameters_list = ["fixed",
-                               f"--termination_condition termination_condition_0",
+                               f"--termination_condition termination_condition_7",
                                f"--graph_type {graph_type}",
                                f"--algorithm {algorithm}",
                                f"--order_equations_method {algorithm_parameters['order_equations_method']}",

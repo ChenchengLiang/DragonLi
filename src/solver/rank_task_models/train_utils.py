@@ -1,5 +1,6 @@
 from src.solver.models.Models import Classifier, GNNRankTask1, GraphClassifier, GraphClassifierLightning, \
-    GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2, GNNRankTask0HashTable, ClassifierMultiFilter
+    GNNRankTask1BatchProcess, GNNRankTask0, GNNRankTask2, GNNRankTask0HashTable, ClassifierMultiFilter, \
+    GNNRankTask0HashTableMultiFilter, GNNRankTask1BatchProcessMultiFilter, GNNRankTask2MultiFilter
 from pytorch_lightning.callbacks import EarlyStopping, Callback
 
 from src.solver.rank_task_models.Dataset import DGLDataModuleRank0, DGLDataModuleRank1, DGLDataModuleRank2
@@ -24,14 +25,8 @@ def get_gnn_and_classifier(parameters):
         raise ValueError("Unsupported model type")
 
     if parameters["rank_task"] == 0:
-        # gnn_model = GNNRankTask0(
-        #     input_feature_dim=parameters["node_type"],
-        #     gnn_hidden_dim=parameters["gnn_hidden_dim"],
-        #     gnn_layer_num=parameters["gnn_layer_num"],
-        #     gnn_dropout_rate=parameters["gnn_dropout_rate"],
-        #     embedding_type=embedding_type
-        # )
-        gnn_model = GNNRankTask0HashTable(
+
+        gnn_model = GNNRankTask0HashTableMultiFilter(
             input_feature_dim=parameters["node_type"],
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
@@ -40,10 +35,6 @@ def get_gnn_and_classifier(parameters):
             gnn_pool_type=parameters["gnn_pool_type"]
         )
 
-        # classifier = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-        #                           ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-        #                           ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
-        #                           first_layer_ffnn_hidden_dim_factor=1)
         classifier = ClassifierMultiFilter(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                            ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
                                            ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
@@ -52,7 +43,7 @@ def get_gnn_and_classifier(parameters):
                                            pool_type=parameters["classifier_pool_type"])
 
     elif parameters["rank_task"] == 1:
-        gnn_model = GNNRankTask1BatchProcess(
+        gnn_model = GNNRankTask1BatchProcessMultiFilter(
             input_feature_dim=parameters["node_type"],
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
@@ -60,9 +51,7 @@ def get_gnn_and_classifier(parameters):
             embedding_type=embedding_type, gnn_num_filters=parameters["gnn_num_filters"],
             gnn_pool_type=parameters["gnn_pool_type"]
         )
-        # classifier = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-        #                         ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-        #                         ffnn_dropout_rate=parameters["ffnn_dropout_rate"], first_layer_ffnn_hidden_dim_factor=2)
+
         classifier = ClassifierMultiFilter(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                            ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
                                            ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
@@ -70,7 +59,7 @@ def get_gnn_and_classifier(parameters):
                                            num_filters=parameters["classifier_num_filter"],
                                            pool_type=parameters["classifier_pool_type"])
     elif parameters["rank_task"] == 2:
-        gnn_model = GNNRankTask2(
+        gnn_model = GNNRankTask2MultiFilter(
             input_feature_dim=parameters["node_type"],
             gnn_hidden_dim=parameters["gnn_hidden_dim"],
             gnn_layer_num=parameters["gnn_layer_num"],
@@ -85,10 +74,6 @@ def get_gnn_and_classifier(parameters):
             first_layer_ffnn_hidden_dim_factor = parameters["label_size"]
         else:
             raise ValueError("Unsupported pooling type")
-        # classifier = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-        #                         ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=parameters["label_size"],
-        #                         ffnn_dropout_rate=parameters["ffnn_dropout_rate"],
-        #                         first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor)
 
         classifier = ClassifierMultiFilter(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
                                            ffnn_layer_num=parameters["ffnn_layer_num"],

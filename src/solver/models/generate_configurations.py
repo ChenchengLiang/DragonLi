@@ -42,14 +42,14 @@ def main():
     #for benchmark in ["conjunctive_01_track_train_rank_task_1_100"]:
         for graph_type in ["graph_1"]:  # ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
-                for classifier_num_filter in [4]:#[1, 2, 4]:
-                    for gnn_num_filters in [2]:
+                for classifier_num_filter in [1,2,4]:#[1, 2, 4]:
+                    for gnn_num_filters in [1,2,4]:
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
                                     for hidden_dim in [128]:  # [128,256]:
-                                        for dropout_rate in [0.2]:
-                                            for batch_size in [1000]:
+                                        for dropout_rate in [0.2,0.5]:
+                                            for batch_size in [5000]:
                                                 for model_type in [
                                                     "GCNSplit"]:  # ["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                                     for share_gnn in [False]:
