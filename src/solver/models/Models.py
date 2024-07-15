@@ -588,7 +588,7 @@ class ClassifierMultiFilter(nn.Module):
             for i, layer in enumerate(filter_layers):
                 x_filter = layer(x_filter)
                 x_filter = F.relu(self.dropout(x_filter))
-            filter_outputs.append(torch.squeeze(x_filter))
+            filter_outputs.append(x_filter.squeeze(1))
 
         stacked_filter_output=self.pool_func_stack(filter_outputs)
         if self.pool_type == "concat":
@@ -640,7 +640,7 @@ class BaseEmbeddingMultiFilter(nn.Module):
             g.ndata['h'] = h_filter
             # hg=self.global_attention_pooling(g, h)
             hg = dgl.mean_nodes(g, 'h')
-            filter_outputs.append(torch.squeeze(hg))
+            filter_outputs.append(hg.squeeze(1))
 
         if self.pool_type == "concat":
             pool_output=torch.cat(filter_outputs,dim=1)
