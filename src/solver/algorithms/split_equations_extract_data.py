@@ -372,7 +372,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
 
     def extract_dynamic_embedding_train_data_sat(self, branch_eq_satisfiability_list, current_node):
-        satisfiability_list,label_list,back_track_count_list,middle_branch_eq_file_name_list,one_train_data_name=self.extract_dynamic_embedding_train_data_preprocess(self, branch_eq_satisfiability_list, current_node)
+        satisfiability_list,label_list,back_track_count_list,middle_branch_eq_file_name_list,one_train_data_name=self.extract_dynamic_embedding_train_data_preprocess(branch_eq_satisfiability_list, current_node)
 
         # output one-hot encoding labels
         if satisfiability_list.count(SAT) == 1:

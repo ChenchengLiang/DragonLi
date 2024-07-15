@@ -436,8 +436,13 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
     satisfiability_list = []
     solver_1_data_list = []
     solver_2_data_list = []
+    file_name_list=[]
     for row in first_summary_data_rows:
-        satisfiability_list.append(_convert_string(row[satisfiability_column_index]))
+        file_name_list.append(row[0])
+        first_satisfiability=_convert_string(row[satisfiability_column_index])
+        second_satisfiability=_convert_string(row[satisfiability_column_index+offset_column])
+        summarized_satisfiability=summarize_satisfiability([first_satisfiability,second_satisfiability])
+        satisfiability_list.append(summarized_satisfiability)
         solver_1_data_list.append(_convert_string(row[column_index_solver_1]))
         solver_2_data_list.append(_convert_string(row[column_index_solver_2]))
 
@@ -448,7 +453,7 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
 
     data_dict = {"measurement": measure_criteria, "x_title": solver_1_name, "y_title": solver_2_name,
                  "x_data": solver_1_data_list, "y_data": solver_2_data_list,
-                 "satisfiability_list": satisfiability_list,
+                 "satisfiability_list": satisfiability_list,"file_name_list":file_name_list,
                  "x_data_mean": mean(solver_1_data_list), "y_data_mean": mean(solver_2_data_list),
                  "x_data_min": min(solver_1_data_list), "y_data_min": min(solver_2_data_list),
                  "x_data_max": max(solver_1_data_list), "y_data_max": max(solver_2_data_list)}
@@ -456,6 +461,23 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
     plot_scatter(one_pairwise_folder, data_dict)
 
 
+def summarize_satisfiability(status_list):
+    # Checking for the presence of both 'SAT' and 'UNSAT' which is not allowed
+    if SAT in status_list and UNSAT in status_list:
+        raise ValueError("Inconsistency: Both 'SAT' and 'UNSAT' present in the list.")
+
+    # If all elements are the same, return that element
+    if all(s == status_list[0] for s in status_list):
+        return status_list[0]
+
+    # If there is 'SAT' or 'UNSAT' and the rest are 'UNKNOWN', return 'SAT' or 'UNSAT'
+    if SAT in status_list:
+        return SAT
+    if UNSAT in status_list:
+        return UNSAT
+
+    # If only 'UNKNOWN' remains, return 'UNKNOWN'
+    return UNKNOWN
 def plot_scatter(save_directory, data_dict):
     import plotly.graph_objects as go
 
@@ -475,7 +497,7 @@ def plot_scatter(save_directory, data_dict):
     # Create the scatter plot
     fig = go.Figure(
         data=go.Scatter(x=data_dict["x_data"], y=data_dict["y_data"], mode='markers',
-                        text=data_dict["satisfiability_list"], marker=dict(
+                        text=data_dict["file_name_list"], marker=dict(
                 color=colors,  # Apply color settings here
                 symbol=shapes  # Apply shape settings here
             )))
@@ -484,7 +506,7 @@ def plot_scatter(save_directory, data_dict):
         f"{data_dict['measurement']} - {data_dict['x_title']} vs {data_dict['y_title']} <br>"
         f"x_mean: {data_dict['x_data_mean']}, x_min: {data_dict['x_data_min']}, x_max: {data_dict['x_data_max']} <br>"
         f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']} <br>"
-        f"common solved SAT: {data_dict['common_solved_sat_number']}, UNSAT: {data_dict['common_solved_unsat_number']} <br>"
+        f"Common solved SAT: {data_dict['common_solved_sat_number']}, UNSAT: {data_dict['common_solved_unsat_number']} <br>"
         f"{data_dict['unique_0']} <br>"
         f"{data_dict['unique_1']}"
     )
@@ -580,7 +602,7 @@ def compute_measurement_for_unique_solved_problems(first_summary_data_rows, firs
                 current_solver_unique_solved_sat_count += 1
             if current_solver_solvability == UNSAT and other_solver_solvability == UNKNOWN:
                 current_solver_unique_solved_unsat_count += 1
-        unique_solver_dict[f"unique_{index}"]=f"{current_solver} unique solved SAT {current_solver_unique_solved_sat_count}, UNSAT {current_solver_unique_solved_unsat_count}"
+        unique_solver_dict[f"unique_{index}"]=f"Unique solved: {current_solver}, SAT {current_solver_unique_solved_sat_count}, UNSAT {current_solver_unique_solved_unsat_count}"
         unique_sat_problem_list.append(current_solver_unique_solved_sat_count)
         unique_unsat_problem_list.append(current_solver_unique_solved_unsat_count)
     # print("unique_sat_problem_list", unique_sat_problem_list)
