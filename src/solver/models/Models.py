@@ -455,7 +455,8 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
             first_element = embeddings[0]
             embed_slice = embeddings[1:]
             mean_tensor = torch.mean(embed_slice, dim=0)
-            concatenated_embedding = torch.cat([first_element, mean_tensor], dim=1)
+            #concatenated_embedding = torch.cat([first_element, mean_tensor], dim=1)
+            concatenated_embedding = torch.cat([first_element, mean_tensor])
             batch_result_list.append(concatenated_embedding)
 
         batch_result_list_stacked = torch.stack(batch_result_list, dim=0)

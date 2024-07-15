@@ -383,16 +383,16 @@ class SplitEquations(AbstractAlgorithm):
             mean_tensor = torch.mean(G_list_embeddings, dim=0)  # [1,128]
             input_eq_embeddings_list = []
             for g in G_list_embeddings:
-                input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
+                #input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
+                input_eq_embeddings_list.append(torch.concat([g, mean_tensor]))# For multi filters
             input_eq_embeddings_list = torch.stack(input_eq_embeddings_list)
 
             # classifier
-            classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,1,2]
+            classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
 
             # transform [x,y] to one score
-            classifier_output_list = [item[0] for item in classifier_output.tolist()]  # [n,2]
             rank_list = []
-            for rank in classifier_output_list:  # rank [2]
+            for rank in classifier_output.tolist():  # rank [2]
                 rank_softmax = softmax(rank)
                 rank_list.append(rank_softmax[0])
 
