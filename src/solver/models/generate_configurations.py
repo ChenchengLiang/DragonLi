@@ -34,10 +34,10 @@ def main():
     configurations = []
 
     #for benchmark in ["choose_eq_train_rank_0"]:
-    for benchmark in ["choose_eq_train_rank_1"]:
+    #for benchmark in ["choose_eq_train_rank_1"]:
     #for benchmark in ["choose_eq_train_rank_2"]:
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
-    #for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
+    for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
     #for benchmark in ["conjunctive_01_track_train_rank_task_1_100"]:
         for graph_type in ["graph_1"]:  # ["graph_1","graph_2","graph_3","graph_4","graph_5"]:

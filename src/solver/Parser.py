@@ -143,8 +143,13 @@ class EqReader(AbstractFileReader):
                     line = line.decode('utf-8')
                     lines.append(line)
 
-        variables_str = lines[0].strip().split("{")[1].split("}")[0]
-        terminals_str = lines[1].strip().split("{")[1].split("}")[0]
+
+        if "," in lines[0]:
+            variables_str = lines[0].replace(","," ").strip().split("{")[1].split("}")[0]
+            terminals_str = lines[1].replace(","," ").strip().split("{")[1].split("}")[0]
+        else:
+            variables_str = lines[0].strip().split("{")[1].split("}")[0]
+            terminals_str = lines[1].strip().split("{")[1].split("}")[0]
         # equation_str = lines[2].strip().split(": ")[1].replace(" ", "")
         for line in lines[2:]:
             if line.startswith("Equation"):

@@ -115,6 +115,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         self.depth_extract_data_map = {}
         self.depth_branch_number_map = {}
+        self.one_unsat_path_map = {}
 
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -303,10 +304,22 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                         if output_decision == True:
                             self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
                 else:  # self.eq_satisfiability==UNSAT
-                    self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
 
+                    #output all UNSAT nodes
+                    #self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+
+                    #output smallest tree
+
+
+                    #output first branch
+                    if self.total_output_branches == 0:
+                        self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+
+                    # output first layer in the end of the search
                     # if current_depth == 0:
                     #     self.depth_extract_data_map[current_depth] = (branch_eq_satisfiability_list, current_node)
+
+                    #output smallest tree in each depth in the end of the search
 
                     # if current_depth not in self.depth_extract_data_map:
                     #     self.depth_extract_data_map[current_depth]=(branch_eq_satisfiability_list,current_node)

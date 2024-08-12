@@ -424,7 +424,6 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
 
 def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
                           one_pairwise_folder, common_and_unique_solved_dict):
-    print("one_pairwise_folder",one_pairwise_folder)
     column_index_solver_1 = column
 
     offset_column = 3

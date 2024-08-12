@@ -359,6 +359,9 @@ class Formula:
             eq.simplify()
         # simplify empty equation
         self.eq_list = [eq for eq in self.eq_list if eq.term_length > 0]
+        #get rid of duplicated equations
+        self.eq_list = remove_duplicates(self.eq_list)
+
 
     def print_eq_list(self):
         print("Equation list:")

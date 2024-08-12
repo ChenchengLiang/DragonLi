@@ -54,7 +54,7 @@ def main():
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
-    #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
     # file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
@@ -68,7 +68,8 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/14/g_conjunctive_01_track_train_rank_task_1_100_1.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
+    #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
+    #file_path = bench_folder + "/examples_choose_eq/17/17.eq"
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -135,8 +136,8 @@ def main():
                                                       "task": "dynamic_embedding", "label_size": label_size,
                                                       "rank_task":rank_task,"eq_satisfiability":eq_satisfiability}
 
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
