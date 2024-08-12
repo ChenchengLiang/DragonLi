@@ -36,6 +36,7 @@ def main():
 
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed", "order_equations_method": "category_random", "task": "dynamic_embedding"}
+
     train_data = "UNSAT"
 
     sys.setrecursionlimit(recursion_limit)

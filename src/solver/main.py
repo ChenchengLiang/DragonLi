@@ -54,7 +54,7 @@ def main():
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
     # file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
@@ -70,6 +70,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
     #file_path = bench_folder + "/examples_choose_eq/17/17.eq"
+    file_path = bench_folder + "/examples_choose_eq/18/18.eq" #UNSAT
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
