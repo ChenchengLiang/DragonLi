@@ -33,7 +33,7 @@ def main():
     # parameters = {"node_type": 4}
     # func=prepare_and_save_datasets_task_3
 
-    rank_task=2
+    rank_task=1
     parameters = {"rank_task": rank_task}
     parameters["node_type"] = rank_task_node_type_map[rank_task]
     parameters["label_size"] = rank_task_label_size_map[rank_task]

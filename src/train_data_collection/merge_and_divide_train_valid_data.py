@@ -1,5 +1,6 @@
 import sys
 import configparser
+
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -8,7 +9,7 @@ sys.path.append(path)
 
 from src.solver.Constants import project_folder, bench_folder
 from src.train_data_collection.utils import dvivde_track_for_cluster
-from src.solver.independent_utils import get_folders,strip_file_name_suffix
+from src.solver.independent_utils import get_folders, strip_file_name_suffix
 import os
 import shutil
 import random
@@ -16,40 +17,42 @@ import glob
 import zipfile
 import tempfile
 
+
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
-    track_folder = bench_folder + "/"+track_name
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
+    track_folder = bench_folder + "/" + track_name
 
-    satisfiability="UNSAT"
+    satisfiability = "UNSAT"
+
+    graph_indices = [1, 2, 3, 4, 5]
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 
-
-    #merge UNSAT file
-    merged_eq_file_path=f"{track_folder}/{satisfiability}"
+    # merge UNSAT file
+    merged_eq_file_path = f"{track_folder}/{satisfiability}"
     if os.path.exists(merged_eq_file_path):
         shutil.rmtree(merged_eq_file_path)
     os.mkdir(merged_eq_file_path)
     for divided_folder in divided_folder_list:
-        copy_files(f"{track_folder}/{divided_folder}/{satisfiability}",merged_eq_file_path)
-    print("total files",len(glob.glob(f"{merged_eq_file_path}/*.eq")))
+        copy_files(f"{track_folder}/{divided_folder}/{satisfiability}", merged_eq_file_path)
+    print("total files", len(glob.glob(f"{merged_eq_file_path}/*.eq")))
 
-
-    #merge train.zip
-    train_zip_list=[f"{track_folder}/{divided_folder}/train.zip" for divided_folder in divided_folder_list]
-    output_zip_path=f"{track_folder}/train.zip"
+    # merge train.zip
+    train_zip_list = [f"{track_folder}/{divided_folder}/train.zip" for divided_folder in divided_folder_list]
+    output_zip_path = f"{track_folder}/train.zip"
     merge_zip_files(train_zip_list, output_zip_path)
-    clean_zip_files(output_zip_path,merged_eq_file_path)
+    clean_zip_files(output_zip_path, merged_eq_file_path)
 
-    #merge graph_n.zip
-    for graph_index in [1,2,3,4,5]:
-        graph_zip_list = [f"{track_folder}/{divided_folder}/graph_{graph_index}.zip" for divided_folder in divided_folder_list]
+    # merge graph_n.zip
+    for graph_index in graph_indices:
+        graph_zip_list = [f"{track_folder}/{divided_folder}/graph_{graph_index}.zip" for divided_folder in
+                          divided_folder_list]
         output_zip_path = f"{track_folder}/graph_{graph_index}.zip"
         merge_zip_files(graph_zip_list, output_zip_path)
 
     graph_lists = []
-    for graph_index in [1, 2, 3, 4, 5]:
+    for graph_index in graph_indices:
         with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
             # Get list of file names
             file_name_list = []
@@ -64,7 +67,7 @@ def main():
             intersection.intersection_update(s)
 
     # remove graph files not in intersection
-    for graph_index in [1, 2, 3, 4, 5]:
+    for graph_index in graph_indices:
         remove_name_list = []
         with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
             for name in zfile.namelist():
@@ -75,7 +78,7 @@ def main():
             remove_files_from_zip(f"{track_folder}/graph_{graph_index}.zip",
                                   f"graph_{graph_index}/{remove_name}")
 
-    #remove train files not in intersection
+    # remove train files not in intersection
     remove_name_list = []
     with zipfile.ZipFile(f"{track_folder}/train.zip", 'r') as zfile:
         for name in zfile.namelist():
@@ -96,35 +99,61 @@ def main():
             os.remove(file)
             os.remove(file.replace(".eq", ".answer"))
 
-
     # divide to train and valid folder
-    split_to_train_valid_with_zip(source_folder=f"{track_folder}",satisfiability=satisfiability,train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
+    split_to_train_valid_with_zip(source_folder=f"{track_folder}", satisfiability=satisfiability,
+                                  train_folder=track_folder + "/train", valid_folder=track_folder + "/valid",
+                                  valid_ratio=0.2)
 
-
-    #collect data
+    # collect data
     os.mkdir(f"{track_folder}/extracted_data")
     for divided_folder in divided_folder_list:
-        shutil.move(f"{track_folder}/{divided_folder}",f"{track_folder}/extracted_data")
+        shutil.move(f"{track_folder}/{divided_folder}", f"{track_folder}/extracted_data")
     os.mkdir(f"{track_folder}/merged_data")
-    shutil.move(f"{track_folder}/train.zip",f"{track_folder}/merged_data")
-    for graph_index in [1,2,3,4,5]:
-        shutil.move(f"{track_folder}/graph_{graph_index}.zip",f"{track_folder}/merged_data")
-    shutil.move(f"{track_folder}/UNSAT",f"{track_folder}/merged_data")
+    shutil.move(f"{track_folder}/train.zip", f"{track_folder}/merged_data")
+    for graph_index in graph_indices:
+        shutil.move(f"{track_folder}/graph_{graph_index}.zip", f"{track_folder}/merged_data")
+    shutil.move(f"{track_folder}/{satisfiability}", f"{track_folder}/merged_data")
+    os.mkdir(f"{track_folder}/train/{satisfiability}")
+    for file in glob.glob(f"{track_folder}/train/*"):
+        if ".zip" not in file:
+            shutil.move(file, f"{track_folder}/train/{satisfiability}")
+    os.mkdir(f"{track_folder}/valid/{satisfiability}")
+    for file in glob.glob(f"{track_folder}/valid/*"):
+        if ".zip" not in file:
+            shutil.move(file, f"{track_folder}/valid/{satisfiability}")
 
+    # divide train to multiple chunks
 
+    chunk_size = 20
+    folder_counter = 0
+    for i, eq_file in enumerate(glob.glob(f"{track_folder}/train/{satisfiability}/*.eq")):
+        if i % chunk_size == 0:
+            folder_counter += 1
+            divided_folder_name = f"{track_folder}/divided_{folder_counter}"
+            os.mkdir(divided_folder_name)
+            os.mkdir(f"{divided_folder_name}/{satisfiability}")
+        file_name = strip_file_name_suffix(eq_file)
+        # move files in UNSAT folder
+        for f in glob.glob(file_name + ".eq") + glob.glob(file_name + ".answer") + glob.glob(file_name + ".smt2"):
+            shutil.copy(f, f"{divided_folder_name}/{satisfiability}")
 
-    # # divide train to multiple chunks
-    # dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=20000)
-    #
-    # divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
-    # print(divided_folder_list)
-    #
-    # for divided_folder in divided_folder_list:
-    #     os.mkdir(track_folder+"/"+divided_folder)
-    # for divided_folder in divided_folder_list:
-    #     shutil.move(track_folder+"/train/"+divided_folder,f"{track_folder}/{divided_folder}/{satisfiability}")
-    #
-    # shutil.rmtree(track_folder+"/train")
+        # move files in train.zip
+        file_list = get_filenames_with_prefix(f"{track_folder}/train/train.zip", os.path.basename(file_name), "train")
+        copy_files_between_zips(f"{track_folder}/train/train.zip", f"{divided_folder_name}/train.zip", file_list)
+        # move files in graph_n.zip
+        for graph_index in graph_indices:
+            file_list = get_filenames_with_prefix(f"{track_folder}/train/graph_{graph_index}.zip",
+                                                  os.path.basename(file_name),
+                                                  f"graph_{graph_index}")
+            copy_files_between_zips(f"{track_folder}/train/graph_{graph_index}.zip",
+                                    f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
+
+    # handle valid data
+    shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
+
+    # remove middle files
+    shutil.rmtree(f"{track_folder}/train")
+    shutil.rmtree(f"{track_folder}/merged_data")
 
 
 def copy_files(source_dir, destination_dir):
@@ -148,28 +177,26 @@ def copy_files(source_dir, destination_dir):
         print(f"Copied {src_file} to {dst_file}")
 
 
-def clean_zip_files(zip_path,merged_eq_file_path):
-    all_data_list=[]
+def clean_zip_files(zip_path, merged_eq_file_path):
+    all_data_list = []
     for file in os.listdir(merged_eq_file_path):
         if file.endswith(".eq"):
-            all_data_list.append("train/"+file.split(".eq")[0])
+            all_data_list.append("train/" + file.split(".eq")[0])
     with zipfile.ZipFile(zip_path, 'r') as zfile:
-        json_data_list=[]
+        json_data_list = []
         for file in zfile.namelist():
             if file.endswith(".json"):
-                json_prefix=file.split("@")[0]
+                json_prefix = file.split("@")[0]
                 json_data_list.append(json_prefix)
 
         zfile.close()
 
-
-    remove_data_list=[data for data in all_data_list if data not in json_data_list]
+    remove_data_list = [data for data in all_data_list if data not in json_data_list]
 
     for data in remove_data_list:
         remove_files_from_zip(zip_path, data)
         for file in glob.glob(f"{merged_eq_file_path}/{os.path.basename(data)}*"):
             os.remove(file)
-
 
 
 def remove_files_from_zip(zip_path, prefix):
@@ -217,7 +244,8 @@ def merge_zip_files(zip_paths, output_zip_path):
     shutil.rmtree(temp_dir)
     print(f"Merged zip created at {output_zip_path}")
 
-def split_to_train_valid_with_zip(source_folder, satisfiability,train_folder, valid_folder, valid_ratio):
+
+def split_to_train_valid_with_zip(source_folder, satisfiability, train_folder, valid_folder, valid_ratio):
     """
     Splits files from the source folder into train and valid folders based on the specified ratio.
 
@@ -241,9 +269,8 @@ def split_to_train_valid_with_zip(source_folder, satisfiability,train_folder, va
     # Split files
     valid_files = files[:split_index]
     train_files = files[split_index:]
-    print("train_files",len(train_files))
-    print("valid_files",len(valid_files))
-
+    print("train_files", len(train_files))
+    print("valid_files", len(valid_files))
 
     # Move files
     for file in valid_files:
@@ -252,7 +279,8 @@ def split_to_train_valid_with_zip(source_folder, satisfiability,train_folder, va
     for file in train_files:
         move_files_with_fold(source_folder, file, "train", train_folder)
 
-def move_files_with_fold(source_folder,file,fold,folder_name):
+
+def move_files_with_fold(source_folder, file, fold, folder_name):
     file_name = os.path.basename(file)
     shutil.copy(file, os.path.join(folder_name, file_name))
     answer_file = file.replace(".eq", ".answer")
@@ -269,7 +297,7 @@ def move_files_with_fold(source_folder,file,fold,folder_name):
                                 f"{source_folder}/{fold}/graph_{graph_index}.zip", file_list)
 
 
-def get_filenames_with_prefix(zip_path, prefix,folder_name):
+def get_filenames_with_prefix(zip_path, prefix, folder_name):
     # List to store the names of files that match the prefix
     matching_filenames = []
 
@@ -281,6 +309,8 @@ def get_filenames_with_prefix(zip_path, prefix,folder_name):
         matching_filenames = [name for name in all_filenames if name.startswith(f"{folder_name}/{prefix}")]
 
     return matching_filenames
+
+
 def copy_files_between_zips(source_zip_path, destination_zip_path, file_names):
     # Temporary storage for extracted files
     temp_directory = "temp_extracted_files"
@@ -304,5 +334,7 @@ def copy_files_between_zips(source_zip_path, destination_zip_path, file_names):
 
     # Clean up extracted files by removing them
     shutil.rmtree(temp_directory)
+
+
 if __name__ == '__main__':
     main()

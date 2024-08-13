@@ -34,11 +34,11 @@ Local: Set parameters in src/train_data_collection/divide_folder.py and run it
 
 2. Generate train data:
 Local: Set parameters in src/train_data_collection/generate_train_data_from_solver_one_folder.py
-Alvis: sh word_equation_submit_generate_train_data_parallel.sh benchmark
+Alvis/UPPMAX: sh word_equation_submit_generate_train_data_parallel.sh benchmark
 
 3. Draw graphs for train data:
 Local: Set parameters in src/train_data_collection/draw_graphs_for_train_data_one_folder.py
-Alvis: sh word_equation_submit_draw_graphs_for_train_data_parallel.sh benchmark
+Alvis/UPPMAX: sh word_equation_submit_draw_graphs_for_train_data_parallel.sh benchmark
 
 
 4. Unify the labels:
@@ -46,10 +46,11 @@ Local: Set parameters in src/train_data_collection/clean_train_data.py
 Alvis: sh word_equation_submit_clean_train_data.sh
 
 5. Collect data
-Local: merge divided data to one file and call divided_train_and_valid_data.py to separate train and valid data
+Local: call divided_train_and_valid_data.py to separate train and valid data. Divide the train data to chunks
 
 6. Store to pickle data:
 Local: Set parameters in src/train_data_collection/store_dataset_to_pickle_one_folder.py
+Alvis: remove extracted_data folder
 Alvis: sh word_equation_submit_store_dataset_to_pickle_parallel.sh benchmark
 
 7. Initialize train configurations:
