@@ -115,7 +115,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
         self.depth_extract_data_map = {}
         self.depth_branch_number_map = {}
-        self.one_unsat_path_map = {}
+        self.one_unsat_path = []
+        self.best_unsat_path = []
+        self.unsat_paths = []
+        self.best_path_back_count=sys.maxsize
 
         sys.setrecursionlimit(recursion_limit)
         # print("recursion limit number", sys.getrecursionlimit())
@@ -155,6 +158,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # output UNSAT train data
         # if self.eq_satisfiability==UNSAT:
         #     self.output_unsat_train_data()
+
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
 
@@ -241,6 +245,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
+
+            self.one_unsat_path.append(current_node)
+
+
             for index, eq in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
                 current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -287,6 +295,20 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             else:
                 current_node[1]["status"] = UNSAT
 
+            #self.unsat_paths.append(self.one_unsat_path)
+            current_path_back_count=self.count_back_track_count_in_a_path(self.one_unsat_path)
+            print(current_path_back_count)
+
+            if current_path_back_count<self.best_path_back_count:
+                self.best_unsat_path=self.one_unsat_path.copy()
+                self.best_path_back_count=current_path_back_count
+                print("current best path back_track_count",current_path_back_count)
+                node_id_list=[node[0] for node in self.best_unsat_path]
+                print("current best path node id list",node_id_list)
+
+            self.one_unsat_path.pop()
+
+
             if self.parameters["output_train_data"] == True:
 
                 if self.eq_satisfiability == SAT:
@@ -308,7 +330,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                     #output all UNSAT nodes
                     #self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
 
-                    #output smallest tree
+                    #store smallest tree
+
+
+
 
 
                     #output first branch
@@ -353,6 +378,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             # print("total eqs",len(current_formula.eq_list))
             # for eq,label in zip(current_formula.eq_list,label_list):
             #     print(eq.eq_str,label)
+
+    def count_back_track_count_in_a_path(self,path:List[Tuple[int, Dict]]) -> int:
+        return sum([node[1]["back_track_count"] for node in path])
+
 
     def compute_total_branch_number(self, branch_eq_satisfiability_list):
         total_branch_number = 0
@@ -515,5 +544,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             return None
 
     def visualize(self, file_path: str, graph_func: Callable):
+        # visualize best unsat path
+        for node in self.best_unsat_path:
+            node[1]["status"] = None
+
         visualize_path_html(self.nodes, self.edges, file_path)
         visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image, edge_label=self.png_edge_label)

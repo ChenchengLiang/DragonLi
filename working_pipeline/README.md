@@ -50,7 +50,6 @@ Local: call divided_train_and_valid_data.py to separate train and valid data. Di
 
 6. Store to pickle data:
 Local: Set parameters in src/train_data_collection/store_dataset_to_pickle_one_folder.py
-Alvis: remove extracted_data folder
 Alvis: sh word_equation_submit_store_dataset_to_pickle_parallel.sh benchmark
 
 7. Initialize train configurations:
