@@ -105,7 +105,7 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                                                      satisfiability=split_satisfiability)
                     multi_graph_dict[i] = graph_dict
                 # Dumping the dictionary to a JSON file
-                size_limit = 5 #MB
+                size_limit = 2 #MB
                 if sys.getsizeof(multi_graph_dict) < size_limit * 1024 * 1024:
                     json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
                     dump_to_json_with_format(multi_graph_dict, json_file)

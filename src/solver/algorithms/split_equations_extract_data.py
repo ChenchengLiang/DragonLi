@@ -546,7 +546,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
     def visualize(self, file_path: str, graph_func: Callable):
         # visualize best unsat path
         for node in self.best_unsat_path:
-            node[1]["status"] = None
+            node[1]["status"] = "SHORTEST_PATH"
 
         visualize_path_html(self.nodes, self.edges, file_path)
         visualize_path_png(self.nodes, self.edges, file_path, compress=compress_image, edge_label=self.png_edge_label)

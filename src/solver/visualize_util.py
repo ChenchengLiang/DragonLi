@@ -20,6 +20,8 @@ def get_node_color(status):
         color = 'red'
     elif status == "UNKNOWN":
         color = 'yellow'
+    elif status == "SHORTEST_PATH":
+        color = 'purple'
     else:
         color = "black"
     return color
