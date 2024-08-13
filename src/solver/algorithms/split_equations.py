@@ -176,7 +176,7 @@ class SplitEquations(AbstractAlgorithm):
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
 
-        current_node = self.record_node_and_edges(input_formula, previous_node, edge_label)
+        current_node = self.record_node_and_edges(input_formula, previous_node, edge_label,current_depth)
 
         if self.total_split_eq_call % 10000 == 0:
             print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")

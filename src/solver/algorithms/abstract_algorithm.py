@@ -71,13 +71,14 @@ class AbstractAlgorithm(ABC):
         self.total_node_number+=1
         return current_node
 
-    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str) -> \
+    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str,depth:int) -> \
             Tuple[int, Dict]:
         current_node_number = self.total_node_number
         label = f"{f.eq_list_str}"
         current_node = (
             current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "ellipse", "back_track_count": 0,"gnn_call":False})
+            {"label": label, "status": None, "output_to_file": False,
+             "shape": "ellipse", "back_track_count": 0,"gnn_call":False,"depth":depth})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
         self.total_node_number+=1
