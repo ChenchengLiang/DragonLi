@@ -24,7 +24,7 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task_1"  # "task_3"
-    rank_task = 2
+    rank_task = 1
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     valid_batch_size_factor = 2
