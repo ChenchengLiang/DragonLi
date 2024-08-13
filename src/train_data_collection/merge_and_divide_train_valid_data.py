@@ -48,11 +48,72 @@ def main():
         output_zip_path = f"{track_folder}/graph_{graph_index}.zip"
         merge_zip_files(graph_zip_list, output_zip_path)
 
+    graph_lists = []
+    for graph_index in [1, 2, 3, 4, 5]:
+        with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
+            # Get list of file names
+            file_name_list = []
+            for name in zfile.namelist():
+                file_name = os.path.basename(name).split("@")[0]
+                file_name_list.append(file_name)
+            graph_lists.append(file_name_list)
+    # find intersection
+    if graph_lists:
+        intersection = set(graph_lists[0].copy())
+        for s in graph_lists[1:]:
+            intersection.intersection_update(s)
+
+    # remove graph files not in intersection
+    for graph_index in [1, 2, 3, 4, 5]:
+        remove_name_list = []
+        with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
+            for name in zfile.namelist():
+                file_name = os.path.basename(name).split("@")[0]
+                if file_name not in intersection:
+                    remove_name_list.append(remove_name_list)
+        for remove_name in remove_name_list:
+            remove_files_from_zip(f"{track_folder}/graph_{graph_index}.zip",
+                                  f"graph_{graph_index}/{remove_name}")
+
+    #remove train files not in intersection
+    remove_name_list = []
+    with zipfile.ZipFile(f"{track_folder}/train.zip", 'r') as zfile:
+        for name in zfile.namelist():
+            if "@" in name:
+                file_name = os.path.basename(name).split("@")[0]
+            else:
+                file_name = os.path.basename(name).split(".eq")[0]
+            if file_name not in intersection:
+                remove_name_list.append(remove_name_list)
+    for remove_name in remove_name_list:
+        remove_files_from_zip(f"{track_folder}/train.zip",
+                              f"train/{remove_name}")
+
+    # remove eq files in UNSAT folder not in intersection
+    for file in glob.glob(f"{track_folder}/UNSAT/*.eq"):
+        file_name = os.path.basename(file).split(".eq")[0]
+        if file_name not in intersection:
+            os.remove(file)
+            os.remove(file.replace(".eq", ".answer"))
+
 
     # divide to train and valid folder
     split_to_train_valid_with_zip(source_folder=f"{track_folder}",satisfiability=satisfiability,train_folder=track_folder+"/train",valid_folder=track_folder+"/valid",valid_ratio=0.2)
 
-    # # divide train to multiple folders
+
+    #collect data
+    os.mkdir(f"{track_folder}/extracted_data")
+    for divided_folder in divided_folder_list:
+        shutil.move(f"{track_folder}/{divided_folder}",f"{track_folder}/extracted_data")
+    os.mkdir(f"{track_folder}/merged_data")
+    shutil.move(f"{track_folder}/train.zip",f"{track_folder}/merged_data")
+    for graph_index in [1,2,3,4,5]:
+        shutil.move(f"{track_folder}/graph_{graph_index}.zip",f"{track_folder}/merged_data")
+    shutil.move(f"{track_folder}/UNSAT",f"{track_folder}/merged_data")
+
+
+
+    # # divide train to multiple chunks
     # dvivde_track_for_cluster(track_folder,file_folder="train", chunk_size=20000)
     #
     # divided_folder_list = [train_folder for train_folder in get_folders(track_folder + "/train") if "divided" in train_folder]
@@ -187,42 +248,15 @@ def split_to_train_valid_with_zip(source_folder, satisfiability,train_folder, va
     # Move files
     for file in valid_files:
         move_files_with_fold(source_folder, file, "valid", valid_folder)
-        # file_name=os.path.basename(file)
-        # shutil.copy(file, os.path.join(valid_folder, file_name))
-        # answer_file = strip_file_name_suffix(file)+".answer"
-        # shutil.copy(answer_file, os.path.join(valid_folder,file_name))
-        #
-        # file_name_before_at = file_name.split(".eq")[0]
-        # file_list=get_filenames_with_prefix(f"{source_folder}/train.zip",file_name_before_at,"train")
-        # copy_files_between_zips(f"{source_folder}/train.zip",f"{source_folder}/valid/train.zip",file_list)
-        #
-        # for graph_index in [1,2,3,4,5]:
-        #     file_list = get_filenames_with_prefix(f"{source_folder}/graph_{graph_index}.zip", file_name_before_at,"graph_{graph_index}")
-        #     copy_files_between_zips(f"{source_folder}/graph_{graph_index}.zip", f"{source_folder}/valid/graph_{graph_index}.zip", file_list)
 
     for file in train_files:
         move_files_with_fold(source_folder, file, "train", train_folder)
-        # file_name = os.path.basename(file)
-        # shutil.copy(file, os.path.join(train_folder, file_name))
-        # answer_file = strip_file_name_suffix(file)+".answer"
-        # shutil.copy(answer_file, os.path.join(train_folder,file_name))
-        #
-        # file_name_before_at = file_name.split(".eq")[0]
-        # file_list = get_filenames_with_prefix(f"{source_folder}/train.zip", file_name_before_at,"train")
-        # copy_files_between_zips(f"{source_folder}/train.zip", f"{source_folder}/train/train.zip", file_list)
-        #
-        # for graph_index in [1, 2, 3, 4, 5]:
-        #     file_list = get_filenames_with_prefix(f"{source_folder}/graph_{graph_index}.zip", file_name_before_at,
-        #                                           "graph_{graph_index}")
-        #     copy_files_between_zips(f"{source_folder}/graph_{graph_index}.zip",
-        #                             f"{source_folder}/valid/graph_{graph_index}.zip", file_list)
-        #
 
 def move_files_with_fold(source_folder,file,fold,folder_name):
     file_name = os.path.basename(file)
     shutil.copy(file, os.path.join(folder_name, file_name))
-    answer_file = strip_file_name_suffix(file) + ".answer"
-    shutil.copy(answer_file, os.path.join(folder_name, file_name))
+    answer_file = file.replace(".eq", ".answer")
+    shutil.copy(answer_file, os.path.join(folder_name, os.path.basename(answer_file)))
 
     file_name_before_at = file_name.split(".eq")[0]
     file_list = get_filenames_with_prefix(f"{source_folder}/train.zip", file_name_before_at, "train")

@@ -15,6 +15,28 @@ import sys
 import io
 
 
+def delete_large_file(file_path, size_limit=10):
+    """Delete a file if it exceeds the size limit (in MB)."""
+
+    # Check if the file exists to avoid errors
+    if not os.path.isfile(file_path):
+        print("File does not exist:", file_path)
+        return None
+
+    # Get the file size in bytes
+    file_size = os.path.getsize(file_path)
+
+    # Convert size limit from MB to bytes
+    size_limit_bytes = size_limit * 1024 * 1024
+
+    # If the file size is greater than the size limit, delete it
+    if file_size > size_limit_bytes:
+        os.remove(file_path)
+        print(f"File was larger than {size_limit} MB and has been deleted:", file_path)
+        return file_path
+    else:
+        print(f"File is within the size limit and has not been deleted:", file_path)
+        return None
 
 def check_list_consistence(target_list):
     consitence_list = []

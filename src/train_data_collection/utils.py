@@ -3,7 +3,7 @@ from src.solver.algorithms import ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
-    compress_to_zip
+    compress_to_zip, delete_large_file
 from src.solver.Parser import Parser, EqParser
 import glob
 
@@ -106,6 +106,8 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 # Dumping the dictionary to a JSON file
                 json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
                 dump_to_json_with_format(multi_graph_dict, json_file)
+                deleted_graph_json=delete_large_file(json_file,size_limit=10)
+
 
 
 def output_split_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable, visualize: bool = False):
