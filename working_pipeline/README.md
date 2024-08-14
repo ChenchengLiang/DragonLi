@@ -43,7 +43,7 @@ Alvis/UPPMAX: sh word_equation_submit_draw_graphs_for_train_data_parallel.sh ben
 
 4. Unify the labels:
 Local: Set parameters in src/train_data_collection/clean_train_data.py
-Alvis: sh word_equation_submit_clean_train_data.sh
+Alvis/UPPMAX: sh word_equation_submit_clean_train_data.sh
 
 5. Collect data
 Local: call divided_train_and_valid_data.py to separate train and valid data. Divide the train data to chunks

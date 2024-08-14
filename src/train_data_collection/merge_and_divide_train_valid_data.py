@@ -16,7 +16,7 @@ import random
 import glob
 import zipfile
 import tempfile
-
+from tqdm import tqdm
 
 def main():
     # generate track
@@ -75,7 +75,9 @@ def main():
             for name in zfile.namelist():
                 file_name = os.path.basename(name).split("@")[0]
                 if file_name not in intersection:
-                    remove_name_list.append(remove_name_list)
+                    remove_name_list.append(file_name)
+
+        remove_name_list=list(set(remove_name_list))
         for remove_name in remove_name_list:
             remove_files_from_zip(f"{track_folder}/graph_{graph_index}.zip",
                                   f"graph_{graph_index}/{remove_name}")
@@ -89,13 +91,19 @@ def main():
                 file_name = os.path.basename(name).split("@")[0]
             else:
                 file_name = os.path.basename(name).split(".eq")[0]
-            if file_name not in intersection:
-                remove_name_list.append(remove_name_list)
+            if file_name not in intersection and ".answer" not in file_name:
+                remove_name_list.append(file_name)
+
+    remove_name_list=list(set(remove_name_list))
+
     for remove_name in remove_name_list:
         remove_files_from_zip(f"{track_folder}/train.zip",
                               f"train/{remove_name}")
 
+    #remove_multiple_files_from_zip(track_folder, remove_name_list)
+
     # remove eq files in UNSAT folder not in intersection
+    print("remove eq files in UNSAT folder not in intersection")
     for file in glob.glob(f"{track_folder}/UNSAT/*.eq"):
         file_name = os.path.basename(file).split(".eq")[0]
         if file_name not in intersection:
@@ -127,7 +135,7 @@ def main():
 
     # divide train to multiple chunks
 
-    chunk_size = 20
+    chunk_size = 500
     folder_counter = 0
     for i, eq_file in enumerate(glob.glob(f"{track_folder}/train/{satisfiability}/*.eq")):
         if i % chunk_size == 0:
@@ -152,7 +160,8 @@ def main():
                                     f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
 
     # handle valid data
-    shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
+    #shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
+    shutil.move(f"{track_folder}/valid", f"{track_folder}/divided_0")
 
     # remove middle files
     shutil.rmtree(f"{track_folder}/train")
@@ -195,20 +204,45 @@ def clean_zip_files(zip_path, merged_eq_file_path):
         zfile.close()
 
     remove_data_list = [data for data in all_data_list if data not in json_data_list]
+    remove_data_list=list(set(remove_data_list))
 
     for data in remove_data_list:
         remove_files_from_zip(zip_path, data)
         for file in glob.glob(f"{merged_eq_file_path}/{os.path.basename(data)}*"):
             os.remove(file)
 
+def remove_multiple_files_from_zip(track_folder,file_list):
+    unzip_file(f"{track_folder}/train.zip", f"{track_folder}")
+    for file_name in file_list:
+        print(file_name)
+        file_list_in_zip=glob.glob(f"{track_folder}/train/{file_name}*")
+        #print(file_list_in_zip)
 
+    #zip_folder(f"{track_folder}/train", f"{track_folder}/train.zip")
+
+
+def unzip_file(zip_path, extract_to):
+    """Unzip a zip file to a specified directory."""
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
+    print(f"Extracted {zip_path} to {extract_to}")
+
+def zip_folder(folder_path, output_zip_path):
+    """Zip the contents of a folder, including subfolders."""
+    with zipfile.ZipFile(output_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                # Store files with relative paths (not absolute paths)
+                zipf.write(file_path, os.path.relpath(file_path, folder_path))
+    print(f"Created zip {output_zip_path} from {folder_path}")
 def remove_files_from_zip(zip_path, prefix):
     # Create a temporary file
     temp_fd, temp_path = tempfile.mkstemp()
     os.close(temp_fd)  # Close the file descriptor
 
     # Create a new zip file excluding files with the specified prefix
-    with zipfile.ZipFile(zip_path, 'r') as zfile, zipfile.ZipFile(temp_path, 'w') as temp_zip:
+    with zipfile.ZipFile(zip_path, 'r') as zfile, zipfile.ZipFile(temp_path, 'w', zipfile.ZIP_DEFLATED) as temp_zip:
         # Iterate through each file in the original ZIP
         for item in zfile.infolist():
             if not item.filename.startswith(prefix):
@@ -233,7 +267,7 @@ def merge_zip_files(zip_paths, output_zip_path):
             zfile.extractall(temp_dir)
 
     # Create a new zip file that will contain the merged contents
-    with zipfile.ZipFile(output_zip_path, 'w') as zfile:
+    with zipfile.ZipFile(output_zip_path, 'w',zipfile.ZIP_DEFLATED) as zfile:
         for root, dirs, files in os.walk(temp_dir):
             for file in files:
                 # Create the path to file
@@ -327,7 +361,7 @@ def copy_files_between_zips(source_zip_path, destination_zip_path, file_names):
             source_zip.extract(file_name, temp_directory)
 
     # Open the destination ZIP file in append mode
-    with zipfile.ZipFile(destination_zip_path, 'a') as dest_zip:
+    with zipfile.ZipFile(destination_zip_path, 'a', zipfile.ZIP_DEFLATED) as dest_zip:
         # Add files from the temporary directory to the destination ZIP
         for file_name in file_names:
             # Construct the path to the extracted file
