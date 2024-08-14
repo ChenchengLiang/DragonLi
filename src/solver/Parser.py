@@ -85,7 +85,13 @@ class EqParser(AbstractParser):
 
         equation_list = []
         for eq_str in content["equation_str_list"]:
-            left_str, right_str = eq_str.split(' = ')
+            str_list=eq_str.split(' = ')
+            if len(str_list) == 2:
+                left_str, right_str = str_list
+            else:
+                left_str = ""
+                right_str = ""
+            #left_str, right_str = eq_str.split(' = ')
             wrapped_left_terms = wrap_one_side_str(left_str)
             wrapped_right_terms = wrap_one_side_str(right_str)
 

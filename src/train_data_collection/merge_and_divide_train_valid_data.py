@@ -66,7 +66,9 @@ def main():
         for s in graph_lists[1:]:
             intersection.intersection_update(s)
 
+
     # remove graph files not in intersection
+    print("remove graph files not in intersection")
     for graph_index in graph_indices:
         remove_name_list = []
         with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
@@ -79,6 +81,7 @@ def main():
                                   f"graph_{graph_index}/{remove_name}")
 
     # remove train files not in intersection
+    print("remove train files not in intersection")
     remove_name_list = []
     with zipfile.ZipFile(f"{track_folder}/train.zip", 'r') as zfile:
         for name in zfile.namelist():
@@ -174,7 +177,7 @@ def copy_files(source_dir, destination_dir):
         src_file = os.path.join(source_dir, file)
         dst_file = os.path.join(destination_dir, file)
         shutil.copy(src_file, dst_file)
-        print(f"Copied {src_file} to {dst_file}")
+        #print(f"Copied {src_file} to {dst_file}")
 
 
 def clean_zip_files(zip_path, merged_eq_file_path):
