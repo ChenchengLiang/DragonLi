@@ -371,15 +371,15 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 self.best_unsat_path = self.one_unsat_path.copy()
                 self.best_unsat_path_data=self.one_unsat_path_data.copy()
                 self.best_path_depth_count = current_depth_in_a_path
-                node_id_list = [node[0] for node in self.best_unsat_path]
-                print("current best path depth", current_depth_in_a_path,"current best path node id list", node_id_list)
+                #node_id_list = [node[0] for node in self.best_unsat_path]
+                #print("current best path depth", current_depth_in_a_path,"current best path node id list", node_id_list)
 
                 if current_path_back_count < self.best_path_back_count:
                     self.best_unsat_path = self.one_unsat_path.copy()
                     self.best_unsat_path_data = self.one_unsat_path_data.copy()
                     self.best_path_back_count = current_path_back_count
-                    node_id_list = [node[0] for node in self.best_unsat_path]
-                    print("current best path back_track_count", current_path_back_count,"current best path node id list", node_id_list)
+                    #node_id_list = [node[0] for node in self.best_unsat_path]
+                    #print("current best path back_track_count", current_path_back_count,"current best path node id list", node_id_list)
 
 
 
@@ -508,9 +508,12 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
 
     def output_unsat_train_data_shortest_path(self):
+        node_id_list=[]
         for value in self.best_unsat_path_data:
             (branch_eq_satisfiability_list, current_node) = value
             _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
+            node_id_list.append(current_node[0])
+        print("best path node id list", node_id_list)
 
     def get_eq_by_index(self, f: Formula, index: int) -> Tuple[Equation, Formula]:
         poped_eq = f.eq_list.pop(index)

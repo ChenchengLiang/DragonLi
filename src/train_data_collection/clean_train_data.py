@@ -34,7 +34,8 @@ def main():
     #benchmark = "choose_eq_train"
     #benchmark = "choose_eq_train_rank_2"
     # benchmark = "rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path"
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
+    #benchmark = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
+    benchmark = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction"
 
     benchmark_path = bench_folder + "/" + benchmark
     folder_list = [folder for folder in get_folders(benchmark_path) if
