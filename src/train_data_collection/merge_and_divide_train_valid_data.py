@@ -42,7 +42,7 @@ def main():
     train_zip_list = [f"{track_folder}/{divided_folder}/train.zip" for divided_folder in divided_folder_list]
     output_zip_path = f"{track_folder}/train.zip"
     merge_zip_files(train_zip_list, output_zip_path)
-    clean_zip_files(output_zip_path, merged_eq_file_path)
+    clean_zip_files(track_folder,output_zip_path, merged_eq_file_path)
 
     # merge graph_n.zip
     for graph_index in graph_indices:
@@ -51,6 +51,7 @@ def main():
         output_zip_path = f"{track_folder}/graph_{graph_index}.zip"
         merge_zip_files(graph_zip_list, output_zip_path)
 
+    # find intersection
     graph_lists = []
     for graph_index in graph_indices:
         with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
@@ -60,7 +61,7 @@ def main():
                 file_name = os.path.basename(name).split("@")[0]
                 file_name_list.append(file_name)
             graph_lists.append(file_name_list)
-    # find intersection
+
     if graph_lists:
         intersection = set(graph_lists[0].copy())
         for s in graph_lists[1:]:
@@ -78,9 +79,8 @@ def main():
                     remove_name_list.append(file_name)
 
         remove_name_list=list(set(remove_name_list))
-        for remove_name in remove_name_list:
-            remove_files_from_zip(f"{track_folder}/graph_{graph_index}.zip",
-                                  f"graph_{graph_index}/{remove_name}")
+        remove_multiple_files_from_zip(track_folder, remove_name_list)
+
 
     # remove train files not in intersection
     print("remove train files not in intersection")
@@ -96,11 +96,8 @@ def main():
 
     remove_name_list=list(set(remove_name_list))
 
-    for remove_name in remove_name_list:
-        remove_files_from_zip(f"{track_folder}/train.zip",
-                              f"train/{remove_name}")
 
-    #remove_multiple_files_from_zip(track_folder, remove_name_list)
+    remove_multiple_files_from_zip(track_folder, remove_name_list)
 
     # remove eq files in UNSAT folder not in intersection
     print("remove eq files in UNSAT folder not in intersection")
@@ -134,6 +131,7 @@ def main():
             shutil.move(file, f"{track_folder}/valid/{satisfiability}")
 
     # divide train to multiple chunks
+    print("divide train to multiple chunks")
 
     chunk_size = 500
     folder_counter = 0
@@ -189,7 +187,7 @@ def copy_files(source_dir, destination_dir):
         #print(f"Copied {src_file} to {dst_file}")
 
 
-def clean_zip_files(zip_path, merged_eq_file_path):
+def clean_zip_files(track_folder,zip_path, merged_eq_file_path):
     all_data_list = []
     for file in os.listdir(merged_eq_file_path):
         if file.endswith(".eq"):
@@ -206,19 +204,22 @@ def clean_zip_files(zip_path, merged_eq_file_path):
     remove_data_list = [data for data in all_data_list if data not in json_data_list]
     remove_data_list=list(set(remove_data_list))
 
-    for data in remove_data_list:
-        remove_files_from_zip(zip_path, data)
+
+    remove_multiple_files_from_zip(track_folder,remove_data_list)
+
+    for data in tqdm(remove_data_list, desc="Removing files"):
         for file in glob.glob(f"{merged_eq_file_path}/{os.path.basename(data)}*"):
             os.remove(file)
 
 def remove_multiple_files_from_zip(track_folder,file_list):
-    unzip_file(f"{track_folder}/train.zip", f"{track_folder}")
+    unzip_file(f"{track_folder}/train.zip", f"{track_folder}/train")
     for file_name in file_list:
-        print(file_name)
         file_list_in_zip=glob.glob(f"{track_folder}/train/{file_name}*")
-        #print(file_list_in_zip)
+        for file in file_list_in_zip:
+            os.remove(file)
 
-    #zip_folder(f"{track_folder}/train", f"{track_folder}/train.zip")
+    zip_folder(f"{track_folder}/train", f"{track_folder}/train.zip")
+    shutil.rmtree(f"{track_folder}/train")
 
 
 def unzip_file(zip_path, extract_to):
@@ -236,24 +237,25 @@ def zip_folder(folder_path, output_zip_path):
                 # Store files with relative paths (not absolute paths)
                 zipf.write(file_path, os.path.relpath(file_path, folder_path))
     print(f"Created zip {output_zip_path} from {folder_path}")
+
 def remove_files_from_zip(zip_path, prefix):
     # Create a temporary file
-    temp_fd, temp_path = tempfile.mkstemp()
+    temp_fd, temp_path = tempfile.mkstemp(suffix='.zip')
     os.close(temp_fd)  # Close the file descriptor
 
-    # Create a new zip file excluding files with the specified prefix
-    with zipfile.ZipFile(zip_path, 'r') as zfile, zipfile.ZipFile(temp_path, 'w', zipfile.ZIP_DEFLATED) as temp_zip:
-        # Iterate through each file in the original ZIP
-        for item in zfile.infolist():
-            if not item.filename.startswith(prefix):
-                # Read the file data from the original ZIP
-                data = zfile.read(item.filename)
-                # Write the file to the new ZIP if it does not start with the prefix
-                temp_zip.writestr(item, data)
+    with zipfile.ZipFile(zip_path, 'r') as src_zip, zipfile.ZipFile(temp_path, 'w', zipfile.ZIP_DEFLATED) as dest_zip:
+        # Filter entries to avoid unnecessary reading
+        entries = [item for item in src_zip.infolist() if not item.filename.startswith(prefix)]
+
+        # Use tqdm for progress display
+        for item in entries:
+            # Open the source file and add it directly to the destination zip
+            with src_zip.open(item) as source_file:
+                dest_zip.writestr(item, source_file.read(), compress_type=zipfile.ZIP_DEFLATED)
 
     # Replace the old ZIP file with the new one
-    os.remove(zip_path)  # Remove the original ZIP file
-    os.rename(temp_path, zip_path)  # Rename the temporary ZIP file to the original file name
+    os.replace(temp_path, zip_path)  # More atomic than remove + rename
+
 
 
 def merge_zip_files(zip_paths, output_zip_path):
@@ -269,7 +271,7 @@ def merge_zip_files(zip_paths, output_zip_path):
     # Create a new zip file that will contain the merged contents
     with zipfile.ZipFile(output_zip_path, 'w',zipfile.ZIP_DEFLATED) as zfile:
         for root, dirs, files in os.walk(temp_dir):
-            for file in files:
+            for file in tqdm(files,desc="Merging files"):
                 # Create the path to file
                 file_path = os.path.join(root, file)
                 # Create the archive name (relative path within the zip)
