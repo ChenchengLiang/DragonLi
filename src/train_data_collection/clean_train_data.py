@@ -44,13 +44,16 @@ def main():
 
     zip_file_name = graph_type
     hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
-    check_hash_table_label_consistency(hash_table)
+    consistent_count,insistent_count =check_hash_table_label_consistency(hash_table)
+    
+    if insistent_count>0:
+        print("Unify labels")
 
-    unify_labels(benchmark_path, folder_list, graph_type, hash_table, log=log)
+        unify_labels(benchmark_path, folder_list, graph_type, hash_table, log=log)
 
-    zip_file_name = graph_type
-    hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
-    check_hash_table_label_consistency(hash_table, log=log)
+        zip_file_name = graph_type
+        hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
+        consistent_count,insistent_count=check_hash_table_label_consistency(hash_table, log=log)
 
 
 def unify_labels(benchmark_path, folder_list, graph_type, hash_table, log=False):
@@ -182,6 +185,7 @@ def check_hash_table_label_consistency(hash_table, log=False):
                 print(label_count)
     print(f"insistent_count:{insistent_count}")
     print(f"consistent_count:{consistent_count}")
+    return consistent_count,insistent_count
 
 
 if __name__ == '__main__':
