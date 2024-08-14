@@ -118,6 +118,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.one_unsat_path = []
         self.best_unsat_path = []
         self.unsat_paths = []
+        self.unsat_path_number=0
+        self.best_path_depth_count=sys.maxsize
         self.best_path_back_count=sys.maxsize
 
         sys.setrecursionlimit(recursion_limit)
@@ -166,7 +168,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call,
                         "total_category_call": self.total_category_call, "found_sat_path": self.found_sat_path,
-                        "found_unsat_first_layer_node": self.found_unsat_first_layer_node,"time consumption":time.time()-self.start_time}
+                        "found_unsat_leaf_node":self.found_unsat_leaf_node,
+                        "unsat_path_number":self.unsat_path_number,
+                        "found_unsat_first_layer_node": self.found_unsat_first_layer_node,
+                        "time consumption":time.time()-self.start_time}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -356,20 +361,28 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         if self.contain_leaf_node_path(self.one_unsat_path):
             print("contain leaf node path")
             node_id_list = [node[0] for node in self.one_unsat_path]
-            print("current one_unsat_pathid list", node_id_list)
+            print("current one_unsat_path id list", node_id_list)
+            self.unsat_path_number+=1
 
-        current_path_back_count = self.count_back_track_count_in_a_path(self.one_unsat_path)
-        current_depth_in_a_path = self.count_depth_in_a_path(self.one_unsat_path)
 
-        print("current_depth_in_a_path", current_depth_in_a_path, "current_path_back_count", current_path_back_count,
-              "current node back count", current_node[1]["back_track_count"])
 
-        if current_path_back_count < self.best_path_back_count:
-            self.best_unsat_path = self.one_unsat_path.copy()
-            self.best_path_back_count = current_path_back_count
-            print("current best path back_track_count", current_path_back_count)
-            node_id_list = [node[0] for node in self.best_unsat_path]
-            print("current best path node id list", node_id_list)
+            current_path_back_count = current_node[1]["back_track_count"]
+            current_depth_in_a_path = self.count_depth_in_a_path(self.one_unsat_path)
+
+            print("current_depth_in_a_path", current_depth_in_a_path, "current node back count", current_path_back_count)
+            if current_depth_in_a_path <= self.best_path_depth_count:
+                self.best_unsat_path = self.one_unsat_path.copy()
+                self.best_path_depth_count = current_depth_in_a_path
+                print("current best path depth", current_depth_in_a_path)
+                node_id_list = [node[0] for node in self.best_unsat_path]
+                print("current best path node id list", node_id_list)
+
+                if current_path_back_count < self.best_path_back_count:
+                    self.best_unsat_path = self.one_unsat_path.copy()
+                    self.best_path_back_count = current_path_back_count
+                    print("current best path back_track_count", current_path_back_count)
+                    node_id_list = [node[0] for node in self.best_unsat_path]
+                    print("current best path node id list", node_id_list)
 
 
     def output_one_train_data(self,current_formula,branch_eq_satisfiability_list,current_node):
@@ -392,8 +405,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             # for eq,label in zip(current_formula.eq_list,label_list):
             #     print(eq.eq_str,label)
 
-    def count_back_track_count_in_a_path(self,path:List[Tuple[int, Dict]]) -> int:
-        return sum([node[1]["back_track_count"] for node in path])
+
     def count_depth_in_a_path(self,path:List[Tuple[int, Dict]]) -> int:
         return sum([node[1]["depth"] for node in path])
 

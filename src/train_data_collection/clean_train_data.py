@@ -45,7 +45,7 @@ def main():
     zip_file_name = graph_type
     hash_table = get_data_label_hash_table(benchmark_path, folder_list, zip_file_name)
     consistent_count,insistent_count =check_hash_table_label_consistency(hash_table)
-    
+
     if insistent_count>0:
         print("Unify labels")
 
