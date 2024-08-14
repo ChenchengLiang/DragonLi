@@ -116,7 +116,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.depth_extract_data_map = {}
         self.depth_branch_number_map = {}
         self.one_unsat_path = []
+        self.one_unsat_path_data=[]
         self.best_unsat_path = []
+        self.best_unsat_path_data=[]
         self.unsat_paths = []
         self.unsat_path_number=0
         self.best_path_depth_count=sys.maxsize
@@ -158,8 +160,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 # print(RECURSION_ERROR)
 
         # output UNSAT train data
-        # if self.eq_satisfiability==UNSAT:
-        #     self.output_unsat_train_data()
+        if self.eq_satisfiability==UNSAT:
+            #self.output_unsat_train_data()
+            self.output_unsat_train_data_shortest_path()
 
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
@@ -246,7 +249,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             if satisfiability == UNSAT:
                 self.found_unsat_leaf_node += 1
 
-            self.record_path(current_node)
+            self.record_path(current_node,[])
             self.one_unsat_path.pop()
 
             return (satisfiability, current_formula, current_node)
@@ -256,7 +259,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
 
-            #self.one_unsat_path.append(current_node)
+            self.one_unsat_path_data.append((branch_eq_satisfiability_list,current_node))
 
 
             for index, eq in enumerate(list(current_formula.eq_list)):
@@ -307,8 +310,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
 
 
-            self.record_path(current_node)
+            self.record_path(current_node,branch_eq_satisfiability_list)
             self.one_unsat_path.pop()
+            self.one_unsat_path_data.pop()
 
 
             if self.parameters["output_train_data"] == True:
@@ -331,12 +335,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
                     #output all UNSAT nodes
                     #self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
-
-                    #store smallest tree
+                    pass
 
                     #output first branch
-                    if self.total_output_branches == 0:
-                        self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+                    # if self.total_output_branches == 0:
+                    #     self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
 
                     # output first layer in the end of the search
                     # if current_depth == 0:
@@ -357,32 +360,27 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             return (current_node[1]["status"], current_formula, current_node)
 
 
-    def record_path(self,current_node):
+    def record_path(self,current_node,branch_eq_satisfiability_list):
         if self.contain_leaf_node_path(self.one_unsat_path):
-            print("contain leaf node path")
-            node_id_list = [node[0] for node in self.one_unsat_path]
-            print("current one_unsat_path id list", node_id_list)
             self.unsat_path_number+=1
-
-
 
             current_path_back_count = current_node[1]["back_track_count"]
             current_depth_in_a_path = self.count_depth_in_a_path(self.one_unsat_path)
 
-            print("current_depth_in_a_path", current_depth_in_a_path, "current node back count", current_path_back_count)
             if current_depth_in_a_path <= self.best_path_depth_count:
                 self.best_unsat_path = self.one_unsat_path.copy()
+                self.best_unsat_path_data=self.one_unsat_path_data.copy()
                 self.best_path_depth_count = current_depth_in_a_path
-                print("current best path depth", current_depth_in_a_path)
                 node_id_list = [node[0] for node in self.best_unsat_path]
-                print("current best path node id list", node_id_list)
+                print("current best path depth", current_depth_in_a_path,"current best path node id list", node_id_list)
 
                 if current_path_back_count < self.best_path_back_count:
                     self.best_unsat_path = self.one_unsat_path.copy()
+                    self.best_unsat_path_data = self.one_unsat_path_data.copy()
                     self.best_path_back_count = current_path_back_count
-                    print("current best path back_track_count", current_path_back_count)
                     node_id_list = [node[0] for node in self.best_unsat_path]
-                    print("current best path node id list", node_id_list)
+                    print("current best path back_track_count", current_path_back_count,"current best path node id list", node_id_list)
+
 
 
     def output_one_train_data(self,current_formula,branch_eq_satisfiability_list,current_node):
@@ -506,6 +504,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
     def output_unsat_train_data(self):
         for k, value in self.depth_extract_data_map.items():
+            (branch_eq_satisfiability_list, current_node) = value
+            _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
+
+    def output_unsat_train_data_shortest_path(self):
+        for value in self.best_unsat_path_data:
             (branch_eq_satisfiability_list, current_node) = value
             _, _ = self.extract_dynamic_embedding_train_data(branch_eq_satisfiability_list, current_node)
 
