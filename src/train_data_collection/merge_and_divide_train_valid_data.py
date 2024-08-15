@@ -108,14 +108,18 @@ def main():
             os.remove(file.replace(".eq", ".answer"))
 
     # divide to train and valid folder
+    print("divide to train and valid folder")
     split_to_train_valid_with_zip(source_folder=f"{track_folder}", satisfiability=satisfiability,
                                   train_folder=track_folder + "/train", valid_folder=track_folder + "/valid",
                                   valid_ratio=0.2)
 
     # collect data
+    print("collect data")
     os.mkdir(f"{track_folder}/extracted_data")
     for divided_folder in divided_folder_list:
         shutil.move(f"{track_folder}/{divided_folder}", f"{track_folder}/extracted_data")
+    #shutil.rmtree(f"{track_folder}/extracted_data")
+
     os.mkdir(f"{track_folder}/merged_data")
     shutil.move(f"{track_folder}/train.zip", f"{track_folder}/merged_data")
     for graph_index in graph_indices:
@@ -132,7 +136,6 @@ def main():
 
     # divide train to multiple chunks
     print("divide train to multiple chunks")
-
     chunk_size = 500
     folder_counter = 0
     for i, eq_file in enumerate(glob.glob(f"{track_folder}/train/{satisfiability}/*.eq")):
@@ -213,7 +216,7 @@ def clean_zip_files(track_folder,zip_path, merged_eq_file_path):
 
 def remove_multiple_files_from_zip(track_folder,file_list):
     unzip_file(f"{track_folder}/train.zip", f"{track_folder}/train")
-    for file_name in file_list:
+    for file_name in tqdm(file_list,desc="Removing files"):
         file_list_in_zip=glob.glob(f"{track_folder}/train/{file_name}*")
         for file in file_list_in_zip:
             os.remove(file)
