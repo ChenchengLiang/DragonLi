@@ -20,7 +20,7 @@ from tqdm import tqdm
 
 def main():
     # generate track
-    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_less_than_50_eqs"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
@@ -107,6 +107,13 @@ def main():
             os.remove(file)
             os.remove(file.replace(".eq", ".answer"))
 
+    # collect data
+    print("collect data extracted_data")
+    os.mkdir(f"{track_folder}/extracted_data")
+    for divided_folder in divided_folder_list:
+        shutil.move(f"{track_folder}/{divided_folder}", f"{track_folder}/extracted_data")
+    shutil.rmtree(f"{track_folder}/extracted_data")
+
     # divide to train and valid folder
     print("divide to train and valid folder")
     split_to_train_valid_with_zip(source_folder=f"{track_folder}", satisfiability=satisfiability,
@@ -114,17 +121,13 @@ def main():
                                   valid_ratio=0.2)
 
     # collect data
-    print("collect data")
-    os.mkdir(f"{track_folder}/extracted_data")
-    for divided_folder in divided_folder_list:
-        shutil.move(f"{track_folder}/{divided_folder}", f"{track_folder}/extracted_data")
-    #shutil.rmtree(f"{track_folder}/extracted_data")
-
+    print("collect data merged_data")
     os.mkdir(f"{track_folder}/merged_data")
     shutil.move(f"{track_folder}/train.zip", f"{track_folder}/merged_data")
     for graph_index in graph_indices:
         shutil.move(f"{track_folder}/graph_{graph_index}.zip", f"{track_folder}/merged_data")
     shutil.move(f"{track_folder}/{satisfiability}", f"{track_folder}/merged_data")
+
     os.mkdir(f"{track_folder}/train/{satisfiability}")
     for file in glob.glob(f"{track_folder}/train/*"):
         if ".zip" not in file:
@@ -161,8 +164,8 @@ def main():
                                     f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
 
     # handle valid data
-    #shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
-    shutil.move(f"{track_folder}/valid", f"{track_folder}/divided_0")
+    shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
+    #shutil.move(f"{track_folder}/valid", f"{track_folder}/divided_0")
 
     # remove middle files
     shutil.rmtree(f"{track_folder}/train")

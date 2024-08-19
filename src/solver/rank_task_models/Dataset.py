@@ -309,7 +309,7 @@ def read_dataset_from_zip(parameters, data_folder, get_data_statistics=True):
             dataset_statistics = dataset.statistics()
             # with open(f"{project_folder}/mlruns/{parameters['experiment_id']}/{parameters['run_id']}/artifacts/{data_folder}_dataset_statistics.txt", 'w') as file:
             #     file.write(dataset_statistics)
-            parameters["dataset_statistics_str"] = dataset_statistics
+            parameters[f"dataset_statistics_str_{data_folder}"] = dataset_statistics
             # mlflow.log_text(dataset_statistics, artifact_file=f"{data_folder}_dataset_statistics.txt")
         else:
             dataset_statistics = ""

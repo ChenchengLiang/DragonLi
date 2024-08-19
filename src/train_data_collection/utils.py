@@ -110,7 +110,7 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 #     json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
                 #     dump_to_json_with_format(multi_graph_dict, json_file)
                 #     #deleted_graph_json=delete_large_file(json_file,size_limit=10)
-                if len(multi_graph_dict)<20:
+                if len(multi_graph_dict)<50:
                     json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
                     dump_to_json_with_format(multi_graph_dict, json_file)
 

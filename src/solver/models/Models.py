@@ -168,7 +168,11 @@ class GraphClassifierLightning(pl.LightningModule):
             with open(
                     f"{artifact_folder}/{os.path.basename(self.model_parameters['current_train_folder'])}_dataset_statistics.txt",
                     'w') as file:
-                file.write(self.model_parameters["dataset_statistics_str"])
+                file.write(self.model_parameters[f"dataset_statistics_str_{os.path.basename(self.model_parameters['current_train_folder'])}"])
+            with open(
+                    f"{artifact_folder}/valid_data_dataset_statistics.txt",
+                    'w') as file:
+                file.write(self.model_parameters["dataset_statistics_str_valid_data"])
             # store configuration file to artifact folder
             update_config_file(
                 f"{artifact_folder}/configuration_model_{self.model_parameters['label_size']}_{self.model_parameters['graph_type']}_{self.model_parameters['model_type']}.json",

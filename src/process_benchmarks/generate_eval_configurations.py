@@ -19,7 +19,7 @@ def main():
     #benchmark_name = "conjunctive_01_track_train_rank_task_1_100"
     #benchmark_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_2"
     rank_task = 0
-    graph_type = "graph_1"
+    graph_type = "graph_4"
     model_type = "GCNSplit"  # "GINSplit"
 
 
