@@ -9,7 +9,7 @@ sys.path.append(path)
 
 from src.solver.Constants import project_folder, bench_folder
 from src.train_data_collection.utils import dvivde_track_for_cluster
-from src.solver.independent_utils import get_folders, strip_file_name_suffix
+from src.solver.independent_utils import get_folders, strip_file_name_suffix,time_it,flatten_list
 import os
 import shutil
 import random
@@ -17,6 +17,7 @@ import glob
 import zipfile
 import tempfile
 from tqdm import tqdm
+
 
 def main():
     # generate track
@@ -26,7 +27,7 @@ def main():
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
-    chunk_size = 500
+    chunk_size = 200
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 
@@ -116,7 +117,7 @@ def main():
     shutil.rmtree(f"{track_folder}/extracted_data")
 
     # divide to train and valid folder
-    print("divide to train and valid folder")
+
     split_to_train_valid_with_zip(source_folder=f"{track_folder}", satisfiability=satisfiability,
                                   train_folder=track_folder + "/train", valid_folder=track_folder + "/valid",
                                   valid_ratio=0.2)
@@ -141,20 +142,30 @@ def main():
     # divide train to multiple chunks
     print("divide train to multiple chunks")
     folder_counter = 0
+    total_file_list=[]
+    divided_folder_name_list=[]
+    unzip_file(f"{track_folder}/train/train.zip", f"{track_folder}/temp")
+
     for i, eq_file in enumerate(glob.glob(f"{track_folder}/train/{satisfiability}/*.eq")):
         if i % chunk_size == 0:
             folder_counter += 1
             divided_folder_name = f"{track_folder}/divided_{folder_counter}"
             os.mkdir(divided_folder_name)
             os.mkdir(f"{divided_folder_name}/{satisfiability}")
+            divided_folder_name_list.append(divided_folder_name)
         file_name = strip_file_name_suffix(eq_file)
         # move files in UNSAT folder
         for f in glob.glob(file_name + ".eq") + glob.glob(file_name + ".answer") + glob.glob(file_name + ".smt2"):
             shutil.copy(f, f"{divided_folder_name}/{satisfiability}")
 
         # move files in train.zip
-        file_list = get_filenames_with_prefix(f"{track_folder}/train/train.zip", os.path.basename(file_name), "train")
-        copy_files_between_zips(f"{track_folder}/train/train.zip", f"{divided_folder_name}/train.zip", file_list)
+        base_file_name = os.path.basename(file_name)
+        all_filenames = glob.glob(f"{track_folder}/temp/train/*")
+        all_filenames = [os.path.basename(name) for name in all_filenames]
+        matching_filenames = [name for name in all_filenames if name.startswith(f"{base_file_name}")]
+        matching_filenames=[f"train/{name}" for name in matching_filenames]
+        total_file_list.append(matching_filenames)
+
         # move files in graph_n.zip
         # for graph_index in graph_indices:
         #     file_list = get_filenames_with_prefix(f"{track_folder}/train/graph_{graph_index}.zip",
@@ -162,6 +173,10 @@ def main():
         #                                           f"graph_{graph_index}")
         #     copy_files_between_zips(f"{track_folder}/train/graph_{graph_index}.zip",
         #                             f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
+
+    shutil.rmtree(f"{track_folder}/temp")
+    for divided_folder_name,file_list in zip(divided_folder_name_list,total_file_list):
+        copy_files_between_zips(f"{track_folder}/train/train.zip", f"{divided_folder_name}/train.zip", file_list)
 
     # handle valid data
     shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
@@ -213,16 +228,23 @@ def clean_zip_files(track_folder,zip_path, merged_eq_file_path):
 
     remove_multiple_files_from_zip(track_folder,remove_data_list)
 
-    for data in tqdm(remove_data_list, desc="Removing files"):
+
+    for data in tqdm(remove_data_list, desc="Removing files not generated trained data"):
         for file in glob.glob(f"{merged_eq_file_path}/{os.path.basename(data)}*"):
             os.remove(file)
 
+@time_it
 def remove_multiple_files_from_zip(track_folder,file_list):
     unzip_file(f"{track_folder}/train.zip", f"{track_folder}/train")
+    total_file_list=[]
     for file_name in tqdm(file_list,desc="Removing files"):
         file_list_in_zip=glob.glob(f"{track_folder}/train/{file_name}*")
-        for file in file_list_in_zip:
-            os.remove(file)
+        total_file_list.append(file_list_in_zip)
+    total_file_list=flatten_list(total_file_list)
+
+    total_file_list=list(set(total_file_list))
+    for file in total_file_list:
+        os.remove(file)
 
     zip_folder(f"{track_folder}/train", f"{track_folder}/train.zip")
     shutil.rmtree(f"{track_folder}/train")
@@ -289,7 +311,7 @@ def merge_zip_files(zip_paths, output_zip_path):
     shutil.rmtree(temp_dir)
     print(f"Merged zip created at {output_zip_path}")
 
-
+@time_it
 def split_to_train_valid_with_zip(source_folder, satisfiability, train_folder, valid_folder, valid_ratio):
     """
     Splits files from the source folder into train and valid folders based on the specified ratio.
@@ -318,11 +340,47 @@ def split_to_train_valid_with_zip(source_folder, satisfiability, train_folder, v
     print("valid_files", len(valid_files))
 
     # Move files
-    for file in valid_files:
-        move_files_with_fold(source_folder, file, "valid", valid_folder)
+    # for file in valid_files:
+    #     move_files_with_fold(source_folder, file, "valid", valid_folder)
 
+    # for file in train_files:
+    #     move_files_with_fold(source_folder, file, "train", train_folder)
+
+    #valid
+    unzip_file(f"{source_folder}/train.zip", f"{source_folder}/temp")
+
+    total_file_list=[]
+    for file in valid_files:
+        file_name = os.path.basename(file)
+        shutil.copy(file, os.path.join(valid_folder, file_name))
+        answer_file = file.replace(".eq", ".answer")
+        shutil.copy(answer_file, os.path.join(valid_folder, os.path.basename(answer_file)))
+        file_name_before_at = file_name.split(".eq")[0]
+        all_filenames=get_filenames(f"{source_folder}/temp/train")
+        all_filenames = [os.path.basename(name) for name in all_filenames]
+        matching_filenames = [name for name in all_filenames if name.startswith(f"{file_name_before_at}")]
+        total_file_list.append(matching_filenames)
+    total_file_list=flatten_list(total_file_list)
+    total_file_list = [f"train/{name}" for name in total_file_list]
+    copy_files_between_zips(f"{source_folder}/train.zip", f"{source_folder}/valid/train.zip", total_file_list)
+
+    #train
+    total_file_list=[]
     for file in train_files:
-        move_files_with_fold(source_folder, file, "train", train_folder)
+        file_name = os.path.basename(file)
+        shutil.copy(file, os.path.join(train_folder, file_name))
+        answer_file = file.replace(".eq", ".answer")
+        shutil.copy(answer_file, os.path.join(train_folder, os.path.basename(answer_file)))
+        file_name_before_at = file_name.split(".eq")[0]
+        all_filenames = get_filenames(f"{source_folder}/temp/train")
+        all_filenames=[os.path.basename(name) for name in all_filenames]
+        matching_filenames = [name for name in all_filenames if name.startswith(f"{file_name_before_at}")]
+        total_file_list.append(matching_filenames)
+    total_file_list=flatten_list(total_file_list)
+    total_file_list= [f"train/{name}" for name in total_file_list]
+    copy_files_between_zips(f"{source_folder}/train.zip", f"{source_folder}/train/train.zip", total_file_list)
+
+    shutil.rmtree(f"{source_folder}/temp")
 
 
 def move_files_with_fold(source_folder, file, fold, folder_name):
@@ -357,30 +415,81 @@ def get_filenames_with_prefix(zip_path, prefix, folder_name):
     return matching_filenames
 
 
+
+@time_it
 def copy_files_between_zips(source_zip_path, destination_zip_path, file_names):
-    # Temporary storage for extracted files
-    temp_directory = "temp_extracted_files"
-    if not os.path.exists(temp_directory):
-        os.makedirs(temp_directory)
+    # Create temporary directories to extract the ZIPs
+    source_temp_dir = tempfile.mkdtemp()
+    destination_temp_dir = tempfile.mkdtemp()
 
-    # Open the source ZIP file
+    # Extract the source ZIP
     with zipfile.ZipFile(source_zip_path, 'r') as source_zip:
-        # Extract specific files
-        for file_name in file_names:
-            source_zip.extract(file_name, temp_directory)
+        source_zip.extractall(source_temp_dir)
 
-    # Open the destination ZIP file in append mode
-    with zipfile.ZipFile(destination_zip_path, 'a', zipfile.ZIP_DEFLATED) as dest_zip:
-        # Add files from the temporary directory to the destination ZIP
-        for file_name in file_names:
-            # Construct the path to the extracted file
-            file_path = os.path.join(temp_directory, file_name)
-            # Add the file to the ZIP
-            dest_zip.write(file_path, file_name)
+    # Extract the destination ZIP
+    if os.path.exists(destination_zip_path):
+        with zipfile.ZipFile(destination_zip_path, 'r') as destination_zip:
+            destination_zip.extractall(destination_temp_dir)
+    else:
+        pass
 
-    # Clean up extracted files by removing them
-    shutil.rmtree(temp_directory)
+    # Copy specified files from the source to the destination
+    for file_name in file_names:
+        source_file_path = os.path.join(source_temp_dir, file_name)
+        destination_file_path = os.path.join(destination_temp_dir, file_name)
+        if os.path.exists(source_file_path):
+            # Ensure the destination directory exists
+            os.makedirs(os.path.dirname(destination_file_path), exist_ok=True)
+            shutil.copy2(source_file_path, destination_file_path)
+        else:
+            print(f"Warning: {file_name} not found in {source_zip_path}")
 
+    # Re-zip the destination directory
+    with zipfile.ZipFile(destination_zip_path, 'w', zipfile.ZIP_DEFLATED) as dest_zip:
+        for root, dirs, files in os.walk(destination_temp_dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, destination_temp_dir)
+                dest_zip.write(file_path, arcname)
+
+    # Clean up temporary directories
+    shutil.rmtree(source_temp_dir)
+    shutil.rmtree(destination_temp_dir)
+
+#
+# def copy_files_between_zips(source_zip_path, destination_zip_path, file_names):
+#     # Temporary storage for extracted files
+#     temp_directory = "temp_extracted_files"
+#     if not os.path.exists(temp_directory):
+#         os.makedirs(temp_directory)
+#
+#     # Open the source ZIP file
+#     with zipfile.ZipFile(source_zip_path, 'r') as source_zip:
+#         # Extract specific files
+#         for file_name in file_names:
+#             source_zip.extract(file_name, temp_directory)
+#
+#     # Open the destination ZIP file in append mode
+#     with zipfile.ZipFile(destination_zip_path, 'a', zipfile.ZIP_DEFLATED) as dest_zip:
+#         # Add files from the temporary directory to the destination ZIP
+#         for file_name in file_names:
+#             # Construct the path to the extracted file
+#             file_path = os.path.join(temp_directory, file_name)
+#             # Add the file to the ZIP
+#             dest_zip.write(file_path, file_name)
+#
+#     # Clean up extracted files by removing them
+#     shutil.rmtree(temp_directory)
+
+
+def get_filenames(folder_path):
+    """Get all file names in the specified directory with a more efficient method."""
+    files = []
+    with os.scandir(folder_path) as entries:
+        for entry in entries:
+            if entry.is_file():  # Make sure it's a file
+                files.append(entry.path)
+    return files
 
 if __name__ == '__main__':
     main()

@@ -185,13 +185,13 @@ class WordEquationDatasetMultiClassificationRankTask1(DGLDataset):
 
             for index, g in graphs.items():
                 if isinstance(g, dict):
-                    total_graph_node += len(g["nodes"])
+                    total_graph_node += len(g["node_types"])
                     graph_number += 1
 
-                    if max_node_number < len(g["nodes"]):
-                        max_node_number = len(g["nodes"])
-                    if min_node_number > len(g["nodes"]):
-                        min_node_number = len(g["nodes"])
+                    if max_node_number < len(g["node_types"]):
+                        max_node_number = len(g["node_types"])
+                    if min_node_number > len(g["node_types"]):
+                        min_node_number = len(g["node_types"])
                     if g["satisfiability"] == SAT:
                         sat_label_number += 1
                     elif g["satisfiability"] == UNSAT:
