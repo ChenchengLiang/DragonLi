@@ -21,13 +21,16 @@ from src.solver.independent_utils import color_print
 
 def get_one_dgl_graph(g):
     edges_src, edges_dst = get_edge_src_and_dst_list(g["edges"])
-    num_nodes = torch.tensor(pd.DataFrame(g["nodes"]).to_numpy().shape[0])
+    node_list=list(range(len(g["node_types"])))
+
+    num_nodes = torch.tensor(pd.DataFrame(node_list).to_numpy().shape[0])
 
     dgl_graph = dgl.graph((edges_src, edges_dst), num_nodes=num_nodes)
 
     dgl_graph.ndata["feat"] = torch.from_numpy(pd.DataFrame(g["node_types"]).to_numpy())
     # dgl_graph.ndata["label"] = node_labels #node label
-    dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
+    #dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame(g["edge_types"]).to_numpy())
+    dgl_graph.edata["weight"] = torch.from_numpy(pd.DataFrame([1]*len(g["edges"])).to_numpy())
     dgl_graph = dgl.add_self_loop(dgl_graph)
 
 

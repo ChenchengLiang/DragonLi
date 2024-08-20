@@ -28,7 +28,7 @@ def main():
     # task = "task_3"
 
     #benchmark_name = "choose_eq_train"
-    benchmark_name = "choose_eq_train_rank_2"
+    benchmark_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
     benchmark_path=f"{bench_folder}/{benchmark_name}"
 
     task="rank_task_1"

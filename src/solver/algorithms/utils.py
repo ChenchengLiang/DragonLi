@@ -27,11 +27,13 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, s
     graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
                   "label": label,"satisfiability":satisfiability}
     for node in nodes:
-        graph_dict["nodes"].append(node.id)
+        #graph_dict["nodes"].append(node.id)
         graph_dict["node_types"].append(node_type_to_int_map[node.type])
+    graph_dict["nodes"]=len(nodes)
     for edge in edges:
         graph_dict["edges"].append([edge.source, edge.target])
-        graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
+        #graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
+    graph_dict["edge_types"]=[1]
 
     return graph_dict
 

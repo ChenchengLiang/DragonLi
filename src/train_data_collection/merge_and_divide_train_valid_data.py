@@ -20,12 +20,13 @@ from tqdm import tqdm
 
 def main():
     # generate track
-    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_less_than_50_eqs"
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
+    chunk_size = 500
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 
@@ -45,67 +46,67 @@ def main():
     clean_zip_files(track_folder,output_zip_path, merged_eq_file_path)
 
     # merge graph_n.zip
-    for graph_index in graph_indices:
-        graph_zip_list = [f"{track_folder}/{divided_folder}/graph_{graph_index}.zip" for divided_folder in
-                          divided_folder_list]
-        output_zip_path = f"{track_folder}/graph_{graph_index}.zip"
-        merge_zip_files(graph_zip_list, output_zip_path)
-
-    # find intersection
-    graph_lists = []
-    for graph_index in graph_indices:
-        with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
-            # Get list of file names
-            file_name_list = []
-            for name in zfile.namelist():
-                file_name = os.path.basename(name).split("@")[0]
-                file_name_list.append(file_name)
-            graph_lists.append(file_name_list)
-
-    if graph_lists:
-        intersection = set(graph_lists[0].copy())
-        for s in graph_lists[1:]:
-            intersection.intersection_update(s)
-
-
-    # remove graph files not in intersection
-    print("remove graph files not in intersection")
-    for graph_index in graph_indices:
-        remove_name_list = []
-        with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
-            for name in zfile.namelist():
-                file_name = os.path.basename(name).split("@")[0]
-                if file_name not in intersection:
-                    remove_name_list.append(file_name)
-
-        remove_name_list=list(set(remove_name_list))
-        remove_multiple_files_from_zip(track_folder, remove_name_list)
-
-
-    # remove train files not in intersection
-    print("remove train files not in intersection")
-    remove_name_list = []
-    with zipfile.ZipFile(f"{track_folder}/train.zip", 'r') as zfile:
-        for name in zfile.namelist():
-            if "@" in name:
-                file_name = os.path.basename(name).split("@")[0]
-            else:
-                file_name = os.path.basename(name).split(".eq")[0]
-            if file_name not in intersection and ".answer" not in file_name:
-                remove_name_list.append(file_name)
-
-    remove_name_list=list(set(remove_name_list))
-
-
-    remove_multiple_files_from_zip(track_folder, remove_name_list)
-
-    # remove eq files in UNSAT folder not in intersection
-    print("remove eq files in UNSAT folder not in intersection")
-    for file in glob.glob(f"{track_folder}/UNSAT/*.eq"):
-        file_name = os.path.basename(file).split(".eq")[0]
-        if file_name not in intersection:
-            os.remove(file)
-            os.remove(file.replace(".eq", ".answer"))
+    # for graph_index in graph_indices:
+    #     graph_zip_list = [f"{track_folder}/{divided_folder}/graph_{graph_index}.zip" for divided_folder in
+    #                       divided_folder_list]
+    #     output_zip_path = f"{track_folder}/graph_{graph_index}.zip"
+    #     merge_zip_files(graph_zip_list, output_zip_path)
+    #
+    # # find intersection
+    # graph_lists = []
+    # for graph_index in graph_indices:
+    #     with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
+    #         # Get list of file names
+    #         file_name_list = []
+    #         for name in zfile.namelist():
+    #             file_name = os.path.basename(name).split("@")[0]
+    #             file_name_list.append(file_name)
+    #         graph_lists.append(file_name_list)
+    #
+    # if graph_lists:
+    #     intersection = set(graph_lists[0].copy())
+    #     for s in graph_lists[1:]:
+    #         intersection.intersection_update(s)
+    #
+    #
+    # # remove graph files not in intersection
+    # print("remove graph files not in intersection")
+    # for graph_index in graph_indices:
+    #     remove_name_list = []
+    #     with zipfile.ZipFile(f"{track_folder}/graph_{graph_index}.zip", 'r') as zfile:
+    #         for name in zfile.namelist():
+    #             file_name = os.path.basename(name).split("@")[0]
+    #             if file_name not in intersection:
+    #                 remove_name_list.append(file_name)
+    #
+    #     remove_name_list=list(set(remove_name_list))
+    #     remove_multiple_files_from_zip(track_folder, remove_name_list)
+    #
+    #
+    # # remove train files not in intersection
+    # print("remove train files not in intersection")
+    # remove_name_list = []
+    # with zipfile.ZipFile(f"{track_folder}/train.zip", 'r') as zfile:
+    #     for name in zfile.namelist():
+    #         if "@" in name:
+    #             file_name = os.path.basename(name).split("@")[0]
+    #         else:
+    #             file_name = os.path.basename(name).split(".eq")[0]
+    #         if file_name not in intersection and ".answer" not in file_name:
+    #             remove_name_list.append(file_name)
+    #
+    # remove_name_list=list(set(remove_name_list))
+    #
+    #
+    # remove_multiple_files_from_zip(track_folder, remove_name_list)
+    #
+    # # remove eq files in UNSAT folder not in intersection
+    # print("remove eq files in UNSAT folder not in intersection")
+    # for file in glob.glob(f"{track_folder}/UNSAT/*.eq"):
+    #     file_name = os.path.basename(file).split(".eq")[0]
+    #     if file_name not in intersection:
+    #         os.remove(file)
+    #         os.remove(file.replace(".eq", ".answer"))
 
     # collect data
     print("collect data extracted_data")
@@ -124,8 +125,8 @@ def main():
     print("collect data merged_data")
     os.mkdir(f"{track_folder}/merged_data")
     shutil.move(f"{track_folder}/train.zip", f"{track_folder}/merged_data")
-    for graph_index in graph_indices:
-        shutil.move(f"{track_folder}/graph_{graph_index}.zip", f"{track_folder}/merged_data")
+    # for graph_index in graph_indices:
+    #     shutil.move(f"{track_folder}/graph_{graph_index}.zip", f"{track_folder}/merged_data")
     shutil.move(f"{track_folder}/{satisfiability}", f"{track_folder}/merged_data")
 
     os.mkdir(f"{track_folder}/train/{satisfiability}")
@@ -139,7 +140,6 @@ def main():
 
     # divide train to multiple chunks
     print("divide train to multiple chunks")
-    chunk_size = 500
     folder_counter = 0
     for i, eq_file in enumerate(glob.glob(f"{track_folder}/train/{satisfiability}/*.eq")):
         if i % chunk_size == 0:
@@ -156,12 +156,12 @@ def main():
         file_list = get_filenames_with_prefix(f"{track_folder}/train/train.zip", os.path.basename(file_name), "train")
         copy_files_between_zips(f"{track_folder}/train/train.zip", f"{divided_folder_name}/train.zip", file_list)
         # move files in graph_n.zip
-        for graph_index in graph_indices:
-            file_list = get_filenames_with_prefix(f"{track_folder}/train/graph_{graph_index}.zip",
-                                                  os.path.basename(file_name),
-                                                  f"graph_{graph_index}")
-            copy_files_between_zips(f"{track_folder}/train/graph_{graph_index}.zip",
-                                    f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
+        # for graph_index in graph_indices:
+        #     file_list = get_filenames_with_prefix(f"{track_folder}/train/graph_{graph_index}.zip",
+        #                                           os.path.basename(file_name),
+        #                                           f"graph_{graph_index}")
+        #     copy_files_between_zips(f"{track_folder}/train/graph_{graph_index}.zip",
+        #                             f"{divided_folder_name}/graph_{graph_index}.zip", file_list)
 
     # handle valid data
     shutil.move(f"{track_folder}/valid", f"{track_folder}/valid_data")
@@ -335,11 +335,12 @@ def move_files_with_fold(source_folder, file, fold, folder_name):
     file_list = get_filenames_with_prefix(f"{source_folder}/train.zip", file_name_before_at, "train")
     copy_files_between_zips(f"{source_folder}/train.zip", f"{source_folder}/{fold}/train.zip", file_list)
 
-    for graph_index in [1, 2, 3, 4, 5]:
-        file_list = get_filenames_with_prefix(f"{source_folder}/graph_{graph_index}.zip", file_name_before_at,
-                                              f"graph_{graph_index}")
-        copy_files_between_zips(f"{source_folder}/graph_{graph_index}.zip",
-                                f"{source_folder}/{fold}/graph_{graph_index}.zip", file_list)
+    #move graphs
+    # for graph_index in [1, 2, 3, 4, 5]:
+    #     file_list = get_filenames_with_prefix(f"{source_folder}/graph_{graph_index}.zip", file_name_before_at,
+    #                                           f"graph_{graph_index}")
+    #     copy_files_between_zips(f"{source_folder}/graph_{graph_index}.zip",
+    #                             f"{source_folder}/{fold}/graph_{graph_index}.zip", file_list)
 
 
 def get_filenames_with_prefix(zip_path, prefix, folder_name):
