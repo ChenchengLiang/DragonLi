@@ -21,13 +21,13 @@ from tqdm import tqdm
 
 def main():
     # generate track
-    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_500"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
-    chunk_size = 200
+    chunk_size = 500
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 
@@ -143,6 +143,8 @@ def main():
     print("divide train to multiple chunks")
     folder_counter = 0
     total_file_list=[]
+    current_file_list=[]
+    file_list_blocks=[]
     divided_folder_name_list=[]
     unzip_file(f"{track_folder}/train/train.zip", f"{track_folder}/temp")
 
@@ -165,11 +167,23 @@ def main():
         matching_filenames = [name for name in all_filenames if name.startswith(f"{base_file_name}")]
         matching_filenames=[f"train/{name}" for name in matching_filenames]
         total_file_list.append(matching_filenames)
-
-
+        current_file_list.append(matching_filenames)
 
     shutil.rmtree(f"{track_folder}/temp")
-    for divided_folder_name,file_list in zip(divided_folder_name_list,total_file_list):
+
+    folder_counter=0
+    current_file_list=[]
+    for i,file_list in enumerate(total_file_list):
+        if i % chunk_size == 0 and folder_counter>=1:
+            file_list_blocks.append(current_file_list)
+            current_file_list=[]
+        if i % chunk_size == 0:
+            folder_counter += 1
+        current_file_list.append(file_list)
+    file_list_blocks.append(current_file_list)
+
+    for divided_folder_name,file_list in zip(divided_folder_name_list,file_list_blocks):
+        file_list=flatten_list(file_list)
         copy_files_between_zips(f"{track_folder}/train/train.zip", f"{divided_folder_name}/train.zip", file_list)
 
     # handle valid data
