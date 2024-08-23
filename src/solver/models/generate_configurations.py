@@ -27,6 +27,7 @@ def main():
     rank_task = 0
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
+    train_batch_size=100
     valid_batch_size_factor = 2
     valid_batch_size = 5000
     node_type = rank_task_node_type_map[rank_task]
@@ -39,13 +40,17 @@ def main():
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
     #for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
-    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_rank_0"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_rank_0"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_task_2"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_0"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_2"]:
-        for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_500_rank_task_0"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_100_rank_task_0"]:
+
+        #for graph_type in ["graph_1"]:
+        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
                 for classifier_num_filter in [1]:#[1, 2, 4]:
                     for gnn_num_filters in [1]:#[1,2,4]:
@@ -53,8 +58,8 @@ def main():
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
                                     for hidden_dim in [128]:  # [128,256]:
-                                        for dropout_rate in [0.2]:#[0.2,0.5]:
-                                            for batch_size in [5000]:#5000
+                                        for dropout_rate in [0.2,0.5]:
+                                            for batch_size in [train_batch_size]:#5000
                                                 for model_type in [
                                                     "GCNSplit"]:  # ["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
                                                     for share_gnn in [False]:

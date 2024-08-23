@@ -160,9 +160,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 # print(RECURSION_ERROR)
 
         # output UNSAT train data
-        if self.eq_satisfiability==UNSAT:
-            #self.output_unsat_train_data()
-            self.output_unsat_train_data_shortest_path()
+        # if self.eq_satisfiability==UNSAT:
+        #     #self.output_unsat_train_data()
+        #     self.output_unsat_train_data_shortest_path()
 
 
         print(f"----- total_output_branches:{self.total_output_branches} -----")
@@ -335,11 +335,11 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
                     #output all UNSAT nodes
                     #self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
-                    pass
+
 
                     #output first branch
-                    # if self.total_output_branches == 0:
-                    #     self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+                    if self.total_output_branches == 0:
+                        self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
 
                     # output first layer in the end of the search
                     # if current_depth == 0:

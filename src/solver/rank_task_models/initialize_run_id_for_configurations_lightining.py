@@ -39,7 +39,7 @@ from pytorch_lightning.loggers import MLFlowLogger
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
-
+from torch.profiler import profile, ProfilerActivity
 
 def main():
 
@@ -133,10 +133,14 @@ def train_in_parallel(parameters):
         enable_checkpointing=True,
     )
 
+
     model = initialize_model_lightning(parameters)
 
-    trainer.fit(model, dm)
-    #trainer.validate(model, dm)
+    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], profile_memory=True,
+                 record_shapes=True) as prof:
+        trainer.fit(model, dm)
+        #trainer.validate(model, dm)
+    print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=10))
 
 
 
