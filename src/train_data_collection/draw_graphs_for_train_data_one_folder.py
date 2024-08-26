@@ -34,7 +34,7 @@ def main():
 
     benchmark_path = f"{bench_folder}/{benchmark}"
 
-    task = "rank_task_1"
+    task = "rank_task"
 
     draw_graph_for_one_folder(graph_type, benchmark_path + "/" + folder, task)
 

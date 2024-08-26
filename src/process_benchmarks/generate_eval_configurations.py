@@ -24,7 +24,7 @@ def main():
 
 
     model_folder = project_folder + "/" + "Models/"
-    task = "rank_task_1"  # "task_3"
+    task = "rank_task"  # "task_3"
     algorithm = "SplitEquations"
     solver_param_list = [
         # branch:fixed, order equations: no category

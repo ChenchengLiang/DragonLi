@@ -145,7 +145,7 @@ def train_in_parallel(parameters):
     #     trainer.fit(model, dm)
     #print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=10))
 
-    print_cuda_memory_usage()
+    #print_cuda_memory_usage()
     trainer.fit(model, dm)
         #trainer.validate(model, dm)
 

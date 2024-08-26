@@ -31,7 +31,7 @@ def main():
     benchmark_name = "debug1"
     benchmark_path=f"{bench_folder}/{benchmark_name}"
 
-    task="rank_task_1"
+    task="rank_task"
 
     visualize=False
 

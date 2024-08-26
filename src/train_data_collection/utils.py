@@ -333,7 +333,7 @@ def draw_graph_for_one_folder(graph_type, benchmark_path, task, visualize=False)
         draw_func = output_pair_eq_graphs  # task 2
     elif task == "task_3":
         draw_func = output_split_eq_graphs  # task 3
-    elif task == "rank_task_1":  # G:List[graph]
+    elif task == "rank_task":  # G:List[graph]
         draw_func = output_rank_eq_graphs
 
     train_eq_folder = benchmark_path + "/train"
