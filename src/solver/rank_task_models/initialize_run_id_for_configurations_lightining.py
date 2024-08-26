@@ -41,6 +41,8 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.utilities.rank_zero import rank_zero_only
 from torch.profiler import profile, ProfilerActivity
 
+from torch.cuda import memory_summary, memory_allocated, memory_reserved
+
 def main():
 
     # parse argument
@@ -136,11 +138,17 @@ def train_in_parallel(parameters):
 
     model = initialize_model_lightning(parameters)
 
-    with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], profile_memory=True,
-                 record_shapes=True) as prof:
-        trainer.fit(model, dm)
+
+
+    # with profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], profile_memory=True,
+    #              record_shapes=True) as prof:
+    #     trainer.fit(model, dm)
+    #print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=10))
+
+    print_cuda_memory_usage()
+    trainer.fit(model, dm)
         #trainer.validate(model, dm)
-    print(prof.key_averages().table(sort_by="cuda_memory_usage", row_limit=10))
+
 
 
 
@@ -151,7 +159,14 @@ def train_in_parallel(parameters):
     #
 
 
-
+def print_cuda_memory_usage():
+    print("--------------------------------------------------------")
+    print("\nCUDA Memory Usage:")
+    print(f"Allocated: {memory_allocated() / 1024**2:.2f} MB")
+    print(f"Reserved:  {memory_reserved() / 1024**2:.2f} MB")
+    print("\nDetailed Memory Summary:")
+    print(memory_summary(device=None, abbreviated=False))
+    print("--------------------------------------------------------")
 
 if __name__ == '__main__':
     main()

@@ -24,12 +24,12 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task_1"  # "task_3"
-    rank_task = 0
+    rank_task = 1
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
-    train_batch_size=100
+    train_batch_size=10
     valid_batch_size_factor = 2
-    valid_batch_size = 5000
+    valid_batch_size = 1000
     node_type = rank_task_node_type_map[rank_task]
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
@@ -46,11 +46,13 @@ def main():
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_0"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_rank_task_2"]:
-    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_500_rank_task_0"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_500_rank_task_0"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_100_rank_task_0"]:
-
-        #for graph_type in ["graph_1"]:
-        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_1000_rank_task_0"]:
+    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_1000_rank_task_1"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_5000_chunk_size_1000_rank_task_2"]:
+        for graph_type in ["graph_1"]:
+        #for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
                 for classifier_num_filter in [1]:#[1, 2, 4]:
                     for gnn_num_filters in [1]:#[1,2,4]:

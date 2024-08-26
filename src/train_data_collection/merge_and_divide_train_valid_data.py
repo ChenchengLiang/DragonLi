@@ -21,13 +21,13 @@ from tqdm import tqdm
 
 def main():
     # generate track
-    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_first_node_5000_chunk_size_500"
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_first_node_10000_chunk_size_1000"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
-    chunk_size = 500
+    chunk_size = 1000
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 

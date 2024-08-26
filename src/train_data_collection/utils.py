@@ -90,6 +90,11 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 rank_eq_list, rank_eq_file_list, label_list, satisfiability_list = _read_label_and_eqs_for_rank(
                     zip_file_content, f, parser)
                 global_info = _get_global_info(rank_eq_list)
+                print("\nglobal_info", global_info)
+                total_variable_occurrence = sum(global_info["variable_global_occurrences"].values())
+                total_terminal_occurrence = sum(global_info["terminal_global_occurrences"].values())
+                print("total_variable_occurrence", total_variable_occurrence)
+                print("total_terminal_occurrence", total_terminal_occurrence)
 
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
@@ -97,12 +102,15 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                     # add global information
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms, global_info)
 
+
                     if visualize == True:
                         draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
                                    filename=graph_folder + "/" + split_file.replace("train/", ""))
 
                     graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,
                                                      satisfiability=split_satisfiability)
+                    print("split_file",split_file)
+                    print("graph_dict",graph_dict["nodes"])
                     multi_graph_dict[i] = graph_dict
 
                 json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")

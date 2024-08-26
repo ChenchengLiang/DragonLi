@@ -94,12 +94,18 @@ class SeparateSymbol(Symbol):
 
 class GlobalVariableOccurrenceSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
+class GlobalVariableOccurrenceSymbol_0(Symbol):
+    pass  # All necessary methods are inherited from Symbol
+class GlobalVariableOccurrenceSymbol_1(Symbol):
+    pass
 
 class GlobalTerminalOccurrenceSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
-
-class EmptyNode(Symbol):
+class GlobalTerminalOccurrenceSymbol_0(Symbol):
     pass  # All necessary methods are inherited from Symbol
+class GlobalTerminalOccurrenceSymbol_1(Symbol):
+    pass  # All necessary methods are inherited from Symbol
+
 
 
 EMPTY_TERMINAL: Terminal = Terminal("\"\"")

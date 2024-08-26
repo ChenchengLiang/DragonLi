@@ -103,7 +103,7 @@ def main():
 
     graph_type = "graph_1"
     task = "task_3"
-    rank_task = 1
+    rank_task = 0
     label_size = rank_task_label_size_map[rank_task]
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
