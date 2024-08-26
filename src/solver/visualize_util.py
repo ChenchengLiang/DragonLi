@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from graphviz import Digraph
 from PIL import Image,ImageFile
 
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None  # Removes the limit on image size
 
@@ -241,10 +242,15 @@ def visualize_path_html(nodes, edges, file_path):
 
 
 def draw_graph(nodes, edges,filename=""):
-    from src.solver.DataTypes import Variable, Terminal, Operator,SeparateSymbol,IsomorphicTailSymbol,GlobalVariableOccurrenceSymbol,GlobalTerminalOccurrenceSymbol
+    from src.solver.DataTypes import (Variable, Terminal, Operator,SeparateSymbol,IsomorphicTailSymbol,
+                                      GlobalVariableOccurrenceSymbol,GlobalTerminalOccurrenceSymbol,
+                                      GlobalVariableOccurrenceSymbol_0,GlobalVariableOccurrenceSymbol_1,GlobalTerminalOccurrenceSymbol_0,GlobalTerminalOccurrenceSymbol_1)
 
     equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black",SeparateSymbol:"yellow",
-                                     IsomorphicTailSymbol:"yellow",GlobalVariableOccurrenceSymbol:"yellow",GlobalTerminalOccurrenceSymbol:"purple"}
+                                     IsomorphicTailSymbol:"yellow",
+                                     GlobalVariableOccurrenceSymbol:"yellow",GlobalTerminalOccurrenceSymbol:"purple",
+                                     GlobalVariableOccurrenceSymbol_0:"yellow",GlobalVariableOccurrenceSymbol_1:"yellow",
+                                     GlobalTerminalOccurrenceSymbol_0:"purple",GlobalTerminalOccurrenceSymbol_1:"purple"}
     dot = Digraph()
     # Set newrank to true for more control over ranking
     dot.attr(newrank='true')

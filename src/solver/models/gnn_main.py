@@ -1,7 +1,7 @@
 import os
 
 os.environ["DGLBACKEND"] = "pytorch"
-from Dataset import WordEquationDatasetBinaryClassification,KarateClubDataset,SyntheticDataset,WordEquationDatasetMultiClassification
+from Dataset import WordEquationDatasetBinaryClassification,WordEquationDatasetMultiClassification
 from src.solver.Constants import bench_folder
 from dgl.dataloading import GraphDataLoader
 def main():

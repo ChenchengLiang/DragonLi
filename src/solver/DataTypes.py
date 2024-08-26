@@ -4,7 +4,7 @@ from collections import deque
 from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
-from src.solver.independent_utils import remove_duplicates, color_print
+from src.solver.independent_utils import remove_duplicates, color_print,int_to_binary_list
 from src.solver.visualize_util import draw_graph
 import time
 
@@ -641,6 +641,9 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
 
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
                    global_node_counter, global_info: Dict = {}):
+    node_type_content_map={GlobalVariableOccurrenceSymbol:"V#",GlobalTerminalOccurrenceSymbol:"T#",
+                           GlobalVariableOccurrenceSymbol_0:"V#0",GlobalVariableOccurrenceSymbol_1:"V#1",
+                           GlobalTerminalOccurrenceSymbol_0:"T#0",GlobalTerminalOccurrenceSymbol_1:"T#1"}
 
     for current_term in term_list:
         current_node = Node(id=global_node_counter, type=current_term.value_type,
@@ -654,19 +657,14 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             pass
         else:
             if current_term.value_type == Variable and current_term.value in global_info["variable_global_occurrences"]:
-                # add node and edge
-                # current_variable_occurrence_node = Node(id=global_node_counter, type=GlobalVariableOccurrenceSymbol,
-                #                                         content="V#", label=None)
-                # global_node_counter += 1
-                # nodes.append(current_variable_occurrence_node)
-                # edges.append(
-                #     Edge(source=current_variable_occurrence_node.id, target=current_node.id, type=None, content="",
-                #          label=None))
 
+                # generate binary nodes
+                binary_list = int_to_binary_list(global_info["variable_global_occurrences"][current_term.value])
                 current_variable_occurrence_node = current_node
-                for i in range(global_info["variable_global_occurrences"][current_term.value] - 1):
-                    new_variable_occurrence_node = Node(id=global_node_counter, type=GlobalVariableOccurrenceSymbol,
-                                                        content="V#", label=None)
+                for i in binary_list:
+                    node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
+                    new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                        content=node_type_content_map[node_type], label=None)
                     global_node_counter += 1
                     nodes.append(new_variable_occurrence_node)
                     edges.append(
@@ -674,32 +672,52 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                              type=None, content="", label=None))
                     current_variable_occurrence_node = new_variable_occurrence_node
 
+                # # unary nodes
+                # current_variable_occurrence_node = current_node
+                # for i in range(global_info["variable_global_occurrences"][current_term.value] - 1):
+                #     new_variable_occurrence_node = Node(id=global_node_counter, type=GlobalVariableOccurrenceSymbol,
+                #                                         content="V#", label=None)
+                #     global_node_counter += 1
+                #     nodes.append(new_variable_occurrence_node)
+                #     edges.append(
+                #         Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
+                #              type=None, content="", label=None))
+                #     current_variable_occurrence_node = new_variable_occurrence_node
+
 
 
             elif current_term.value_type == Terminal and current_term.value in global_info[
                 "terminal_global_occurrences"]:
-                # add node and edge
-                # current_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
-                #                                         content="T#", label=None)
-                # global_node_counter += 1
-                # nodes.append(current_terminal_occurrence_node)
-                # edges.append(
-                #     Edge(source=current_terminal_occurrence_node.id, target=current_node.id, type=None, content="",
-                #          label=None))
 
+
+                # generate binary nodes
+                binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
                 current_terminal_occurrence_node = current_node
-                for i in range(global_info["terminal_global_occurrences"][current_term.value] - 1):
-                    new_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
-                                                        content="T#", label=None)
+                for i in binary_list:
+                    node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
+                    new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                        content=node_type_content_map[node_type], label=None)
                     global_node_counter += 1
                     nodes.append(new_terminal_occurrence_node)
                     edges.append(
                         Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
                              type=None, content="", label=None))
                     current_terminal_occurrence_node = new_terminal_occurrence_node
+
+
+                # # unary nodes
+                # current_terminal_occurrence_node = current_node
+                # for i in range(global_info["terminal_global_occurrences"][current_term.value] - 1):
+                #     new_terminal_occurrence_node = Node(id=global_node_counter, type=GlobalTerminalOccurrenceSymbol,
+                #                                         content="T#", label=None)
+                #     global_node_counter += 1
+                #     nodes.append(new_terminal_occurrence_node)
+                #     edges.append(
+                #         Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
+                #              type=None, content="", label=None))
+                #     current_terminal_occurrence_node = new_terminal_occurrence_node
             else:
                 pass
-
 
         if graph_type == "graph_2" and current_node.type != SeparateSymbol and current_node.type != IsomorphicTailSymbol:  # add edge back to equation node
             edges.append(Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))

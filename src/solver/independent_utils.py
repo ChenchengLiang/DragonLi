@@ -455,3 +455,13 @@ def keep_first_one(numbers):
 
 def identity_function(x):
     return x
+
+
+def int_to_binary_list(n):
+    if n == 0:
+        return [0]
+    binary = []
+    while n > 0:
+        binary.insert(0, n % 2)
+        n //= 2
+    return binary

@@ -60,6 +60,8 @@ int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
 rank_task_label_size_map={0:2,1:2,2:100,None:-1}
 rank_task_node_type_map={0:5,1:5,2:6}
+rank_task_node_type_map={0:7,1:7,2:8}
+
 
 
 solver_command_map = {"z3": "/z3/build/z3",
