@@ -14,11 +14,8 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 def main():
     benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
-    #benchmark_name = "conjunctive_03_track_train_rank_task_1_5000"
-    #benchmark_name = "conjunctive_03_track_eval_rank_task_1_1000"
-    #benchmark_name = "conjunctive_01_track_train_rank_task_1_100"
-    #benchmark_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_2"
-    rank_task = 2
+    #benchmark_name = "01_track_multi_word_equations_generated_train_1_20000_eq_number_20"
+    rank_task = 0
     graph_type = "graph_5"
     model_type = "GCNSplit"  # "GINSplit"
 

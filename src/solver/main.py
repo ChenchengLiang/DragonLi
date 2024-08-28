@@ -54,8 +54,8 @@ def main():
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
-    # file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/6/test6.eq"  # SAT
@@ -71,6 +71,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
     #file_path = bench_folder + "/examples_choose_eq/17/17.eq"
     #file_path = bench_folder + "/examples_choose_eq/18/18.eq" #UNSAT, big graph
+    #file_path = bench_folder + "/examples_choose_eq/19/g_conjunctive_01_track_train_eq_number_20_rank_task_1_20000_638.eq"  # SAT
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -107,7 +108,7 @@ def main():
     label_size = rank_task_label_size_map[rank_task]
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
-    eq_satisfiability="UNSAT"
+    eq_satisfiability="SAT"
 
     algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "fixed", "task": task,
                                                         "graph_type": graph_type,
@@ -131,7 +132,8 @@ def main():
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                                       "order_equations_method": "category_random",
-                                                      "termination_condition": "termination_condition_7",
+                                                      "termination_condition": "termination_condition_4",# for sat
+                                                      #"termination_condition": "termination_condition_7",#for unsat
                                                       "graph_type": graph_type,
                                                       "graph_func": graph_func_map[graph_type],
                                                       "task": "dynamic_embedding", "label_size": label_size,

@@ -45,7 +45,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # control path number for extraction
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
-        self.max_found_sat_path_extraction = 20
+        self.max_found_sat_path_extraction = 10
         self.max_found_unsat_leaf_node_extraction = 5000
         self.max_found_path_extraction = 20
         self.max_found_unsat_first_layer_node = 10
@@ -68,6 +68,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.return_depth_location = 1  # could be a stochastic number between 1 to last path depth
         self.last_sat_path_depth = self.termination_condition_max_depth
         self.last_sat_path_depth_factor = 2
+        self.only_output_sat_path=True
+        self.output_sat_path_func= self.output_sat_path_func_1 if self.only_output_sat_path==True else self.output_sat_path_func_2
 
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
@@ -319,18 +321,20 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
                 if self.eq_satisfiability == SAT:
                     # output labeled eqs according to order_equations_method
-                    if len(branch_eq_satisfiability_list) > 1:  # todo lower the output rate when length is small
+                    if len(branch_eq_satisfiability_list) > 1:
+                        self.output_sat_path_func(current_node,current_formula,branch_eq_satisfiability_list)
 
-                        # for no SAT eq case, only output some percentage of them
-                        output_decision = False
-                        if current_node[1]["status"] == SAT:
-                            output_decision = True
-                        else:
-                            if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
-                                output_decision = True
 
-                        if output_decision == True:
-                            self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
+                        # # for no SAT eq case, only output some percentage of them
+                        # output_decision = False
+                        # if current_node[1]["status"] == SAT:
+                        #     output_decision = True
+                        # else:
+                        #     if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
+                        #         output_decision = True
+                        #
+                        # if output_decision == True:
+                        #     self.output_one_train_data(current_formula,branch_eq_satisfiability_list,current_node)
                 else:  # self.eq_satisfiability==UNSAT
 
                     #output all UNSAT nodes
@@ -578,6 +582,17 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.return_depth = self.termination_condition_max_depth
         else:
             return None
+
+    def output_sat_path_func_1(self, current_node,current_formula,branch_eq_satisfiability_list): # only output sat path
+        if current_node[1]["status"] == SAT:
+            self.output_one_train_data(current_formula, branch_eq_satisfiability_list, current_node)
+
+    def output_sat_path_func_2(self, current_node,current_formula,branch_eq_satisfiability_list): # output some percentage of unsat path
+        if current_node[1]["status"] == SAT:
+            self.output_one_train_data(current_formula, branch_eq_satisfiability_list, current_node)
+        else:
+            if random.random() < OUTPUT_NON_SAT_PATH_PERCENTAGE:
+                self.output_one_train_data(current_formula, branch_eq_satisfiability_list, current_node)
 
     def visualize(self, file_path: str, graph_func: Callable):
         # visualize best unsat path

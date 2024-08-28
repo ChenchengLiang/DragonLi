@@ -22,8 +22,8 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 40000
-    track_name = f"conjunctive_01_track_train_rank_task_{start_idx}_{end_idx}"
+    end_idx = 1000
+    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_20_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     # divide tracks
@@ -251,7 +251,7 @@ def generate_conjunctive_track_03(file_name, index):
 
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
-    eq_number = random.randint(1, 100)
+    eq_number = random.randint(1, 20)
     eq_list = []
     variable_list = []
     terminal_list = []
@@ -259,7 +259,7 @@ def generate_one_track_4(file_name, index):
         # result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
         # result, variables, terminals, eqs = generate_one_track_3(file_name,index)
         result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=10, max_terminals=6,
-                                                                 max_length=60, write_replacement_log=False)
+                                                                 max_length=50, write_replacement_log=False)
         left_str = eqs[0][0]
         right_str = eqs[0][1]
         variable_list.extend(variables)
