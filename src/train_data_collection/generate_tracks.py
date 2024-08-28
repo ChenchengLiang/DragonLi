@@ -22,7 +22,7 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 1000
+    end_idx = 5
     track_name = f"01_track_multi_word_equations_generated_eval_eq_number_20_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -251,15 +251,19 @@ def generate_conjunctive_track_03(file_name, index):
 
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
-    eq_number = random.randint(1, 20)
+    max_eq=20
+    max_variables=10
+    max_terminals=6
+    one_side_max_length=50
+    eq_number = random.randint(1, max_eq)
     eq_list = []
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
         # result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
         # result, variables, terminals, eqs = generate_one_track_3(file_name,index)
-        result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=10, max_terminals=6,
-                                                                 max_length=50, write_replacement_log=False)
+        result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=max_variables, max_terminals=max_terminals,
+                                                                 max_length=one_side_max_length, write_replacement_log=False)
         left_str = eqs[0][0]
         right_str = eqs[0][1]
         variable_list.extend(variables)
@@ -268,6 +272,14 @@ def generate_one_track_4(file_name, index):
         terminal_list = remove_duplicates(terminal_list)
         eq_list.append((left_str, right_str))
     result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
+
+    if index == 1:
+        track_info_str = f"max_eq={max_eq} \n max_variables={max_variables}\n max_terminals={max_terminals}\n max_length={one_side_max_length}"
+        #output track_info_str to file
+        track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
+        with open(track_info_file, 'w') as file:
+            file.write(track_info_str)
+
     return result, variable_list, terminal_list, eq_list
 
 
