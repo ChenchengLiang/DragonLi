@@ -57,8 +57,7 @@ Alvis/UPPMAX: sh word_equation_submit_draw_graphs_for_train_data_parallel.sh ben
 
 
 8. Store to pickle data:
-Local: Set parameters in src/train_data_collection/store_dataset_to_pickle_one_folder.py
-Alvis: sh word_equation_submit_store_dataset_to_pickle_parallel.sh benchmark
+Alvis: sh word_equation_submit_store_dataset_to_pickle_parallel.sh benchmark rank_task (an integer)
 
 9. Initialize train configurations:
 Local: Set parameters in src/solver/model/generate_configurations.py
@@ -76,7 +75,7 @@ Send to Uppmax path /home/cheli243/boosting-string-equation-solving-by-GNNs/Mode
 Local: configurate evaluation parameters in generate_eval_configurations.py
 Uppmax: sh word_equation_submit_multiple_eval.sh #evaluate track with good models
 Uppmax: sh send_summary_back.sh
-13. 
+
 13. Summary evaluation:
 Local: sh merge_and_summary.sh $benchmark_name # this will call merge_summary_folders.py and summary_solutions.py
 

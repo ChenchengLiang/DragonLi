@@ -24,16 +24,18 @@ def main():
     arg_parser.add_argument('graph_type', type=str, help='graph_type')
     arg_parser.add_argument('benchmark', type=str, help='benchmark')
     arg_parser.add_argument('folder', type=str, help='folder')
+    arg_parser.add_argument('rank_task', type=str, help='rank_task')
     args = arg_parser.parse_args()
 
     graph_type = args.graph_type
     benchmark = args.benchmark
     folder = args.folder
+    rank_task = int(args.rank_task)
 
     # parameters = {"node_type": 4}
     # func=prepare_and_save_datasets_task_3
+    #rank_task=0
 
-    rank_task=2
     parameters = {"rank_task": rank_task}
     parameters["node_type"] = rank_task_node_type_map[rank_task]
     parameters["label_size"] = rank_task_label_size_map[rank_task]
