@@ -327,19 +327,21 @@ def generate_conjunctive_track_03(file_name, index):
 def generate_one_track_4_v2(file_name, index):
     min_eq = 2
     max_eq = 5
-    max_variables = 10
-    max_terminals = 10
+    max_variables = 50
+    max_terminals = 50
     one_side_max_length = 50
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
-        result, variables, terminals, eq=generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10, max_length=300)
+        result, variables, terminals, eq=generate_one_track_1_v2(file_name, index, max_variables=max_variables, max_terminals=max_terminals, max_length=one_side_max_length)
         left_list = eq[0][0]
         right_list = eq[0][1]
-        variable_list.extend(variables)
-        terminal_list.extend(terminals)
+        temp_variable_list=[v for v in variables if v in left_list + right_list]
+        temp_terminal_list=[t for t in terminals if t in left_list + right_list]
+        variable_list.extend(temp_variable_list)
+        terminal_list.extend(temp_terminal_list)
         variable_list = remove_duplicates(variable_list)
         terminal_list = remove_duplicates(terminal_list)
         eq_list.append((left_list, right_list))
