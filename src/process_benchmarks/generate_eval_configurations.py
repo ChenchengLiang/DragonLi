@@ -15,8 +15,8 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "01_track_multi_word_equations_generated_train_1_20000_eq_number_20"
-    rank_task = 1
-    graph_type = "graph_3"
+    rank_task = 2
+    graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
 
 

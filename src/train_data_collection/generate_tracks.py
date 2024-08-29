@@ -22,10 +22,13 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 5
+    end_idx = 10
     track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
@@ -81,23 +84,74 @@ def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, m
     return result, variables, terminals, [(replaced_left, replaced_right)]
 
 
+def generate_letter_pool(length, use_uppercase=True, custom_letters=None):
+    if custom_letters:
+        letters = custom_letters
+    else:
+        letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' if use_uppercase else 'abcdefghijklmnopqrstuvwxyz'
 
-def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10, max_length=300,
-                         write_replacement_log=False):
-    terminal_pool = string.ascii_lowercase
+    num_letters = len(letters)
+    pool = []
+
+    for i in range(length):
+        letter_index = i % num_letters
+        number = i // num_letters
+
+        if number == 0:
+            pool.append(letters[letter_index])
+        else:
+            pool.append(f"{letters[letter_index]}{number}")
+
+    return pool
 
 
-def replace_substring_with_new_variables_v2(left, right, replacement_log):
-    original_left_list=list(left)
-    original_right_list=list(right)
-    variables = []
+def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10, max_length=300):
+    terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
+    variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
+    random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
+    eq_left = random_terminal_list
+    eq_right = random_terminal_list
+
+    # replace terminals with variables
+    replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool)
+
+    result = formatting_results_v2(variable_pool, terminal_pool, [(replaced_left, replaced_right)])
+
+    return result, variable_pool, terminal_pool, [(replaced_left, replaced_right)]
+
+
+def replace_sublist(terminal_list, replacement_variable_list, start_index, end_index):
+    terminal_list[start_index:end_index + 1] = replacement_variable_list
+    return terminal_list
+
+
+def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool):
     max_replace_variable_length = 5
     max_replace_time = 5
+    left_list = original_left_list.copy()
+    right_list = original_right_list.copy()
 
     replace_time = random.randint(0, max_replace_time)
     for i in range(replace_time):
-        pass
+        left_list = replace_one_side(left_list, variable_pool, max_replace_variable_length)
 
+    for i in range(replace_time):
+        right_list = replace_one_side(right_list, variable_pool, max_replace_variable_length)
+
+    return left_list, right_list
+
+
+def replace_one_side(original_list, variable_pool, max_replace_variable_length):
+    # substring index
+    random_start_index = random.randint(0, len(original_list))
+    random_substring_length = random.randint(0, len(original_list) - random_start_index)
+    random_end_index = random_start_index + random_substring_length
+
+    replacement_variable_list = [random.choice(variable_pool) for _ in range(max_replace_variable_length)]
+
+    original_list = replace_sublist(original_list, replacement_variable_list, random_start_index,
+                                    random_end_index)
+    return original_list
 
 
 def replace_substring_with_new_variables(left, right, replacement_log):
@@ -270,6 +324,39 @@ def generate_conjunctive_track_03(file_name, index):
     return result, variable_list, terminal_list, eq_list
 
 
+def generate_one_track_4_v2(file_name, index):
+    min_eq = 2
+    max_eq = 5
+    max_variables = 10
+    max_terminals = 10
+    one_side_max_length = 50
+    eq_number = random.randint(min_eq, max_eq)
+    eq_list=[]
+    variable_list = []
+    terminal_list = []
+    for i in range(eq_number):
+        result, variables, terminals, eq=generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10, max_length=300)
+        left_list = eq[0][0]
+        right_list = eq[0][1]
+        variable_list.extend(variables)
+        terminal_list.extend(terminals)
+        variable_list = remove_duplicates(variable_list)
+        terminal_list = remove_duplicates(terminal_list)
+        eq_list.append((left_list, right_list))
+
+    result = formatting_results_v2(variable_list, terminal_list, eq_list)
+
+    if index == 1:
+        track_info_str = (
+            f"min_eq={min_eq}\n max_eq={max_eq} \n max_variables={max_variables}\n max_terminals={max_terminals}\n max_length={one_side_max_length}")
+        # output track_info_str to file
+        track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
+        with open(track_info_file, 'w') as file:
+            file.write(track_info_str)
+
+    return result, variable_list, terminal_list, eq_list
+
+
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
     min_eq = 2
@@ -364,6 +451,17 @@ def formatting_results(variables: List[str], terminals: List[str], eq_list: List
     result += f"Terminals {{{''.join(terminals)}}}\n"
     for eq in eq_list:
         result += f"Equation: {eq[0]} = {eq[1]}\n"
+    result += "SatGlucose(100)"
+    return result
+
+
+def formatting_results_v2(variables: List[str], terminals: List[str],
+                          eq_list: List[Tuple[List[str], List[str]]]) -> str:
+    # Format the result
+    result = f"Variables {{{' '.join(variables)}}}\n"
+    result += f"Terminals {{{' '.join(terminals)}}}\n"
+    for eq in eq_list:
+        result += f"Equation: {' '.join(eq[0])} = {' '.join(eq[1])}\n"
     result += "SatGlucose(100)"
     return result
 
