@@ -25,11 +25,11 @@ def main():
     # generate track
     start_idx = 1
     end_idx = 200
-    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_1_rank_task_{start_idx}_{end_idx}"
+    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
-    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
@@ -358,7 +358,7 @@ def generate_one_track_4_v2(file_name, index):
 
     if index == 1:
         track_info_str = (
-            f"min_eq={min_eq}\n max_eq={max_eq} \n max_variables={max_variables}\n max_terminals={max_terminals}\n max_length={one_side_max_length}")
+            f"min_eq={min_eq}\n max_eq={max_eq}\n max_variables={max_variables}\nmax_terminals={max_terminals}\nmax_length={one_side_max_length}")
         # output track_info_str to file
         track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
         with open(track_info_file, 'w') as file:

@@ -49,7 +49,7 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
-        self.each_n_iterations = 10
+        self.each_n_iterations = 10000
         self.first_n_itarations = 1
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
@@ -66,6 +66,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "category": order_equations_category,
                                          "category_random": order_equations_category_random,
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
+                                         #gnn based
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
@@ -336,6 +337,13 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return f, category_call
 
+    def _order_equations_gnn_dynamic_condition(self, f: Formula, category_call=0) -> (Formula, int):
+        #todo: implement dynamic condition
+        if True:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return f, category_call
+
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()
         global_info = _get_global_info(f.eq_list)
@@ -405,7 +413,11 @@ class SplitEquations(AbstractAlgorithm):
 
         sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
 
-        # print("rank_list", rank_list)
+        # print("-" * 10)
+        # print("before sort")
+        # for rank,eq in zip(rank_list,eq_list):
+        #     print(rank,eq.eq_str)
+        # print("after sort")
         # for x in sorted_prediction_list:
         #     print(x[0],x[1].eq_str)
 
@@ -423,7 +435,7 @@ class SplitEquations(AbstractAlgorithm):
         with torch.no_grad():
             classifier_output = self.gnn_rank_model(dgl.batch(G_list_dgl)).squeeze()
 
-        rank_list = []
+        rank_list:List[float] = []
         for one_output in classifier_output:
             softmax_one_output = softmax(one_output.tolist())
             rank_list.append(softmax_one_output[0])
