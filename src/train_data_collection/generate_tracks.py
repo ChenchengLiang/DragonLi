@@ -2,6 +2,8 @@ import configparser
 import os
 import sys
 
+from torch.fx.experimental.unification import variables
+
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -23,11 +25,11 @@ def main():
     # generate track
     start_idx = 1
     end_idx = 200
-    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_{start_idx}_{end_idx}"
+    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_1_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
-    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
@@ -147,7 +149,13 @@ def replace_one_side(original_list, variable_pool, max_replace_variable_length):
     random_substring_length = random.randint(0, len(original_list) - random_start_index)
     random_end_index = random_start_index + random_substring_length
 
-    replacement_variable_list = [random.choice(variable_pool) for _ in range(max_replace_variable_length)]
+    #choose the replacement variables not in existing variables
+    current_variable_list=[t for t in original_list if t in variable_pool]
+    available_variable_pool= [v for v in variable_pool if v not in current_variable_list]
+    if available_variable_pool==[]:
+        return original_list
+
+    replacement_variable_list = [random.choice(available_variable_pool) for _ in range(max_replace_variable_length)]
 
     original_list = replace_sublist(original_list, replacement_variable_list, random_start_index,
                                     random_end_index)
