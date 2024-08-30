@@ -24,7 +24,7 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 200
+    end_idx = 10
     track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -49,7 +49,12 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         print("---", str(i), "----")
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
-        equation_str, _, _, _ = equation_generator(filename, i)
+        equation_str, variable_list, terminal_list, eq_list = equation_generator(filename, i)
+        # generate eq file
+        if len(variable_list)>26 or len(terminal_list)>26:
+            pass
+        else:
+            equation_str=formatting_results(variable_list, terminal_list, eq_list)
         with open(filename, 'w') as file:
             file.write(equation_str)
         # generate smt2 file
@@ -459,8 +464,10 @@ def formatting_results(variables: List[str], terminals: List[str], eq_list: List
     # Format the result
     result = f"Variables {{{''.join(variables)}}}\n"
     result += f"Terminals {{{''.join(terminals)}}}\n"
+    # for eq in eq_list:
+    #     result += f"Equation: {eq[0]} = {eq[1]}\n"
     for eq in eq_list:
-        result += f"Equation: {eq[0]} = {eq[1]}\n"
+        result += f"Equation: {''.join(eq[0])} = {''.join(eq[1])}\n"
     result += "SatGlucose(100)"
     return result
 
