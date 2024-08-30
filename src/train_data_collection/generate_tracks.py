@@ -22,7 +22,7 @@ from typing import List, Tuple
 def main():
     # generate track
     start_idx = 1
-    end_idx = 10
+    end_idx = 200
     track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -327,8 +327,8 @@ def generate_conjunctive_track_03(file_name, index):
 def generate_one_track_4_v2(file_name, index):
     min_eq = 2
     max_eq = 5
-    max_variables = 50
-    max_terminals = 50
+    max_variables = 10
+    max_terminals = 10
     one_side_max_length = 50
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]
