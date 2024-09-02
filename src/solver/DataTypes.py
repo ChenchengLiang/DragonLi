@@ -381,6 +381,13 @@ class Formula:
     @property
     def eq_list_length(self):
         return len(self.eq_list)
+    @property
+    def formula_size(self):
+        total_size=0
+        for eq in self.eq_list:
+            total_size+=eq.term_length
+        return total_size
+
 
     @property
     def unknown_number(self) -> int:

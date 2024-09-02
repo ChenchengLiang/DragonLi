@@ -53,8 +53,8 @@ class SplitEquations(AbstractAlgorithm):
         self.each_n_iterations = 10000
         self.first_n_itarations = 1
         self.dynamic_condition_check_point_frequency=10
-        self.current_eq_length=10000
-        self.changed_eq_length=0
+        self.current_eq_size=1000000
+        self.changed_eq_size=0
 
 
 
@@ -78,17 +78,19 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
+                                         "category_gnn_formula_size": self._order_equations_category_gnn_formula_size,
                                          "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
                                          "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
                                          "hybrid_category_gnn_random_first_n_iterations": self._order_equations_hybrid_category_gnn_random_first_n_iterations,
+                                         "hybrid_category_gnn_random_formula_size": self._order_equations_hybrid_category_gnn_random_formula_size,
                                          "gnn": self._order_equations_gnn,
                                          "gnn_each_n_iterations": self._order_equations_gnn_each_n_iterations,
                                          "gnn_first_n_iterations": self._order_equations_gnn_first_n_iterations,
-                                         "gnn_dynamic_condition": self._order_equations_gnn_dynamic_condition,
+                                         "gnn_formula_size": self._order_equations_gnn_formula_size,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
                                          "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
                                          "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
-                                         "hybrid_gnn_random_dynamic_condition": self._order_equations_hybrid_gnn_random_dynamic_condition,
+                                         "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
@@ -203,11 +205,6 @@ class SplitEquations(AbstractAlgorithm):
         satisfiability, current_formula = simplify_and_check_formula(input_formula)
 
 
-        if self.total_split_eq_call % self.dynamic_condition_check_point_frequency == 0:
-            self.changed_eq_length=self.current_eq_length - current_formula.eq_list_length # positive integer mean the eq length is reduced
-            self.current_eq_length=current_formula.eq_list_length
-
-
         if satisfiability != UNKNOWN:
             current_node[1]["status"] = satisfiability
             current_node[1]["back_track_count"] = 1
@@ -268,6 +265,31 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_category_random(f, category_call)
 
+    def _order_equations_hybrid_category_gnn_random_formula_size(self, f: Formula, category_call=0) -> (
+            Formula, int):
+        self._compute_changed_eq_size(f)
+        if self.changed_eq_size <= 0:
+            return self._order_equations_category_gnn(f, category_call)
+        else:
+            return order_equations_category_random(f, category_call)
+
+
+    def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
+        return self._order_equations_category_gnn_with_conditions(f, True, category_call)
+
+    def _order_equations_category_gnn_formula_size(self, f: Formula, category_call=0) -> (Formula, int):
+        self._compute_changed_eq_size(f)
+        condition = self.changed_eq_size <= 0
+        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
+
+    def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        condition=self.total_gnn_call < self.first_n_itarations
+        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
+
+    def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        condition=self.total_rank_call % self.each_n_iterations == 0
+        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
+
     def _order_equations_category_gnn_with_conditions(self, f: Formula, condition:bool,category_call=0) -> (Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
@@ -287,64 +309,59 @@ class SplitEquations(AbstractAlgorithm):
 
         return Formula(sorted_eq_list), category_call
 
-    def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
-        return self._order_equations_category_gnn_with_conditions(f, True, category_call)
-
-    def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_gnn_call < self.first_n_itarations
-        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
-
-    def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_rank_call % self.each_n_iterations == 0
-        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
-
-
     def _order_equations_hybrid_gnn_random_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        condition=self.total_gnn_call < self.first_n_itarations
+        return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
 
-        if self.total_gnn_call < self.first_n_itarations:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return order_equations_random(f, category_call)
 
     def _order_equations_hybrid_gnn_random_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
+        condition = self.total_rank_call % self.each_n_iterations == 0
+        return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
 
-        if self.total_rank_call % self.each_n_iterations == 0:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return order_equations_random(f, category_call)
-
-    def _order_equations_hybrid_gnn_random_dynamic_condition(self, f: Formula, category_call=0) -> (Formula, int):
+    def _order_equations_hybrid_gnn_random_formula_size(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
-        if probability < HYBRID_ORDER_EQUATION_RATE and self.changed_eq_length<=0:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return order_equations_random(f, category_call)
+        self._compute_changed_eq_size(f)
+        condition = probability < HYBRID_ORDER_EQUATION_RATE and self.changed_eq_size<=0
+        return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
+
 
     def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
-        if probability < HYBRID_ORDER_EQUATION_RATE:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return order_equations_random(f, category_call)
+        condition = probability < HYBRID_ORDER_EQUATION_RATE
+        return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
 
     def _order_equations_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        if self.total_gnn_call < self.first_n_itarations:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return f, category_call
+        condition=self.total_gnn_call < self.first_n_itarations
+        return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
+
 
     def _order_equations_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        if self.total_rank_call % self.each_n_iterations == 0:
-            return self._order_equations_gnn(f, category_call)
-        else:
-            return f, category_call
+        condition=self.total_rank_call % self.each_n_iterations == 0
+        return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
 
-    def _order_equations_gnn_dynamic_condition(self, f: Formula, category_call=0) -> (Formula, int):
-        #if each self.dynamic_condition_check_point_frequency call that no reduction of eq length, then call gnn
-        if self.changed_eq_length<=0:
+    def _order_equations_gnn_formula_size(self, f: Formula, category_call=0) -> (Formula, int):
+        # if each self.dynamic_condition_check_point_frequency call that no reduction of eq length, then call gnn
+        self._compute_changed_eq_size(f)
+        condition = self.changed_eq_size <= 0
+        return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
+
+
+    def _order_equations_gnn_with_condition(self, f: Formula, condition: bool, else_func, category_call=0) -> (
+    Formula, int):
+        if condition:
             return self._order_equations_gnn(f, category_call)
         else:
-            return f, category_call
+            return else_func(f, category_call)
+
+    def empty_else_func(self, f: Formula, category_call=0) -> (Formula, int):
+        return f, category_call
+
+    def _compute_changed_eq_size(self, f: Formula):
+        if self.total_split_eq_call % self.dynamic_condition_check_point_frequency == 0:
+            self.changed_eq_size=self.current_eq_size - f.formula_size # positive integer mean the eq length is reduced
+            self.current_eq_size=f.formula_size
+
+
 
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()

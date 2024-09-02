@@ -54,7 +54,7 @@ def main():
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/2/test2.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/3/test3.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/4/test4.eq"  # SAT
     # file_path = bench_folder + "/examples_choose_eq/5/test5.eq"  # SAT
@@ -65,7 +65,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
-    #file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/14/g_conjunctive_01_track_train_rank_task_1_100_1.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
@@ -126,7 +126,7 @@ def main():
                                            "label_size": label_size,"rank_task":rank_task}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "category_gnn_first_n_iterations",
+                                               "order_equations_method": "hybrid_gnn_random_first_n_iterations",
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
