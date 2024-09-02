@@ -23,9 +23,10 @@ import argparse
 
 
 def main():
-    benchmark_name=f"01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_200"
+    benchmark_name=f"01_track_multi_word_equations_generated_eval_1001_2000"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
 
+    log_string=""
     target_solver_list=["z3","z3-noodler","cvc5","ostrich"]
     for target_solver in target_solver_list:
 
@@ -74,6 +75,13 @@ def main():
             # print(filename)
             # print(this_solver_row, target_solver_row)
 
+        log_string+=f"target_solver: {target_solver}\n"
+        log_string+=f"common_solved_list: {len(common_solved_list)}\n"
+        log_string+=f"common_unsolvable_list: {len(common_unsolvable_list)}\n"
+        log_string+=f"this_solver_unique_solved_list: {len(this_solver_unique_solved_list)}\n"
+        log_string+=f"target_solver_unique_solved_list: {len(target_solver_unique_solved_list)}\n"
+        log_string+="-"*10
+        log_string+="\n"
 
         print("target_solver",target_solver)
         print("common_solved_list",len(common_solved_list))
@@ -107,6 +115,11 @@ def main():
         new_trainable_data_folder = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/{target_solver}"
         for file_name in os.listdir(new_trainable_data_folder):
             shutil.copy(f"{new_trainable_data_folder}/{file_name}", merged_new_trainable_data_folder)
+
+    # output log_string to file
+    track_info_file = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/log.txt"
+    with open(track_info_file, 'w') as file:
+        file.write(log_string)
 
 
 

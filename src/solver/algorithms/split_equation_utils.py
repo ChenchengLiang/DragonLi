@@ -81,20 +81,31 @@ def order_equations_longest(f: Formula, category_call=0) -> (Formula,int):
     return Formula([eq for eq, _ in sorted_eq_list]),category_call
 
 def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
-    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+    return order_equation_with_category_and_fixed_condition(f, order_equations_random,category_call)
 
+
+def order_equations_category_shortest(f: Formula, category_call=0) -> (Formula,int):
+    return order_equation_with_category_and_fixed_condition(f, order_equations_shortest,category_call)
+
+
+def order_equations_category_longest(f: Formula, category_call=0) -> (Formula,int):
+    return order_equation_with_category_and_fixed_condition(f, order_equations_longest,category_call)
+    
+
+def order_equation_with_category_and_fixed_condition(f: Formula, order_func,category_call=0) -> (Formula,int):
+    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
     # Check if the equation categories are only 5 and 6
     only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
     if only_5_and_6 == True and len(categoried_eq_list) > 1:
-        ordered_formula,category_call = order_equations_random(f,category_call)
-        sorted_eq_list=ordered_formula.eq_list
+        ordered_formula, category_call = order_func(f, category_call)
+        sorted_eq_list = ordered_formula.eq_list
     else:
         category_call += 1
         sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
-    return Formula(sorted_eq_list),category_call
+    return Formula(sorted_eq_list), category_call
 
 
 
@@ -211,7 +222,7 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
     1: both sides are empty
     2: one side is empty
     3: matched prefix terminal, this should not happen due to the simplification
-    4: mismatched prefix or suffix terminal
+    4: mismatched prefix %or suffix terminal
     5: first terms are variable and terminal respectively
     6: first terms are variables
     '''

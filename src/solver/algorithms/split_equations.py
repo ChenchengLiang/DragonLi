@@ -51,6 +51,11 @@ class SplitEquations(AbstractAlgorithm):
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
         self.each_n_iterations = 10000
         self.first_n_itarations = 1
+        self.dynamic_condition_check_point_frequency=10
+        self.current_eq_length=10000
+        self.changed_eq_length=0
+
+
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
@@ -64,6 +69,8 @@ class SplitEquations(AbstractAlgorithm):
                                          "random": order_equations_random,
                                          "hybrid_fixed_random": order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,
+                                         "category_shortest": order_equations_category,
+                                         "category_longest": order_equations_category,
                                          "category_random": order_equations_category_random,
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
                                          #gnn based
@@ -76,9 +83,11 @@ class SplitEquations(AbstractAlgorithm):
                                          "gnn": self._order_equations_gnn,
                                          "gnn_each_n_iterations": self._order_equations_gnn_each_n_iterations,
                                          "gnn_first_n_iterations": self._order_equations_gnn_first_n_iterations,
+                                         "gnn_dynamic_condition": self._order_equations_gnn_dynamic_condition,
                                          "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
                                          "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
-                                         "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations
+                                         "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
+                                         "hybrid_gnn_random_dynamic_condition": self._order_equations_hybrid_gnn_random_dynamic_condition,
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
@@ -189,7 +198,14 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return (res, input_formula)
 
+
         satisfiability, current_formula = simplify_and_check_formula(input_formula)
+
+
+        if self.total_split_eq_call % self.dynamic_condition_check_point_frequency == 0:
+            self.changed_eq_length=self.current_eq_length - current_formula.eq_list_length # positive integer mean the eq length is reduced
+            self.current_eq_length=current_formula.eq_list_length
+
 
         if satisfiability != UNKNOWN:
             current_node[1]["status"] = satisfiability
@@ -318,6 +334,13 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_random(f, category_call)
 
+    def _order_equations_hybrid_gnn_random_dynamic_condition(self, f: Formula, category_call=0) -> (Formula, int):
+        probability = random.random()
+        if probability < HYBRID_ORDER_EQUATION_RATE and self.changed_eq_length<=0:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return order_equations_random(f, category_call)
+
     def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
         if probability < HYBRID_ORDER_EQUATION_RATE:
@@ -338,8 +361,8 @@ class SplitEquations(AbstractAlgorithm):
             return f, category_call
 
     def _order_equations_gnn_dynamic_condition(self, f: Formula, category_call=0) -> (Formula, int):
-        #todo: implement dynamic condition
-        if True:
+        #if each self.dynamic_condition_check_point_frequency call that no reduction of eq length, then call gnn
+        if self.changed_eq_length<=0:
             return self._order_equations_gnn(f, category_call)
         else:
             return f, category_call

@@ -24,10 +24,10 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 1
+    rank_task = 2
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
-    train_batch_size=500
+    train_batch_size=1000
     valid_batch_size_factor = 1
     valid_batch_size = 1000
     node_type = rank_task_node_type_map[rank_task]
@@ -44,8 +44,8 @@ def main():
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test_rank_task_2"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_40000_chunk_size_5000_rank_task_0"]:#batch 1000, 5000
-    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_40000_chunk_size_5000_rank_task_1"]:
-    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_40000_chunk_size_5000_rank_task_2"]:
+    #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_40000_chunk_size_5000_rank_task_1"]:
+    for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_shortest_path_40000_chunk_size_5000_rank_task_2"]:
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_first_node_40000_chunk_size_5000_rank_task_0"]: #batch 500,1000
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_first_node_40000_chunk_size_5000_rank_task_1"]: #batch 100,500
     #for benchmark in ["01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_first_node_40000_chunk_size_5000_rank_task_2"]: #batch 100, 1000
