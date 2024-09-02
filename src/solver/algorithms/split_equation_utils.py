@@ -90,7 +90,7 @@ def order_equations_category_shortest(f: Formula, category_call=0) -> (Formula,i
 
 def order_equations_category_longest(f: Formula, category_call=0) -> (Formula,int):
     return order_equation_with_category_and_fixed_condition(f, order_equations_longest,category_call)
-    
+
 
 def order_equation_with_category_and_fixed_condition(f: Formula, order_func,category_call=0) -> (Formula,int):
     categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)

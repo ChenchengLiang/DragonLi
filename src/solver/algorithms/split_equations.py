@@ -4,6 +4,7 @@ from typing import List, Dict, Tuple, Callable
 
 import dgl
 from dgl.dataloading import GraphDataLoader
+from sympy.strategies import condition
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
@@ -267,58 +268,36 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_category_random(f, category_call)
 
-    def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
+    def _order_equations_category_gnn_with_conditions(self, f: Formula, condition:bool,category_call=0) -> (Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
         # Check if the equation categories are only 5 and 6
         only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
 
         if only_5_and_6 == True and len(categoried_eq_list) > 1:
-            ordered_formula, category_call = self._order_equations_gnn(f, category_call)
-            sorted_eq_list = ordered_formula.eq_list
+            if condition:
+                ordered_formula, category_call = self._order_equations_gnn(f, category_call)
+                sorted_eq_list = ordered_formula.eq_list
+            else:
+                category_call += 1
+                sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
         else:
             category_call += 1
             sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
 
         return Formula(sorted_eq_list), category_call
+
+    def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
+        return self._order_equations_category_gnn_with_conditions(f, True, category_call)
 
     def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
-
-        # Check if the equation categories are only 5 and 6
-        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
-
-        if only_5_and_6 == True and len(categoried_eq_list) > 1:
-            if self.total_gnn_call < self.first_n_itarations:
-                ordered_formula, category_call = self._order_equations_gnn(f, category_call)
-                sorted_eq_list = ordered_formula.eq_list
-            else:
-                category_call += 1
-                sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
-        else:
-            category_call += 1
-            sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
-
-        return Formula(sorted_eq_list), category_call
+        condition=self.total_gnn_call < self.first_n_itarations
+        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
     def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+        condition=self.total_rank_call % self.each_n_iterations == 0
+        return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
-        # Check if the equation categories are only 5 and 6
-        only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
-
-        if only_5_and_6 == True and len(categoried_eq_list) > 1:
-            if self.total_rank_call % self.each_n_iterations == 0:
-                ordered_formula, category_call = self._order_equations_gnn(f, category_call)
-                sorted_eq_list = ordered_formula.eq_list
-            else:
-                category_call += 1
-                sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
-        else:
-            category_call += 1
-            sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
-
-        return Formula(sorted_eq_list), category_call
 
     def _order_equations_hybrid_gnn_random_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
 
