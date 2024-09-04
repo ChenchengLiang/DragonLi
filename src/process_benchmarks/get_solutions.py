@@ -11,7 +11,7 @@ sys.path.append(path)
 from typing import List, Tuple, Dict
 from src.process_benchmarks.utils import run_on_one_track,result_summary,write_to_cvs_file
 import csv
-from src.solver.Constants import bench_folder, BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, RECURSION_DEPTH_EXCEEDED, \
+from src.solver.Constants import bench_folder,suffix_dict, BRANCH_CLOSED, MAX_PATH_REACHED, INTERNAL_TIMEOUT, RECURSION_DEPTH_EXCEEDED, \
     RECURSION_ERROR, project_folder
 from src.process_benchmarks.utils import summary_one_track
 import argparse
@@ -50,7 +50,6 @@ def main():
         }
 
     solver_log = False
-    suffix_dict = {"z3": ".smt2","z3-noodler": ".smt2", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}
 
     print("config:",config)
 

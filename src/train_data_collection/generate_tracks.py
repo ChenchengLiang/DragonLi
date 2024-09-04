@@ -23,9 +23,9 @@ from typing import List, Tuple
 
 def main():
     # generate track
-    start_idx = 1
-    end_idx = 200
-    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_v2_rank_task_{start_idx}_{end_idx}"
+    start_idx = 1001
+    end_idx = 2000
+    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_index_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -342,7 +342,7 @@ def generate_one_track_4_v2(file_name, index):
     max_eq = 5
     max_variables = 10
     max_terminals = 10
-    one_side_max_length = 20
+    one_side_max_length = 50
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]
     variable_list = []
@@ -361,14 +361,14 @@ def generate_one_track_4_v2(file_name, index):
 
     result = formatting_results_v2(variable_list, terminal_list, eq_list)
 
-    if index == 1:
+    track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
+    if not os.path.exists(track_info_file):
         track_info_str = (
             f"min_eq={min_eq}\nmax_eq={max_eq}\nmax_variables={max_variables}\nmax_terminals={max_terminals}\nmax_length={one_side_max_length}")
         # output track_info_str to file
-        track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
+
         with open(track_info_file, 'w') as file:
             file.write(track_info_str)
-
     return result, variable_list, terminal_list, eq_list
 
 
