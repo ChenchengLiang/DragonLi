@@ -81,24 +81,20 @@ def order_equations_longest(f: Formula, category_call=0) -> (Formula,int):
     return Formula([eq for eq, _ in sorted_eq_list]),category_call
 
 def order_equations_unsatcore(f: Formula, category_call=0) -> (Formula,int):
-    if f.current_total_split_eq_call<=1:
-        if f.unsat_core==[]:
-            return f,category_call
-        else:
-            eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e,0) if e in f.unsat_core else (e,1) for e in f.eq_list]
-
+    if f.unsat_core == []:
+        return f, category_call
+    else:
+        if len([e for e in f.eq_list if e in f.unsat_core]) > 0:  # if there is at least one unsat core equation
+            # Assign 0 to the unsat core equations and 1 to the others, this could be extended to assign different scores for unsatcores
+            eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e, 0) if e in f.unsat_core else (e, 1) for e
+                                                                         in f.eq_list]
             sorted_eq_list = sorted(eq_list_with_unsat_core_score, key=lambda x: x[1])
 
-            print("unsorted")
-            for eq in eq_list_with_unsat_core_score:
-                print(eq[0].eq_str,eq[1])
-            print("sorted")
-            for eq in sorted_eq_list:
-                print(eq[0].eq_str,eq[1])
+            return Formula([eq for eq, _ in sorted_eq_list]), category_call
+        else:
+            return f, category_call
 
-            return Formula([eq for eq, _ in sorted_eq_list]),category_call
-    else:
-        return f,category_call
+
 
 def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
     return order_equation_with_category_and_fixed_condition(f, order_equations_random,category_call)
