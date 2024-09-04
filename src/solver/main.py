@@ -65,7 +65,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/10/test10.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/11/test11.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/14/g_conjunctive_01_track_train_rank_task_1_100_1.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
@@ -74,6 +74,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/19/g_conjunctive_01_track_train_eq_number_20_rank_task_1_20000_638.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_3.eq"  # unknown
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_1.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/21/21.eq"  # UNSAT
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -111,7 +112,8 @@ def main():
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
     eq_satisfiability="UNSAT"
-    unsat_core_file=""
+    unsat_core_file = strip_file_name_suffix(file_path)+"_unsatcore.eq" if os.path.exists(strip_file_name_suffix(file_path)+"_unsatcore.eq") else ""
+
 
     algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "fixed", "task": task,
                                                         "graph_type": graph_type,
@@ -121,7 +123,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category_unsatcore",
+                                           "order_equations_method": "unsatcore",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task,

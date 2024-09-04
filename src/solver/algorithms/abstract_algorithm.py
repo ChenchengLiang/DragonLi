@@ -88,6 +88,7 @@ class AbstractAlgorithm(ABC):
         if f.eq_list_length > 1:
             self.total_rank_call += 1
             f.unsat_core= self.unsat_core
+            f.current_total_split_eq_call=self.total_split_eq_call
             ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
             self.total_category_call = category_call
             if self.gnn_call_flag == True:

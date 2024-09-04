@@ -359,6 +359,7 @@ class Formula:
         self.sat_equations: List[Equation] = []
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
+        self.current_total_split_eq_call=0
 
 
     def get_unsat_core(self):
@@ -381,8 +382,9 @@ class Formula:
             return UNKNOWN
 
     def simplify_eq_list(self):
-        for eq in self.eq_list:
-            eq.simplify()
+        # pop the same prefix
+        # for eq in self.eq_list:
+        #     eq.simplify() # pop the same prefix
         # simplify empty equation
         self.eq_list = [eq for eq in self.eq_list if eq.term_length > 0]
         #get rid of duplicated equations

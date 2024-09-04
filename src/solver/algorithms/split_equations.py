@@ -42,7 +42,7 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
-        self.unsat_core= Formula(equation_list,unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
+        self.unsat_core:Formula= Formula(equation_list,unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
 
 
         self.fresh_variable_counter = 0
