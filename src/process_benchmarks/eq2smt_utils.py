@@ -10,7 +10,7 @@ def one_eq_file_to_smt2(file_path):
     parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
     parser = Parser(parser_type)
     parsed_content = parser.parse(file_path)
-    print("parsed_content:",parsed_content)
+    #print("parsed_content:",parsed_content)
 
 
     # get smt string
@@ -32,8 +32,10 @@ def one_eq_file_to_smt2(file_path):
     smt_str += "(get-model)"
 
     # write smt_str to smt2 file
-    with open(strip_file_name_suffix(file_path) + ".smt2", "w") as f:
+    smt_file_name=strip_file_name_suffix(file_path)+".smt2"
+    with open(smt_file_name, "w") as f:
         f.write(smt_str)
+    return smt_file_name
 
 
 def assert_one_eq(eq: Equation):

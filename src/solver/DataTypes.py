@@ -8,6 +8,8 @@ from src.solver.independent_utils import remove_duplicates, color_print,int_to_b
 from src.solver.visualize_util import draw_graph
 import time
 
+
+
 class Operator:
     def __init__(self, value: str):
         self.value = value
@@ -197,6 +199,13 @@ class Equation:
     @property
     def right_hand_side_type_list(self):
         return [term.value_type for term in self.right_terms]
+
+    @property
+    def left_hand_side_string_list(self):
+        return [term.get_value_str for term in self.left_terms]
+    @property
+    def right_hand_side_string_list(self):
+        return [term.get_value_str for term in self.right_terms]
 
     @property
     def variable_list(self) -> List[Variable]:
@@ -400,6 +409,24 @@ class Formula:
     @property
     def sat_number(self) -> int:
         return len(self.sat_equations)
+
+    def get_variable_list(self):
+        variable_list=[]
+        for eq in self.eq_list:
+            variable_list.extend(eq.variable_list)
+        return remove_duplicates(variable_list)
+    def get_terminal_list(self):
+        terminal_list=[]
+        for eq in self.eq_list:
+            terminal_list.extend(eq.termimal_list_without_empty_terminal)
+        return remove_duplicates(terminal_list)
+
+    def eq_string_for_file(self):
+        variable_list_string=[v.value for v in self.get_variable_list()]
+        terminal_list_string=[t.value for t in self.get_terminal_list()]
+        eq_list_string = [(eq.left_hand_side_string_list,eq.right_hand_side_string_list)for eq in self.eq_list]
+
+        return formatting_results_v2(variable_list_string, terminal_list_string, eq_list_string)
 
 
 class Assignment:
@@ -791,3 +818,30 @@ def _update_term_list(old_term: Term, new_term: List[Term], term_list: List[Term
         else:
             new_term_list.append(t)
     return new_term_list
+
+def formatting_results(variables: List[str], terminals: List[str], eq_list: List[Tuple[str, str]]) -> str:
+    # Format the result
+    result = f"Variables {{{''.join(variables)}}}\n"
+    result += f"Terminals {{{''.join(terminals)}}}\n"
+    # for eq in eq_list:
+    #     result += f"Equation: {eq[0]} = {eq[1]}\n"
+    for eq in eq_list:
+        result += f"Equation: {''.join(eq[0])} = {''.join(eq[1])}\n"
+    result += "SatGlucose(100)"
+    return result
+
+
+def formatting_results_v2(variables: List[str], terminals: List[str],
+                          eq_list: List[Tuple[List[str], List[str]]]) -> str:
+    if len(variables) > 26 or len(terminals) > 26:
+        joint_space=" "
+    else:
+        joint_space=""
+
+    # Format the result
+    result = f"Variables {{{joint_space.join(variables)}}}\n"
+    result += f"Terminals {{{joint_space.join(terminals)}}}\n"
+    for eq in eq_list:
+        result += f"Equation: {joint_space.join(eq[0])} = {joint_space.join(eq[1])}\n"
+    result += "SatGlucose(100)"
+    return result

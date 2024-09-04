@@ -19,12 +19,13 @@ from src.train_data_collection.utils import dvivde_track_for_cluster
 import shutil
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from typing import List, Tuple
+from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 
 def main():
     # generate track
-    start_idx = 1001
-    end_idx = 2000
+    start_idx = 2001
+    end_idx = 3000
     track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_index_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -341,7 +342,7 @@ def generate_one_track_4_v2(file_name, index):
     min_eq = 2
     max_eq = 5
     max_variables = 10
-    max_terminals = 10
+    max_terminals = 20
     one_side_max_length = 50
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]
@@ -460,27 +461,6 @@ def generate_one_SAT_multi_word_equation_track(file_name, index):
     return result, variable_list, terminal_list, eq_list
 
 
-def formatting_results(variables: List[str], terminals: List[str], eq_list: List[Tuple[str, str]]) -> str:
-    # Format the result
-    result = f"Variables {{{''.join(variables)}}}\n"
-    result += f"Terminals {{{''.join(terminals)}}}\n"
-    # for eq in eq_list:
-    #     result += f"Equation: {eq[0]} = {eq[1]}\n"
-    for eq in eq_list:
-        result += f"Equation: {''.join(eq[0])} = {''.join(eq[1])}\n"
-    result += "SatGlucose(100)"
-    return result
-
-
-def formatting_results_v2(variables: List[str], terminals: List[str],
-                          eq_list: List[Tuple[List[str], List[str]]]) -> str:
-    # Format the result
-    result = f"Variables {{{' '.join(variables)}}}\n"
-    result += f"Terminals {{{' '.join(terminals)}}}\n"
-    for eq in eq_list:
-        result += f"Equation: {' '.join(eq[0])} = {' '.join(eq[1])}\n"
-    result += "SatGlucose(100)"
-    return result
 
 
 def get_variables_and_terminals(max_variables=15, max_terminals=10):

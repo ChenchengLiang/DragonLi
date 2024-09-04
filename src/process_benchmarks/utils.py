@@ -1,4 +1,4 @@
-from src.solver.Constants import shell_timeout, solver_command_map, project_folder
+from src.solver.Constants import SHELL_TIMEOUT, solver_command_map, project_folder
 import os
 import time
 import subprocess
@@ -121,9 +121,9 @@ def write_to_cvs_file(track_result_list: List[Tuple[str, str, float, float]], su
         csvwriter.writerows(track_result_list[1:])
 
 
-def run_on_one_problem(file_path: str, parameters_list: List[str], solver: str, solver_log: bool = False):
+def run_on_one_problem(file_path: str, parameters_list: List[str], solver: str, solver_log: bool = False, shell_timeout=SHELL_TIMEOUT):
     # create a shell file to run the main_parameter.py
-    shell_file_path = create_a_shell_file(file_path, parameters_list, solver, log=solver_log)
+    shell_file_path = create_a_shell_file(file_path, parameters_list, solver, log=solver_log,shell_timeout=shell_timeout)
 
     # run the shell file
     result_dict = run_a_shell_file(shell_file_path, file_path, solver, log=solver_log)
@@ -135,7 +135,7 @@ def run_on_one_problem(file_path: str, parameters_list: List[str], solver: str, 
     return result_dict
 
 
-def create_a_shell_file(file_path, parameter_list="", solver="", log=False):
+def create_a_shell_file(file_path, parameter_list="", solver="", log=False,shell_timeout=SHELL_TIMEOUT):
     parameter_str = " ".join(parameter_list)
     shell_folder = project_folder + "/src/process_benchmarks/temp_shell"
     random_integer = random.randint(1, 100000)

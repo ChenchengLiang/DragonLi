@@ -13,7 +13,7 @@ eval_container_path = config['Path']['eval_container_path']
 max_variable_length: int = 8
 
 algorithm_timeout: int = 300
-shell_timeout: int = algorithm_timeout
+SHELL_TIMEOUT: int = algorithm_timeout
 
 
 # order equations parameters
