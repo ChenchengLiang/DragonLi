@@ -3,6 +3,7 @@ import glob
 import os
 import sys
 import configparser
+import time
 
 from tqdm import tqdm
 
@@ -42,14 +43,20 @@ def main():
     }
 
     print("config:", config)
-    # run_on_one_track(config["benchmark_name"], config["benchmark_folder"], config["parameters_list"], config["solver"],
-    #                  suffix_dict, summary_folder_name=config["summary_folder_name"],
-    #                  solver_log=solver_log)
 
 
     file_list = glob.glob(config["benchmark_folder"] + "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
-        #get all unsat cores
+
+        # solve the original problem
+        smt2_file=strip_file_name_suffix(file)+".smt2"
+        start=time.time()
+        run_on_one_problem(smt2_file, config["parameters_list"], solver, solver_log=solver_log,
+                           shell_timeout=shell_timeout)
+        initial_run_time = time.time() - start
+        shell_timeout_factor=10
+        shell_timeout=initial_run_time*shell_timeout_factor
+        print("shell_timeout:",shell_timeout)
 
         # parse .eq
         parser_type = EqParser()
@@ -61,7 +68,7 @@ def main():
         create_folder(unsat_core_file_folder)
 
 
-        for eq_number_to_delete in tqdm(range(len(parsed_content["equation_list"])),desc="deleting progress"):
+        for eq_number_to_delete in tqdm(range(1,len(parsed_content["equation_list"])),desc="deleting progress"):
             eq_list_to_delete = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
             for i,eq_list_to_delete in enumerate(eq_list_to_delete):
 
@@ -76,10 +83,10 @@ def main():
                 with open(unsat_core_eq_file, "w") as f:
                     f.write(eq_string_to_file)
                 #store to smt2 file
-                smt2_file=one_eq_file_to_smt2(unsat_core_eq_file)
+                unsat_core_smt2_file=one_eq_file_to_smt2(unsat_core_eq_file)
 
-
-                result_dict = run_on_one_problem(smt2_file, config["parameters_list"], solver, solver_log=solver_log,shell_timeout=shell_timeout)
+                # run the unsat core problem
+                result_dict = run_on_one_problem(unsat_core_smt2_file, config["parameters_list"], solver, solver_log=solver_log,shell_timeout=shell_timeout)
                 print(result_dict)
                 satisfiability=result_dict["result"]
 
@@ -90,7 +97,13 @@ def main():
                 else:
                     print(f"{satisfiability} , delete files")
                     os.remove(unsat_core_eq_file)
-                    os.remove(smt2_file)
+                    os.remove(unsat_core_smt2_file)
+
+
+        #check weather useful to DragonLi
+        unsat_core_file_list = glob.glob(unsat_core_file_folder + "/*.eq")
+
+        # benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data_test"
 
 
 

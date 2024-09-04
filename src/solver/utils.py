@@ -10,7 +10,6 @@ graph_func_map = {None: get_eq_graph_1, "graph_1": get_eq_graph_1,
 
 
 
-
 def print_results(result: Dict):
     if result["result"] == None:
         print("result: "+INTERNAL_TIMEOUT)
@@ -94,5 +93,8 @@ def assemble_one_equation(left_terms:List[Term], right_terms:List[Term], assignm
 
     string_equation = left_terms_str + " = " + right_terms_str
     return string_equation
+
+
+
 
 

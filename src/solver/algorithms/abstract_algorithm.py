@@ -87,6 +87,7 @@ class AbstractAlgorithm(ABC):
     def order_equations_func_wrapper(self, f: Formula,current_node:Tuple[int,Dict]) -> Formula:
         if f.eq_list_length > 1:
             self.total_rank_call += 1
+            f.unsat_core= self.unsat_core
             ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
             self.total_category_call = category_call
             if self.gnn_call_flag == True:

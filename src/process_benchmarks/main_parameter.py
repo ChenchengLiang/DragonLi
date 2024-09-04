@@ -46,6 +46,8 @@ def main(args):
                             help='True, False')
     arg_parser.add_argument('--eq_satisfiability', type=str, default="UNKNOWN",
                             help='SAT, UNSAT')
+    arg_parser.add_argument('--unsat_core_file', type=str, default="",
+                            help='a path to the unsat core file')
 
     args = arg_parser.parse_args()
 
@@ -61,6 +63,7 @@ def main(args):
     order_equations_method = args.order_equations_method
     output_train_data = True if args.output_train_data == "True" else False
     eq_satisfiability=args.eq_satisfiability
+    unsat_core_file=args.unsat_core_file
 
     print(file_path, branch_method, graph_type)
 
@@ -75,7 +78,7 @@ def main(args):
                             "graph_func": graph_func_map[graph_type], "gnn_model_path": gnn_model_path,
                             "termination_condition": termination_condition,
                             "order_equations_method": order_equations_method, "label_size": label_size,
-                            "rank_task": rank_task,"eq_satisfiability":eq_satisfiability}  # branch_method [gnn,random,fixed]
+                            "rank_task": rank_task,"eq_satisfiability":eq_satisfiability,"unsat_core_file":unsat_core_file}  # branch_method [gnn,random,fixed]
 
     solver = Solver(algorithm=algorithm, algorithm_parameters=algorithm_parameters)
 

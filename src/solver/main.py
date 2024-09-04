@@ -111,6 +111,7 @@ def main():
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
     eq_satisfiability="UNSAT"
+    unsat_core_file=""
 
     algorithm_parameters_ElimilateVariablesRecursive = {"branch_method": "fixed", "task": task,
                                                         "graph_type": graph_type,
@@ -120,17 +121,18 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category_random",
+                                           "order_equations_method": "category_unsatcore",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
-                                           "label_size": label_size,"rank_task":rank_task}
+                                           "label_size": label_size,"rank_task":rank_task,
+                                           "unsat_core_file":unsat_core_file}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
                                                "order_equations_method": "gnn",
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
-                                               "label_size": label_size,"rank_task":rank_task}
+                                               "label_size": label_size,"rank_task":rank_task,"unsat_core_file":unsat_core_file}
 
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                                       "order_equations_method": "category_random",
@@ -139,11 +141,12 @@ def main():
                                                       "graph_type": graph_type,
                                                       "graph_func": graph_func_map[graph_type],
                                                       "task": "dynamic_embedding", "label_size": label_size,
-                                                      "rank_task":rank_task,"eq_satisfiability":eq_satisfiability}
+                                                      "rank_task":rank_task,"eq_satisfiability":eq_satisfiability,
+                                                      "unsat_core_file":unsat_core_file}
 
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
     #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

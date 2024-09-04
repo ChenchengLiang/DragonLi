@@ -352,12 +352,23 @@ class Equation:
 
 
 class Formula:
-    def __init__(self, eq_list: List[Equation]):
+    def __init__(self, eq_list: List[Equation],unsat_core_file=""):
         self.eq_list = eq_list
-
+        self.unsat_core_file=unsat_core_file
+        self.unsat_core=[]
         self.sat_equations: List[Equation] = []
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
+
+
+    def get_unsat_core(self):
+        from src.solver.utils_parser import perse_eq_file
+        if self.unsat_core_file=="":
+            self.unsat_core=[]
+        else:
+            parsed_content = perse_eq_file(self.unsat_core_file)
+            self.unsat_core = parsed_content["equation_list"]
+        return self.unsat_core
 
     def check_satisfiability_2(self) -> str:
         if self.eq_list_length == 0:

@@ -80,6 +80,14 @@ def order_equations_longest(f: Formula, category_call=0) -> (Formula,int):
 
     return Formula([eq for eq, _ in sorted_eq_list]),category_call
 
+def order_equations_unsatcore(f: Formula, category_call=0) -> (Formula,int):
+    if f.unsat_core==[]:
+        return f,category_call
+    else:
+        eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e,0) if e in f.unsat_core else (e,1) for e in f.eq_list]
+        sorted_eq_list = sorted(eq_list_with_unsat_core_score, key=lambda x: x[1])
+        return Formula([eq for eq, _ in sorted_eq_list]),category_call
+
 def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
     return order_equation_with_category_and_fixed_condition(f, order_equations_random,category_call)
 
@@ -91,19 +99,23 @@ def order_equations_category_shortest(f: Formula, category_call=0) -> (Formula,i
 def order_equations_category_longest(f: Formula, category_call=0) -> (Formula,int):
     return order_equation_with_category_and_fixed_condition(f, order_equations_longest,category_call)
 
+def order_equations_category_unsatcore(f: Formula, category_call=0) -> (Formula,int):
+    return order_equation_with_category_and_fixed_condition(f, order_equations_unsatcore,category_call)
+
 
 def order_equation_with_category_and_fixed_condition(f: Formula, order_func,category_call=0) -> (Formula,int):
-    categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+    categoried_eq_list_with_score: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
+    sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list_with_score, key=lambda x: x[1])]
 
     # Check if the equation categories are only 5 and 6
-    only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list)
+    only_5_and_6: bool = all(n in [5, 6] for _, n in categoried_eq_list_with_score)
 
-    if only_5_and_6 == True and len(categoried_eq_list) > 1:
-        ordered_formula, category_call = order_func(f, category_call)
+    if only_5_and_6 == True and len(categoried_eq_list_with_score) > 1:
+        ordered_formula, category_call = order_func(Formula(sorted_eq_list), category_call)
         sorted_eq_list = ordered_formula.eq_list
     else:
         category_call += 1
-        sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list, key=lambda x: x[1])]
+        #sorted_eq_list = [eq for eq, _ in sorted(categoried_eq_list_with_score, key=lambda x: x[1])]
 
     return Formula(sorted_eq_list), category_call
 

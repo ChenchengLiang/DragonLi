@@ -21,7 +21,8 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_shortest, order_equations_longest
+    order_branches_hybrid_fixed_random, order_equations_shortest, order_equations_longest, order_equations_unsatcore, \
+    order_equations_category_shortest, order_equations_category_longest,order_equations_category_unsatcore
 from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
 from ..models.Dataset import get_one_dgl_graph
 import torch
@@ -41,6 +42,9 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
+        self.unsat_core= Formula(equation_list,unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
+
+
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
         self.total_category_call = 0
@@ -57,7 +61,6 @@ class SplitEquations(AbstractAlgorithm):
         self.changed_eq_size=0
 
 
-
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
                                        2: self._order_equations_gnn_rank_task_2,
@@ -70,8 +73,8 @@ class SplitEquations(AbstractAlgorithm):
                                          "random": order_equations_random,
                                          "hybrid_fixed_random": order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,
-                                         "category_shortest": order_equations_category,
-                                         "category_longest": order_equations_category,
+                                         "category_shortest": order_equations_category_shortest,
+                                         "category_longest": order_equations_category_longest,
                                          "category_random": order_equations_category_random,
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
                                          #gnn based
@@ -91,6 +94,9 @@ class SplitEquations(AbstractAlgorithm):
                                          "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
                                          "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
                                          "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
+                                         # unsatcores
+                                         "unsatcore": order_equations_unsatcore,
+                                         "category_unsatcore": order_equations_category_unsatcore,
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
