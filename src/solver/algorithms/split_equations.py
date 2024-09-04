@@ -96,7 +96,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
                                          # unsatcores
                                          "unsatcore": order_equations_unsatcore,
-                                         "category_unsatcore": order_equations_category_unsatcore,
+                                         "category_unsatcore": order_equations_category_unsatcore, #may not call unsatcores because category change eqs
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn

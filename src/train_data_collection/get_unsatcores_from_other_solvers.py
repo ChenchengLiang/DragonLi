@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.solver.DataTypes import Equation, Formula
-from src.solver.Parser import EqParser, Parser
+from src.solver.utils_parser import perse_eq_file
 from src.solver.independent_utils import strip_file_name_suffix
 from src.train_data_collection.generate_tracks import formatting_results,formatting_results_v2
 
@@ -59,9 +59,8 @@ def main():
         print("shell_timeout:",shell_timeout)
 
         # parse .eq
-        parser_type = EqParser()
-        parser = Parser(parser_type)
-        parsed_content = parser.parse(file)
+        parsed_content=perse_eq_file(file)
+
 
         # delete eq one by one to create unsat core file list
         unsat_core_file_folder=strip_file_name_suffix(file)+"_unsat_cores"
@@ -70,6 +69,11 @@ def main():
 
         for eq_number_to_delete in tqdm(range(1,len(parsed_content["equation_list"])),desc="deleting progress"):
             eq_list_to_delete = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
+            #todo if delete this number of equations, all results are SAT, then no need to delete more equations?
+            #todo is the smallest unsat core always the best?
+            #todo keep the smallest unsat core?
+            #todo change rank to solve the unsolved problems only provide more the same kind training data or very different training data?
+
             for i,eq_list_to_delete in enumerate(eq_list_to_delete):
 
                 unsat_core:List[Equation]= [eq for eq in parsed_content["equation_list"] if eq not in eq_list_to_delete]
@@ -77,7 +81,6 @@ def main():
                 #store to eq file
                 unsat_core_formula=Formula(unsat_core)
                 eq_string_to_file=unsat_core_formula.eq_string_for_file()
-                print(eq_string_to_file)
                 # create eq file
                 unsat_core_eq_file=unsat_core_file_folder+f"/delete_{eq_number_to_delete}_{i}.eq"
                 with open(unsat_core_eq_file, "w") as f:
@@ -87,7 +90,7 @@ def main():
 
                 # run the unsat core problem
                 result_dict = run_on_one_problem(unsat_core_smt2_file, config["parameters_list"], solver, solver_log=solver_log,shell_timeout=shell_timeout)
-                print(result_dict)
+                #print(result_dict)
                 satisfiability=result_dict["result"]
 
                 if satisfiability=="UNSAT":
@@ -98,6 +101,8 @@ def main():
                     print(f"{satisfiability} , delete files")
                     os.remove(unsat_core_eq_file)
                     os.remove(unsat_core_smt2_file)
+                    unsat_core_answer_file=strip_file_name_suffix(unsat_core_eq_file) + ".answer"
+                    os.remove(unsat_core_answer_file)
 
 
         #check weather useful to DragonLi

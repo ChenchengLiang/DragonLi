@@ -74,7 +74,8 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/19/g_conjunctive_01_track_train_eq_number_20_rank_task_1_20000_638.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_3.eq"  # unknown
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_1.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/21/21.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/21/21.eq"  # UNSAT
+    file_path = bench_folder + "/examples_choose_eq/22/22.eq"  # UNSAT
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT

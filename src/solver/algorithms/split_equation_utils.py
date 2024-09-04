@@ -89,6 +89,7 @@ def order_equations_unsatcore(f: Formula, category_call=0) -> (Formula,int):
             eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e, 0) if e in f.unsat_core else (e, 1) for e
                                                                          in f.eq_list]
             sorted_eq_list = sorted(eq_list_with_unsat_core_score, key=lambda x: x[1])
+            print("sorted by unsatcores")
 
             return Formula([eq for eq, _ in sorted_eq_list]), category_call
         else:
