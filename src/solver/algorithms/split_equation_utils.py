@@ -161,9 +161,6 @@ def order_equations_with_unsatcore_and_fixed_condition(f: Formula, condition,els
                                                                          in f.eq_list]
             sorted_eq_list = sorted(eq_list_with_unsat_core_score, key=lambda x: x[1])
 
-            print("unsorted")
-            for eq,score in eq_list_with_unsat_core_score:
-                print(score,eq.eq_str)
             print("sorted")
             for eq,score in sorted_eq_list:
                 print(score,eq.eq_str)

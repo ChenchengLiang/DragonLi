@@ -465,3 +465,9 @@ def int_to_binary_list(n):
         binary.insert(0, n % 2)
         n //= 2
     return binary
+
+def delete_relative_files(file_name):
+    import glob
+    for f in glob.glob(strip_file_name_suffix(file_name) + "*"):
+        if os.path.exists(f):
+            os.remove(f)

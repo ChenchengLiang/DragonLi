@@ -17,8 +17,8 @@ def main():
     benchmark_name = "smtlib_2023-05-05_without_woorpje_eval"
     #benchmark_name = "01_track_multi_word_equations_generated_eval_eq_number_5_index_2001_3000"
     #benchmark_name = "debug-eval-uppmax"
-    rank_task = 0
-    graph_type = "graph_2"
+    rank_task = 2
+    graph_type = "graph_4"
     model_type = "GCNSplit"  # "GINSplit"
 
 
