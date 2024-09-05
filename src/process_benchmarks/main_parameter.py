@@ -78,7 +78,8 @@ def main(args):
                             "graph_func": graph_func_map[graph_type], "gnn_model_path": gnn_model_path,
                             "termination_condition": termination_condition,
                             "order_equations_method": order_equations_method, "label_size": label_size,
-                            "rank_task": rank_task,"eq_satisfiability":eq_satisfiability,"unsat_core_file":unsat_core_file}  # branch_method [gnn,random,fixed]
+                            "rank_task": rank_task,"eq_satisfiability":eq_satisfiability,
+                            "unsat_core_file":unsat_core_file}  # branch_method [gnn,random,fixed]
 
     solver = Solver(algorithm=algorithm, algorithm_parameters=algorithm_parameters)
 

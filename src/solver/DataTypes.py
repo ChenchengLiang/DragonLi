@@ -361,6 +361,9 @@ class Formula:
         self.unknown_equations: List[Equation] = []
         self.current_total_split_eq_call=0
 
+    @property
+    def total_eq_size(self):
+        return sum([eq.term_length for eq in self.eq_list])
 
     def get_unsat_core(self):
         from src.solver.utils_parser import perse_eq_file

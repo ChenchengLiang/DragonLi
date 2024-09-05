@@ -124,7 +124,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "unsatcore",
+                                           "order_equations_method": "unsatcore_first_n_iterations_category",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task,

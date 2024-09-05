@@ -81,21 +81,102 @@ def order_equations_longest(f: Formula, category_call=0) -> (Formula,int):
     return Formula([eq for eq, _ in sorted_eq_list]),category_call
 
 def order_equations_unsatcore(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_random
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_first_n_iterations(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1 and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_random
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_random
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_first_n_iterations_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1  and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_random
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+
+def order_equations_unsatcore_shortest(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_shortest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_shortest_first_n_iterations(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1 and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_shortest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_shortest_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_shortest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_shortest_first_n_iterations_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1  and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_shortest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+
+def order_equations_unsatcore_longest(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func=unsatcore_eq_score_longest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_longest_first_n_iterations(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1 and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_longest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,empty_else_func,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_longest_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_longest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+def order_equations_unsatcore_longest_first_n_iterations_category(f: Formula, category_call=0) -> (Formula,int):
+    condition = f.current_total_split_eq_call==1  and len([e for e in f.eq_list if e in f.unsat_core]) > 0
+    unsatcore_eq_score_func = unsatcore_eq_score_longest
+    return order_equations_with_unsatcore_and_fixed_condition(f,condition,order_equations_category,unsatcore_eq_score_func,category_call)
+
+
+
+def unsatcore_eq_score_shortest(eq_length,total_formula_length) -> int:
+    return eq_length
+def unsatcore_eq_score_longest(eq_length,total_formula_length) -> int:
+    return total_formula_length-eq_length
+def unsatcore_eq_score_random(eq_length,total_formula_length) -> int:
+    return random.randint(0,total_formula_length)
+
+def order_equations_with_unsatcore_and_fixed_condition(f: Formula, condition,else_func,unsatcore_eq_score_func,category_call=0) -> (Formula,int):
     if f.unsat_core == []:
-        return f, category_call
+        return else_func(f, category_call)
     else:
-        if len([e for e in f.eq_list if e in f.unsat_core]) > 0:  # if there is at least one unsat core equation
+        if condition:  # if there is at least one unsat core equation
             # Assign 0 to the unsat core equations and 1 to the others, this could be extended to assign different scores for unsatcores
-            eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e, 0) if e in f.unsat_core else (e, 1) for e
+            eq_list_with_unsat_core_score: List[Tuple[Equation, int]] = [(e, unsatcore_eq_score_func(e.term_length,f.total_eq_size)) if e in f.unsat_core else (e, f.total_eq_size) for e
                                                                          in f.eq_list]
             sorted_eq_list = sorted(eq_list_with_unsat_core_score, key=lambda x: x[1])
-            print("sorted by unsatcores")
+
+            print("unsorted")
+            for eq,score in eq_list_with_unsat_core_score:
+                print(score,eq.eq_str)
+            print("sorted")
+            for eq,score in sorted_eq_list:
+                print(score,eq.eq_str)
+            print("-"*10)
 
             return Formula([eq for eq, _ in sorted_eq_list]), category_call
         else:
-            return f, category_call
+            return else_func(f, category_call)
 
 
+
+def empty_else_func(f: Formula, category_call=0) -> (Formula, int):
+    return f, category_call
 
 def order_equations_category_random(f: Formula, category_call=0) -> (Formula,int):
     return order_equation_with_category_and_fixed_condition(f, order_equations_random,category_call)

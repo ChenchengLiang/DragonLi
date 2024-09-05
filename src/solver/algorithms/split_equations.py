@@ -1,34 +1,34 @@
+import gc
 import random
-import time
+import sys
 from typing import List, Dict, Tuple, Callable
 
 import dgl
-from dgl.dataloading import GraphDataLoader
-from sympy.strategies import condition
+import torch
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE, RANDOM_SEED
-from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula, _construct_graph_for_prediction
-from . import graph_to_gnn_format
-from .utils import sigmoid, softmax
-from ..independent_utils import log_control, strip_file_name_suffix, color_print, time_it, hash_one_data, \
-    hash_graph_with_glob_info, hash_one_dgl_data
-from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
-from .abstract_algorithm import AbstractAlgorithm
-import sys
+from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
     order_branches_hybrid_fixed_random, order_equations_shortest, order_equations_longest, order_equations_unsatcore, \
-    order_equations_category_shortest, order_equations_category_longest,order_equations_category_unsatcore
-from src.solver.models.utils import load_model, load_model_torch_script, load_model_onnx
+    order_equations_category_shortest, order_equations_category_longest, order_equations_category_unsatcore, \
+    order_equations_unsatcore_category, order_equations_unsatcore_first_n_iterations, \
+    order_equations_unsatcore_first_n_iterations_category, order_equations_unsatcore_shortest, \
+    order_equations_unsatcore_shortest_first_n_iterations, order_equations_unsatcore_shortest_category, \
+    order_equations_unsatcore_shortest_first_n_iterations_category, order_equations_unsatcore_longest, \
+    order_equations_unsatcore_longest_first_n_iterations, order_equations_unsatcore_longest_category, \
+    order_equations_unsatcore_longest_first_n_iterations_category
+from src.solver.models.utils import load_model
+from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
+from . import graph_to_gnn_format
+from .abstract_algorithm import AbstractAlgorithm
+from .utils import softmax
+from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info
 from ..models.Dataset import get_one_dgl_graph
-import torch
-import gc
-
-from ..models.train_util import custom_collate_fn
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -42,8 +42,8 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
-        self.unsat_core:Formula= Formula(equation_list,unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
-
+        self.unsat_core: Formula = Formula(equation_list,
+                                           unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -56,20 +56,19 @@ class SplitEquations(AbstractAlgorithm):
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
         self.each_n_iterations = 10000
         self.first_n_itarations = 1
-        self.dynamic_condition_check_point_frequency=10
-        self.current_eq_size=1000000
-        self.changed_eq_size=0
-
+        self.dynamic_condition_check_point_frequency = 100
+        self.current_eq_size = 1000000
+        self.changed_eq_size = 0
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
                                        2: self._order_equations_gnn_rank_task_2,
-                                       None:None}
+                                       None: None}
 
         self._order_equations_gnn = self.rank_task_gnn_func_map[parameters["rank_task"]]
         self.order_equations_func_map = {"fixed": order_equations_fixed,
-                                         "shortest":order_equations_shortest,
-                                         "longest":order_equations_longest,
+                                         "shortest": order_equations_shortest,
+                                         "longest": order_equations_longest,
                                          "random": order_equations_random,
                                          "hybrid_fixed_random": order_equations_hybrid_fixed_random,
                                          "category": order_equations_category,
@@ -77,7 +76,7 @@ class SplitEquations(AbstractAlgorithm):
                                          "category_longest": order_equations_category_longest,
                                          "category_random": order_equations_category_random,
                                          "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
-                                         #gnn based
+                                         # gnn based
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
                                          "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
@@ -96,7 +95,22 @@ class SplitEquations(AbstractAlgorithm):
                                          "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
                                          # unsatcores
                                          "unsatcore": order_equations_unsatcore,
-                                         "category_unsatcore": order_equations_category_unsatcore, #may not call unsatcores because category change eqs
+                                         "unsatcore_first_n_iterations": order_equations_unsatcore_first_n_iterations,
+                                         "unsatcore_category": order_equations_unsatcore_category,
+                                         "unsatcore_first_n_iterations_category": order_equations_unsatcore_first_n_iterations_category,
+
+                                         "unsatcore_shortest": order_equations_unsatcore_shortest,
+                                         "unsatcore_shortest_first_n_iterations": order_equations_unsatcore_shortest_first_n_iterations,
+                                         "unsatcore_shortest_category": order_equations_unsatcore_shortest_category,
+                                         "unsatcore_shortest_first_n_iterations_category": order_equations_unsatcore_shortest_first_n_iterations_category,
+
+                                         "unsatcore_longest": order_equations_unsatcore_longest,
+                                         "unsatcore_longest_first_n_iterations": order_equations_unsatcore_longest_first_n_iterations,
+                                         "unsatcore_longest_category": order_equations_unsatcore_longest_category,
+                                         "unsatcore_longest_first_n_iterations_category": order_equations_unsatcore_longest_first_n_iterations_category,
+
+                                         "category_unsatcore": order_equations_category_unsatcore,
+                                         # may not call unsatcores because category change eqs
                                          }
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
@@ -195,7 +209,7 @@ class SplitEquations(AbstractAlgorithm):
                  edge_label: str) -> Tuple[str, Formula]:
         self.total_split_eq_call += 1
 
-        current_node = self.record_node_and_edges(input_formula, previous_node, edge_label,current_depth)
+        current_node = self.record_node_and_edges(input_formula, previous_node, edge_label, current_depth)
 
         if self.total_split_eq_call % 10000 == 0:
             print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth} -----")
@@ -207,9 +221,7 @@ class SplitEquations(AbstractAlgorithm):
             current_node[1]["back_track_count"] = 1
             return (res, input_formula)
 
-
         satisfiability, current_formula = simplify_and_check_formula(input_formula)
-
 
         if satisfiability != UNKNOWN:
             current_node[1]["status"] = satisfiability
@@ -279,7 +291,6 @@ class SplitEquations(AbstractAlgorithm):
         else:
             return order_equations_category_random(f, category_call)
 
-
     def _order_equations_category_gnn(self, f: Formula, category_call=0) -> (Formula, int):
         return self._order_equations_category_gnn_with_conditions(f, True, category_call)
 
@@ -289,14 +300,15 @@ class SplitEquations(AbstractAlgorithm):
         return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
     def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_gnn_call < self.first_n_itarations
+        condition = self.total_gnn_call < self.first_n_itarations
         return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
     def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_rank_call % self.each_n_iterations == 0
+        condition = self.total_rank_call % self.each_n_iterations == 0
         return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
-    def _order_equations_category_gnn_with_conditions(self, f: Formula, condition:bool,category_call=0) -> (Formula, int):
+    def _order_equations_category_gnn_with_conditions(self, f: Formula, condition: bool, category_call=0) -> (
+    Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
         # Check if the equation categories are only 5 and 6
@@ -316,9 +328,8 @@ class SplitEquations(AbstractAlgorithm):
         return Formula(sorted_eq_list), category_call
 
     def _order_equations_hybrid_gnn_random_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_gnn_call < self.first_n_itarations
+        condition = self.total_gnn_call < self.first_n_itarations
         return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
-
 
     def _order_equations_hybrid_gnn_random_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         condition = self.total_rank_call % self.each_n_iterations == 0
@@ -327,9 +338,8 @@ class SplitEquations(AbstractAlgorithm):
     def _order_equations_hybrid_gnn_random_formula_size(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
         self._compute_changed_eq_size(f)
-        condition = probability < HYBRID_ORDER_EQUATION_RATE and self.changed_eq_size<=0
+        condition = probability < HYBRID_ORDER_EQUATION_RATE and self.changed_eq_size <= 0
         return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
-
 
     def _order_equations_hybrid_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
@@ -337,12 +347,11 @@ class SplitEquations(AbstractAlgorithm):
         return self._order_equations_gnn_with_condition(f, condition, order_equations_random, category_call)
 
     def _order_equations_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_gnn_call < self.first_n_itarations
+        condition = self.total_gnn_call < self.first_n_itarations
         return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
 
-
     def _order_equations_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
-        condition=self.total_rank_call % self.each_n_iterations == 0
+        condition = self.total_rank_call % self.each_n_iterations == 0
         return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
 
     def _order_equations_gnn_formula_size(self, f: Formula, category_call=0) -> (Formula, int):
@@ -351,9 +360,8 @@ class SplitEquations(AbstractAlgorithm):
         condition = self.changed_eq_size <= 0
         return self._order_equations_gnn_with_condition(f, condition, self.empty_else_func, category_call)
 
-
     def _order_equations_gnn_with_condition(self, f: Formula, condition: bool, else_func, category_call=0) -> (
-    Formula, int):
+            Formula, int):
         if condition:
             return self._order_equations_gnn(f, category_call)
         else:
@@ -364,10 +372,8 @@ class SplitEquations(AbstractAlgorithm):
 
     def _compute_changed_eq_size(self, f: Formula):
         if self.total_split_eq_call % self.dynamic_condition_check_point_frequency == 0:
-            self.changed_eq_size=self.current_eq_size - f.formula_size # positive integer mean the eq length is reduced
-            self.current_eq_size=f.formula_size
-
-
+            self.changed_eq_size = self.current_eq_size - f.formula_size  # positive integer mean the eq length is reduced
+            self.current_eq_size = f.formula_size
 
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()
@@ -416,8 +422,8 @@ class SplitEquations(AbstractAlgorithm):
             mean_tensor = torch.mean(G_list_embeddings, dim=0)  # [1,128]
             input_eq_embeddings_list = []
             for g in G_list_embeddings:
-                #input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
-                input_eq_embeddings_list.append(torch.concat([g, mean_tensor]))# For multi filters
+                # input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
+                input_eq_embeddings_list.append(torch.concat([g, mean_tensor]))  # For multi filters
             input_eq_embeddings_list = torch.stack(input_eq_embeddings_list)
 
             # classifier
@@ -460,7 +466,7 @@ class SplitEquations(AbstractAlgorithm):
         with torch.no_grad():
             classifier_output = self.gnn_rank_model(dgl.batch(G_list_dgl)).squeeze()
 
-        rank_list:List[float] = []
+        rank_list: List[float] = []
         for one_output in classifier_output:
             softmax_one_output = softmax(one_output.tolist())
             rank_list.append(softmax_one_output[0])
@@ -493,7 +499,7 @@ class SplitEquations(AbstractAlgorithm):
         G_list_dgl = self._get_G_list_dgl(f)
 
         # predict
-        #predict_time_start = time.time()
+        # predict_time_start = time.time()
         if len(G_list_dgl) < self.parameters["label_size"]:  # pad list
             while len(G_list_dgl) < self.parameters["label_size"]:
                 G_list_dgl.append(self.empty_dgl_graph)
@@ -505,7 +511,7 @@ class SplitEquations(AbstractAlgorithm):
         with torch.no_grad():
             classifier_output = self.gnn_rank_model(G_list_dgl).squeeze()
         rank_list = classifier_output.tolist()
-        #print("predict time:", time.time() - predict_time_start)
+        # print("predict time:", time.time() - predict_time_start)
 
         # sort
         formula_with_sorted_eq_list = self._sort_eq_list_by_prediction(rank_list, f.eq_list)
