@@ -471,3 +471,32 @@ def delete_relative_files(file_name):
     for f in glob.glob(strip_file_name_suffix(file_name) + "*"):
         if os.path.exists(f):
             os.remove(f)
+
+
+def log_print_to_file(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        # Create a StringIO buffer to capture print output
+        buffer = io.StringIO()
+        # Save the current stdout
+        original_stdout = sys.stdout
+        # Redirect stdout to the buffer
+        sys.stdout = buffer
+
+        try:
+            # Call the original function
+            result = func(*args, **kwargs)
+        finally:
+            # Restore the original stdout
+            sys.stdout = original_stdout
+
+        # Get the print output from the buffer
+        output = buffer.getvalue()
+
+        # Log the output to a file or any other logging mechanism
+        with open('last_run_log.txt', 'a') as f:
+            f.write(output)
+
+        return result
+
+    return wrapper

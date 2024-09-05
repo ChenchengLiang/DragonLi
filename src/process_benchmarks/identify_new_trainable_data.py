@@ -21,7 +21,6 @@ from src.solver.Constants import project_folder,bench_folder
 import argparse
 
 
-
 def main():
     benchmark_name=f"smtlib_2023-05-05_without_woorpje_eval"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"

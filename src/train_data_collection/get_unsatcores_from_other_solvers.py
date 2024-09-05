@@ -17,7 +17,7 @@ from tqdm import tqdm
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.solver.DataTypes import Equation, Formula
 from src.solver.utils_parser import perse_eq_file
-from src.solver.independent_utils import strip_file_name_suffix, delete_relative_files
+from src.solver.independent_utils import strip_file_name_suffix, delete_relative_files, log_print_to_file
 from src.train_data_collection.generate_tracks import formatting_results,formatting_results_v2
 
 
@@ -27,6 +27,7 @@ from src.process_benchmarks.utils import run_on_one_track,run_on_one_problem
 from itertools import combinations
 from src.solver.independent_utils import create_folder
 
+@log_print_to_file
 def main():
     benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data_test"
 
@@ -75,7 +76,7 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
     # todo change rank to solve the unsolved problems only provide more the same kind training data or very different training data?
     found_unsatcore = False
     total_eq_number = len(parsed_content["equation_list"])
-    delete_eq_number_list = reversed(range(1, total_eq_number))
+    delete_eq_number_list = list(reversed(range(1, total_eq_number)))
 
     for eq_number_to_delete in tqdm(delete_eq_number_list, desc="deleting progress"):
         if found_unsatcore:
