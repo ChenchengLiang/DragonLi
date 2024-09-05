@@ -23,7 +23,7 @@ import argparse
 
 
 def main():
-    benchmark_name=f"01_track_multi_word_equations_generated_eval_1001_2000"
+    benchmark_name=f"smtlib_2023-05-05_without_woorpje_eval"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
 
     log_string=""
