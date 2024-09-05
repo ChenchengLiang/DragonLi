@@ -494,7 +494,7 @@ def log_print_to_file(func):
         output = buffer.getvalue()
 
         # Log the output to a file or any other logging mechanism
-        with open('last_run_log.txt', 'a') as f:
+        with open('last_run.log', 'a') as f:
             f.write(output)
 
         return result

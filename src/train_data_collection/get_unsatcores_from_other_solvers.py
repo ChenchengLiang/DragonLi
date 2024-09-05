@@ -116,7 +116,7 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
                 parameter_list = ["fixed",
                                   f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
                                   f"--graph_type graph_1",
-                                  f"--order_equations_method unsatcore_shortest_first_n_iterations_category",
+                                  f"--order_equations_method unsatcore_shortest",
                                   f"--unsat_core_file {unsat_core_eq_file}"]
 
                 solver = "this"
