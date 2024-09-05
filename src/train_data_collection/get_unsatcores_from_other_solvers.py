@@ -32,14 +32,16 @@ def main():
 
 
     # extract unsat cores
-    solver="z3"
+    solver="cvc5"
     solver_log = False
     source_solver_initial_shell_timeout=10
     this_solver_shell_timeout=60
 
+    source_solver_parameter_list_map={"z3":[],"z3-noodler":["smt.string_solver=\"noodler\""],"cvc5":[],"ostrich":[],"woorpje":[]}
+
 
     benchmark_folder=f"{bench_folder}/{benchmark_name}/{solver}"
-    parameters_list=[]
+    parameters_list=source_solver_parameter_list_map[solver]
     file_list = glob.glob(benchmark_folder+ "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
 
@@ -79,9 +81,10 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
         if found_unsatcore:
             break
 
-        eq_list_to_delete = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
+        combination_list = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
 
-        for i, eq_list_to_delete in enumerate(eq_list_to_delete):
+        for index, eq_list_to_delete in enumerate(combination_list):
+            print(f"Delete {eq_number_to_delete} from {total_eq_number}, {index}/{len(combination_list)}")
 
             unsat_core: List[Equation] = [eq for eq in parsed_content["equation_list"] if eq not in eq_list_to_delete]
 
@@ -89,7 +92,7 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
             unsat_core_formula = Formula(unsat_core)
             eq_string_to_file = unsat_core_formula.eq_string_for_file()
             # create eq file
-            unsat_core_eq_file = unsat_core_file_folder + f"/delete_{eq_number_to_delete}_{i}.eq"
+            unsat_core_eq_file = unsat_core_file_folder + f"/delete_{eq_number_to_delete}_{index}.eq"
             with open(unsat_core_eq_file, "w") as f:
                 f.write(eq_string_to_file)
             # store to smt2 file
@@ -101,7 +104,6 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
             # print(result_dict)
             satisfiability = result_dict["result"]
 
-            print(f"delete {eq_number_to_delete} from {total_eq_number}")
             if satisfiability == "UNSAT":
                 print("UNSAT core:")
                 for eq in unsat_core:
