@@ -80,6 +80,24 @@ Uppmax: sh send_summary_back.sh
 Local: sh merge_and_summary.sh $benchmark_name # this will call merge_summary_folders.py and summary_solutions.py
 
 
+Extract unsatcore pipeline (cluster process for rank task):
+1. Get satisfiability sheet between this:category and other solvers
+Local: configurate evaluation parameters in generate_eval_configurations.py
+Uppmax: sh word_equation_submit_multiple_eval.sh
+Uppmax: sh send_summary_back.sh
 
+2. Identify problems can be used to extract unsatcores
+Local: Set parameter and run identify_new_trainable_data.py
 
+3. Divide problem set for cluster
+Local:
+
+4. Extract unsatcores
+Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
+
+5. Merge unsatcores
+Local:
+
+6. Divided to extract training data
+Local
 
