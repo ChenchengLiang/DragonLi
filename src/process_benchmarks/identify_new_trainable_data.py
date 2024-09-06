@@ -15,7 +15,7 @@ sys.path.append(path)
 import csv
 import glob
 import os
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.independent_utils import strip_file_name_suffix, create_folder
 from src.process_benchmarks.utils import summary_one_track
 from src.solver.Constants import project_folder,bench_folder
 import argparse
@@ -60,14 +60,14 @@ def main():
             target_solver_satisfiability=target_solver_row[1]
             if this_solver_satisfiability==target_solver_satisfiability: # get common list
                 if this_solver_satisfiability=="UNKNOWN": #both unknown
-                    common_unsolvable_list.append(filename)
+                    common_unsolvable_list.append((filename,this_solver_satisfiability))
                 else: # both SAT or UNSAT
-                    common_solved_list.append(filename)
+                    common_solved_list.append((filename,this_solver_satisfiability))
             else: # get unique list
                 if this_solver_satisfiability=="UNKNOWN" and target_solver_satisfiability!="UNKNOWN":
-                    target_solver_unique_solved_list.append(filename)
+                    target_solver_unique_solved_list.append((filename,target_solver_satisfiability))
                 elif this_solver_satisfiability!="UNKNOWN" and target_solver_satisfiability=="UNKNOWN":
-                    this_solver_unique_solved_list.append(filename)
+                    this_solver_unique_solved_list.append((filename,this_solver_satisfiability))
                 else:
                     pass
 
@@ -94,26 +94,37 @@ def main():
         new_trainable_data_folder = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/{target_solver}"
         if not os.path.exists(new_trainable_data_folder):
             os.makedirs(new_trainable_data_folder)
+            create_folder(new_trainable_data_folder+"/SAT")
+            create_folder(new_trainable_data_folder + "/UNSAT")
         else:
             shutil.rmtree(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
             os.makedirs(new_trainable_data_folder)
 
-        for file_name in target_solver_unique_solved_list:
-            shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.eq", new_trainable_data_folder)
-            shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.smt2", new_trainable_data_folder)
+        for file_name,satisfiability in target_solver_unique_solved_list:
+            if satisfiability=="SAT":
+                shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.eq", new_trainable_data_folder+"/SAT")
+                shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.smt2", new_trainable_data_folder+"/SAT")
+            elif satisfiability=="UNSAT":
+                shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.eq",
+                            new_trainable_data_folder + "/UNSAT")
+                shutil.copy(f"{bench_folder}/{benchmark_name}/ALL/ALL/{file_name}.smt2",
+                            new_trainable_data_folder + "/UNSAT")
+            else:
+                print(f"Error, satisfiability from target_solver is  UNKNOWN")
 
     #merge all the new trainable data
     merged_new_trainable_data_folder = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/merged_new_trainable_data"
-    if not os.path.exists(merged_new_trainable_data_folder):
-        os.makedirs(merged_new_trainable_data_folder)
-    else:
-        shutil.rmtree(merged_new_trainable_data_folder)
-        os.makedirs(merged_new_trainable_data_folder)
+    create_folder(merged_new_trainable_data_folder)
+    create_folder(merged_new_trainable_data_folder + "/SAT")
+    create_folder(merged_new_trainable_data_folder + "/UNSAT")
+
 
     for target_solver in target_solver_list:
         new_trainable_data_folder = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/{target_solver}"
-        for file_name in os.listdir(new_trainable_data_folder):
-            shutil.copy(f"{new_trainable_data_folder}/{file_name}", merged_new_trainable_data_folder)
+        shutil.copytree(new_trainable_data_folder+"/SAT",merged_new_trainable_data_folder+"/SAT",dirs_exist_ok=True)
+        shutil.copytree(new_trainable_data_folder + "/UNSAT", merged_new_trainable_data_folder+"/UNSAT", dirs_exist_ok=True)
+        # for file_name in os.listdir(new_trainable_data_folder):
+        #     shutil.copy(f"{new_trainable_data_folder}/{file_name}", merged_new_trainable_data_folder)
 
     # output log_string to file
     track_info_file = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/log.txt"

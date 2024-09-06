@@ -46,6 +46,8 @@ def main():
     file_list = glob.glob(benchmark_folder+ "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
 
+
+
         # solve the original problem
         smt2_file=strip_file_name_suffix(file)+".smt2"
         if not os.path.exists(smt2_file):
