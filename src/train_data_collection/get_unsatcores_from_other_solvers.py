@@ -42,9 +42,7 @@ def main():
     folder = args.folder
 
 
-
-    working_folder = f"{bench_folder}/{benchmark}/{folder}"
-
+    working_folder = f"{bench_folder}/{benchmark}"
 
     solver_log = False
     source_solver_initial_shell_timeout=10
@@ -59,7 +57,7 @@ def main():
     
 
 
-    benchmark_folder=f"{working_folder}/merged_new_trainable_data/UNSAT"
+    benchmark_folder=f"{working_folder}/{folder}/UNSAT"
     file_list = glob.glob(benchmark_folder+ "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
 
