@@ -27,13 +27,13 @@ from src.process_benchmarks.utils import run_on_one_track,run_on_one_problem
 from itertools import combinations
 from src.solver.independent_utils import create_folder
 
-@log_print_to_file
+#@log_print_to_file
 def main():
     benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data_test"
 
 
     # extract unsat cores
-    solver="cvc5"
+    solver="z3"
     solver_log = False
     source_solver_initial_shell_timeout=10
     this_solver_shell_timeout=60
@@ -48,6 +48,8 @@ def main():
 
         # solve the original problem
         smt2_file=strip_file_name_suffix(file)+".smt2"
+        if not os.path.exists(smt2_file):
+            one_eq_file_to_smt2(file)
         start=time.time()
         run_on_one_problem(smt2_file, parameters_list, solver, solver_log=solver_log,
                            shell_timeout=source_solver_initial_shell_timeout)
