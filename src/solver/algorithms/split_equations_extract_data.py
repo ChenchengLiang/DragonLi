@@ -74,17 +74,9 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.task = parameters["task"]
         self.file_name = strip_file_name_suffix(parameters["file_path"])
 
-        self._get_unsatcore(parameters, equation_list)
-        # unsat_core_file_path=""
-        # if "unsat_core_file" in parameters:
-        #     unsat_core_file_path=parameters["unsat_core_file"]
-        # elif os.path.exists(self.file_name+".unsatcore"):
-        #     unsat_core_file_path=self.file_name+".unsatcore"
-        #
-        # self.unsat_core: Formula = Formula(equation_list,
-        #                                    unsat_core_file=unsat_core_file_path).get_unsat_core()
-        #
-        # Formula(self.unsat_core).print_eq_list()
+
+        self.unsat_core = self._get_unsatcore(parameters, equation_list)
+
         self.train_data_count = 0
 
         self.extract_dynamic_embedding_train_data = self.extract_dynamic_embedding_train_data_sat if self.eq_satisfiability == SAT else self.extract_dynamic_embedding_train_data_unsat
@@ -484,6 +476,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                                                                      one_train_data_name)
 
     def extract_dynamic_embedding_train_data_preprocess(self, branch_eq_satisfiability_list, current_node):
+        random.shuffle(branch_eq_satisfiability_list)
         node_id = current_node[0]
         current_node[1]["output_to_file"] = True
         self.total_output_branches += 1
@@ -606,15 +599,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         if "unsat_core_file" in parameters and parameters["unsat_core_file"] != "":
             unsat_core_file_path = parameters["unsat_core_file"]
         elif os.path.exists(self.file_name + ".unsatcore"):
-            print("debug")
             unsat_core_file_path = self.file_name + ".unsatcore"
         else:
             unsat_core_file_path = ""
 
-        self.unsat_core: List[Equation] = Formula(equation_list,
+        unsat_core: List[Equation] = Formula(equation_list,
                                            unsat_core_file=unsat_core_file_path).get_unsat_core()
 
-        Formula(self.unsat_core).print_eq_list()
+        return unsat_core
 
     def visualize(self, file_path: str, graph_func: Callable):
         # visualize best unsat path
