@@ -26,13 +26,25 @@ from src.solver.Constants import bench_folder,suffix_dict
 from src.process_benchmarks.utils import run_on_one_track,run_on_one_problem
 from itertools import combinations
 from src.solver.independent_utils import create_folder
+import argparse
 
 #@log_print_to_file
 def main():
-    benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data_test"
+    # parse argument
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('benchmark', type=str,
+                            help='benchmark name')
+    arg_parser.add_argument('folder', type=str,
+                            help='divided_i or valid_data folder')
+    args = arg_parser.parse_args()
+    # Accessing the arguments
+    benchmark = args.benchmark
+    folder = args.folder
 
 
-    # extract unsat cores
+
+    working_folder = f"{bench_folder}/{benchmark}/{folder}"
+
 
     solver_log = False
     source_solver_initial_shell_timeout=10
@@ -40,10 +52,14 @@ def main():
     source_solver_parameter_list_map={"z3":[],"z3-noodler":["smt.string_solver=\"noodler\""],"cvc5":[],"ostrich":[],"woorpje":[]}
 
 
-    z3_folder_file_basename_list= [os.path.basename(f) for f in glob.glob(f"{bench_folder}/{benchmark_name}/z3/UNSAT/*.eq")]
-    cvc5_folder_file_basename_list = [os.path.basename(f) for f in glob.glob(f"{bench_folder}/{benchmark_name}/cvc5/UNSAT/*.eq")]
+    z3_folder_file_basename_list= [os.path.basename(f) for f in glob.glob(f"{working_folder}/z3/UNSAT/*.eq")]
+    cvc5_folder_file_basename_list = [os.path.basename(f) for f in glob.glob(f"{working_folder}/cvc5/UNSAT/*.eq")]
+    ostrich_folder_file_basename_list = [os.path.basename(f) for f in glob.glob(f"/{working_folder}/ostrich/UNSAT/*.eq")]
+    z3_noodler_folder_file_basename_list = [os.path.basename(f) for f in glob.glob(f"{working_folder}/z3-noodler/UNSAT/*.eq")]
+    
 
-    benchmark_folder=f"{bench_folder}/{benchmark_name}/merged_new_trainable_data/UNSAT"
+
+    benchmark_folder=f"{working_folder}/merged_new_trainable_data/UNSAT"
     file_list = glob.glob(benchmark_folder+ "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
 
@@ -53,6 +69,11 @@ def main():
             solver="z3"
         elif file_basename in cvc5_folder_file_basename_list:
             solver="cvc5"
+        elif file_basename in ostrich_folder_file_basename_list:
+            solver="ostrich"
+        elif file_basename in z3_noodler_folder_file_basename_list:
+            solver="z3-noodler"
+
 
         parameters_list = source_solver_parameter_list_map[solver]
 
