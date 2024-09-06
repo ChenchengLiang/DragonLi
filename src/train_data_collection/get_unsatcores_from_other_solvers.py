@@ -33,18 +33,30 @@ def main():
 
 
     # extract unsat cores
-    solver="z3"
+
     solver_log = False
     source_solver_initial_shell_timeout=10
     this_solver_shell_timeout=60
-
     source_solver_parameter_list_map={"z3":[],"z3-noodler":["smt.string_solver=\"noodler\""],"cvc5":[],"ostrich":[],"woorpje":[]}
 
 
-    benchmark_folder=f"{bench_folder}/{benchmark_name}/{solver}"
-    parameters_list=source_solver_parameter_list_map[solver]
+    z3_folder_file_basename_list= [os.path.basename(f) for f in glob.glob(f"{bench_folder}/{benchmark_name}/z3/UNSAT/*.eq")]
+    cvc5_folder_file_basename_list = [os.path.basename(f) for f in glob.glob(f"{bench_folder}/{benchmark_name}/cvc5/UNSAT/*.eq")]
+
+    benchmark_folder=f"{bench_folder}/{benchmark_name}/merged_new_trainable_data/UNSAT"
     file_list = glob.glob(benchmark_folder+ "/*.eq")
     for file in tqdm(file_list,desc="processing progress"):
+
+        #decide the solver
+        file_basename=os.path.basename(file)
+        if file_basename in z3_folder_file_basename_list:
+            solver="z3"
+        elif file_basename in cvc5_folder_file_basename_list:
+            solver="cvc5"
+
+        parameters_list = source_solver_parameter_list_map[solver]
+
+        print(f"file_basename {file_basename}, solver {solver}")
 
 
 
