@@ -20,14 +20,17 @@ from src.solver.algorithms.split_equations_extract_data import SplitEquationsExt
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
 def main():
-    benchmark = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_test"#"choose_eq_train"
+    benchmark = "unsatcore_data_extraction_test"#"choose_eq_train"
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
     #                         "termination_condition": "termination_condition_0"}  # extract_branching_data_task_2
 
     algorithm = "SplitEquationsExtractData"
-    algorithm_parameters={"branch_method": "fixed", "order_equations_method": "category_random","task":"dynamic_embedding"}
+    algorithm_parameters = {"branch_method": "fixed",
+                            "order_equations_method": "unsatcore_shortest",
+                            "termination_condition": "termination_condition_6",
+                            "task": "dynamic_embedding"}
     train_data="UNSAT"
 
     sys.setrecursionlimit(recursion_limit)

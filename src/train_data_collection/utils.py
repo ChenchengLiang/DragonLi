@@ -259,7 +259,7 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
     else:
         shutil.rmtree(train_eq_folder)
         os.mkdir(train_eq_folder)
-    for f in glob.glob(all_eq_folder + "/*.eq") + glob.glob(all_eq_folder + "/*.answer"):
+    for f in glob.glob(all_eq_folder + "/*.eq") + glob.glob(all_eq_folder + "/*.answer") + glob.glob(all_eq_folder + "/*.unsatcore"):
         shutil.copy(f, train_eq_folder)
 
     # extract train data
@@ -283,42 +283,21 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
             satisfiability = result_dict["result"]
 
         print("satisfiability:", satisfiability)
-
-        if satisfiability==SAT:
-            parameters_list = ["fixed",
-                               f"--termination_condition termination_condition_4",
-                               f"--graph_type {graph_type}",
-                               f"--algorithm {algorithm}",
-                               f"--order_equations_method {algorithm_parameters['order_equations_method']}",
-                               f"--output_train_data True",
-                               f"--eq_satisfiability SAT"
-                               ]
-        elif satisfiability == UNSAT:
-            parameters_list = ["fixed",
-                               f"--termination_condition termination_condition_7",
-                               f"--graph_type {graph_type}",
-                               f"--algorithm {algorithm}",
-                               f"--order_equations_method {algorithm_parameters['order_equations_method']}",
-                               f"--output_train_data True",
-                               f"--eq_satisfiability UNSAT"
-                               ]
-        else:
-            print("UNKNOWN, no data extracted")
-
+        parameters_list = ["fixed",
+                           f"--termination_condition {algorithm_parameters['termination_condition']}",
+                           f"--graph_type {graph_type}",
+                           f"--algorithm {algorithm}",
+                           f"--order_equations_method {algorithm_parameters['order_equations_method']}",
+                           f"--output_train_data True",
+                           f"--eq_satisfiability {satisfiability}"
+                           ]
 
 
         result_dict = run_on_one_problem(file_path=file_path,
                                          parameters_list=parameters_list,
-                                         solver="this", solver_log=False)
+                                         solver="this", solver_log=True)
 
-        # parser_type = EqParser()
-        # parser = Parser(parser_type)
-        # parsed_content = parser.parse(file_path)
-        # # print("parsed_content:", parsed_content)
-        #
-        # solver = Solver(algorithm=algorithm_map[algorithm], algorithm_parameters=algorithm_parameters)
-        #
-        # result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
+
 
     # compress
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")

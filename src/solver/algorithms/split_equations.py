@@ -21,7 +21,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     order_equations_unsatcore_shortest_first_n_iterations, order_equations_unsatcore_shortest_category, \
     order_equations_unsatcore_shortest_first_n_iterations_category, order_equations_unsatcore_longest, \
     order_equations_unsatcore_longest_first_n_iterations, order_equations_unsatcore_longest_category, \
-    order_equations_unsatcore_longest_first_n_iterations_category
+    order_equations_unsatcore_longest_first_n_iterations_category, order_equations_static_func_map
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -66,16 +66,7 @@ class SplitEquations(AbstractAlgorithm):
                                        None: None}
 
         self._order_equations_gnn = self.rank_task_gnn_func_map[parameters["rank_task"]]
-        self.order_equations_func_map = {"fixed": order_equations_fixed,
-                                         "shortest": order_equations_shortest,
-                                         "longest": order_equations_longest,
-                                         "random": order_equations_random,
-                                         "hybrid_fixed_random": order_equations_hybrid_fixed_random,
-                                         "category": order_equations_category,
-                                         "category_shortest": order_equations_category_shortest,
-                                         "category_longest": order_equations_category_longest,
-                                         "category_random": order_equations_category_random,
-                                         "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
+        self.order_equations_func_map = {
                                          # gnn based
                                          "category_gnn": self._order_equations_category_gnn,  # first category then gnn
                                          "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
@@ -93,25 +84,8 @@ class SplitEquations(AbstractAlgorithm):
                                          "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
                                          "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
                                          "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
-                                         # unsatcores
-                                         "unsatcore": order_equations_unsatcore,
-                                         "unsatcore_first_n_iterations": order_equations_unsatcore_first_n_iterations,
-                                         "unsatcore_category": order_equations_unsatcore_category,
-                                         "unsatcore_first_n_iterations_category": order_equations_unsatcore_first_n_iterations_category,
-
-                                         "unsatcore_shortest": order_equations_unsatcore_shortest,
-                                         "unsatcore_shortest_first_n_iterations": order_equations_unsatcore_shortest_first_n_iterations,
-                                         "unsatcore_shortest_category": order_equations_unsatcore_shortest_category,
-                                         "unsatcore_shortest_first_n_iterations_category": order_equations_unsatcore_shortest_first_n_iterations_category,
-
-                                         "unsatcore_longest": order_equations_unsatcore_longest,
-                                         "unsatcore_longest_first_n_iterations": order_equations_unsatcore_longest_first_n_iterations,
-                                         "unsatcore_longest_category": order_equations_unsatcore_longest_category,
-                                         "unsatcore_longest_first_n_iterations_category": order_equations_unsatcore_longest_first_n_iterations_category,
-
-                                         "category_unsatcore": order_equations_category_unsatcore,
-                                         # may not call unsatcores because category change eqs
                                          }
+        self.order_equations_func_map.update(order_equations_static_func_map)
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
         if "gnn" in self.parameters["order_equations_method"]:

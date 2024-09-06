@@ -8,6 +8,10 @@ import random
 from src.solver.independent_utils import color_print
 
 
+
+
+
+
 def run_summary(summary_dict):
     print(f"----- run summary -----")
     for k, v in summary_dict.items():
@@ -207,6 +211,35 @@ def order_equation_with_category_and_fixed_condition(f: Formula, order_func,cate
     return Formula(sorted_eq_list), category_call
 
 
+order_equations_static_func_map={
+                             "fixed": order_equations_fixed,
+                             "shortest": order_equations_shortest,
+                             "longest": order_equations_longest,
+                             "random": order_equations_random,
+                             "hybrid_fixed_random": order_equations_hybrid_fixed_random,
+                             "category": order_equations_category,
+                             "category_shortest": order_equations_category_shortest,
+                             "category_longest": order_equations_category_longest,
+                             "category_random": order_equations_category_random,
+                             "hybrid_category_fixed_random": order_equations_hybrid_category_fixed_random,
+
+                             "unsatcore": order_equations_unsatcore,
+                             "unsatcore_first_n_iterations": order_equations_unsatcore_first_n_iterations,
+                             "unsatcore_category": order_equations_unsatcore_category,
+                             "unsatcore_first_n_iterations_category": order_equations_unsatcore_first_n_iterations_category,
+
+                             "unsatcore_shortest": order_equations_unsatcore_shortest,
+                             "unsatcore_shortest_first_n_iterations": order_equations_unsatcore_shortest_first_n_iterations,
+                             "unsatcore_shortest_category": order_equations_unsatcore_shortest_category,
+                             "unsatcore_shortest_first_n_iterations_category": order_equations_unsatcore_shortest_first_n_iterations_category,
+
+                             "unsatcore_longest": order_equations_unsatcore_longest,
+                             "unsatcore_longest_first_n_iterations": order_equations_unsatcore_longest_first_n_iterations,
+                             "unsatcore_longest_category": order_equations_unsatcore_longest_category,
+                             "unsatcore_longest_first_n_iterations_category": order_equations_unsatcore_longest_first_n_iterations_category,
+
+                             "category_unsatcore": order_equations_category_unsatcore, # may not call unsatcores because category change eqs
+}
 
 def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
     # f.print_eq_list()
