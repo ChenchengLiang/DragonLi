@@ -75,7 +75,9 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_3.eq"  # unknown
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_1.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/21/21.eq"  # UNSAT
-    file_path = bench_folder + "/examples_choose_eq/22/22.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/22/22.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/23/23.eq"  # UNSAT
+    file_path = bench_folder + "/examples_choose_eq/24/24.eq"  # SAT
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -124,7 +126,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "unsatcore_shortest",
+                                           "order_equations_method": "category",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}
@@ -146,8 +148,8 @@ def main():
                                                       "rank_task":rank_task,"eq_satisfiability":eq_satisfiability}
 
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

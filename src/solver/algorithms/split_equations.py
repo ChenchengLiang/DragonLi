@@ -11,17 +11,9 @@ from src.solver.Constants import recursion_limit, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE, RANDOM_SEED
 from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
-    apply_rules, simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
-    order_equations_category_random, run_summary, _get_global_info, order_equations_hybrid_fixed_random, \
-    order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_shortest, order_equations_longest, order_equations_unsatcore, \
-    order_equations_category_shortest, order_equations_category_longest, order_equations_category_unsatcore, \
-    order_equations_unsatcore_category, order_equations_unsatcore_first_n_iterations, \
-    order_equations_unsatcore_first_n_iterations_category, order_equations_unsatcore_shortest, \
-    order_equations_unsatcore_shortest_first_n_iterations, order_equations_unsatcore_shortest_category, \
-    order_equations_unsatcore_shortest_first_n_iterations_category, order_equations_unsatcore_longest, \
-    order_equations_unsatcore_longest_first_n_iterations, order_equations_unsatcore_longest_category, \
-    order_equations_unsatcore_longest_first_n_iterations_category, order_equations_static_func_map
+    apply_rules, simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
+    _get_global_info, order_branches_fixed, order_branches_random, \
+    order_branches_hybrid_fixed_random, order_equations_static_func_map
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -42,8 +34,9 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
+        unsat_core_file = parameters["unsat_core_file"] if "unsat_core_file" in parameters else ""
         self.unsat_core: Formula = Formula(equation_list,
-                                           unsat_core_file=parameters["unsat_core_file"]).get_unsat_core()
+                                           unsat_core_file=unsat_core_file).get_unsat_core()
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -67,24 +60,24 @@ class SplitEquations(AbstractAlgorithm):
 
         self._order_equations_gnn = self.rank_task_gnn_func_map[parameters["rank_task"]]
         self.order_equations_func_map = {
-                                         # gnn based
-                                         "category_gnn": self._order_equations_category_gnn,  # first category then gnn
-                                         "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
-                                         "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
-                                         "category_gnn_formula_size": self._order_equations_category_gnn_formula_size,
-                                         "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
-                                         "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
-                                         "hybrid_category_gnn_random_first_n_iterations": self._order_equations_hybrid_category_gnn_random_first_n_iterations,
-                                         "hybrid_category_gnn_random_formula_size": self._order_equations_hybrid_category_gnn_random_formula_size,
-                                         "gnn": self._order_equations_gnn,
-                                         "gnn_each_n_iterations": self._order_equations_gnn_each_n_iterations,
-                                         "gnn_first_n_iterations": self._order_equations_gnn_first_n_iterations,
-                                         "gnn_formula_size": self._order_equations_gnn_formula_size,
-                                         "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
-                                         "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
-                                         "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
-                                         "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
-                                         }
+            # gnn based
+            "category_gnn": self._order_equations_category_gnn,  # first category then gnn
+            "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
+            "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
+            "category_gnn_formula_size": self._order_equations_category_gnn_formula_size,
+            "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
+            "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
+            "hybrid_category_gnn_random_first_n_iterations": self._order_equations_hybrid_category_gnn_random_first_n_iterations,
+            "hybrid_category_gnn_random_formula_size": self._order_equations_hybrid_category_gnn_random_formula_size,
+            "gnn": self._order_equations_gnn,
+            "gnn_each_n_iterations": self._order_equations_gnn_each_n_iterations,
+            "gnn_first_n_iterations": self._order_equations_gnn_first_n_iterations,
+            "gnn_formula_size": self._order_equations_gnn_formula_size,
+            "hybrid_gnn_random": self._order_equations_hybrid_gnn_random,
+            "hybrid_gnn_random_each_n_iterations": self._order_equations_hybrid_gnn_random_each_n_iterations,
+            "hybrid_gnn_random_first_n_iterations": self._order_equations_hybrid_gnn_random_first_n_iterations,
+            "hybrid_gnn_random_formula_size": self._order_equations_hybrid_gnn_random_formula_size,
+        }
         self.order_equations_func_map.update(order_equations_static_func_map)
         self.order_equations_func: Callable = self.order_equations_func_map[self.parameters["order_equations_method"]]
         # load model if call gnn
@@ -282,7 +275,7 @@ class SplitEquations(AbstractAlgorithm):
         return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
 
     def _order_equations_category_gnn_with_conditions(self, f: Formula, condition: bool, category_call=0) -> (
-    Formula, int):
+            Formula, int):
         categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(f)
 
         # Check if the equation categories are only 5 and 6

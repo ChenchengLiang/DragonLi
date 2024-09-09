@@ -16,8 +16,8 @@ import shutil
 
 def main():
     # generate track
-    track_name="smtlib_2023-05-05_without_woorpje_train_UNSAT_rank_task"
-    file_folder="UNSAT"
+    track_name="01_track_multi_word_equations_generated_train_1_20000"
+    file_folder="ALL"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 
