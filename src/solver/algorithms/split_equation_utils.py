@@ -241,6 +241,21 @@ order_equations_static_func_map={
                              "category_unsatcore": order_equations_category_unsatcore, # may not call unsatcores because category change eqs
 }
 
+
+def _get_unsatcore(file_name,parameters, equation_list):
+    import os
+    if "unsat_core_file" in parameters and parameters["unsat_core_file"] != "":
+        unsat_core_file_path = parameters["unsat_core_file"]
+    elif os.path.exists(file_name + ".unsatcore"):
+        unsat_core_file_path = file_name + ".unsatcore"
+    else:
+        unsat_core_file_path = ""
+
+    unsat_core: List[Equation] = Formula(equation_list,
+                                         unsat_core_file=unsat_core_file_path).get_unsat_core()
+
+    return unsat_core
+
 def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
     # f.print_eq_list()
     f.simplify_eq_list()

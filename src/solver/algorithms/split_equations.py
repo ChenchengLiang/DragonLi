@@ -1,4 +1,5 @@
 import gc
+import os.path
 import random
 import sys
 from typing import List, Dict, Tuple, Callable
@@ -13,7 +14,7 @@ from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formu
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
     apply_rules, simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
     _get_global_info, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_static_func_map
+    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -34,9 +35,7 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
-        unsat_core_file = parameters["unsat_core_file"] if "unsat_core_file" in parameters else ""
-        self.unsat_core: Formula = Formula(equation_list,
-                                           unsat_core_file=unsat_core_file).get_unsat_core()
+        self.unsat_core = _get_unsatcore(self.file_name,parameters,equation_list)
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0

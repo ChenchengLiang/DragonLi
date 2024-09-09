@@ -18,7 +18,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_static_func_map
+    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -75,7 +75,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.file_name = strip_file_name_suffix(parameters["file_path"])
 
 
-        self.unsat_core = self._get_unsatcore(parameters, equation_list)
+        self.unsat_core = _get_unsatcore(self.file_name,parameters, equation_list)
 
         self.train_data_count = 0
 
@@ -595,18 +595,6 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 self.output_one_train_data(current_formula, branch_eq_satisfiability_list, current_node)
 
 
-    def _get_unsatcore(self,parameters,equation_list):
-        if "unsat_core_file" in parameters and parameters["unsat_core_file"] != "":
-            unsat_core_file_path = parameters["unsat_core_file"]
-        elif os.path.exists(self.file_name + ".unsatcore"):
-            unsat_core_file_path = self.file_name + ".unsatcore"
-        else:
-            unsat_core_file_path = ""
-
-        unsat_core: List[Equation] = Formula(equation_list,
-                                           unsat_core_file=unsat_core_file_path).get_unsat_core()
-
-        return unsat_core
 
     def visualize(self, file_path: str, graph_func: Callable):
         # visualize best unsat path
