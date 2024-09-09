@@ -119,13 +119,22 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
 
         combination_list = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
 
+
+        unsatcore_list:List[List[Equation]]=[]
         for index, eq_list_to_delete in enumerate(combination_list):
-            print(f"Delete {eq_number_to_delete} from {total_eq_number}, {index}/{len(combination_list)}")
+            unsatcore: List[Equation] = [eq for eq in parsed_content["equation_list"] if eq not in eq_list_to_delete]
+            unsatcore_list.append(unsatcore)
 
-            unsat_core: List[Equation] = [eq for eq in parsed_content["equation_list"] if eq not in eq_list_to_delete]
+        unsatcore_list_with_size=[(eq_list,Formula(eq_list).formula_size)for eq_list in unsatcore_list]
+        unsarcore_list_sorted=sorted(unsatcore_list_with_size,key=lambda x:x[1])
+        unsarcore_list_sorted=[x for x,s in unsarcore_list_sorted]
 
+
+
+        for index, unsatcore  in enumerate(unsarcore_list_sorted):
+            print(f"Delete {eq_number_to_delete} from {total_eq_number}, {index}/{len(unsarcore_list_sorted)}")
             # store to eq file
-            unsat_core_formula = Formula(unsat_core)
+            unsat_core_formula = Formula(unsatcore)
             eq_string_to_file = unsat_core_formula.eq_string_for_file()
             # create eq file
             unsat_core_eq_file = unsat_core_file_folder + f"/delete_{eq_number_to_delete}_{index}.eq"
@@ -142,7 +151,7 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
 
             if satisfiability == "UNSAT":
                 print("UNSAT core:")
-                for eq in unsat_core:
+                for eq in unsatcore:
                     print(eq.eq_str)
 
                 # check weather useful to DragonLi
