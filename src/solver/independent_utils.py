@@ -14,6 +14,9 @@ import functools
 import sys
 import io
 
+from gi.overrides.keysyms import target
+from mlflow.utils.file_utils import exists
+
 
 def delete_large_file(file_path, size_limit=10):
     """Delete a file if it exceeds the size limit (in MB)."""
@@ -471,6 +474,20 @@ def delete_relative_files(file_name):
     for f in glob.glob(strip_file_name_suffix(file_name) + "*"):
         if os.path.exists(f):
             os.remove(f)
+def copy_relative_files_and_directories(prefix,target_folder):
+    import glob
+    for file in glob.glob(f"{prefix}*"):
+        if os.path.isdir(file):
+            shutil.copytree(file, target_folder+"/"+os.path.basename(file))
+        else:
+            shutil.copy(file, target_folder)
+def copy_relative_files(prefix,target_folder):
+    import glob
+    for file in glob.glob(f"{prefix}*"):
+        if os.path.isdir(file):
+            pass
+        else:
+            shutil.copy(file, target_folder)
 
 
 def log_print_to_file(func):

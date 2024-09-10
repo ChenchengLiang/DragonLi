@@ -97,7 +97,7 @@ The folder should looks like benchmark/z3/*.eq, benchmark/ostrich/*.eq,..., benc
 Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
 
 5. Merge extracted unsatcores and divided to extract training data
-Local: find . -name divided_*/* -exec cp {} merged
+Local: set parameter and run collect_unsatcores.py
 Local: set parameter and run divided_folder.py
 
 

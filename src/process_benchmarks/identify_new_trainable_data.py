@@ -2,9 +2,6 @@ import os
 import shutil
 import sys
 import configparser
-from shutil import rmtree
-
-from sympy.solvers.diophantine.diophantine import prime_as_sum_of_two_squares
 
 # Read path from config.ini
 config = configparser.ConfigParser()
@@ -22,8 +19,9 @@ import argparse
 
 
 def main():
-    benchmark_name=f"01_track_multi_word_equations_generated_eval_1001_2000"
+    benchmark_name=f"01_track_multi_word_equations_generated_train_20000_40000"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
+    create_folder(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
 
     log_string=""
     target_solver_list=["z3","z3-noodler","cvc5","ostrich"]
@@ -92,13 +90,10 @@ def main():
 
         #store the new trainable data
         new_trainable_data_folder = project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data/{target_solver}"
-        if not os.path.exists(new_trainable_data_folder):
-            os.makedirs(new_trainable_data_folder)
-            create_folder(new_trainable_data_folder+"/SAT")
-            create_folder(new_trainable_data_folder + "/UNSAT")
-        else:
-            shutil.rmtree(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
-            os.makedirs(new_trainable_data_folder)
+        create_folder(new_trainable_data_folder)
+        create_folder(new_trainable_data_folder + "/SAT")
+        create_folder(new_trainable_data_folder + "/UNSAT")
+
 
         for file_name,satisfiability in target_solver_unique_solved_list:
             if satisfiability=="SAT":
