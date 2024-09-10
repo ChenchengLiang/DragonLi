@@ -14,8 +14,6 @@ import functools
 import sys
 import io
 
-from gi.overrides.keysyms import target
-from mlflow.utils.file_utils import exists
 
 
 def delete_large_file(file_path, size_limit=10):

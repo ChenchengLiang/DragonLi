@@ -7,14 +7,9 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-import sys
-from src.solver.Constants import project_folder
 import argparse
 
-sys.path.append(project_folder)
 from src.solver.Constants import bench_folder, recursion_limit
-
-from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
 

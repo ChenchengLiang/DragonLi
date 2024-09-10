@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data/merged"
+    track_name="01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data/merged_for_proof_tree"
     file_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
