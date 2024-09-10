@@ -20,14 +20,14 @@ from tqdm import tqdm
 
 
 def main():
-    # generate track
-    track_name = "unsatcore_data_test"
+
+    track_name = "unsatcore_generation_test"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
-    chunk_size = 5000
+    chunk_size = 10
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 

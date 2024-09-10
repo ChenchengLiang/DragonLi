@@ -10,7 +10,23 @@ from src.solver.independent_utils import color_print
 
 
 
+def get_unsat_label(satisfiability_list,label_list,back_track_count_list):
+    # output one-hot encoding labels
+    # mix unsat and unknown
+    if satisfiability_list.count(UNSAT) >= 1 and satisfiability_list.count(UNKNOWN) >= 1:
+        if satisfiability_list.count(UNSAT) == 1:
+            label_list[satisfiability_list.index(UNSAT)] = 1
+        else:  # satisfiability_list.count(UNSAT)>1
+            unsat_back_track_counts = [(index, back_track_count_list[index]) for index, value in
+                                       enumerate(satisfiability_list) if value == UNSAT]
+            min_back_track_count_index = min(unsat_back_track_counts, key=lambda x: x[1])[0]
+            label_list[min_back_track_count_index] = 1
+    else:  # only unsat or unknown
+        min_back_track_count_index = back_track_count_list.index(min(back_track_count_list))
+        label_list[min_back_track_count_index] = 1
 
+    assert sum(label_list) == 1
+    return label_list
 
 def run_summary(summary_dict):
     print(f"----- run summary -----")

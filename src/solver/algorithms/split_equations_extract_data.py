@@ -18,7 +18,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore
+    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, get_unsat_label
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -443,20 +443,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         satisfiability_list, label_list, back_track_count_list, middle_branch_eq_file_name_list, one_train_data_name = self.extract_dynamic_embedding_train_data_preprocess(branch_eq_satisfiability_list, current_node)
 
         # output one-hot encoding labels
-        # mix unsat and unknown
-        if satisfiability_list.count(UNSAT) >= 1 and satisfiability_list.count(UNKNOWN) >= 1:
-            if satisfiability_list.count(UNSAT) == 1:
-                label_list[satisfiability_list.index(UNSAT)] = 1
-            else:  # satisfiability_list.count(UNSAT)>1
-                unsat_back_track_counts = [(index, back_track_count_list[index]) for index, value in
-                                             enumerate(satisfiability_list) if value == UNSAT]
-                min_back_track_count_index = min(unsat_back_track_counts, key=lambda x: x[1])[0]
-                label_list[min_back_track_count_index] = 1
-        else:  # only unsat or unknown
-            min_back_track_count_index = back_track_count_list.index(min(back_track_count_list))
-            label_list[min_back_track_count_index] = 1
+        get_unsat_label(satisfiability_list, label_list, back_track_count_list)
 
-        assert sum(label_list) == 1
 
         return self.extract_dynamic_embedding_train_data_postprocess(satisfiability_list, back_track_count_list,
                                                                      label_list, middle_branch_eq_file_name_list,

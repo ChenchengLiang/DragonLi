@@ -7,7 +7,7 @@ config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
 
-import sys
+
 from src.solver.Constants import bench_folder, recursion_limit
 from src.solver.independent_utils import get_folders
 from src.train_data_collection.utils import generate_train_data_in_one_folder
