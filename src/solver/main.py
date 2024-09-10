@@ -141,7 +141,7 @@ def main():
     algorithm_parameters_SplitEquationsExtractData = {"branch_method": "fixed",
                                                       "order_equations_method": "unsatcore_shortest",
                                                       #"termination_condition": "termination_condition_4",# for sat
-                                                      "termination_condition": "termination_condition_6",#for unsat
+                                                      "termination_condition": "termination_condition_7",#for unsat
                                                       "graph_type": graph_type,
                                                       "graph_func": graph_func_map[graph_type],
                                                       "task": "dynamic_embedding", "label_size": label_size,

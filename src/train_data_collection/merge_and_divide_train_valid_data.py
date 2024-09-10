@@ -21,10 +21,10 @@ from tqdm import tqdm
 
 def main():
     # generate track
-    track_name = "smtlib_2023-05-05_without_woorpje_train_SAT_rank_task-1"
+    track_name = "unsatcore_data_test"
     track_folder = bench_folder + "/" + track_name
 
-    satisfiability = "SAT"
+    satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
     chunk_size = 5000
