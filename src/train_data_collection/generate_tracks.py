@@ -24,9 +24,9 @@ from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 def main():
     # generate track
-    start_idx = 2001
-    end_idx = 3000
-    track_name = f"01_track_multi_word_equations_generated_eval_eq_number_5_index_{start_idx}_{end_idx}"
+    start_idx = 1
+    end_idx = 1000
+    track_name = f"01_track_multi_word_equations_5_20_generated_eval_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -339,10 +339,10 @@ def generate_conjunctive_track_03(file_name, index):
 
 
 def generate_one_track_4_v2(file_name, index):
-    min_eq = 2
-    max_eq = 5
+    min_eq = 5
+    max_eq = 20
     max_variables = 10
-    max_terminals = 20
+    max_terminals = 10
     one_side_max_length = 50
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]

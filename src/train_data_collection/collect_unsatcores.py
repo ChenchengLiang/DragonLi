@@ -1,8 +1,6 @@
 import sys
 import configparser
 
-from sphinx.cmd.quickstart import suffix
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -17,7 +15,7 @@ import glob
 import shutil
 
 def main():
-    benchmark_name="01_track_multi_word_equations_generated_eval_1001_2000_new_trainable_data"
+    benchmark_name="unsatcore_01_track_multi_word_equations_generated_train_1_40000"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")
@@ -27,6 +25,7 @@ def main():
 
 
     for divided_folder in divided_folder_list:
+
         for eq_file in glob.glob(f"{bench_folder}/{benchmark_name}/{divided_folder}/UNSAT/*.eq"):
             file_name=strip_file_name_suffix(eq_file)
             #merged_folder_for_proof_tree
@@ -36,7 +35,7 @@ def main():
             else:
                 print(os.path.basename(eq_file),"don't have .unsatcore")
             #merged_unsatcores_folder
-            if os.path.exists(f"{file_name}_unsat_cores"):
+            if os.path.exists(f"{file_name}_unsat_cores") and glob.glob(f"{file_name}_unsat_cores/*")!=[]:
                 copy_relative_files(prefix=file_name, target_folder=merged_unsatcores_folder)
                 if not os.path.exists(f"{file_name}.unsatcore"):
                     # move smallest unsatecore to file .unsatcore

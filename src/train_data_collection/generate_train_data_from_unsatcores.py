@@ -19,7 +19,7 @@ from src.solver.utils_parser import perse_eq_file
 import os
 
 def main():
-    benchmark_name="unsatcore_generation_test"
+    benchmark_name="unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core"
     folder="divided_1"
     all_eq_folder=f"{bench_folder}/{benchmark_name}/{folder}/UNSAT"
     train_folder=f"{bench_folder}/{benchmark_name}/{folder}/train"

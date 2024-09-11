@@ -21,13 +21,13 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "unsatcore_generation_test"
+    track_name = "unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
 
     graph_indices = [1, 2, 3, 4, 5]
-    chunk_size = 10
+    chunk_size = 500
 
     divided_folder_list = [train_folder for train_folder in get_folders(track_folder) if "divided" in train_folder]
 

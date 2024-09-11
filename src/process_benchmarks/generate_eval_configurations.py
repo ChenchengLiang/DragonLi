@@ -15,8 +15,8 @@ from src.solver.independent_utils import write_configurations_to_json_file
 def main():
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "smtlib_2023-05-05_without_woorpje_eval"
-    #benchmark_name = "01_track_multi_word_equations_generated_eval_eq_number_5_index_2001_3000"
-    benchmark_name = "01_track_multi_word_equations_generated_train_20000_40000"
+    benchmark_name = "01_track_multi_word_equations_5_20_generated_eval_1_1000"
+    #benchmark_name = "01_track_multi_word_equations_generated_train_20000_40000"
     #benchmark_name = "01_track_multi_word_equations_generated_train_1_20000"
     rank_task = 1
     graph_type = "graph_5"
