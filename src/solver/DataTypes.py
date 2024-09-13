@@ -613,12 +613,25 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
         global_node_counter = add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter)
         global_node_counter = add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter)
 
+    variable_int_to_binary_list_map = {}
+    terminal_int_to_binary_list_map = {}
+    node_type_content_map = {GlobalVariableOccurrenceSymbol: "V#", GlobalTerminalOccurrenceSymbol: "T#",
+                             GlobalVariableOccurrenceSymbol_0: "V#0", GlobalVariableOccurrenceSymbol_1: "V#1",
+                             GlobalTerminalOccurrenceSymbol_0: "T#0", GlobalTerminalOccurrenceSymbol_1: "T#1"}
+
     # Construct left tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         left_terms, equation_node, global_node_counter, global_info=global_info)
+                                         left_terms, equation_node, global_node_counter, global_info=global_info,
+                                         variable_int_to_binary_list_map=variable_int_to_binary_list_map,
+                                         terminal_int_to_binary_list_map=terminal_int_to_binary_list_map,
+                                         node_type_content_map=node_type_content_map)
     # Construct right tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-                                         right_terms, equation_node, global_node_counter, global_info=global_info)
+                                         right_terms, equation_node, global_node_counter, global_info=global_info,
+                                         variable_int_to_binary_list_map=variable_int_to_binary_list_map,
+                                         terminal_int_to_binary_list_map=terminal_int_to_binary_list_map,
+                                         node_type_content_map=node_type_content_map
+                                         )
 
     return nodes, edges
 
@@ -646,60 +659,10 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
     return global_node_counter
 
 
-#
-# def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list: Deque[Term],
-#                    previous_node: Node, global_node_counter):
-#     if len(term_list) == 0:
-#         return global_node_counter
-#     else:
-#         current_term:Term = term_list.popleft()
-#         current_node = Node(id=global_node_counter, type=current_term.value_type,
-#                             content=current_term.get_value_str, label=None)
-#         global_node_counter += 1
-#         nodes.append(current_node)
-#         edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
-#         if graph_type == "graph_2":  # add edge back to equation node
-#             edges.append(
-#                 Edge(source=current_node.id, target=equation_node.id, type=None, content="", label=None))
-#         if graph_type == "graph_3":  # add edge to corresponding variable node
-#             if current_node.type == Variable:
-#                 for v_node in variable_nodes:
-#                     if v_node.content == current_node.content:
-#                         edges.append(
-#                             Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
-#                         break
-#         if graph_type == "graph_4":
-#             if current_node.type == Terminal:
-#                 for t_node in terminal_nodes:
-#                     if t_node.content == current_node.content:
-#                         edges.append(
-#                             Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
-#                         break
-#         if graph_type == "graph_5":
-#             if current_node.type == Variable:
-#                 for v_node in variable_nodes:
-#                     if v_node.content == current_node.content:
-#                         edges.append(
-#                             Edge(source=current_node.id, target=v_node.id, type=None, content="", label=None))
-#                         break
-#             if current_node.type == Terminal:
-#                 for t_node in terminal_nodes:
-#                     if t_node.content == current_node.content:
-#                         edges.append(
-#                             Edge(source=current_node.id, target=t_node.id, type=None, content="", label=None))
-#                         break
-#
-#         return construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
-#                                        term_list, current_node, global_node_counter)
-
 
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
-                   global_node_counter, global_info: Dict = {}):
-    node_type_content_map = {GlobalVariableOccurrenceSymbol: "V#", GlobalTerminalOccurrenceSymbol: "T#",
-                             GlobalVariableOccurrenceSymbol_0: "V#0", GlobalVariableOccurrenceSymbol_1: "V#1",
-                             GlobalTerminalOccurrenceSymbol_0: "T#0", GlobalTerminalOccurrenceSymbol_1: "T#1"}
-    variable_int_to_binary_list_map = {}
-    terminal_int_to_binary_list_map = {}
+                   global_node_counter, global_info: Dict = {},variable_int_to_binary_list_map={},terminal_int_to_binary_list_map={},
+                   node_type_content_map={}):
 
     first_term_node_id=None
     for count,current_term in enumerate(term_list):
@@ -766,7 +729,6 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                                       target=current_node.id,
                                       type=None, content="", label=None))
                 else:
-
                     binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
                     current_terminal_occurrence_node = current_node
                     for count, i in enumerate(binary_list):

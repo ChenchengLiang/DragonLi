@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 from graphviz import Digraph
 from PIL import Image,ImageFile
 
+from src.solver.independent_utils import delete_duplicate_lines, remove_duplicates
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None  # Removes the limit on image size
@@ -249,8 +250,8 @@ def draw_graph(nodes, edges,filename=""):
     equation_graph_node_color_map = {Variable: "blue", Terminal: "green", Operator: "black",SeparateSymbol:"yellow",
                                      IsomorphicTailSymbol:"yellow",
                                      GlobalVariableOccurrenceSymbol:"yellow",GlobalTerminalOccurrenceSymbol:"purple",
-                                     GlobalVariableOccurrenceSymbol_0:"yellow",GlobalVariableOccurrenceSymbol_1:"yellow",
-                                     GlobalTerminalOccurrenceSymbol_0:"purple",GlobalTerminalOccurrenceSymbol_1:"purple"}
+                                     GlobalVariableOccurrenceSymbol_0:"gold1",GlobalVariableOccurrenceSymbol_1:"gold2",
+                                     GlobalTerminalOccurrenceSymbol_0:"maroon1",GlobalTerminalOccurrenceSymbol_1:"maroon2"}
     dot = Digraph()
     # Set newrank to true for more control over ranking
     dot.attr(newrank='true')
@@ -259,14 +260,16 @@ def draw_graph(nodes, edges,filename=""):
     for node in nodes:
         dot.node(str(node.id), label=node.content,color=equation_graph_node_color_map[node.type])
 
+    legend_list= remove_duplicates([n.type for n in nodes])
+
     # Create a subgraph for the legend
     with dot.subgraph(name='cluster_legend') as legend:
         legend.attr(rank='source')
         legend.attr(label='Legend', color='white')
         legend.attr(color='black', style='solid')  # Set border color and style
         # For each node type, add a legend entry
-        for k,v in equation_graph_node_color_map.items():  # add other shapes as needed
-            legend.node(v, color=v, label= k.__name__)
+        for l in legend_list:
+            legend.node(l.__name__, color=equation_graph_node_color_map[l], label=l.__name__)
 
     # Add edges
     for edge in edges:
