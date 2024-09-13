@@ -31,7 +31,7 @@ def main():
 
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed",
-                            "order_equations_method": "unsatcore_shortest",
+                            "order_equations_method": "category_random",
                             "termination_condition":"termination_condition_7",
                             "task": "dynamic_embedding"}
 

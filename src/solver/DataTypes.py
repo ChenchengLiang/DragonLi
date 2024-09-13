@@ -4,10 +4,9 @@ from collections import deque
 from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
-from src.solver.independent_utils import remove_duplicates, color_print,int_to_binary_list
+from src.solver.independent_utils import remove_duplicates, color_print, int_to_binary_list
 from src.solver.visualize_util import draw_graph
 import time
-
 
 
 class Operator:
@@ -94,20 +93,29 @@ class IsomorphicTailSymbol(Symbol):
 class SeparateSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
 
+
 class GlobalVariableOccurrenceSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
+
+
 class GlobalVariableOccurrenceSymbol_0(Symbol):
     pass  # All necessary methods are inherited from Symbol
+
+
 class GlobalVariableOccurrenceSymbol_1(Symbol):
     pass
 
+
 class GlobalTerminalOccurrenceSymbol(Symbol):
     pass  # All necessary methods are inherited from Symbol
+
+
 class GlobalTerminalOccurrenceSymbol_0(Symbol):
     pass  # All necessary methods are inherited from Symbol
+
+
 class GlobalTerminalOccurrenceSymbol_1(Symbol):
     pass  # All necessary methods are inherited from Symbol
-
 
 
 EMPTY_TERMINAL: Terminal = Terminal("\"\"")
@@ -175,7 +183,6 @@ class Equation:
     def deepcopy(self):
         return copy.deepcopy(self)
 
-
     @property
     def term_list(self) -> List[Term]:
         return self.left_terms + self.right_terms
@@ -203,6 +210,7 @@ class Equation:
     @property
     def left_hand_side_string_list(self):
         return [term.get_value_str for term in self.left_terms]
+
     @property
     def right_hand_side_string_list(self):
         return [term.get_value_str for term in self.right_terms]
@@ -244,7 +252,6 @@ class Equation:
     @property
     def terminal_numbers_without_empty_terminal(self):
         return len(self.termimal_list_without_empty_terminal)
-
 
     @property
     def eq_left_str(self) -> str:
@@ -352,14 +359,14 @@ class Equation:
 
 
 class Formula:
-    def __init__(self, eq_list: List[Equation],unsat_core_file=""):
+    def __init__(self, eq_list: List[Equation], unsat_core_file=""):
         self.eq_list = eq_list
-        self.unsat_core_file=unsat_core_file
-        self.unsat_core=[]
+        self.unsat_core_file = unsat_core_file
+        self.unsat_core = []
         self.sat_equations: List[Equation] = []
         self.unsat_equations: List[Equation] = []
         self.unknown_equations: List[Equation] = []
-        self.current_total_split_eq_call=0
+        self.current_total_split_eq_call = 0
 
     @property
     def total_eq_size(self):
@@ -367,8 +374,8 @@ class Formula:
 
     def get_unsat_core(self):
         from src.solver.utils_parser import perse_eq_file
-        if self.unsat_core_file=="":
-            self.unsat_core=[]
+        if self.unsat_core_file == "":
+            self.unsat_core = []
         else:
             parsed_content = perse_eq_file(self.unsat_core_file)
             self.unsat_core = parsed_content["equation_list"]
@@ -390,9 +397,8 @@ class Formula:
         #     eq.simplify() # pop the same prefix
         # simplify empty equation
         self.eq_list = [eq for eq in self.eq_list if eq.term_length > 0]
-        #get rid of duplicated equations
+        # get rid of duplicated equations
         self.eq_list = remove_duplicates(self.eq_list)
-
 
     def print_eq_list(self):
         print("Equation list:")
@@ -406,13 +412,13 @@ class Formula:
     @property
     def eq_list_length(self):
         return len(self.eq_list)
+
     @property
     def formula_size(self):
-        total_size=0
+        total_size = 0
         for eq in self.eq_list:
-            total_size+=eq.term_length
+            total_size += eq.term_length
         return total_size
-
 
     @property
     def unknown_number(self) -> int:
@@ -427,20 +433,21 @@ class Formula:
         return len(self.sat_equations)
 
     def get_variable_list(self):
-        variable_list=[]
+        variable_list = []
         for eq in self.eq_list:
             variable_list.extend(eq.variable_list)
         return remove_duplicates(variable_list)
+
     def get_terminal_list(self):
-        terminal_list=[]
+        terminal_list = []
         for eq in self.eq_list:
             terminal_list.extend(eq.termimal_list_without_empty_terminal)
         return remove_duplicates(terminal_list)
 
     def eq_string_for_file(self):
-        variable_list_string=[v.value for v in self.get_variable_list()]
-        terminal_list_string=[t.value for t in self.get_terminal_list()]
-        eq_list_string = [(eq.left_hand_side_string_list,eq.right_hand_side_string_list)for eq in self.eq_list]
+        variable_list_string = [v.value for v in self.get_variable_list()]
+        terminal_list_string = [t.value for t in self.get_terminal_list()]
+        eq_list_string = [(eq.left_hand_side_string_list, eq.right_hand_side_string_list) for eq in self.eq_list]
 
         return formatting_results_v2(variable_list_string, terminal_list_string, eq_list_string)
 
@@ -507,33 +514,34 @@ class Edge:
         return f"Edge({self.source}, {self.target},{self.type},{self.content},{self.label})"
 
 
-
-
 def _construct_graph_for_prediction(left_terms: List[Term], right_terms: List[Term], global_info: Dict = {}):
     global_node_counter = 0
     nodes = []
     edges = []
 
-    equation_node,global_node_counter=_add_a_node_no_object(nodes,global_node_counter)
+    equation_node, global_node_counter = _add_a_node_no_object(nodes, global_node_counter)
     # Construct left tree
-    global_node_counter = _construct_tree_no_object(nodes,edges, left_terms, equation_node, global_node_counter, global_info=global_info)
+    global_node_counter = _construct_tree_no_object(nodes, edges, left_terms, equation_node, global_node_counter,
+                                                    global_info=global_info)
     # Construct right tree
-    global_node_counter = _construct_tree_no_object(nodes, edges, right_terms, equation_node, global_node_counter, global_info=global_info)
+    global_node_counter = _construct_tree_no_object(nodes, edges, right_terms, equation_node, global_node_counter,
+                                                    global_info=global_info)
     return global_node_counter
 
 
-def _add_a_node_no_object(nodes,global_node_counter):
-    current_node=global_node_counter
+def _add_a_node_no_object(nodes, global_node_counter):
+    current_node = global_node_counter
     nodes.append(current_node)
     global_node_counter += 1
-    return current_node,global_node_counter
+    return current_node, global_node_counter
 
-def _construct_tree_no_object(nodes, edges,term_list, previous_node, global_node_counter, global_info: Dict = {}):
+
+def _construct_tree_no_object(nodes, edges, term_list, previous_node, global_node_counter, global_info: Dict = {}):
     for current_term in term_list:
-        current_node=global_node_counter
+        current_node = global_node_counter
         global_node_counter += 1
         nodes.append(current_node)
-        edges.append([previous_node,current_node])
+        edges.append([previous_node, current_node])
 
         # add global info
         if global_info == {}:  # no global info
@@ -547,7 +555,7 @@ def _construct_tree_no_object(nodes, edges,term_list, previous_node, global_node
                     new_variable_occurrence_node = global_node_counter
                     global_node_counter += 1
                     nodes.append(new_variable_occurrence_node)
-                    edges.append([new_variable_occurrence_node,current_variable_occurrence_node])
+                    edges.append([new_variable_occurrence_node, current_variable_occurrence_node])
                     current_variable_occurrence_node = new_variable_occurrence_node
 
                 add_global_variable_time = time.time() - add_global_variable_start
@@ -569,7 +577,7 @@ def _construct_tree_no_object(nodes, edges,term_list, previous_node, global_node
                     new_terminal_occurrence_node = global_node_counter
                     global_node_counter += 1
                     nodes.append(new_terminal_occurrence_node)
-                    edges.append([new_terminal_occurrence_node,current_terminal_occurrence_node])
+                    edges.append([new_terminal_occurrence_node, current_terminal_occurrence_node])
                     current_terminal_occurrence_node = new_terminal_occurrence_node
 
                 add_global_terminal_time = time.time() - add_global_terminal_start
@@ -585,6 +593,7 @@ def _construct_tree_no_object(nodes, edges,term_list, previous_node, global_node
         previous_node = current_node
 
     return global_node_counter
+
 
 def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type: str, global_info: Dict = {}):
     global_node_counter = 0
@@ -604,14 +613,12 @@ def _construct_graph(left_terms: List[Term], right_terms: List[Term], graph_type
         global_node_counter = add_variable_nodes(left_terms, right_terms, nodes, variable_nodes, global_node_counter)
         global_node_counter = add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_node_counter)
 
-
     # Construct left tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
                                          left_terms, equation_node, global_node_counter, global_info=global_info)
     # Construct right tree
     global_node_counter = construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes,
                                          right_terms, equation_node, global_node_counter, global_info=global_info)
-
 
     return nodes, edges
 
@@ -686,21 +693,21 @@ def add_terminal_nodes(left_terms, right_terms, nodes, terminal_nodes, global_no
 #                                        term_list, current_node, global_node_counter)
 
 
-
-
-
 def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, terminal_nodes, term_list, previous_node,
                    global_node_counter, global_info: Dict = {}):
-    node_type_content_map={GlobalVariableOccurrenceSymbol:"V#",GlobalTerminalOccurrenceSymbol:"T#",
-                           GlobalVariableOccurrenceSymbol_0:"V#0",GlobalVariableOccurrenceSymbol_1:"V#1",
-                           GlobalTerminalOccurrenceSymbol_0:"T#0",GlobalTerminalOccurrenceSymbol_1:"T#1"}
+    node_type_content_map = {GlobalVariableOccurrenceSymbol: "V#", GlobalTerminalOccurrenceSymbol: "T#",
+                             GlobalVariableOccurrenceSymbol_0: "V#0", GlobalVariableOccurrenceSymbol_1: "V#1",
+                             GlobalTerminalOccurrenceSymbol_0: "T#0", GlobalTerminalOccurrenceSymbol_1: "T#1"}
+    variable_int_to_binary_list_map = {}
+    terminal_int_to_binary_list_map = {}
 
     for current_term in term_list:
         current_node = Node(id=global_node_counter, type=current_term.value_type,
                             content=current_term.get_value_str, label=None)
         global_node_counter += 1
         nodes.append(current_node)
-        edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+        # edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+        edges.append(Edge(source=current_node.id, target=previous_node.id, type=None, content="", label=None))
 
         # add global info
         if global_info == {}:  # no global info
@@ -709,18 +716,27 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             if current_term.value_type == Variable and current_term.value in global_info["variable_global_occurrences"]:
 
                 # generate binary nodes
-                binary_list = int_to_binary_list(global_info["variable_global_occurrences"][current_term.value])
-                current_variable_occurrence_node = current_node
-                for i in binary_list:
-                    node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
-                    new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
-                                                        content=node_type_content_map[node_type], label=None)
-                    global_node_counter += 1
-                    nodes.append(new_variable_occurrence_node)
-                    edges.append(
-                        Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
-                             type=None, content="", label=None))
-                    current_variable_occurrence_node = new_variable_occurrence_node
+                variable_occurrence_integer = global_info["variable_global_occurrences"][current_term.value]
+                if variable_occurrence_integer in variable_int_to_binary_list_map:
+                    edges.append(Edge(source=variable_int_to_binary_list_map[variable_occurrence_integer].id,
+                                      target=current_node.id,
+                                      type=None, content="", label=None))
+                else:
+                    binary_list = int_to_binary_list(variable_occurrence_integer)
+                    current_variable_occurrence_node = current_node
+                    for count, i in enumerate(binary_list):
+                        node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
+                        new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                            content=node_type_content_map[node_type], label=None)
+                        global_node_counter += 1
+                        nodes.append(new_variable_occurrence_node)
+                        if count == 0:
+                            variable_int_to_binary_list_map[variable_occurrence_integer] = new_variable_occurrence_node
+
+                        edges.append(
+                            Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
+                                 type=None, content="", label=None))
+                        current_variable_occurrence_node = new_variable_occurrence_node
 
                 # # unary nodes
                 # current_variable_occurrence_node = current_node
@@ -739,21 +755,28 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
             elif current_term.value_type == Terminal and current_term.value in global_info[
                 "terminal_global_occurrences"]:
 
-
                 # generate binary nodes
-                binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
-                current_terminal_occurrence_node = current_node
-                for i in binary_list:
-                    node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
-                    new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
-                                                        content=node_type_content_map[node_type], label=None)
-                    global_node_counter += 1
-                    nodes.append(new_terminal_occurrence_node)
-                    edges.append(
-                        Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
-                             type=None, content="", label=None))
-                    current_terminal_occurrence_node = new_terminal_occurrence_node
+                terminal_occurrence_integer = global_info["terminal_global_occurrences"][current_term.value]
+                if terminal_occurrence_integer in terminal_int_to_binary_list_map:
+                    edges.append(Edge(source=terminal_int_to_binary_list_map[terminal_occurrence_integer].id,
+                                      target=current_node.id,
+                                      type=None, content="", label=None))
+                else:
 
+                    binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
+                    current_terminal_occurrence_node = current_node
+                    for count, i in enumerate(binary_list):
+                        node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
+                        new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                            content=node_type_content_map[node_type], label=None)
+                        global_node_counter += 1
+                        nodes.append(new_terminal_occurrence_node)
+                        if count == 0:
+                            terminal_int_to_binary_list_map[terminal_occurrence_integer] = new_terminal_occurrence_node
+                        edges.append(
+                            Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
+                                 type=None, content="", label=None))
+                        current_terminal_occurrence_node = new_terminal_occurrence_node
 
                 # # unary nodes
                 # current_terminal_occurrence_node = current_node
@@ -835,6 +858,7 @@ def _update_term_list(old_term: Term, new_term: List[Term], term_list: List[Term
             new_term_list.append(t)
     return new_term_list
 
+
 def formatting_results(variables: List[str], terminals: List[str], eq_list: List[Tuple[str, str]]) -> str:
     # Format the result
     result = f"Variables {{{''.join(variables)}}}\n"
@@ -850,9 +874,9 @@ def formatting_results(variables: List[str], terminals: List[str], eq_list: List
 def formatting_results_v2(variables: List[str], terminals: List[str],
                           eq_list: List[Tuple[List[str], List[str]]]) -> str:
     if len(variables) > 26 or len(terminals) > 26:
-        joint_space=" "
+        joint_space = " "
     else:
-        joint_space=""
+        joint_space = ""
 
     # Format the result
     result = f"Variables {{{joint_space.join(variables)}}}\n"
