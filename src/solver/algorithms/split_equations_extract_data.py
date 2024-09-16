@@ -48,7 +48,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_found_sat_path_extraction = 10
         self.max_found_unsat_leaf_node_extraction = 5000
         self.max_found_path_extraction = 20
-        self.max_found_unsat_first_layer_node = 1
+        self.max_found_unsat_first_layer_node = 3
         self.max_total_split_eq_call=20000
         self.eq_satisfiability = parameters["eq_satisfiability"]
         self.start_time=time.time()

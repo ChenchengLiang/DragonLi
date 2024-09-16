@@ -238,6 +238,8 @@ def color_print(text,color):
     else:
         print(text)
 
+
+
 @time_it
 def handle_duplicate_files(directory, log=False):
     """

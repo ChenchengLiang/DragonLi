@@ -35,6 +35,7 @@ def main():
     duplicated_eqs=0
     no_terminals_eqs=0
     no_variables_eqs=0
+    only_one_eq=0
     total_eq_cleaned_files=0
     total_eq_cleaned_folder=bench_folder+"/"+benchmark+"/total_cleaned_eq_folder"
     os.mkdir(total_eq_cleaned_folder)
@@ -49,7 +50,9 @@ def main():
         duplicated_eqs+=len(glob.glob(folder+"/duplicated_eqs/*.eq"))
         no_terminals_eqs+=len(glob.glob(folder+"/no_terminals/*.eq"))
         no_variables_eqs+=len(glob.glob(folder+"/no_variables/*.eq"))
+        only_one_eq += len(glob.glob(folder + "/only_one_eq/*.eq"))
         total_eq_cleaned_files+=len(glob.glob(folder+"/eq_cleaned/*.eq"))
+
         #collect all eq_cleaned files
         for eq_file in glob.glob(folder+"/eq_cleaned/*.eq"):
             shutil.copy(eq_file,total_eq_cleaned_folder)
@@ -66,7 +69,9 @@ def main():
         f.write("duplicated_eqs:"+str(duplicated_eqs)+"\n")
         f.write("no_terminals_eqs:"+str(no_terminals_eqs)+"\n")
         f.write("no_variables_eqs:"+str(no_variables_eqs)+"\n")
+        f.write("only_one_eq:" + str(only_one_eq) + "\n")
         f.write("total_eq_cleaned_files:"+str(total_eq_cleaned_files)+"\n")
+
 
 
 

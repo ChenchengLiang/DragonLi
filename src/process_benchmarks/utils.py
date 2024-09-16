@@ -15,6 +15,8 @@ from src.solver.independent_utils import mean, check_list_consistence, time_it, 
 import shutil
 from tqdm import tqdm
 
+from src.solver.utils_parser import perse_eq_file
+
 
 def run_on_one_track(benchmark_name: str, benchmark_folder: str, parameters_list, solver, suffix_dict,
                      summary_folder_name,
@@ -852,4 +854,28 @@ def clean_eq_files(folder):
 
     duplicated_files_list = handle_duplicate_files(eq_cleaned_folder, log=False)
 
+    only_one_eq_list = handle_only_one_eq_files(eq_cleaned_folder,log=True)
+
+
     apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)
+
+
+def handle_only_one_eq_files(directory,log=False):
+    only_one_eq_folder=os.path.dirname(directory)+"/only_one_eq"
+    create_folder(only_one_eq_folder)
+    removed_files=[]
+
+    for filename in os.listdir(directory):
+        filepath = os.path.join(directory, filename)
+        if os.path.isfile(filepath) and filepath.endswith(".eq"):
+            parsed_content = perse_eq_file(filepath)
+            total_eq_number = len(parsed_content["equation_list"])
+            if total_eq_number == 1:
+                if log == True:
+                    print(f"Move only one eq file: {filepath} to {only_one_eq_folder}")
+                shutil.move(filepath, only_one_eq_folder)
+                removed_files.append(filepath)
+            else:
+                pass
+    print(f"Total removed files: {len(removed_files)}")
+    return removed_files
