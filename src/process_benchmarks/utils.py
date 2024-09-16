@@ -854,7 +854,7 @@ def clean_eq_files(folder):
 
     duplicated_files_list = handle_duplicate_files(eq_cleaned_folder, log=False)
 
-    only_one_eq_list = handle_only_one_eq_files(eq_cleaned_folder,log=True)
+    only_one_eq_list = handle_only_one_eq_files(eq_cleaned_folder,log=False)
 
 
     apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)
@@ -877,5 +877,43 @@ def handle_only_one_eq_files(directory,log=False):
                 removed_files.append(filepath)
             else:
                 pass
-    print(f"Total removed files: {len(removed_files)}")
+    print(f"Total removed only one eq files: {len(removed_files)}")
     return removed_files
+
+def get_clean_statistics(benchmark,leaf_folder_list):
+    total_smt2_files = 0
+    smt2_to_eq_exception_others = 0
+    smt2_to_eq_exception_too_many_variables = 0
+    smt2_to_eq_exceptions_too_many_letters = 0
+    total_eq_files = 0
+    empty_eq_files = 0
+    duplicated_eqs = 0
+    no_terminals_eqs = 0
+    no_variables_eqs = 0
+    only_one_eq = 0
+    total_eq_cleaned_files = 0
+    for folder in leaf_folder_list:
+        total_smt2_files += len(glob.glob(folder + "/smt2/*.smt2"))
+        smt2_to_eq_exception_others += len(glob.glob(folder + "/exceptions/others/*.smt2"))
+        smt2_to_eq_exception_too_many_variables += len(glob.glob(folder + "/exceptions/too_many_variables/*.smt2"))
+        smt2_to_eq_exceptions_too_many_letters += len(glob.glob(folder + "/exceptions/too_many_letters/*.smt2"))
+        total_eq_files += len(glob.glob(folder + "/eq/*.eq"))
+        empty_eq_files += len(glob.glob(folder + "/empty_eq/*.eq"))
+        duplicated_eqs += len(glob.glob(folder + "/duplicated_eqs/*.eq"))
+        no_terminals_eqs += len(glob.glob(folder + "/no_terminals/*.eq"))
+        no_variables_eqs += len(glob.glob(folder + "/no_variables/*.eq"))
+        only_one_eq += len(glob.glob(folder + "/only_one_eq/*.eq"))
+        total_eq_cleaned_files += len(glob.glob(folder + "/eq_cleaned/*.eq"))
+    log_file = bench_folder + "/" + benchmark + "/cleaned_eq_statistics.txt"
+    with open(log_file, "w") as f:
+        f.write("total_smt2_files:" + str(total_smt2_files) + "\n")
+        f.write("smt2_to_eq_exception_others:" + str(smt2_to_eq_exception_others) + "\n")
+        f.write("smt2_to_eq_exception_too_many_variables:" + str(smt2_to_eq_exception_too_many_variables) + "\n")
+        f.write("smt2_to_eq_exceptions_too_many_letters:" + str(smt2_to_eq_exceptions_too_many_letters) + "\n")
+        f.write("total_eq_files:" + str(total_eq_files) + "\n")
+        f.write("empty_eq_files:" + str(empty_eq_files) + "\n")
+        f.write("duplicated_eqs:" + str(duplicated_eqs) + "\n")
+        f.write("no_terminals_eqs:" + str(no_terminals_eqs) + "\n")
+        f.write("no_variables_eqs:" + str(no_variables_eqs) + "\n")
+        f.write("only_one_eq:" + str(only_one_eq) + "\n")
+        f.write("total_eq_cleaned_files:" + str(total_eq_cleaned_files) + "\n")
