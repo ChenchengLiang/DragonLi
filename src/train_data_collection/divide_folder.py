@@ -16,13 +16,13 @@ import shutil
 
 def main():
     # generate track
-    track_name="unsatcore_01_track_multi_word_equations_generated_train_1_40000_proof_tree/ALL"
+    track_name="01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction"
     file_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 
     # divide tracks
-    dvivde_track_for_cluster(track_folder,file_folder=file_folder, chunk_size=5)
+    dvivde_track_for_cluster(track_folder,file_folder=file_folder, chunk_size=50)
 
     divided_folder_list = [train_folder for train_folder in get_folders(f"{track_folder}/{file_folder}") if
                            "divided" in train_folder]

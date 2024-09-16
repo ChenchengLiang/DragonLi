@@ -5,10 +5,13 @@ from src.process_benchmarks.utils import clean_eq_files, get_clean_statistics
 
 
 def main():
+    #clean and collect nest folders
+
+
+    #clean one folder
     benchmark="smtlib-test/small"
     folder=bench_folder+"/"+benchmark
     clean_eq_files(folder)
-
 
     get_clean_statistics(benchmark, [folder])
 

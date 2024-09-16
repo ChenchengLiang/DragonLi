@@ -9,14 +9,14 @@ path = config.get('Path', 'local')
 sys.path.append(path)
 
 from src.solver.Constants import project_folder, bench_folder, SAT, UNSAT, UNKNOWN, summary_folder
-from src.solver.independent_utils import strip_file_name_suffix, create_folder
+from src.solver.independent_utils import strip_file_name_suffix, create_folder, copy_relative_files
 import shutil
 import glob
 import csv
 
 
 def main():
-    collect_answers_from_divided_folders(benchmark="smtlib_2023-05-05_without_woorpje_train_rank_task")
+    collect_answers_from_divided_folders(benchmark="01_track_multi_word_equations_eq_5_20_generated_train_1_5000")
 
 
 
@@ -104,18 +104,22 @@ def collect_answers_from_divided_folders(benchmark):
         file_name = strip_file_name_suffix(file)
         # read .answer file
         answer_file = file_name + ".answer"
+        smt2_file = file_name + ".smt2"
         if os.path.exists(answer_file):
             with open(answer_file) as f:
                 answer = f.read()
                 if answer == SAT:
                     shutil.copy(file, sat_folder)
                     shutil.copy(answer_file, sat_folder)
+                    shutil.copy(smt2_file,sat_folder)
                 elif answer == UNSAT:
                     shutil.copy(file, unsat_folder)
                     shutil.copy(answer_file, unsat_folder)
+                    shutil.copy(smt2_file, unsat_folder)
                 else:
                     shutil.copy(file, unknown_folder)
                     shutil.copy(answer_file, unknown_folder)
+                    shutil.copy(smt2_file, unknown_folder)
         else:
             print("error: answer file does not exist")
             exit(1)
