@@ -32,7 +32,7 @@ def main():
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed",
                             "order_equations_method": "category_random",
-                            "termination_condition":"termination_condition_6",
+                            "termination_condition":"termination_condition_7",
                             "task": "dynamic_embedding"}
 
     train_data = "UNSAT"

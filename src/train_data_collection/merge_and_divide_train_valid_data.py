@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "01_track_multi_word_equations_generated_train_1_40000_for_rank_task_UNSAT_data_extraction_without_unknown_shortest_path"
+    track_name = "01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"

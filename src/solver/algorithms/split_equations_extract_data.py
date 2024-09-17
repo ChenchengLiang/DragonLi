@@ -6,7 +6,7 @@ from typing import List, Dict, Tuple, Deque, Union, Callable
 
 from src.solver.Constants import BRANCH_CLOSED, MAX_PATH, MAX_PATH_REACHED, recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, INTERNAL_TIMEOUT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
-    RESTART_MAX_DEEP_STEP, compress_image, OUTPUT_NON_SAT_PATH_PERCENTAGE
+    RESTART_MAX_DEEP_STEP, compress_image, OUTPUT_NON_SAT_PATH_PERCENTAGE, RANDOM_SEED
 from src.solver.DataTypes import Assignment, Term, Terminal, Variable, Equation, EMPTY_TERMINAL, Formula
 from src.solver.utils import assemble_parsed_content
 from ..independent_utils import remove_duplicates, flatten_list, color_print, log_control, strip_file_name_suffix, \
@@ -48,7 +48,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_found_sat_path_extraction = 10
         self.max_found_unsat_leaf_node_extraction = 5000
         self.max_found_path_extraction = 20
-        self.max_found_unsat_first_layer_node = 3
+        self.max_found_unsat_first_layer_node = 1
+        self.max_found_unsat_each_layer_node=1
         self.max_total_split_eq_call=20000
         self.eq_satisfiability = parameters["eq_satisfiability"]
         self.start_time=time.time()
@@ -133,6 +134,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
     @log_control
     def run(self):
+        random.seed(RANDOM_SEED)
         original_formula: Formula = Formula(list(self.equation_list))
 
         # if there is only one equation, no need to extract rank data
@@ -185,7 +187,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                  edge_label: str) -> Tuple[str, Formula, Tuple[int, Dict]]:
         self.total_split_eq_call += 1
 
-        if self.total_split_eq_call % 10000 == 0:
+        if self.total_split_eq_call % 1000 == 0:
             print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth}, spent time:{time.time()-self.start_time} -----")
 
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label,current_depth)
@@ -259,6 +261,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             split_back_track_count = 1
             branch_eq_satisfiability_list: List[Tuple[Equation, str]] = []
+            branch_satisfiability_list:List[str]=[]
 
             self.one_unsat_path_data.append((branch_eq_satisfiability_list,current_node))
 
@@ -292,18 +295,23 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 if any(eq_satisfiability == SAT for eq_satisfiability in split_branch_satisfiability_list):
                     current_eq_node[1]["status"] = SAT
                     branch_eq_satisfiability_list.append((current_eq, SAT, current_eq_node[1]["back_track_count"]))
+                    branch_satisfiability_list.append(SAT)
                 elif any(eq_satisfiability == UNKNOWN for eq_satisfiability in split_branch_satisfiability_list):
                     current_eq_node[1]["status"] = UNKNOWN
                     branch_eq_satisfiability_list.append((current_eq, UNKNOWN, current_eq_node[1]["back_track_count"]))
+                    branch_satisfiability_list.append(UNKNOWN)
                 else:
                     current_eq_node[1]["status"] = UNSAT
                     branch_eq_satisfiability_list.append((current_eq, UNSAT, current_eq_node[1]["back_track_count"]))
+                    branch_satisfiability_list.append(UNSAT)
                     if current_depth == 0:
                         self.found_unsat_first_layer_node += 1
 
-                # satisfiability should consistent with rank branches
-                if current_node[1]["status"] == UNKNOWN or current_node[1]["status"] == None:
-                    current_node[1]["status"] = current_eq_node[1]["status"]
+
+
+
+                if branch_satisfiability_list.count(UNSAT)>=self.max_found_unsat_each_layer_node:
+                    break
 
 
 
@@ -311,19 +319,13 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             current_node[1]["back_track_count"] = split_back_track_count
 
 
-            # if any(eq_satisfiability == SAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
-            #     current_node[1]["status"] = SAT
-            # elif any(eq_satisfiability == UNSAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
-            #     current_node[1]["status"] = UNSAT
-            # else:
-            #     current_node[1]["status"] = UNKNOWN
+            if any(eq_satisfiability == SAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
+                current_node[1]["status"] = SAT
+            elif any(eq_satisfiability == UNSAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
+                current_node[1]["status"] = UNSAT
+            else:
+                current_node[1]["status"] = UNKNOWN
 
-            # if any(eq_satisfiability == SAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
-            #     current_node[1]["status"] = SAT
-            # elif any(eq_satisfiability == UNKNOWN for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
-            #     current_node[1]["status"] = UNKNOWN
-            # else:
-            #     current_node[1]["status"] = UNSAT
 
 
 

@@ -880,6 +880,17 @@ def handle_only_one_eq_files(directory,log=False):
     print(f"Total removed only one eq files: {len(removed_files)}")
     return removed_files
 
+
+def collect_cleaned_files(benchmark,leaf_folder_list):
+    # collect cleaned files
+    total_eq_cleaned_folder = bench_folder + "/" + benchmark + "/total_cleaned_eq_folder"
+    os.mkdir(total_eq_cleaned_folder)
+
+    for folder in leaf_folder_list:
+        # collect all eq_cleaned files
+        for eq_file in glob.glob(folder + "/eq_cleaned/*.eq"):
+            shutil.copy(eq_file, total_eq_cleaned_folder)
+
 def get_clean_statistics(benchmark,leaf_folder_list):
     total_smt2_files = 0
     smt2_to_eq_exception_others = 0

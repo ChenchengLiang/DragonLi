@@ -1,4 +1,4 @@
-from src.process_benchmarks.utils import run_on_one_problem, get_clean_statistics
+from src.process_benchmarks.utils import run_on_one_problem, get_clean_statistics, collect_cleaned_files
 from src.solver.Constants import project_folder,bench_folder
 from src.solver.independent_utils import strip_file_name_suffix,time_it,find_leaf_folders
 import glob
@@ -6,7 +6,7 @@ import os
 import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 def main():
-    benchmark="smtlib/2021-05-26_clean"
+    benchmark="zaligvinder-test"
     leaf_folder_list=find_leaf_folders(bench_folder+"/"+benchmark)
 
     #move smt2 files to smt2 folder
@@ -24,19 +24,14 @@ def main():
         smt_to_eq_one_folder(folder)
         print("clean eq",folder)
         clean_eq_files(folder)
+        get_clean_statistics(folder.replace(bench_folder+"/",""), [folder])
 
     #statistics
     get_clean_statistics(benchmark, leaf_folder_list)
 
 
     #collect cleaned files
-    total_eq_cleaned_folder=bench_folder+"/"+benchmark+"/total_cleaned_eq_folder"
-    os.mkdir(total_eq_cleaned_folder)
-
-    for folder in leaf_folder_list:
-        #collect all eq_cleaned files
-        for eq_file in glob.glob(folder+"/eq_cleaned/*.eq"):
-            shutil.copy(eq_file,total_eq_cleaned_folder)
+    collect_cleaned_files(benchmark,leaf_folder_list)
 
 
 
