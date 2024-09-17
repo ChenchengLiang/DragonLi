@@ -266,7 +266,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
             self.one_unsat_path_data.append((branch_eq_satisfiability_list,current_node))
 
 
-            for index, eq in enumerate(list(current_formula.eq_list)):
+            for index, _ in enumerate(list(current_formula.eq_list)):
                 current_eq, separated_formula = self.get_eq_by_index(Formula(list(current_formula.eq_list)), index)
                 current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                                 edge_label=f"eq:{index}: {current_eq.eq_str}")
@@ -310,7 +310,14 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
 
 
-                if branch_satisfiability_list.count(UNSAT)>=self.max_found_unsat_each_layer_node:
+                if self.eq_satisfiability == UNSAT and branch_satisfiability_list.count(UNSAT)>=self.max_found_unsat_each_layer_node:
+
+                    for eq in list(current_formula.eq_list)[index+1:]:
+                        unexplored_node = self.record_eq_node_and_edges(eq, previous_node=current_node,
+                                                                        edge_label=f"eq:{index}: {current_eq.eq_str}")
+                        unexplored_node[1]["status"] = UNKNOWN
+                        branch_eq_satisfiability_list.append(
+                            (eq, UNKNOWN, 0))
                     break
 
 
@@ -318,7 +325,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
 
             current_node[1]["back_track_count"] = split_back_track_count
 
-
+            random.shuffle(branch_eq_satisfiability_list)
             if any(eq_satisfiability == SAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):
                 current_node[1]["status"] = SAT
             elif any(eq_satisfiability == UNSAT for _, eq_satisfiability, _ in branch_eq_satisfiability_list):

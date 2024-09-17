@@ -23,12 +23,14 @@ def main():
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
     create_folder(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
 
+    this_solver_rank_option="category_random"
+    summary_file_this_solver = f"this_fixed_termination_condition_0_{this_solver_rank_option}_{benchmark_name}_summary.csv"
     log_string=""
     target_solver_list=["z3","z3-noodler","cvc5","ostrich"]
     for target_solver in target_solver_list:
 
         summary_file_target_solver=f"{target_solver}_{benchmark_name}_summary.csv"
-        summary_file_this_solver=f"this_fixed_termination_condition_0_category_{benchmark_name}_summary.csv"
+
 
         # read from summary file of target solver
         with open(f"{merged_summary_folder}/{summary_file_target_solver}", 'r') as file:

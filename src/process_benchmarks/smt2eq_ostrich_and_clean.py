@@ -1,4 +1,4 @@
-from src.process_benchmarks.utils import run_on_one_problem, get_clean_statistics, collect_cleaned_files
+from src.process_benchmarks.utils import run_on_one_problem, get_clean_statistics, collect_cleaned_files, update_ostrich
 from src.solver.Constants import project_folder,bench_folder
 from src.solver.independent_utils import strip_file_name_suffix,time_it,find_leaf_folders
 import glob
@@ -6,7 +6,7 @@ import os
 import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 def main():
-    benchmark="zaligvinder-test"
+    benchmark="zaligvinder"
     leaf_folder_list=find_leaf_folders(bench_folder+"/"+benchmark)
 
     #move smt2 files to smt2 folder
@@ -19,6 +19,7 @@ def main():
             shutil.move(smt2_file,folder+"/smt2")
 
     #transform to eq and clean eq
+    #update_ostrich()
     for folder in leaf_folder_list:
         print("smt2 to eq",folder)
         smt_to_eq_one_folder(folder)

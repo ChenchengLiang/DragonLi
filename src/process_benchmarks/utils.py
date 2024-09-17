@@ -787,7 +787,7 @@ def smt_to_eq_one_folder(folder):
     ostrich_output_file = f"{bench_folder}/temp/output.eq"
     solver = "ostrich_export"
 
-    update_ostrich()
+    #update_ostrich()
     if not os.path.exists(eq_file_folder):
         os.mkdir(eq_file_folder)
     if not os.path.exists(exception_file_folder):

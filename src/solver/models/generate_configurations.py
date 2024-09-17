@@ -24,19 +24,16 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 2
+    rank_task = 0
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=1000
     valid_batch_size_factor = 1
-    valid_batch_size = 2000
+    valid_batch_size = 5000
     node_type = rank_task_node_type_map[rank_task]
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
 
-    #for benchmark in ["choose_eq_train_rank_0"]:
-    #for benchmark in ["choose_eq_train_rank_1"]:
-    #for benchmark in ["choose_eq_train_rank_2"]:
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_0"]:
     #for benchmark in  ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_1"]:
     #for benchmark in ["rank_01_track_multi_word_equations_generated_train_1_40000_new_divided_300_chunk_size_multiple_path_rank_task_2"]:
@@ -57,15 +54,18 @@ def main():
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_1"]:
-    for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_2"]:
+    #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_2"]:
+    for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_0"]:
+    # for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_1"]:
+    # for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_2"]:
         for graph_type in ["graph_1"]:
         #for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
                 for classifier_num_filter in [1]:#[1, 2, 4]:
-                    for gnn_num_filters in [1,2]:#[1,2,4]:
+                    for gnn_num_filters in [1]:#[1,2,4]:
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
-                                for ffnn_layer_num in [2]:
+                                for ffnn_layer_num in [2,8]:
                                     for hidden_dim in [128,256]:  # [128,256]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
