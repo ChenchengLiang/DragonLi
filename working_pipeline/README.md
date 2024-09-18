@@ -91,14 +91,16 @@ Local: Set parameter and run identify_new_trainable_data.py
 
 3. Divide problem set for cluster
 Local: set parameter and run divided_folder.py
-The folder should looks like benchmark/z3/*.eq, benchmark/ostrich/*.eq,..., benchmark divided_i/UNSAT/*.eq
+The folder should looks like benchmark/z3/UNSAT/*.eq, benchmark/ostrich/UNSAT/*.eq,..., benchmark divided_i/UNSAT/*.eq
 
 4. Extract unsatcores
 Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
 
 5. Merge extracted unsatcores and divided to extract training data
 Local: set parameter and run collect_unsatcores.py
-Local: set parameter and run divided_folder.py
+   get two sets, one for extract from proof tree, one from first unsatcore
+Local: set parameter and run divided_folder.py for the proof tree
+Local: set parameter and run generate_train_data_from_unsatcores.py to generate data from first unsatcore
 
 
 

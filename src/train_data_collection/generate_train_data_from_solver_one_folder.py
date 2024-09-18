@@ -32,10 +32,11 @@ def main():
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed",
                             "order_equations_method": "category_random",
-                            "termination_condition":"termination_condition_7",
+                            "termination_condition": "termination_condition_0",  # for SAT
+                            #"termination_condition":"termination_condition_7",# for UNSAT
                             "task": "dynamic_embedding"}
 
-    train_data = "UNSAT"
+    train_data = "SAT"
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark

@@ -21,10 +21,10 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction"
+    track_name = "01_track_multi_word_equations_generated_train_1_40000_SAT_data_extraction"
     track_folder = bench_folder + "/" + track_name
 
-    satisfiability = "UNSAT"
+    satisfiability = "SAT"
 
     graph_indices = [1, 2, 3, 4, 5]
     chunk_size = 1000

@@ -14,9 +14,9 @@ from src.solver.independent_utils import write_configurations_to_json_file
 
 def main():
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
-    #benchmark_name = "debug-eval-uppmax"
+    benchmark_name = "01_track_multi_word_equations_generated_train_20000_40000"
     #benchmark_name = "01_track_multi_word_equations_5_20_generated_eval_1_1000"
-    benchmark_name = "01_track_multi_word_equations_eq_5_20_generated_train_1_5000"
+    #benchmark_name = "01_track_multi_word_equations_eq_5_20_generated_train_1_5000"
     rank_task = 1
     graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
@@ -54,11 +54,11 @@ def main():
         #           ]],
         #
         # #branch:fixed, order equations: category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category"
+        #           ]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -69,11 +69,11 @@ def main():
         #           f"--algorithm {algorithm}",
         #           f"--order_equations_method category_longest"
         #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_random"
-        #           ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_random"
+                  ]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -192,11 +192,11 @@ def main():
 
 
 
-        ["z3", []],
-        ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        ["woorpje", []],
-        ["ostrich", []],
-        ["cvc5", []],
+        # ["z3", []],
+        # ["z3-noodler", ["smt.string_solver=\"noodler\""]],
+        # ["woorpje", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
 
         # gnn based configurations
         # branch: fixed

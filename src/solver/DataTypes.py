@@ -269,6 +269,20 @@ class Equation:
     def number_of_special_symbols(self) -> int:
         return self.eq_str.count("#")
 
+    def reverse_eq(self):
+        self.left_terms.reverse()
+        self.right_terms.reverse()
+
+    def condition_to_reverse(self):
+        if self.left_hand_side_length==0 or self.right_hand_side_length==0:
+            return False
+        else:
+            if self.left_terms[0].value_type!=Terminal  and self.right_terms[0] !=Terminal:
+                return True
+            else:
+                return False
+
+
     def simplify(self):
         # pop the same prefix
         for index in range(min(len(self.left_terms), len(self.right_terms))):

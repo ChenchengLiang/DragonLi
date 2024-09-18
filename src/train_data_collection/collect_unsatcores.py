@@ -15,13 +15,15 @@ import glob
 import shutil
 
 def main():
-    benchmark_name="unsatcore_01_track_multi_word_equations_generated_train_1_40000"
+    benchmark_name="unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_5000"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")
     merged_folder_for_proof_tree=create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree/UNSAT")
     create_folder(f"{bench_folder}/{benchmark_name}/merged_unsatcores")
     merged_unsatcores_folder=create_folder(f"{bench_folder}/{benchmark_name}/merged_unsatcores/UNSAT")
+
+    no_unsatcore_file_list=[]
 
 
     for divided_folder in divided_folder_list:
@@ -44,7 +46,10 @@ def main():
                 else:
                     pass
             else:
+                no_unsatcore_file_list.append(eq_file)
                 print(os.path.basename(eq_file),"don't have unsatcore")
+
+    print("no_unsatcore_file_list",no_unsatcore_file_list)
 
 
 

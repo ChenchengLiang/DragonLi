@@ -302,7 +302,7 @@ def apply_rules(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[T
         if eq.left_terms == eq.right_terms:
             children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-        # match prefix terminal #this has been simplified, so will never reach here
+        # match prefix terminal
         elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
             eq.simplify()
             children: List[Tuple[Equation, Formula, str]] = [

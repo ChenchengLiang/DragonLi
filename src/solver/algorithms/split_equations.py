@@ -51,6 +51,9 @@ class SplitEquations(AbstractAlgorithm):
         self.dynamic_condition_check_point_frequency = 1000
         self.current_eq_size = 1000000
         self.changed_eq_size = 0
+        self.reverse_eq = False
+        self.reverse_frequency=50
+
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
@@ -196,6 +199,11 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
             current_eq, separated_formula = self.get_first_eq(current_formula)
+
+            if self.total_split_eq_call % self.reverse_frequency ==0 and self.reverse_eq==True and current_eq.condition_to_reverse():
+                print("reverse")
+                current_eq.reverse_eq()
+
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
