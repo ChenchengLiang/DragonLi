@@ -51,8 +51,9 @@ class SplitEquations(AbstractAlgorithm):
         self.dynamic_condition_check_point_frequency = 1000
         self.current_eq_size = 1000000
         self.changed_eq_size = 0
-        self.reverse_eq = False
+        self.reverse_eq = True
         self.reverse_frequency=50
+        self.total_reversed_number=0
 
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
@@ -168,7 +169,7 @@ class SplitEquations(AbstractAlgorithm):
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call,
                         "predicted_data_hash_table_hit": self.predicted_data_hash_table_hit,
-                        "dgl_hash_table_hit": self.dgl_hash_table_hit}
+                        "dgl_hash_table_hit": self.dgl_hash_table_hit,"total_reversed_number":self.total_reversed_number}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -201,7 +202,7 @@ class SplitEquations(AbstractAlgorithm):
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             if self.total_split_eq_call % self.reverse_frequency ==0 and self.reverse_eq==True and current_eq.condition_to_reverse():
-                print("reverse")
+                self.total_reversed_number+=1
                 current_eq.reverse_eq()
 
 

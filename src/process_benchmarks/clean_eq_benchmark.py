@@ -8,7 +8,7 @@ import shutil
 
 def main():
     #clean and collect nest folders
-    benchmark = "2023-05-05_clean-1"
+    benchmark = "zaligvinder+smtlib"
     leaf_folder_list = find_leaf_folders(bench_folder + "/" + benchmark)
     leaf_folder_list = remove_duplicates([os.path.dirname(folder) for folder in leaf_folder_list if "exceptions" not in folder])
 

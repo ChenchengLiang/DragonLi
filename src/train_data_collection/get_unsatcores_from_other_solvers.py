@@ -95,6 +95,7 @@ def main():
 
 
 def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_shell_timeout,solver_log):
+
     shell_timeout_factor = 10
     shell_timeout = initial_run_time * shell_timeout_factor
     print("shell_timeout:", shell_timeout)
@@ -106,10 +107,9 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
     unsat_core_file_folder = strip_file_name_suffix(file) + "_unsat_cores"
     create_folder(unsat_core_file_folder)
 
-    # todo is the smallest unsatcore always the best?
-    # todo keep all smallest unsatcores?
-    # todo change rank to solve the unsolved problems only provide more the same kind training data or very different training data?
     found_unsatcore = False
+    total_unsatcore = 0
+    minimum_unsatcore_size=10000
     total_eq_number = len(parsed_content["equation_list"])
     delete_eq_number_list = list(reversed(range(1, total_eq_number)))
 
@@ -154,29 +154,35 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
                 for eq in unsatcore:
                     print(eq.eq_str)
 
+                total_unsatcore+=1
+                if len(unsatcore)<minimum_unsatcore_size:
+                    minimum_unsatcore_size=len(unsatcore)
+                found_unsatcore=True
+                break
+
                 # check weather useful to DragonLi
                 # run DragonLi with the unsatcore
-                print("run this solver")
-                parameter_list = ["fixed",
-                                  f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
-                                  f"--graph_type graph_1",
-                                  f"--order_equations_method unsatcore_shortest",
-                                  f"--unsat_core_file {unsat_core_eq_file}"]
-
-                solver = "this"
-
-                result_dict = run_on_one_problem(file, parameter_list, solver,
-                                                 solver_log=solver_log, shell_timeout=this_solver_shell_timeout)
-                satisfiability_this_solver = result_dict["result"]
-                print(result_dict["result"])
-                print(result_dict["raw"])
-                if satisfiability_this_solver == "UNSAT":
-                    print("Found an available unsatcore")
-                    shutil.copy(unsat_core_eq_file, strip_file_name_suffix(file) + ".unsatcore")
-                    found_unsatcore = True
-                    break
-                else:
-                    print("this solver cannot solve it with the unsatcore")
+                # print("run this solver")
+                # parameter_list = ["fixed",
+                #                   f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
+                #                   f"--graph_type graph_1",
+                #                   f"--order_equations_method unsatcore_shortest",
+                #                   f"--unsat_core_file {unsat_core_eq_file}"]
+                #
+                # solver = "this"
+                #
+                # result_dict = run_on_one_problem(file, parameter_list, solver,
+                #                                  solver_log=solver_log, shell_timeout=this_solver_shell_timeout)
+                # satisfiability_this_solver = result_dict["result"]
+                # print(result_dict["result"])
+                # print(result_dict["raw"])
+                # if satisfiability_this_solver == "UNSAT":
+                #     print("Found an available unsatcore")
+                #     shutil.copy(unsat_core_eq_file, strip_file_name_suffix(file) + ".unsatcore")
+                #     found_unsatcore = True
+                #     break
+                # else:
+                #     print("this solver cannot solve it with the unsatcore")
 
             else:
                 print(f"{satisfiability}, delete relative files")

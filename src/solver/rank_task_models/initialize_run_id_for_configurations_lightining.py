@@ -95,7 +95,7 @@ def train_in_parallel(parameters):
                                                             f"model_{parameters['graph_type']}_{parameters['model_type']}.pth")
 
 
-    logger = MLFlowLogger(experiment_name=parameters["experiment_name"],tracking_uri='http://127.0.0.1:5000')
+    logger = MLFlowLogger(experiment_name=parameters["experiment_name"],tracking_uri=f"http://127.0.0.1:5000")
 
     color_print(text=f"use the existing run id {logger.run_id}", color="yellow")
     parameters["run_id"] = logger.run_id

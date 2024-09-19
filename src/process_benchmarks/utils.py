@@ -845,6 +845,9 @@ def clean_eq_files(folder):
     shutil.copytree(eq_folder, eq_cleaned_folder)
 
     target_content = "Variables {}\nTerminals {}\nSatGlucose(0)"  # no variables
+
+    apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)
+
     empty_file_list = handle_files_with_target_string(eq_cleaned_folder, target_content, move_to_folder_name="empty_eq",
                                                       log=False)
     no_variables_file_list = handle_files_with_target_string(eq_cleaned_folder, "Variables {}",
@@ -857,7 +860,7 @@ def clean_eq_files(folder):
     only_one_eq_list = handle_only_one_eq_files(eq_cleaned_folder,log=False)
 
 
-    apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)
+    #apply_to_all_files(eq_cleaned_folder, delete_duplicate_lines)
 
 
 def handle_only_one_eq_files(directory,log=False):
@@ -868,7 +871,7 @@ def handle_only_one_eq_files(directory,log=False):
     for filename in os.listdir(directory):
         filepath = os.path.join(directory, filename)
         if os.path.isfile(filepath) and filepath.endswith(".eq"):
-            parsed_content = perse_eq_file(filepath)
+            parsed_content = perse_eq_file(filepath,log=False)
             total_eq_number = len(parsed_content["equation_list"])
             if total_eq_number == 1:
                 if log == True:
