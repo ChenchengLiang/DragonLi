@@ -34,6 +34,8 @@ def main():
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
 
+
+
     #for benchmark in ["unsatcore_generation_test_rank_task_0"]:
     #for benchmark in ["unsatcore_generation_test_rank_task_1"]:
     #for benchmark in ["unsatcore_generation_test_rank_task_2"]:
