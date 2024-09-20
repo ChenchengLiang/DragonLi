@@ -74,7 +74,7 @@ def train_a_model(parameters):
     dm = get_dm(parameters)
 
 
-    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
+    logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"],tracking_uri=f"http://127.0.0.1:{parameters['port']}")
     profiler = "simple"
 
     #load from checkpoint
