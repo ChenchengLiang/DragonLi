@@ -384,8 +384,8 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
     '''
     1: both sides are empty
     2: one side is empty
-    3: matched prefix terminal, this should not happen due to the simplification
-    4: mismatched prefix %or suffix terminal
+    3: mismatched prefix %or suffix terminal
+    4: matched prefix terminal
     5: first terms are variable and terminal respectively
     6: first terms are variables
     '''
@@ -410,18 +410,20 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
             if eq.left_terms == eq.right_terms:  # this has been simplified, so will never reach here
                 category_eq_list.append((eq, 1))
 
-            # match prefix terminal #this has been simplified, so will never reach here
-            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
-                category_eq_list.append((eq, 3))
 
             # mismatch prefix terminal
             elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
                 eq.given_satisfiability = UNSAT
-                category_eq_list.append((eq, 4))
+                category_eq_list.append((eq, 3))
             # mistmatch suffix terminal
             elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
                 eq.given_satisfiability = UNSAT
+                category_eq_list.append((eq, 3))
+
+            # match prefix terminal
+            elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
                 category_eq_list.append((eq, 4))
+
 
             # split rules
             else:
