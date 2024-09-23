@@ -80,6 +80,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/24/24.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/25/25.eq"  # UNSNAT
     #file_path = bench_folder + "/examples_choose_eq/26/26.eq"  # SAT
+    file_path = bench_folder + "/examples_choose_eq/27/g_01_track_multi_word_equations_eq_5_20_generated_train_20001_30000_25376.eq"  #
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT

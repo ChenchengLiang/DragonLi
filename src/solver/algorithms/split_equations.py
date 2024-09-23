@@ -56,6 +56,7 @@ class SplitEquations(AbstractAlgorithm):
         self.total_reversed_number=0
 
 
+
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
                                        2: self._order_equations_gnn_rank_task_2,
@@ -199,11 +200,15 @@ class SplitEquations(AbstractAlgorithm):
             return satisfiability, current_formula
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
+
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             if self.total_split_eq_call % self.reverse_frequency ==0 and self.reverse_eq==True and current_eq.condition_to_reverse():
                 self.total_reversed_number+=1
                 current_eq.reverse_eq()
+                current_formula.eq_list[0]=current_eq
+
+
 
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,

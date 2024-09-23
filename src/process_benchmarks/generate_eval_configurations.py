@@ -17,7 +17,7 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_generated_train_20000_40000"
     benchmark_name = "01_track_multi_word_equations_5_20_generated_eval_1_1000"
     #benchmark_name = "01_track_multi_word_equations_eq_5_20_generated_train_20001_30000"
-    rank_task = 0
+    rank_task = 2
     graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
 

@@ -273,14 +273,26 @@ class Equation:
         self.left_terms.reverse()
         self.right_terms.reverse()
 
+
     def condition_to_reverse(self):
-        if self.left_hand_side_length==0 or self.right_hand_side_length==0:
+        if self.left_hand_side_length<=1 or self.right_hand_side_length<=1:
             return False
         else:
             if self.left_terms[0].value_type!=Terminal  and self.right_terms[0] !=Terminal:
                 return True
             else:
                 return False
+    def change_side(self):
+        original_left=self.left_terms.copy()
+        original_right=self.right_terms.copy()
+        self.left_terms=original_right
+        self.right_terms=original_left
+
+    def condition_to_change_size(self):
+        if self.left_hand_side_length>self.right_hand_side_length:
+            return True
+        else:
+            return False
 
 
     def simplify(self):

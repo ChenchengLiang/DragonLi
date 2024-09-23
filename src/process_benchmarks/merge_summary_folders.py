@@ -43,7 +43,8 @@ def main():
             base_name=os.path.basename(csv_file)
             _replace=base_name[base_name.find("divided"):base_name.find("summary")]
             key=os.path.basename(csv_file).replace(_replace,"")
-            csv_file_dict[key].append(one_csv)
+            if key in csv_file_dict:
+                csv_file_dict[key].append(one_csv)
 
 
     #collect divided tables in memory
