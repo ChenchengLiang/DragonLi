@@ -808,19 +808,20 @@ def smt_to_eq_one_folder(folder):
     for smt_file in tqdm(glob.glob(smt_file_folder + "/*.smt2"), desc="progress"):
         if os.path.exists(ostrich_output_folder) and os.path.isdir(ostrich_output_folder):
             shutil.rmtree(ostrich_output_folder)
+            os.mkdir(ostrich_output_folder)
         else:
             os.mkdir(ostrich_output_folder)
 
 
         smt_file_path = os.path.join(smt_file_folder, smt_file)
         result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=20000"], solver=solver)
-        color_print(text=f"smt_file_path:{os.path.basename(smt_file_path)}", color="blue")
+        color_print(text=f"\nsmt_file_path:{os.path.basename(smt_file_path)}", color="blue")
         color_print(text=f"result_dict:{result_dict}", color="yellow")
         file_name = strip_file_name_suffix(os.path.basename(smt_file_path))
         ostrich_output_file_list=glob.glob(f"{ostrich_output_folder}/*.eq")
         if len(ostrich_output_file_list)>0:
             for i,ostrich_output_file in enumerate(ostrich_output_file_list):
-                shutil.copy(ostrich_output_file, f"{ostrich_output_folder}/{file_name}_{i}.eq")
+                shutil.copy(ostrich_output_file, f"{eq_file_folder}/{file_name}_{i}.eq")
         else:
             exception_list.append(smt_file_path)
             if "too many variables" in result_dict["raw"]:
