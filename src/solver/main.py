@@ -32,25 +32,6 @@ def main():
     # file_path = bench_folder + "/debug-rank/1/g_01_track_multi_word_equations_generated_eval_1001_2000_1685.eq" #UNSAT 83 eqs
     #file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
 
-    # file_path = bench_folder +"/test/03_track_11.eq"
-    # Woorpje_benchmarks path
-    # SAT
-    # file_path = bench_folder +"/01_track/01_track_1.eq"
-    # file_path = bench_folder +"/01_track/01_track_2.eq"
-    # file_path = bench_folder +"/01_track/01_track_3.eq"
-    # file_path = bench_folder +"/01_track/01_track_4.eq"
-    # file_path = bench_folder +"/01_track/01_track_5.eq"
-    # file_path = bench_folder +"/01_track/01_track_36.eq"
-    # file_path = bench_folder +"/01_track/01_track_37.eq"
-    # file_path = bench_folder +"/01_track/01_track_58.eq"
-    # file_path = bench_folder +"/01_track/01_track_93.eq"
-    # file_path = bench_folder +"/01_track/01_track_192.eq"
-
-    # UNSAT
-    # file_path = bench_folder +"/03_track/03_track_14.eq"
-    # file_path = bench_folder +"/03_track/03_track_7.eq"
-    # file_path = bench_folder +"/03_track/03_track_11.eq"
-    # file_path = bench_folder +"/03_track/03_track_17.eq"
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
@@ -67,10 +48,10 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/12/test12.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/13/test13.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/14/g_conjunctive_01_track_train_rank_task_1_100_1.eq"  # UNSAT
-    file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT #reverse helps
+    #file_path = bench_folder + "/examples_choose_eq/15/g_01_track_multi_word_equations_generated_eval_1001_2000_1496.eq"  # SAT #reverse helps
     #file_path = bench_folder + "/examples_choose_eq/16/g_01_track_multi_word_equations_generated_eval_1001_2000_1131.eq"
     #file_path = bench_folder + "/examples_choose_eq/17/17.eq"
-    #file_path = bench_folder + "/examples_choose_eq/18/18.eq" #UNSAT, big graph
+    file_path = bench_folder + "/examples_choose_eq/18/18.eq" #UNSAT, big graph
     #file_path = bench_folder + "/examples_choose_eq/19/g_conjunctive_01_track_train_eq_number_20_rank_task_1_20000_638.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_3.eq"  # unknown
     #file_path = bench_folder + "/examples_choose_eq/20/g_01_track_multi_word_equations_generated_eval_eq_number_5_rank_task_1_5_1.eq"  # SAT
@@ -79,7 +60,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/23/23.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/24/24.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/25/25.eq"  # UNSNAT
-    file_path = bench_folder + "/examples_choose_eq/26/26.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/26/26.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/27/g_01_track_multi_word_equations_eq_5_20_generated_train_20001_30000_25376.eq"  #
     #file_path = bench_folder + "/temp/output.eq"  #parse
 
@@ -100,9 +81,6 @@ def main():
     # file_path = bench_folder + "/debug/slent_kaluza_458_sink.eq"  # UNSAT
     # file_path = bench_folder + "/debug/slent_kaluza_569_sink.eq"  # UNSAT
     # file_path = bench_folder + "/debug/slent_kaluza_1325_sink.eq"  # UNSAT
-
-    #file_path = bench_folder + "/conjunctive_03_track_eval_rank_task_1_1000/ALL/ALL/g_conjunctive_03_track_train_rank_task_1_1000_1.eq"
-    #file_path = bench_folder + "/01_track_multi_word_equations_generated_eval_1001_2000/ALL/ALL/g_01_track_multi_word_equations_generated_eval_1001_2000_1001.eq"
 
     # smt format
     # file_path=bench_folder +"/example_smt/1586.corecstrs.readable.smt2"

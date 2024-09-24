@@ -44,6 +44,9 @@ class SplitEquations(AbstractAlgorithm):
         self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
         self.prefix_rules_count = 0
         self.suffix_rules_count = 0
+        self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
+                               "prefix":self._decide_rules_prefix,"suffix":self._decide_rules_suffix}
+        self.decide_rules_func=self.decide_rules_map["probability"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -210,8 +213,7 @@ class SplitEquations(AbstractAlgorithm):
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
 
-            # self._decide_rules_by_probability()
-            self._decide_rules_by_frequency()
+            self.decide_rules_func()
 
             children, fresh_variable_counter = self.apply_rules(current_eq, separated_formula,
                                                                 self.fresh_variable_counter)
@@ -254,6 +256,11 @@ class SplitEquations(AbstractAlgorithm):
         self.apply_rules = apply_rules_prefix if probability < 0.5 else apply_rules_suffix
 
         # self._count_rule_type()
+    def _decide_rules_prefix(self):
+        self.apply_rules = apply_rules_prefix
+        
+    def _decide_rules_suffix(self):
+        self.apply_rules = apply_rules_suffix
 
     def _count_rule_type(self):
         if self.apply_rules == apply_rules_prefix:
