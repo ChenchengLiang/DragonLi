@@ -12,9 +12,10 @@ from src.solver.Constants import recursion_limit, \
     RESTART_MAX_DEEP_STEP, compress_image, HYBRID_ORDER_EQUATION_RATE, RANDOM_SEED
 from src.solver.DataTypes import Assignment, Terminal, Variable, Equation, Formula
 from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
-    apply_rules, simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
+    simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
     _get_global_info, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore
+    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, apply_rules_prefix, \
+    apply_rules_suffix
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -22,6 +23,7 @@ from .abstract_algorithm import AbstractAlgorithm
 from .utils import softmax
 from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info
 from ..models.Dataset import get_one_dgl_graph
+from ...train_data_collection.utils import prepare_and_save_datasets_task_3
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -35,7 +37,13 @@ class SplitEquations(AbstractAlgorithm):
         self.visualize_gnn_input = False
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
-        self.unsat_core = _get_unsatcore(self.file_name,parameters,equation_list)
+        self.unsat_core = _get_unsatcore(self.file_name, parameters, equation_list)
+
+        self.prefix_rules = True
+        self.prefix_suffix_change_frequency = 100
+        self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
+        self.prefix_rules_count = 0
+        self.suffix_rules_count = 0
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -51,11 +59,6 @@ class SplitEquations(AbstractAlgorithm):
         self.dynamic_condition_check_point_frequency = 1000
         self.current_eq_size = 1000000
         self.changed_eq_size = 0
-        self.reverse_eq = True
-        self.reverse_frequency=50
-        self.total_reversed_number=0
-
-
 
         self.rank_task_gnn_func_map = {0: self._order_equations_gnn_rank_task_0,
                                        1: self._order_equations_gnn_rank_task_1,
@@ -170,7 +173,8 @@ class SplitEquations(AbstractAlgorithm):
         summary_dict = {"Total explore_paths call": self.total_split_eq_call, "total_rank_call": self.total_rank_call,
                         "total_gnn_call": self.total_gnn_call, "total_category_call": self.total_category_call,
                         "predicted_data_hash_table_hit": self.predicted_data_hash_table_hit,
-                        "dgl_hash_table_hit": self.dgl_hash_table_hit,"total_reversed_number":self.total_reversed_number}
+                        "dgl_hash_table_hit": self.dgl_hash_table_hit, "prefix_rules_count": self.prefix_rules_count,
+                        "suffix_rules_count": self.suffix_rules_count}
         run_summary(summary_dict)
 
         return {"result": satisfiability, "assignment": self.assignment, "equation_list": self.equation_list,
@@ -203,18 +207,14 @@ class SplitEquations(AbstractAlgorithm):
 
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
-            if self.total_split_eq_call % self.reverse_frequency ==0 and self.reverse_eq==True and current_eq.condition_to_reverse():
-                self.total_reversed_number+=1
-                current_eq.reverse_eq()
-                current_formula.eq_list[0]=current_eq
-
-
-
-
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
 
-            children, fresh_variable_counter = apply_rules(current_eq, separated_formula, self.fresh_variable_counter)
+            # self._decide_rules_by_probability()
+            self._decide_rules_by_frequency()
+
+            children, fresh_variable_counter = self.apply_rules(current_eq, separated_formula,
+                                                                self.fresh_variable_counter)
             self.fresh_variable_counter = fresh_variable_counter
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
@@ -242,6 +242,25 @@ class SplitEquations(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
+    def _decide_rules_by_frequency(self):
+        if self.total_split_eq_call % self.prefix_suffix_change_frequency == 0:
+            self.prefix_rules = not self.prefix_rules
+            self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
+
+        # self._count_rule_type()
+
+    def _decide_rules_by_probability(self):
+        probability = random.random()
+        self.apply_rules = apply_rules_prefix if probability < 0.5 else apply_rules_suffix
+
+        # self._count_rule_type()
+
+    def _count_rule_type(self):
+        if self.apply_rules == apply_rules_prefix:
+            self.prefix_rules_count += 1
+        else:
+            self.suffix_rules_count += 1
+
     def _order_equations_hybrid_category_gnn_random(self, f: Formula, category_call=0) -> (Formula, int):
         probability = random.random()
         if probability < HYBRID_ORDER_EQUATION_RATE:
@@ -265,7 +284,7 @@ class SplitEquations(AbstractAlgorithm):
 
     def _order_equations_hybrid_category_gnn_random_formula_size(self, f: Formula, category_call=0) -> (
             Formula, int):
-        condition =self._compute_condition_for_changed_eq_size(f)
+        condition = self._compute_condition_for_changed_eq_size(f)
         if condition:
             return self._order_equations_category_gnn(f, category_call)
         else:
@@ -347,15 +366,14 @@ class SplitEquations(AbstractAlgorithm):
     def empty_else_func(self, f: Formula, category_call=0) -> (Formula, int):
         return f, category_call
 
-    def _compute_condition_for_changed_eq_size(self,f:Formula):
-        condition=False
+    def _compute_condition_for_changed_eq_size(self, f: Formula):
+        condition = False
         if self.total_split_eq_call % self.dynamic_condition_check_point_frequency == 0:
             self.changed_eq_size = self.current_eq_size - f.formula_size  # positive integer mean the eq length is reduced
             self.current_eq_size = f.formula_size
-            if self.changed_eq_size<=0:
-                condition=True
+            if self.changed_eq_size <= 0:
+                condition = True
         return condition
-
 
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()

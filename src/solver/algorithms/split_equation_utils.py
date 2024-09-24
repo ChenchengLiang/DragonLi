@@ -280,7 +280,8 @@ def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
 
     return satisfiability, f
 
-def apply_rules(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[Tuple[Equation, Formula, str]],int]:
+
+def apply_rules_prefix(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[Tuple[Equation, Formula, str]],int]:
     # handle non-split rules
 
     # both sides are empty
@@ -302,52 +303,124 @@ def apply_rules(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[T
         if eq.left_terms == eq.right_terms:
             children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-        # match prefix terminal
+        # match prefix terminal R_{6} in paper
         elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
-            eq.simplify()
+            eq.pop_same_terminal_prefix()
             children: List[Tuple[Equation, Formula, str]] = [
                 (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+        # match suffix terminal R_{6} in paper
+        elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value == last_right_term.value:
+            eq.pop_same_terminal_suffix()
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " u a= v a \wedge \phi")]
 
-        # mismatch prefix terminal
+        # mismatch prefix terminal, R_{7} in paper
         elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
             eq.given_satisfiability = UNSAT
             children: List[Tuple[Equation, Formula, str]] = [
                 (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
-        # mistmatch suffix terminal
+
+        # mistmatch suffix terminal, R_{7} in paper
         elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
             eq.given_satisfiability = UNSAT
             children: List[Tuple[Equation, Formula, str]] = [
                 (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
 
         # split rules
+        # left side is variable, right side is terminal, R_{8} prefix version in paper
+        elif type(first_left_term.value) == Variable and type(first_right_term.value) == Terminal:
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
+                                         _left_variable_right_terminal_branch_2_prefix]
+            children,fresh_variable_counter= _get_split_children(eq, f, rule_list,fresh_variable_counter)
+
+        # left side is terminal, right side is variable, R_{8} prefix version in paper
+        elif type(first_left_term.value) == Terminal and type(first_right_term.value) == Variable:
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
+                                         _left_variable_right_terminal_branch_2_prefix]
+            children,fresh_variable_counter= _get_split_children(Equation(eq.right_terms, eq.left_terms), f, rule_list,fresh_variable_counter)
+
+        # both side are differernt variables, R_{9} prefix version in paper
+        elif type(first_left_term.value) == Variable and type(first_right_term.value) == Variable:
+            rule_list: List[Callable] = [_two_variables_branch_1_prefix, _two_variables_branch_2_prefix, _two_variables_branch_3_prefix]
+            children, fresh_variable_counter = _get_split_children(eq, f, rule_list,fresh_variable_counter)
+
         else:
-            left_term = eq.left_terms[0]
-            right_term = eq.right_terms[0]
-            # left side is variable, right side is terminal
-            if type(left_term.value) == Variable and type(right_term.value) == Terminal:
-                rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
-                                             _left_variable_right_terminal_branch_2]
-                children,fresh_variable_counter= _get_split_children(eq, f, rule_list,fresh_variable_counter)
-
-            # left side is terminal, right side is variable
-            elif type(left_term.value) == Terminal and type(right_term.value) == Variable:
-                rule_list: List[Callable] = [_left_variable_right_terminal_branch_1,
-                                             _left_variable_right_terminal_branch_2]
-                children,fresh_variable_counter= _get_split_children(
-                    Equation(eq.right_terms, eq.left_terms), f,
-                    rule_list,fresh_variable_counter)
-
-            # both side are differernt variables
-            elif type(left_term.value) == Variable and type(right_term.value) == Variable:
-                rule_list: List[Callable] = [_two_variables_branch_1, _two_variables_branch_2, _two_variables_branch_3]
-                children, fresh_variable_counter = _get_split_children(eq, f, rule_list,fresh_variable_counter)
-
-            else:
-                children: List[Tuple[Equation, Formula, str]] = []
-                color_print(f"error: {eq.eq_str}", "red")
+            children: List[Tuple[Equation, Formula, str]] = []
+            color_print(f"error: {eq.eq_str}", "red")
 
     return children,fresh_variable_counter
 
+
+def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tuple[
+    List[Tuple[Equation, Formula, str]], int]:
+    # handle non-split rules
+
+    # both sides are empty
+    if len(eq.term_list) == 0:
+        children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
+    # left side is empty
+    elif len(eq.left_terms) == 0 and len(eq.right_terms) > 0:
+        children: List[Tuple[Equation, Formula, str]] = _left_side_empty(eq, f)
+    # right side is empty
+    elif len(eq.left_terms) > 0 and len(eq.right_terms) == 0:  # right side is empty
+        children: List[Tuple[Equation, Formula, str]] = _left_side_empty(Equation(eq.right_terms, eq.left_terms), f)
+    # both sides are not empty
+    else:
+        first_left_term = eq.left_terms[0]
+        first_right_term = eq.right_terms[0]
+        last_left_term = eq.left_terms[-1]
+        last_right_term = eq.right_terms[-1]
+        # \epsilon=\epsilon \wedge \phi case
+        if eq.left_terms == eq.right_terms:
+            children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
+
+        # match prefix terminal R_{6} in paper
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
+            eq.pop_same_terminal_prefix()
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+        # match suffix terminal R_{6} in paper
+        elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value == last_right_term.value:
+            eq.pop_same_terminal_suffix()
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " u a= v a \wedge \phi")]
+
+        # mismatch prefix terminal, R_{7} in paper
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+
+        # mistmatch suffix terminal, R_{7} in paper
+        elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
+
+        # split rules
+        # left side is variable, right side is terminal, R_{8} suffix version in paper
+        elif type(last_left_term.value) == Variable and type(last_right_term.value) == Terminal:
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_suffix,
+                                         _left_variable_right_terminal_branch_2_suffix]
+            children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
+
+        # left side is terminal, right side is variable, R_{8} suffix version in paper
+        elif type(last_left_term.value) == Terminal and type(last_right_term.value) == Variable:
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_suffix,
+                                         _left_variable_right_terminal_branch_2_suffix]
+            children, fresh_variable_counter = _get_split_children(Equation(eq.right_terms, eq.left_terms), f,
+                                                                   rule_list, fresh_variable_counter)
+        # both side are differernt variables, R_{9} suffix version in paper
+        elif type(last_left_term.value) == Variable and type(last_right_term.value) == Variable:
+            rule_list: List[Callable] = [_two_variables_branch_1_suffix, _two_variables_branch_2_suffix,
+                                         _two_variables_branch_3_suffix]
+            children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
+
+        else:
+            children: List[Tuple[Equation, Formula, str]] = []
+            color_print(f"error: {eq.eq_str}", "red")
+
+    return children, fresh_variable_counter
 
 def _left_side_empty(eq: Equation, f: Formula) -> List[Tuple[Equation, Formula, str]]:
     '''
@@ -446,7 +519,7 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
     return category_eq_list
 
 
-def _left_variable_right_terminal_branch_1(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
+def _left_variable_right_terminal_branch_1_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
         Tuple[
             Equation, Formula, int, str]:
     '''
@@ -477,7 +550,36 @@ def _left_variable_right_terminal_branch_1(eq: Equation, current_formula: Formul
     return new_eq, new_formula, fresh_variable_counter, label_str
 
 
-def _left_variable_right_terminal_branch_2(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
+def _left_variable_right_terminal_branch_1_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
+    '''
+    Equation:  [Terms] V1 = [Terms] a
+    Assume V1 = ""
+    Delete V1
+    Obtain  [Terms] [V1/""]  = [Terms] [V1/""] a
+    '''
+
+    local_eq = eq.deepcopy()
+    last_left_term: Term = local_eq.left_terms.pop(-1)
+    last_right_term: Term = local_eq.right_terms.pop(-1)
+
+    # define old and new term
+    old_term: Term = last_left_term
+    new_term: List[Term] = []
+
+    label_str = f"{old_term.get_value_str} = \"\" "
+
+    # update equation
+    new_left_term_list = _update_term_list(old_term, new_term, local_eq.left_terms)
+    new_right_term_list = _update_term_list(old_term, new_term, local_eq.right_terms) + [last_right_term]
+    new_eq = Equation(new_left_term_list, new_right_term_list)
+
+    # update formula
+    new_formula: Formula = _update_formula(current_formula, old_term, new_term)
+
+    return new_eq, new_formula, fresh_variable_counter, label_str
+
+
+def _left_variable_right_terminal_branch_2_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
         Tuple[
             Equation, Formula, int, str]:
     '''
@@ -508,8 +610,37 @@ def _left_variable_right_terminal_branch_2(eq: Equation, current_formula: Formul
 
     return new_eq, new_formula, fresh_variable_counter, label_str
 
+def _left_variable_right_terminal_branch_2_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
+    '''
+    Equation: [Terms] V1 = [Terms] a
+    Assume V1 = V1'a
+    Replace V1 with V1'a
+    Obtain [Terms] [V1/V1'a] V1' = [Terms] [V1/V1'a]
+    '''
+    local_eq = eq.deepcopy()
+    last_left_term: Term = local_eq.left_terms.pop(-1)
+    last_right_term: Term = local_eq.right_terms.pop(-1)
 
-def _two_variables_branch_1(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+    # create fresh variable
+    (fresh_variable_term, fresh_variable_counter) = _create_fresh_variables(fresh_variable_counter)
+    # define old and new term
+    old_term: Term = last_left_term
+    new_term: List[Term] = [fresh_variable_term, last_right_term]
+
+    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+
+    # update equation
+    new_left_term_list = _update_term_list(old_term, new_term, local_eq.left_terms) + [fresh_variable_term]
+    new_right_term_list = _update_term_list(old_term, new_term, local_eq.right_terms)
+    new_eq = Equation(new_left_term_list, new_right_term_list)
+
+    # update formula
+    new_formula: Formula = _update_formula(current_formula, old_term, new_term)
+
+    return new_eq, new_formula, fresh_variable_counter, label_str
+
+
+def _two_variables_branch_1_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
     Equation, Formula, int, str]:
     '''
     Equation: V1 [Terms] = V2 [Terms]
@@ -517,7 +648,6 @@ def _two_variables_branch_1(eq: Equation, current_formula: Formula, fresh_variab
     Replace V1 with V2V1'
     Obtain V1' [Terms] [V1/V2V1'] = [Terms] [V1/V2V1']
     '''
-
     local_eq = eq.deepcopy()
     left_term: Term = local_eq.left_terms.pop(0)
     right_term: Term = local_eq.right_terms.pop(0)
@@ -540,8 +670,37 @@ def _two_variables_branch_1(eq: Equation, current_formula: Formula, fresh_variab
 
     return new_eq, new_formula, fresh_variable_counter, label_str
 
+def _two_variables_branch_1_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
+    '''
+    Equation: [Terms] V1 = [Terms] V2
+    Assume |V1| > |V2|
+    Replace V1 with V1'V2
+    Obtain  [Terms] [V1/V1'V2] V1' = [Terms] [V1/V1'V2]
+    '''
+    local_eq = eq.deepcopy()
+    last_left_term: Term = local_eq.left_terms.pop(-1)
+    last_right_term: Term = local_eq.right_terms.pop(-1)
 
-def _two_variables_branch_2(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+    # create fresh variable
+    (fresh_variable_term, fresh_variable_counter) = _create_fresh_variables(fresh_variable_counter)
+    # define old and new term
+    new_term: List[Term] = [fresh_variable_term, last_right_term]
+    old_term: Term = last_left_term
+
+    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+
+    # update equation
+    new_left_term_list = _update_term_list(old_term, new_term, local_eq.left_terms) + [fresh_variable_term]
+    new_right_term_list = _update_term_list(old_term, new_term, local_eq.right_terms)
+    new_eq = Equation(new_left_term_list, new_right_term_list)
+
+    # update formula
+    new_formula: Formula = _update_formula(current_formula, old_term, new_term)
+
+    return new_eq, new_formula, fresh_variable_counter, label_str
+
+
+def _two_variables_branch_2_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
     Equation, Formula, int, str]:
     '''
     Equation: V1 [Terms] = V2 [Terms]
@@ -549,10 +708,20 @@ def _two_variables_branch_2(eq: Equation, current_formula: Formula, fresh_variab
     Replace V2 with V1V2'
     Obtain [Terms] [V2/V1V2'] = V2' [Terms] [V2/V1V2']
     '''
-    return _two_variables_branch_1(Equation(eq.right_terms, eq.left_terms), current_formula, fresh_variable_counter)
+    return _two_variables_branch_1_prefix(Equation(eq.right_terms, eq.left_terms), current_formula, fresh_variable_counter)
+
+def _two_variables_branch_2_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+    Equation, Formula, int, str]:
+    '''
+    Equation: [Terms] V1 = [Terms] V2
+    Assume |V1| < |V2|
+    Replace V2 with V2'V1
+    Obtain [Terms] [V2/V2'V1] = V2' [Terms] [V2/V2'V1]
+    '''
+    return _two_variables_branch_1_suffix(Equation(eq.right_terms, eq.left_terms), current_formula, fresh_variable_counter)
 
 
-def _two_variables_branch_3(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
+def _two_variables_branch_3_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[
     Equation, Formula, int, str]:
     '''
     Equation: V1 [Terms] = V2 [Terms]
@@ -567,6 +736,31 @@ def _two_variables_branch_3(eq: Equation, current_formula: Formula, fresh_variab
     # define old and new term
     old_term: Term = left_term
     new_term: List[Term] = [right_term]
+
+    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}"
+
+    # update equation
+    new_eq = Equation(_update_term_list(old_term, new_term, local_eq.left_terms),
+                      _update_term_list(old_term, new_term, local_eq.right_terms))
+    # update formula
+    new_formula: Formula = _update_formula(current_formula, old_term, new_term)
+
+    return new_eq, new_formula, fresh_variable_counter, label_str
+
+def _two_variables_branch_3_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
+    '''
+    Equation: [Terms] V1 = [Terms] V2
+    Assume |V1| = |V2|
+    Replace V1 with V2
+    Obtain [Terms] [V1/V2] = [Terms] [V1/V2]
+    '''
+    local_eq = eq.deepcopy()
+    last_left_term: Term = local_eq.left_terms.pop(-1)
+    last_right_term: Term = local_eq.right_terms.pop(-1)
+
+    # define old and new term
+    old_term: Term = last_left_term
+    new_term: List[Term] = [last_right_term]
 
     label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}"
 

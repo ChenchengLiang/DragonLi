@@ -1,7 +1,5 @@
 from src.process_benchmarks.utils import run_on_one_problem
-from src.solver.algorithms import ElimilateVariablesRecursive, SplitEquations
 from src.solver.algorithms.split_equation_utils import _get_global_info
-from src.solver.algorithms.split_equations_extract_data import SplitEquationsExtractData
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
     compress_to_zip, delete_large_file
 from src.solver.Parser import Parser, EqParser
@@ -228,8 +226,6 @@ def get_parser():
 
 def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,train_data_solvability):
 
-    algorithm_map = {"ElimilateVariablesRecursive": ElimilateVariablesRecursive,
-                     "SplitEquations": SplitEquations, "SplitEquationsExtractData": SplitEquationsExtractData}
     graph_type = "graph_1"
     if algorithm == "SplitEquationsExtractData":
         parameters_list = ["fixed", "--termination_condition termination_condition_0",

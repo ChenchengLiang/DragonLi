@@ -14,11 +14,12 @@ from ..independent_utils import remove_duplicates, flatten_list, color_print, lo
 from src.solver.visualize_util import visualize_path_html, visualize_path_png
 from .abstract_algorithm import AbstractAlgorithm
 import sys
-from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, apply_rules, \
+from src.solver.algorithms.split_equation_utils import _category_formula_by_rules, \
     simplify_and_check_formula, order_equations_fixed, order_equations_random, order_equations_category, \
     order_equations_category_random, run_summary, order_equations_hybrid_fixed_random, \
     order_equations_hybrid_category_fixed_random, order_branches_fixed, order_branches_random, \
-    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, get_unsat_label
+    order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, get_unsat_label, \
+    apply_rules_prefix, apply_rules_suffix
 
 
 class SplitEquationsExtractData(AbstractAlgorithm):
@@ -42,6 +43,10 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.total_output_branches = 0
         self.total_category_call = 0
         self.total_rank_call = 0
+
+        self.prefix_rules = True
+        self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
+
         # control path number for extraction
         self.termination_condition_max_depth = 5000
         self.max_deep_for_extraction = 3
@@ -271,7 +276,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
                 current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                                 edge_label=f"eq:{index}: {current_eq.eq_str}")
 
-                children, fresh_variable_counter = apply_rules(current_eq, separated_formula,
+                children, fresh_variable_counter = self.apply_rules(current_eq, separated_formula,
                                                                self.fresh_variable_counter)
                 self.fresh_variable_counter = fresh_variable_counter
                 children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)

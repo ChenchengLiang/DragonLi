@@ -79,8 +79,9 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/23/23.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/24/24.eq"  # SAT
     #file_path = bench_folder + "/examples_choose_eq/25/25.eq"  # UNSNAT
-    #file_path = bench_folder + "/examples_choose_eq/26/26.eq"  # SAT
-    file_path = bench_folder + "/examples_choose_eq/27/g_01_track_multi_word_equations_eq_5_20_generated_train_20001_30000_25376.eq"  #
+    file_path = bench_folder + "/examples_choose_eq/26/26.eq"  # SAT
+    #file_path = bench_folder + "/examples_choose_eq/27/g_01_track_multi_word_equations_eq_5_20_generated_train_20001_30000_25376.eq"  #
+    #file_path = bench_folder + "/temp/output.eq"  #parse
 
 
     # file_path = bench_folder + "/examples/multi_eqs/4/g_04_track_generated_train_1_1000_4.eq"  # UNSAT
@@ -157,7 +158,7 @@ def main():
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=True)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
     print_results(result_dict)
 

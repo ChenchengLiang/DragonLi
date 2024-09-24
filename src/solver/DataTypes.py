@@ -295,12 +295,18 @@ class Equation:
             return False
 
 
-    def simplify(self):
-        # pop the same prefix
+    def pop_same_terminal_prefix(self):
         for index in range(min(len(self.left_terms), len(self.right_terms))):
             if self.left_terms[0] == self.right_terms[0]:
                 self.left_terms.pop(0)
                 self.right_terms.pop(0)
+            else:
+                break
+    def pop_same_terminal_suffix(self):
+        for index in range(min(len(self.left_terms), len(self.right_terms))):
+            if self.left_terms[-1] == self.right_terms[-1]:
+                self.left_terms.pop(-1)
+                self.right_terms.pop(-1)
             else:
                 break
 
