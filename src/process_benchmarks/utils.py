@@ -943,7 +943,7 @@ def get_clean_statistics(benchmark,leaf_folder_list):
         f.write("smt2_to_eq_exception_too_many_variables:" + str(smt2_to_eq_exception_too_many_variables) + "\n")
         f.write("smt2_to_eq_exceptions_too_many_letters:" + str(smt2_to_eq_exceptions_too_many_letters) + "\n")
         f.write("smt2_to_eq_exceptions_errors:" + str(smt2_to_eq_exceptions_errors) + "\n")
-        f.write("smt2_to_eq_exceptions_errors:" + str(smt2_to_eq_exceptions_empty) + "\n")
+        f.write("smt2_to_eq_exceptions_empty:" + str(smt2_to_eq_exceptions_empty) + "\n")
         f.write("total_eq_files:" + str(total_eq_files) + "\n")
         f.write("empty_eq_files:" + str(empty_eq_files) + "\n")
         f.write("duplicated_eqs:" + str(duplicated_eqs) + "\n")
