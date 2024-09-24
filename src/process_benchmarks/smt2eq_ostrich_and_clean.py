@@ -6,7 +6,7 @@ import os
 import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 def main():
-    benchmark="2023-05-05_clean-1/except"
+    benchmark="2023-05-05_clean-1/test"
     leaf_folder_list=find_leaf_folders(bench_folder+"/"+benchmark)
 
     #move smt2 files to smt2 folder

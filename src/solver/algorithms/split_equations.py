@@ -23,7 +23,6 @@ from .abstract_algorithm import AbstractAlgorithm
 from .utils import softmax
 from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info
 from ..models.Dataset import get_one_dgl_graph
-from ...train_data_collection.utils import prepare_and_save_datasets_task_3
 
 
 class SplitEquations(AbstractAlgorithm):
@@ -258,7 +257,7 @@ class SplitEquations(AbstractAlgorithm):
         # self._count_rule_type()
     def _decide_rules_prefix(self):
         self.apply_rules = apply_rules_prefix
-        
+
     def _decide_rules_suffix(self):
         self.apply_rules = apply_rules_suffix
 

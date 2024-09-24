@@ -783,8 +783,10 @@ def smt_to_eq_one_folder(folder):
     exception_file_folder = f"{folder}/exceptions"
     exception_file_folder_too_many_variables = f"{exception_file_folder}/too_many_variables"
     exception_file_folder_too_many_letters = f"{exception_file_folder}/too_many_letters"
+    exception_file_folder_empty = f"{exception_file_folder}/empty"
+    exception_file_folder_error = f"{exception_file_folder}/errors"
     exception_file_folder_others = f"{exception_file_folder}/others"
-    ostrich_output_file = f"{bench_folder}/temp/output.eq"
+    ostrich_output_folder = f"{bench_folder}/ostrich_output_folder"
     solver = "ostrich_export"
 
     #update_ostrich()
@@ -794,7 +796,9 @@ def smt_to_eq_one_folder(folder):
         os.mkdir(exception_file_folder)
         os.mkdir(exception_file_folder_too_many_variables)
         os.mkdir(exception_file_folder_too_many_letters)
+        os.mkdir(exception_file_folder_empty)
         os.mkdir(exception_file_folder_others)
+        os.mkdir(exception_file_folder_error)
 
     # delete answer files
     for answer_file in glob.glob(smt_file_folder + "/*.answer"):
@@ -802,21 +806,31 @@ def smt_to_eq_one_folder(folder):
 
     exception_list = []
     for smt_file in tqdm(glob.glob(smt_file_folder + "/*.smt2"), desc="progress"):
-        if os.path.exists(ostrich_output_file):
-            os.remove(ostrich_output_file)
+        if os.path.exists(ostrich_output_folder) and os.path.isdir(ostrich_output_folder):
+            shutil.rmtree(ostrich_output_folder)
+        else:
+            os.mkdir(ostrich_output_folder)
+
 
         smt_file_path = os.path.join(smt_file_folder, smt_file)
-        result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=0"], solver=solver)
+        result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=20000"], solver=solver)
+        color_print(text=f"smt_file_path:{os.path.basename(smt_file_path)}", color="blue")
         color_print(text=f"result_dict:{result_dict}", color="yellow")
         file_name = strip_file_name_suffix(os.path.basename(smt_file_path))
-        if os.path.exists(ostrich_output_file):
-            shutil.copy(ostrich_output_file, eq_file_folder + f"/{file_name}.eq")
+        ostrich_output_file_list=glob.glob(f"{ostrich_output_folder}/*.eq")
+        if len(ostrich_output_file_list)>0:
+            for i,ostrich_output_file in enumerate(ostrich_output_file_list):
+                shutil.copy(ostrich_output_file, f"{ostrich_output_folder}/{file_name}_{i}.eq")
         else:
             exception_list.append(smt_file_path)
             if "too many variables" in result_dict["raw"]:
                 shutil.copy(smt_file, exception_file_folder_too_many_variables)
             elif "too many letters" in result_dict["raw"]:
                 shutil.copy(smt_file, exception_file_folder_too_many_letters)
+            elif "error" in result_dict["raw"]:
+                shutil.copy(smt_file, exception_file_folder_error)
+            elif result_dict["raw"] =="unsat\n" or result_dict["raw"] =="sat\n" or result_dict["raw"] =="unknown\n":
+                shutil.copy(smt_file, exception_file_folder_empty)
             else:
                 shutil.copy(smt_file, exception_file_folder_others)
                 # write error log
@@ -899,6 +913,8 @@ def get_clean_statistics(benchmark,leaf_folder_list):
     smt2_to_eq_exception_others = 0
     smt2_to_eq_exception_too_many_variables = 0
     smt2_to_eq_exceptions_too_many_letters = 0
+    smt2_to_eq_exceptions_errors = 0
+    smt2_to_eq_exceptions_empty = 0
     total_eq_files = 0
     empty_eq_files = 0
     duplicated_eqs = 0
@@ -911,6 +927,8 @@ def get_clean_statistics(benchmark,leaf_folder_list):
         smt2_to_eq_exception_others += len(glob.glob(folder + "/exceptions/others/*.smt2"))
         smt2_to_eq_exception_too_many_variables += len(glob.glob(folder + "/exceptions/too_many_variables/*.smt2"))
         smt2_to_eq_exceptions_too_many_letters += len(glob.glob(folder + "/exceptions/too_many_letters/*.smt2"))
+        smt2_to_eq_exceptions_errors+= len(glob.glob(folder + "/exceptions/errors/*.smt2"))
+        smt2_to_eq_exceptions_empty += len(glob.glob(folder + "/exceptions/empty/*.smt2"))
         total_eq_files += len(glob.glob(folder + "/eq/*.eq"))
         empty_eq_files += len(glob.glob(folder + "/empty_eq/*.eq"))
         duplicated_eqs += len(glob.glob(folder + "/duplicated_eqs/*.eq"))
@@ -924,6 +942,8 @@ def get_clean_statistics(benchmark,leaf_folder_list):
         f.write("smt2_to_eq_exception_others:" + str(smt2_to_eq_exception_others) + "\n")
         f.write("smt2_to_eq_exception_too_many_variables:" + str(smt2_to_eq_exception_too_many_variables) + "\n")
         f.write("smt2_to_eq_exceptions_too_many_letters:" + str(smt2_to_eq_exceptions_too_many_letters) + "\n")
+        f.write("smt2_to_eq_exceptions_errors:" + str(smt2_to_eq_exceptions_errors) + "\n")
+        f.write("smt2_to_eq_exceptions_errors:" + str(smt2_to_eq_exceptions_empty) + "\n")
         f.write("total_eq_files:" + str(total_eq_files) + "\n")
         f.write("empty_eq_files:" + str(empty_eq_files) + "\n")
         f.write("duplicated_eqs:" + str(duplicated_eqs) + "\n")
