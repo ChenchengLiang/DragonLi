@@ -35,7 +35,9 @@ def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
     for file in glob.glob(folder + "/*"):
         shutil.move(file, all_folder)
 
-    for i, eq_file in enumerate(glob.glob(all_folder + "/*.eq")):
+    total_file_list= glob.glob(all_folder + "/*.eq") if len(glob.glob(all_folder + "/*.eq")) !=0 else glob.glob(all_folder + "/*.smt2")
+
+    for i, eq_file in enumerate(total_file_list):
         if i % chunk_size == 0:
             folder_counter += 1
             divided_folder_name = folder + "/divided_" + str(folder_counter)

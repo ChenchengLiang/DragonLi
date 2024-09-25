@@ -49,7 +49,7 @@ def main():
                 no_unsatcore_file_list.append(eq_file)
                 print(os.path.basename(eq_file),"don't have unsatcore")
 
-    print("no_unsatcore_file_list",no_unsatcore_file_list)
+    print("no_unsatcore_file_list",len(no_unsatcore_file_list))
 
 
 
