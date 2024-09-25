@@ -45,7 +45,7 @@ class SplitEquations(AbstractAlgorithm):
         self.suffix_rules_count = 0
         self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
                                "prefix":self._decide_rules_prefix,"suffix":self._decide_rules_suffix}
-        self.decide_rules_func=self.decide_rules_map["probability"]
+        self.decide_rules_func=self.decide_rules_map["prefix"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0

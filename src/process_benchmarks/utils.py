@@ -786,7 +786,7 @@ def smt_to_eq_one_folder(folder):
     exception_file_folder_empty = f"{exception_file_folder}/empty"
     exception_file_folder_error = f"{exception_file_folder}/errors"
     exception_file_folder_others = f"{exception_file_folder}/others"
-    ostrich_output_folder = f"{bench_folder}/ostrich_output_folder"
+    ostrich_output_folder = f"{project_folder}/other_solvers/ostrich_export/eq_folder"
     solver = "ostrich_export"
 
     #update_ostrich()
@@ -814,7 +814,7 @@ def smt_to_eq_one_folder(folder):
 
 
         smt_file_path = os.path.join(smt_file_folder, smt_file)
-        result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=20000"], solver=solver)
+        result_dict = run_on_one_problem(file_path=smt_file_path, parameters_list=["-timeout=100000"], solver=solver,shell_timeout=100)
         color_print(text=f"\nsmt_file_path:{os.path.basename(smt_file_path)}", color="blue")
         color_print(text=f"result_dict:{result_dict}", color="yellow")
         file_name = strip_file_name_suffix(os.path.basename(smt_file_path))
