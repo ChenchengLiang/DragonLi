@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="2023-05-05_clean-2"
+    track_name="zaligvinder-2"
     file_folder="UNKNOWN"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)

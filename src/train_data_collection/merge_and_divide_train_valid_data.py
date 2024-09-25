@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core"
+    track_name = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"

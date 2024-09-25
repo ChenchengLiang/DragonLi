@@ -786,7 +786,8 @@ def smt_to_eq_one_folder(folder):
     exception_file_folder_empty = f"{exception_file_folder}/empty"
     exception_file_folder_error = f"{exception_file_folder}/errors"
     exception_file_folder_others = f"{exception_file_folder}/others"
-    ostrich_output_folder = f"{project_folder}/other_solvers/ostrich_export/eq_folder"
+    ostrich_output_folder = f"{os.path.dirname(folder)}/eq_folder"
+    #ostrich_output_folder = f"{project_folder}/other_solvers/ostrich_export/eq_folder"
     solver = "ostrich_export"
 
     #update_ostrich()

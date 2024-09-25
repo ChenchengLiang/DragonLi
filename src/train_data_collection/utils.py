@@ -43,6 +43,8 @@ def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
             divided_folder_name = folder + "/divided_" + str(folder_counter)
             os.mkdir(divided_folder_name)
         file_name = strip_file_name_suffix(eq_file)
+        #this only copy one file but faster
+        #shutil.copy(eq_file, divided_folder_name)
         for f in glob.glob(file_name + ".*"):
             shutil.copy(f, divided_folder_name)
 
