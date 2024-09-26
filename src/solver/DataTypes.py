@@ -705,8 +705,10 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         nodes.append(current_node)
         if count==0:
             first_term_node_id=current_node.id
-        # edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
-        edges.append(Edge(source=current_node.id, target=previous_node.id, type=None, content="", label=None))
+        #from = to term
+        edges.append(Edge(source=previous_node.id, target=current_node.id, type=None, content="", label=None))
+        # from term to =
+        #edges.append(Edge(source=current_node.id, target=previous_node.id, type=None, content="", label=None))
 
         # add global info
         if global_info == {}:  # no global info
