@@ -24,7 +24,7 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 0
+    rank_task = 1
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=1000
@@ -42,8 +42,8 @@ def main():
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_2"]:
-    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_0"]:
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_1"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_0"]:
+    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:

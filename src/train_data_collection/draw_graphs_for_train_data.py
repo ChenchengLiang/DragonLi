@@ -28,7 +28,7 @@ def main():
     # task = "task_3"
 
     #benchmark_name = "choose_eq_train"
-    benchmark_name = "example_graph_representation_new"
+    benchmark_name = "example_graph_representation/test"
     benchmark_path=f"{bench_folder}/{benchmark_name}"
 
     task="rank_task"
