@@ -39,8 +39,8 @@ class SplitEquations(AbstractAlgorithm):
         self.unsat_core = _get_unsatcore(self.file_name, parameters, equation_list)
 
         self.prefix_rules = True
-        self.prefix_suffix_change_frequency = 100
         self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
+        self.prefix_suffix_change_frequency = 100
         self.prefix_rules_count = 0
         self.suffix_rules_count = 0
         self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
@@ -56,7 +56,7 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
-        self.each_n_iterations = 10000
+        self.each_n_iterations = 1000
         self.first_n_itarations = 1
         self.dynamic_condition_check_point_frequency = 1000
         self.current_eq_size = 1000000

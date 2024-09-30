@@ -19,7 +19,7 @@ import glob
 
 
 def main():
-    benchmark="smtlib/2023-05-05_clean/total_cleaned_eq_folder_without_woorpje"
+    benchmark="zaligvinder+smtlib_train"
     benchmark_folder = bench_folder + "/"+benchmark + "/ALL"
 
     #transform to smt2 file
@@ -31,6 +31,7 @@ def main():
         except:
             shutil.move(file,exception_folder)
 
+    print("eq to smt2 finished")
 
     #divide to train and eval
     train_folder=bench_folder + "/"+benchmark + "_train"
@@ -47,9 +48,10 @@ def main():
     random.shuffle(all_files)
     random.shuffle(all_files)
 
-    #divide to train and eval by 8:2
-    train_files=all_files[:int(len(all_files)*0.8)]
-    eval_files=all_files[int(len(all_files)*0.8):]
+    #divide to train and eval by 9:1
+    middle_point=int(len(all_files)*0.9)
+    train_files=all_files[:middle_point]
+    eval_files=all_files[middle_point:]
 
 
     for file in train_files:

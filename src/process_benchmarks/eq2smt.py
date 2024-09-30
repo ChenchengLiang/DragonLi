@@ -16,7 +16,7 @@ import shutil
 
 def main():
     #transform one benchmark with divived folders
-    folder=f"{bench_folder}/03_track_generated_eval_train_1_20000_folder_1/ALL"
+    folder=f"{bench_folder}/zaligvinder+smtlib_train/ALL"
     folder_number = sum([1 for fo in os.listdir(folder) if "divided" in os.path.basename(fo)])
     for i in range(folder_number):
         divided_folder_index=i+1

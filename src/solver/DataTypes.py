@@ -716,43 +716,43 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
         else:
             if current_term.value_type == Variable and current_term.value in global_info["variable_global_occurrences"]:
                 # merge nodes
-                # variable_occurrence_integer = global_info["variable_global_occurrences"][current_term.value]
-                # if variable_occurrence_integer in variable_int_to_binary_list_map:
-                #     edges.append(Edge(source=variable_int_to_binary_list_map[variable_occurrence_integer].id,
-                #                       target=current_node.id,
-                #                       type=None, content="", label=None))
-                # else:
-                #     binary_list = int_to_binary_list(variable_occurrence_integer)
-                #     current_variable_occurrence_node = current_node
-                #     for count, i in enumerate(binary_list):
-                #         node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
-                #         new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
-                #                                             content=node_type_content_map[node_type], label=None)
-                #         global_node_counter += 1
-                #         nodes.append(new_variable_occurrence_node)
-                #         if count == 0:
-                #             variable_int_to_binary_list_map[variable_occurrence_integer] = new_variable_occurrence_node
-                #
-                #         edges.append(
-                #             Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
-                #                  type=None, content="", label=None))
-                #         current_variable_occurrence_node = new_variable_occurrence_node
+                variable_occurrence_integer = global_info["variable_global_occurrences"][current_term.value]
+                if variable_occurrence_integer in variable_int_to_binary_list_map:
+                    edges.append(Edge(source=variable_int_to_binary_list_map[variable_occurrence_integer].id,
+                                      target=current_node.id,
+                                      type=None, content="", label=None))
+                else:
+                    binary_list = int_to_binary_list(variable_occurrence_integer)
+                    current_variable_occurrence_node = current_node
+                    for count, i in enumerate(binary_list):
+                        node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
+                        new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                            content=node_type_content_map[node_type], label=None)
+                        global_node_counter += 1
+                        nodes.append(new_variable_occurrence_node)
+                        if count == 0:
+                            variable_int_to_binary_list_map[variable_occurrence_integer] = new_variable_occurrence_node
+
+                        edges.append(
+                            Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
+                                 type=None, content="", label=None))
+                        current_variable_occurrence_node = new_variable_occurrence_node
 
 
                 #binary nodes
-                variable_occurrence_integer = global_info["variable_global_occurrences"][current_term.value]
-                binary_list = int_to_binary_list(variable_occurrence_integer)
-                current_variable_occurrence_node = current_node
-                for count, i in enumerate(binary_list):
-                    node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
-                    new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
-                                                        content=node_type_content_map[node_type], label=None)
-                    global_node_counter += 1
-                    nodes.append(new_variable_occurrence_node)
-                    edges.append(
-                        Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
-                             type=None, content="", label=None))
-                    current_variable_occurrence_node = new_variable_occurrence_node
+                # variable_occurrence_integer = global_info["variable_global_occurrences"][current_term.value]
+                # binary_list = int_to_binary_list(variable_occurrence_integer)
+                # current_variable_occurrence_node = current_node
+                # for count, i in enumerate(binary_list):
+                #     node_type = GlobalVariableOccurrenceSymbol_0 if i == 0 else GlobalVariableOccurrenceSymbol_1
+                #     new_variable_occurrence_node = Node(id=global_node_counter, type=node_type,
+                #                                         content=node_type_content_map[node_type], label=None)
+                #     global_node_counter += 1
+                #     nodes.append(new_variable_occurrence_node)
+                #     edges.append(
+                #         Edge(source=new_variable_occurrence_node.id, target=current_variable_occurrence_node.id,
+                #              type=None, content="", label=None))
+                #     current_variable_occurrence_node = new_variable_occurrence_node
 
                 # unary nodes
                 # current_variable_occurrence_node = current_node
@@ -772,41 +772,41 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
                 "terminal_global_occurrences"]:
 
                 # merge nodes
-                # terminal_occurrence_integer = global_info["terminal_global_occurrences"][current_term.value]
-                # if terminal_occurrence_integer in terminal_int_to_binary_list_map:
-                #     edges.append(Edge(source=terminal_int_to_binary_list_map[terminal_occurrence_integer].id,
-                #                       target=current_node.id,
-                #                       type=None, content="", label=None))
-                # else:
-                #     binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
-                #     current_terminal_occurrence_node = current_node
-                #     for count, i in enumerate(binary_list):
-                #         node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
-                #         new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
-                #                                             content=node_type_content_map[node_type], label=None)
-                #         global_node_counter += 1
-                #         nodes.append(new_terminal_occurrence_node)
-                #         if count == 0:
-                #             terminal_int_to_binary_list_map[terminal_occurrence_integer] = new_terminal_occurrence_node
-                #         edges.append(
-                #             Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
-                #                  type=None, content="", label=None))
-                #         current_terminal_occurrence_node = new_terminal_occurrence_node
+                terminal_occurrence_integer = global_info["terminal_global_occurrences"][current_term.value]
+                if terminal_occurrence_integer in terminal_int_to_binary_list_map:
+                    edges.append(Edge(source=terminal_int_to_binary_list_map[terminal_occurrence_integer].id,
+                                      target=current_node.id,
+                                      type=None, content="", label=None))
+                else:
+                    binary_list = int_to_binary_list(global_info["terminal_global_occurrences"][current_term.value])
+                    current_terminal_occurrence_node = current_node
+                    for count, i in enumerate(binary_list):
+                        node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
+                        new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
+                                                            content=node_type_content_map[node_type], label=None)
+                        global_node_counter += 1
+                        nodes.append(new_terminal_occurrence_node)
+                        if count == 0:
+                            terminal_int_to_binary_list_map[terminal_occurrence_integer] = new_terminal_occurrence_node
+                        edges.append(
+                            Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
+                                 type=None, content="", label=None))
+                        current_terminal_occurrence_node = new_terminal_occurrence_node
 
                 # binary counting nodes
-                terminal_occurrence_integer = global_info["terminal_global_occurrences"][current_term.value]
-                binary_list = int_to_binary_list(terminal_occurrence_integer)
-                current_terminal_occurrence_node = current_node
-                for count, i in enumerate(binary_list):
-                    node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
-                    new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
-                                                        content=node_type_content_map[node_type], label=None)
-                    global_node_counter += 1
-                    nodes.append(new_terminal_occurrence_node)
-                    edges.append(
-                        Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
-                             type=None, content="", label=None))
-                    current_terminal_occurrence_node = new_terminal_occurrence_node
+                # terminal_occurrence_integer = global_info["terminal_global_occurrences"][current_term.value]
+                # binary_list = int_to_binary_list(terminal_occurrence_integer)
+                # current_terminal_occurrence_node = current_node
+                # for count, i in enumerate(binary_list):
+                #     node_type = GlobalTerminalOccurrenceSymbol_0 if i == 0 else GlobalTerminalOccurrenceSymbol_1
+                #     new_terminal_occurrence_node = Node(id=global_node_counter, type=node_type,
+                #                                         content=node_type_content_map[node_type], label=None)
+                #     global_node_counter += 1
+                #     nodes.append(new_terminal_occurrence_node)
+                #     edges.append(
+                #         Edge(source=new_terminal_occurrence_node.id, target=current_terminal_occurrence_node.id,
+                #              type=None, content="", label=None))
+                #     current_terminal_occurrence_node = new_terminal_occurrence_node
 
                 # unary nodes
                 # current_terminal_occurrence_node = current_node
