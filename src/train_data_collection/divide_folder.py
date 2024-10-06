@@ -16,24 +16,24 @@ import shutil
 
 def main():
     # generate track
-    track_name="zaligvinder+smtlib_train"
-    file_folder="ALL"
+    track_name="unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000/merged_new_trainable_data"
+    file_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 
     # divide tracks
-    dvivde_track_for_cluster(track_folder,file_folder=file_folder, chunk_size=50)
+    dvivde_track_for_cluster(track_folder,file_folder=file_folder, chunk_size=5)
 
     divided_folder_list = [train_folder for train_folder in get_folders(f"{track_folder}/{file_folder}") if
                            "divided" in train_folder]
     print("divided_folder_list",len(divided_folder_list))
 
     # move files to divided_i/file_folder
-    # for divided_folder in divided_folder_list:
-    #     temp_file=f"{track_folder}/{file_folder}/temp"
-    #     shutil.move(f"{track_folder}/{file_folder}/{divided_folder}",temp_file)
-    #     os.mkdir(f"{track_folder}/{file_folder}/{divided_folder}")
-    #     shutil.move(temp_file,f"{track_folder}/{file_folder}/{divided_folder}/{file_folder}")
+    for divided_folder in divided_folder_list:
+        temp_file=f"{track_folder}/{file_folder}/temp"
+        shutil.move(f"{track_folder}/{file_folder}/{divided_folder}",temp_file)
+        os.mkdir(f"{track_folder}/{file_folder}/{divided_folder}")
+        shutil.move(temp_file,f"{track_folder}/{file_folder}/{divided_folder}/{file_folder}")
 
 
 if __name__ == '__main__':

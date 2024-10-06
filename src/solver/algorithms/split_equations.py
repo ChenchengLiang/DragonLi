@@ -56,7 +56,7 @@ class SplitEquations(AbstractAlgorithm):
         self.eq_node_number = 0
         self.termination_condition_max_depth = 20000
         self.restart_max_deep = RESTART_INITIAL_MAX_DEEP
-        self.each_n_iterations = 1000
+        self.each_n_iterations = 10000
         self.first_n_itarations = 1
         self.dynamic_condition_check_point_frequency = 1000
         self.current_eq_size = 1000000

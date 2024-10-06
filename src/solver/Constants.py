@@ -58,7 +58,7 @@ compress_image = True
 satisfiability_to_int_label = {SAT: 1, UNSAT: 0, UNKNOWN: -1}
 int_label_to_satisfiability = {1: SAT, 0: UNSAT, -1: UNKNOWN}
 
-rank_task_label_size_map={0:2,1:2,2:20,None:-1}
+rank_task_label_size_map={0:2,1:2,2:50,None:-1}
 rank_task_node_type_map={0:5,1:5,2:6}
 rank_task_node_type_map={0:7,1:7,2:8}
 suffix_dict = {"z3": ".smt2","z3-noodler": ".smt2", "woorpje": ".eq", "this": ".eq", "ostrich": ".smt2", "cvc5": ".smt2"}

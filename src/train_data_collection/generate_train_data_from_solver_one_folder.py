@@ -36,7 +36,7 @@ def main():
                             #"termination_condition":"termination_condition_7",# for UNSAT
                             "task": "dynamic_embedding"}
 
-    train_data = "SAT"
+    train_data = "UNSAT"
 
     sys.setrecursionlimit(recursion_limit)
     benchmark_path = bench_folder + "/" + benchmark

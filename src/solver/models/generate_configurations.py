@@ -41,10 +41,10 @@ def main():
     #for benchmark in ["unsatcore_generation_test_rank_task_2"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_1"]:
-    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_2"]:
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_0"]:
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_1"]:
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000_one_core_rank_task_2"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_2"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_0"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_1"]:
+    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_2"]:

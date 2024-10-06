@@ -20,9 +20,9 @@ def main():
     #benchmark_name = "zaligvinder+smtlib_eval"
     #train data
     #benchmark_name = "zaligvinder+smtlib_train"
-    benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_10001_20000"
+    benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_1_10000"
     rank_task = 2
-    graph_type = "graph_4"
+    graph_type = "graph_3"
     model_type = "GCNSplit"  # "GINSplit"
 
 
@@ -56,13 +56,13 @@ def main():
         #           f"--algorithm {algorithm}",
         #           f"--order_equations_method longest"
         #           ]],
-
-        #branch:fixed, order equations: category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category"
-                  ]],
+        #
+        # #branch:fixed, order equations: category
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category"
+        #           ]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -83,10 +83,10 @@ def main():
         #           f"--algorithm {algorithm}",
         #           f"--order_equations_method hybrid_category_fixed_random"
         #           ]],
-
-
-
-        #branch:random, order equations: no category
+        #
+        #
+        #
+        # #branch:random, order equations: no category
         # ["this", ["random", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
@@ -196,11 +196,11 @@ def main():
 
 
         #
-        ["z3", []],
-        ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        ["woorpje", []],
-        ["ostrich", []],
-        ["cvc5", []],
+        # ["z3", []],
+        # ["z3-noodler", ["smt.string_solver=\"noodler\""]],
+        # ["woorpje", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
 
         # gnn based configurations
         # branch: fixed
@@ -316,8 +316,8 @@ def main():
         #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
         #           f"--gnn_task {task}",
         #           f"--rank_task {rank_task}"]],
-
-        #branch: random
+        #
+        # #branch: random
         # ["this", ["random", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",
