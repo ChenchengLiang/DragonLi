@@ -374,28 +374,33 @@ def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tupl
         if eq.left_terms == eq.right_terms:
             children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-        # match prefix terminal R_{6} in paper
-        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
-            eq.pop_same_terminal_prefix()
-            children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+        
         # match suffix terminal R_{6} in paper
         elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value == last_right_term.value:
             eq.pop_same_terminal_suffix()
             children: List[Tuple[Equation, Formula, str]] = [
                 (eq, Formula([eq] + f.eq_list), " u a= v a \wedge \phi")]
-
-        # mismatch prefix terminal, R_{7} in paper
-        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
-            eq.given_satisfiability = UNSAT
+            
+        # match prefix terminal R_{6} in paper
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
+            eq.pop_same_terminal_prefix()
             children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+                (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
+        
 
         # mistmatch suffix terminal, R_{7} in paper
         elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
             eq.given_satisfiability = UNSAT
             children: List[Tuple[Equation, Formula, str]] = [
                 (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
+        
+        # mismatch prefix terminal, R_{7} in paper
+        elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
+            eq.given_satisfiability = UNSAT
+            children: List[Tuple[Equation, Formula, str]] = [
+                (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
+
+        
 
         # split rules
         # left side is variable, right side is terminal, R_{8} suffix version in paper

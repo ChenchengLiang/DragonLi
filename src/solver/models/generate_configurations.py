@@ -10,26 +10,18 @@ sys.path.append(path)
 
 from src.solver.Constants import project_folder, rank_task_label_size_map, rank_task_node_type_map
 from src.solver.independent_utils import write_configurations_to_json_file
-from src.solver.models.train_util import (initialize_model_structure, training_phase, validation_phase,
-                                          initialize_train_objects, log_and_save_best_model, save_checkpoint)
-from typing import Dict
-import mlflow
-import datetime
-import subprocess
-import torch
-import signal
 
 
 def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 2
+    rank_task = 1
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=1000
     valid_batch_size_factor = 1
-    valid_batch_size = 5000
+    valid_batch_size = 2000
     node_type = rank_task_node_type_map[rank_task]
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
@@ -44,16 +36,16 @@ def main():
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_1"]:
-    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_2"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_2"]:
-    #for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_0"]:
-    #for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_1"]:
-    # for benchmark in ["01_track_multi_word_equations_eq_5_20_generated_train_1_5000_UNSAT_extraction_rank_task_2"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_0"]:
+    for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
+    # for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
         #for graph_type in ["graph_1"]:
         for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:

@@ -13,7 +13,7 @@ from src.solver.independent_utils import get_folders
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
 def main():
-    benchmark = "example_graph_representation"#"choose_eq_train"
+    benchmark = "01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction"#"choose_eq_train"
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
