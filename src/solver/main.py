@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 import configparser
 
@@ -31,7 +32,10 @@ def main():
     # file_path = "/home/cheli243/Desktop/CodeToGit/Woorpje_benchmarks/debug-eval-uppmax/ALL/divided_1/04_track_1.eq"
     # file_path = bench_folder + "/debug-rank/1/g_01_track_multi_word_equations_generated_eval_1001_2000_1685.eq" #UNSAT 83 eqs
     #file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
-    file_path = bench_folder + "/backup/examples/presentation/1.eq"
+    #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
+    #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
+    #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix
+    file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix
 
 
     # multiple equations
@@ -129,17 +133,23 @@ def main():
                                                       "graph_func": graph_func_map[graph_type],
                                                       "task": "dynamic_embedding", "label_size": label_size,
                                                       "rank_task":rank_task,"eq_satisfiability":eq_satisfiability}
+    log_file=f"{bench_folder}/last_run.log"
+    if os.path.exists(log_file):
+        os.remove(log_file)
 
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
     # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=True, output_train_data=True)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
     print_results(result_dict)
+
+    if os.path.exists(log_file):
+        shutil.move(log_file,os.path.dirname(file_path))
 
 
 if __name__ == '__main__':

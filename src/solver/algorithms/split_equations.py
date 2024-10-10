@@ -212,6 +212,7 @@ class SplitEquations(AbstractAlgorithm):
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
 
+
             self.decide_rules_func()
 
             children, fresh_variable_counter = self.apply_rules(current_eq, separated_formula,

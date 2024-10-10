@@ -4,7 +4,7 @@ from collections import deque
 from typing import Union, List, Tuple, Deque, Callable, Optional, Dict
 
 from src.solver.Constants import UNKNOWN, SAT, UNSAT
-from src.solver.independent_utils import remove_duplicates, color_print, int_to_binary_list
+from src.solver.independent_utils import remove_duplicates, color_print, int_to_binary_list, time_it
 from src.solver.visualize_util import draw_graph
 import time
 
@@ -264,6 +264,9 @@ class Equation:
     @property
     def eq_str(self) -> str:
         return self.eq_left_str + " = " + self.eq_right_str
+    @property
+    def eq_str_pretty(self) -> str:
+        return " ".join([t.get_value_str for t in self.left_terms]) + " = " + " ".join([t.get_value_str for t in self.right_terms])
 
     @property
     def number_of_special_symbols(self) -> int:
@@ -294,7 +297,6 @@ class Equation:
         else:
             return False
 
-
     def pop_same_terminal_prefix(self):
         for index in range(min(len(self.left_terms), len(self.right_terms))):
             if self.left_terms[0] == self.right_terms[0]:
@@ -302,6 +304,7 @@ class Equation:
                 self.right_terms.pop(0)
             else:
                 break
+
     def pop_same_terminal_suffix(self):
         for index in range(min(len(self.left_terms), len(self.right_terms))):
             if self.left_terms[-1] == self.right_terms[-1]:
@@ -868,7 +871,6 @@ def get_eq_graph_5(left_terms: List[Term],
                    right_terms: List[Term],
                    global_info: Dict = {}):  # add edge to corresponding variable and terminal nodes
     return _construct_graph(left_terms, right_terms, graph_type="graph_5", global_info=global_info)
-
 
 def _update_term_in_eq_list(eq_list: List[Equation], old_term: Term, new_term: List[Term]) -> List[Equation]:
     new_eq_list = []

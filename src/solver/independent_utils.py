@@ -14,6 +14,7 @@ import functools
 import sys
 import io
 
+from src.solver.Constants import project_folder, bench_folder
 
 
 def delete_large_file(file_path, size_limit=10):
@@ -512,7 +513,7 @@ def log_print_to_file(func):
         output = buffer.getvalue()
 
         # Log the output to a file or any other logging mechanism
-        with open('last_run.log', 'a') as f:
+        with open(f'{bench_folder}/last_run.log', 'a') as f:
             f.write(output)
 
         return result

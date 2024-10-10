@@ -5,9 +5,7 @@ from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term
     Terminal, IsomorphicTailSymbol
 import random
 
-from src.solver.independent_utils import color_print
-
-
+from src.solver.independent_utils import color_print, time_it, log_print_to_file
 
 
 def get_unsat_label(satisfiability_list,label_list,back_track_count_list):
@@ -350,7 +348,7 @@ def apply_rules_prefix(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple
 
     return children,fresh_variable_counter
 
-
+@log_print_to_file
 def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tuple[
     List[Tuple[Equation, Formula, str]], int]:
     # handle non-split rules
@@ -374,32 +372,30 @@ def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tupl
         if eq.left_terms == eq.right_terms:
             children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
 
-        
         # match suffix terminal R_{6} in paper
         elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value == last_right_term.value:
             eq.pop_same_terminal_suffix()
             children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), " u a= v a \wedge \phi")]
-            
+            (eq, Formula([eq] + f.eq_list), " u a= v a \wedge \phi")]
+
         # match prefix terminal R_{6} in paper
         elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value == first_right_term.value:
             eq.pop_same_terminal_prefix()
             children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
-        
+            (eq, Formula([eq] + f.eq_list), " a u= a v \wedge \phi")]
 
         # mistmatch suffix terminal, R_{7} in paper
         elif last_left_term.value_type == Terminal and last_right_term.value_type == Terminal and last_left_term.value != last_right_term.value:
             eq.given_satisfiability = UNSAT
             children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
-        
+            (eq, Formula([eq] + f.eq_list), "u a= v b \wedge \phi")]
+
+
         # mismatch prefix terminal, R_{7} in paper
         elif first_left_term.value_type == Terminal and first_right_term.value_type == Terminal and first_left_term.value != first_right_term.value:
             eq.given_satisfiability = UNSAT
             children: List[Tuple[Equation, Formula, str]] = [
-                (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
-
+            (eq, Formula([eq] + f.eq_list), " a u = b v \wedge \phi")]
         
 
         # split rules
@@ -409,17 +405,31 @@ def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tupl
                                          _left_variable_right_terminal_branch_2_suffix]
             children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
 
+            print("-Variable-Terminal-")
+            print(eq.eq_str_pretty)
+            for c in children:
+                print(c[2],c[0].eq_str_pretty)
+
         # left side is terminal, right side is variable, R_{8} suffix version in paper
         elif type(last_left_term.value) == Terminal and type(last_right_term.value) == Variable:
             rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_suffix,
                                          _left_variable_right_terminal_branch_2_suffix]
             children, fresh_variable_counter = _get_split_children(Equation(eq.right_terms, eq.left_terms), f,
                                                                    rule_list, fresh_variable_counter)
+
+            print("-Terminal-Variable-")
+            print(eq.eq_str_pretty)
+            for c in children:
+                print(c[2], c[0].eq_str_pretty)
         # both side are differernt variables, R_{9} suffix version in paper
         elif type(last_left_term.value) == Variable and type(last_right_term.value) == Variable:
-            rule_list: List[Callable] = [_two_variables_branch_1_suffix, _two_variables_branch_2_suffix,
-                                         _two_variables_branch_3_suffix]
+            rule_list: List[Callable] = [_two_variables_branch_1_suffix, _two_variables_branch_2_suffix, _two_variables_branch_3_suffix]
             children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
+
+            print("--both side are differernt variables--")
+            print(eq.eq_str_pretty)
+            for c in children:
+                print(f"{c[2]}, {c[0].eq_str_pretty}")
 
         else:
             children: List[Tuple[Equation, Formula, str]] = []
@@ -523,7 +533,6 @@ def _category_formula_by_rules(f: Formula) -> List[Tuple[Equation, int]]:
 
     return category_eq_list
 
-
 def _left_variable_right_terminal_branch_1_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
         Tuple[
             Equation, Formula, int, str]:
@@ -554,7 +563,6 @@ def _left_variable_right_terminal_branch_1_prefix(eq: Equation, current_formula:
 
     return new_eq, new_formula, fresh_variable_counter, label_str
 
-
 def _left_variable_right_terminal_branch_1_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
     '''
     Equation:  [Terms] V1 = [Terms] a
@@ -583,7 +591,6 @@ def _left_variable_right_terminal_branch_1_suffix(eq: Equation, current_formula:
 
     return new_eq, new_formula, fresh_variable_counter, label_str
 
-
 def _left_variable_right_terminal_branch_2_prefix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> \
         Tuple[
             Equation, Formula, int, str]:
@@ -603,7 +610,7 @@ def _left_variable_right_terminal_branch_2_prefix(eq: Equation, current_formula:
     old_term: Term = left_term
     new_term: List[Term] = [right_term, fresh_variable_term]
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str} {new_term[1].get_value_str}"
 
     # update equation
     new_left_term_list = [fresh_variable_term] + _update_term_list(old_term, new_term, local_eq.left_terms)
@@ -614,7 +621,6 @@ def _left_variable_right_terminal_branch_2_prefix(eq: Equation, current_formula:
     new_formula: Formula = _update_formula(current_formula, old_term, new_term)
 
     return new_eq, new_formula, fresh_variable_counter, label_str
-
 def _left_variable_right_terminal_branch_2_suffix(eq: Equation, current_formula: Formula, fresh_variable_counter: int) -> Tuple[Equation, Formula, int, str]:
     '''
     Equation: [Terms] V1 = [Terms] a
@@ -632,7 +638,7 @@ def _left_variable_right_terminal_branch_2_suffix(eq: Equation, current_formula:
     old_term: Term = last_left_term
     new_term: List[Term] = [fresh_variable_term, last_right_term]
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str} {new_term[1].get_value_str}"
 
     # update equation
     new_left_term_list = _update_term_list(old_term, new_term, local_eq.left_terms) + [fresh_variable_term]
@@ -663,7 +669,7 @@ def _two_variables_branch_1_prefix(eq: Equation, current_formula: Formula, fresh
     new_term: List[Term] = [right_term, fresh_variable_term]
     old_term: Term = left_term
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str} {new_term[1].get_value_str}"
 
     # update equation
     new_left_term_list = [fresh_variable_term] + _update_term_list(old_term, new_term, local_eq.left_terms)
@@ -692,7 +698,7 @@ def _two_variables_branch_1_suffix(eq: Equation, current_formula: Formula, fresh
     new_term: List[Term] = [fresh_variable_term, last_right_term]
     old_term: Term = last_left_term
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}{new_term[1].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str} {new_term[1].get_value_str}"
 
     # update equation
     new_left_term_list = _update_term_list(old_term, new_term, local_eq.left_terms) + [fresh_variable_term]
@@ -742,7 +748,7 @@ def _two_variables_branch_3_prefix(eq: Equation, current_formula: Formula, fresh
     old_term: Term = left_term
     new_term: List[Term] = [right_term]
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str}"
 
     # update equation
     new_eq = Equation(_update_term_list(old_term, new_term, local_eq.left_terms),
@@ -767,7 +773,7 @@ def _two_variables_branch_3_suffix(eq: Equation, current_formula: Formula, fresh
     old_term: Term = last_left_term
     new_term: List[Term] = [last_right_term]
 
-    label_str = f"{old_term.get_value_str}= {new_term[0].get_value_str}"
+    label_str = f"{old_term.get_value_str} = {new_term[0].get_value_str}"
 
     # update equation
     new_eq = Equation(_update_term_list(old_term, new_term, local_eq.left_terms),
@@ -776,7 +782,6 @@ def _two_variables_branch_3_suffix(eq: Equation, current_formula: Formula, fresh
     new_formula: Formula = _update_formula(current_formula, old_term, new_term)
 
     return new_eq, new_formula, fresh_variable_counter, label_str
-
 
 def _update_formula(f: Formula, old_term: Term, new_term: List[Term]) -> Formula:
     return Formula(_update_term_in_eq_list(f.eq_list, old_term, new_term))
