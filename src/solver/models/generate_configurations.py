@@ -28,9 +28,9 @@ def main():
 
 
 
-    #for benchmark in ["unsatcore_generation_test_rank_task_0"]:
-    #for benchmark in ["unsatcore_generation_test_rank_task_1"]:
-    #for benchmark in ["unsatcore_generation_test_rank_task_2"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_core+UNSAT_rank_task_0"]:
+    for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_core+UNSAT_rank_task_1"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_core+UNSAT_rank_task_2"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_2"]:
@@ -44,8 +44,8 @@ def main():
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_2"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_0"]:
-    for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
-    # for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
         #for graph_type in ["graph_1"]:
         for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:

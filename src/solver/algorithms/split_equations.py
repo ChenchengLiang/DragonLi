@@ -45,7 +45,7 @@ class SplitEquations(AbstractAlgorithm):
         self.suffix_rules_count = 0
         self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
                                "prefix":self._decide_rules_prefix,"suffix":self._decide_rules_suffix}
-        self.decide_rules_func=self.decide_rules_map["suffix"]
+        self.decide_rules_func=self.decide_rules_map["prefix"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -213,7 +213,7 @@ class SplitEquations(AbstractAlgorithm):
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
 
 
-            self.decide_rules_func()
+            self.decide_rules_func(current_eq)
 
             children, fresh_variable_counter = self.apply_rules(current_eq, separated_formula,
                                                                 self.fresh_variable_counter)
@@ -244,22 +244,29 @@ class SplitEquations(AbstractAlgorithm):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
-    def _decide_rules_by_frequency(self):
+    def _decide_rules_by_patterns(self,current_eq):
+        pass
+        if self.prefix_rules == True:
+            pass
+        else:
+            pass
+
+    def _decide_rules_by_frequency(self,current_eq):
         if self.total_split_eq_call % self.prefix_suffix_change_frequency == 0:
             self.prefix_rules = not self.prefix_rules
             self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
 
         # self._count_rule_type()
 
-    def _decide_rules_by_probability(self):
+    def _decide_rules_by_probability(self,current_eq):
         probability = random.random()
         self.apply_rules = apply_rules_prefix if probability < 0.5 else apply_rules_suffix
 
         # self._count_rule_type()
-    def _decide_rules_prefix(self):
+    def _decide_rules_prefix(self,current_eq):
         self.apply_rules = apply_rules_prefix
 
-    def _decide_rules_suffix(self):
+    def _decide_rules_suffix(self,current_eq):
         self.apply_rules = apply_rules_suffix
 
     def _count_rule_type(self):

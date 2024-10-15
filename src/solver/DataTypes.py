@@ -297,7 +297,7 @@ class Equation:
         else:
             return False
 
-    def pop_same_terminal_prefix(self):
+    def pop_same_prefix(self):
         for index in range(min(len(self.left_terms), len(self.right_terms))):
             if self.left_terms[0] == self.right_terms[0]:
                 self.left_terms.pop(0)
@@ -305,7 +305,7 @@ class Equation:
             else:
                 break
 
-    def pop_same_terminal_suffix(self):
+    def pop_same_suffix(self):
         for index in range(min(len(self.left_terms), len(self.right_terms))):
             if self.left_terms[-1] == self.right_terms[-1]:
                 self.left_terms.pop(-1)

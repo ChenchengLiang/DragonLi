@@ -34,8 +34,14 @@ def main():
     #file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
     #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
-    #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix
-    file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix
+    #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
+    #file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix. a X = C X Y [X=Y'Y] -> a Y' = CY'Y
+    file_path = bench_folder + "/examples_choose_eq/34/34.eq"  # trap suffix. a X = Y X b
+    #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix, and suffix X a = b X Y
+    #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # trap prefix, and suffix X a = b X Y
+
+    # X = Y a X
+    # X' = Y a X'
 
 
     # multiple equations
