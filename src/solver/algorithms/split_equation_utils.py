@@ -281,15 +281,17 @@ def simplify_and_check_formula(f: Formula) -> Tuple[str, Formula]:
 
 def apply_rules_prefix(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple[List[Tuple[Equation, Formula, str]],int]:
     # handle non-split rules
+    eq_left_length=len(eq.left_terms)
+    eq_right_length=len(eq.right_terms)
 
     # both sides are empty
-    if len(eq.term_list) == 0:
+    if eq.term_length == 0:
         children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
     # left side is empty
-    elif len(eq.left_terms) == 0 and len(eq.right_terms) > 0:
+    elif eq_left_length == 0 and eq_right_length > 0:
         children: List[Tuple[Equation, Formula, str]] = _left_side_empty(eq, f)
     # right side is empty
-    elif len(eq.left_terms) > 0 and len(eq.right_terms) == 0:  # right side is empty
+    elif eq_left_length > 0 and eq_right_length == 0:  # right side is empty
         children: List[Tuple[Equation, Formula, str]] = _left_side_empty(Equation(eq.right_terms, eq.left_terms), f)
     # both sides are not empty
     else:
@@ -365,15 +367,16 @@ def apply_rules_prefix(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple
 def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tuple[
     List[Tuple[Equation, Formula, str]], int]:
     # handle non-split rules
-
+    eq_left_length = len(eq.left_terms)
+    eq_right_length = len(eq.right_terms)
     # both sides are empty
-    if len(eq.term_list) == 0:
+    if eq.term_length == 0:
         children: List[Tuple[Equation, Formula, str]] = [(eq, f, " \" = \" ")]
     # left side is empty
-    elif len(eq.left_terms) == 0 and len(eq.right_terms) > 0:
+    elif eq_left_length == 0 and eq_right_length > 0:
         children: List[Tuple[Equation, Formula, str]] = _left_side_empty(eq, f)
     # right side is empty
-    elif len(eq.left_terms) > 0 and len(eq.right_terms) == 0:  # right side is empty
+    elif eq_left_length > 0 and eq_right_length == 0:  # right side is empty
         children: List[Tuple[Equation, Formula, str]] = _left_side_empty(Equation(eq.right_terms, eq.left_terms), f)
     # both sides are not empty
     else:

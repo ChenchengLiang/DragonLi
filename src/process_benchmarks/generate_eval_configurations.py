@@ -21,7 +21,7 @@ def main():
     #train data
     #benchmark_name = "zaligvinder+smtlib_train"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_1_10000"
-    rank_task = 0
+    rank_task = 2
     graph_type = "graph_3"
     model_type = "GCNSplit"  # "GINSplit"
 

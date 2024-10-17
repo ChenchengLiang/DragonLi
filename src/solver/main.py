@@ -23,25 +23,15 @@ from src.solver.independent_utils import strip_file_name_suffix
 
 def main():
     # debug path
-    # file_path = bench_folder + "/debug/04_track_5.eq"
-    # file_path = bench_folder + "/debug/g_03_track_9153.eq"
-    # file_path = bench_folder + "/debug/g_03_track_9596.eq"
-    # file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_839.eq"
-    # file_path = bench_folder + "/debug/g_03_track_train_task_3_1_5000_4104.eq"
-    # file_path = bench_folder + "/debug-eval/g_03_track_27.eq"
-    # file_path = "/home/cheli243/Desktop/CodeToGit/Woorpje_benchmarks/debug-eval-uppmax/ALL/divided_1/04_track_1.eq"
-    # file_path = bench_folder + "/debug-rank/1/g_01_track_multi_word_equations_generated_eval_1001_2000_1685.eq" #UNSAT 83 eqs
-    #file_path = bench_folder + "/debug-rank/2/g_01_track_multi_word_equations_generated_eval_1001_2000_1004.eq"  # UNSAT
+    #file_path = bench_folder + "/examples_choose_eq/kepler/48327_quad-002-1-unsat_0.eq"
+    #file_path = bench_folder + "/examples_choose_eq/kepler/48381_quad-001-1-unsat_0.eq"
     #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
-    #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
+    file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
     #file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix. a X = C X Y [X=Y'Y] -> a Y' = CY'Y
-    file_path = bench_folder + "/examples_choose_eq/34/34.eq"  # trap suffix. a X = Y X b
-    #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix, and suffix X a = b X Y
-    #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # trap prefix, and suffix X a = b X Y
-
-    # X = Y a X
-    # X' = Y a X'
+    #file_path = bench_folder + "/examples_choose_eq/34/34.eq"  # trap prefix and suffix a X = Y X b
+    #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix and suffix X a = b X Y
+    #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # X = Y a X
 
 
     # multiple equations
@@ -119,7 +109,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "category_random",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}

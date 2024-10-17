@@ -18,6 +18,7 @@ import shutil
 from src.process_benchmarks.utils import smt_to_eq_one_folder,clean_eq_files
 import argparse
 def main():
+    # the .smt2 files should be in divided_i/smt2 folder
     # parse argument
     arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
     arg_parser.add_argument('benchmark', type=str,
