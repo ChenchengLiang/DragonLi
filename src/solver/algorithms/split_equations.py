@@ -252,19 +252,26 @@ class SplitEquations(AbstractAlgorithm):
             if self.prefix_rules == True:
                 first_left_term=current_eq.left_terms[0]
                 first_right_term=current_eq.right_terms[0]
+                first_left_term_occurrence_in_right_terms=current_eq.right_terms.count(first_left_term)
+                first_left_term_occurrence_in_left_terms=current_eq.left_terms.count(first_right_term)
+                first_right_term_occurrence_in_left_terms=current_eq.left_terms.count(first_right_term)
+                first_right_term_occurrence_in_right_terms=current_eq.right_terms.count(first_right_term)
 
-                if first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term in current_eq.right_terms:
+                if first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term_occurrence_in_left_terms<=first_left_term_occurrence_in_right_terms:
                     self.prefix_rules= False
                     self.apply_rules = apply_rules_suffix
+                    #print("V-T",current_eq.eq_str_pretty)
 
-                elif first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term in current_eq.left_terms:
+                elif first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
                     self.prefix_rules = False
                     self.apply_rules = apply_rules_suffix
+                    #print("T-V",current_eq.eq_str_pretty)
 
                 elif first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term!=first_right_term:
-                     if first_left_term in current_eq.right_terms or first_right_term in current_eq.left_terms:
+                     if first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
                          self.prefix_rules = False
                          self.apply_rules = apply_rules_suffix
+                         #print("V-V",current_eq.eq_str_pretty)
 
                 else:
                     pass
@@ -272,16 +279,21 @@ class SplitEquations(AbstractAlgorithm):
             else:
                 last_left_term=current_eq.left_terms[-1]
                 last_right_term=current_eq.right_terms[-1]
-                if last_left_term.value_type==Variable and last_right_term.value_type==Terminal and last_left_term in current_eq.right_terms:
+                last_left_term_occurrence_in_right_terms=current_eq.right_terms.count(last_left_term)
+                last_left_term_occurrence_in_left_terms=current_eq.left_terms.count(last_right_term)
+                last_right_term_occurrence_in_left_terms=current_eq.left_terms.count(last_right_term)
+                last_right_term_occurrence_in_right_terms=current_eq.right_terms.count(last_right_term)
+
+                if last_left_term.value_type==Variable and last_right_term.value_type==Terminal and last_left_term_occurrence_in_left_terms<=last_left_term_occurrence_in_right_terms:
                     self.prefix_rules= True
                     self.apply_rules = apply_rules_prefix
 
-                elif last_left_term.value_type==Terminal and last_right_term.value_type==Variable and last_right_term in current_eq.left_terms:
+                elif last_left_term.value_type==Terminal and last_right_term.value_type==Variable and last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms:
                     self.prefix_rules = True
                     self.apply_rules = apply_rules_prefix
 
                 elif last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term!=last_right_term:
-                        if last_left_term in current_eq.right_terms or last_right_term in current_eq.left_terms:
+                        if last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms:
                             self.prefix_rules = True
                             self.apply_rules = apply_rules_prefix
 

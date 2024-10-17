@@ -354,7 +354,7 @@ def apply_rules_prefix(eq: Equation, f: Formula,fresh_variable_counter) -> Tuple
 
         # both side are differernt variables, R_{9} prefix version in paper
         elif type(first_left_term.value) == Variable and type(first_right_term.value) == Variable:
-            rule_list: List[Callable] = [_two_variables_branch_1_prefix, _two_variables_branch_2_prefix, _two_variables_branch_3_prefix]
+            rule_list: List[Callable] = [_two_variables_branch_3_prefix, _two_variables_branch_1_prefix, _two_variables_branch_2_prefix]
             children, fresh_variable_counter = _get_split_children(eq, f, rule_list,fresh_variable_counter)
 
         else:
@@ -451,7 +451,7 @@ def apply_rules_suffix(eq: Equation, f: Formula, fresh_variable_counter) -> Tupl
             #     print(f"{c[2]}, {c[0].eq_str_pretty}")
         # both side are differernt variables, R_{9} suffix version in paper
         elif type(last_left_term.value) == Variable and type(last_right_term.value) == Variable:
-            rule_list: List[Callable] = [_two_variables_branch_1_suffix, _two_variables_branch_2_suffix,_two_variables_branch_3_suffix]
+            rule_list: List[Callable] = [_two_variables_branch_3_suffix, _two_variables_branch_1_suffix, _two_variables_branch_2_suffix]
             children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
 
             # print("--both side are differernt variables--")
