@@ -46,7 +46,9 @@ class SplitEquations(AbstractAlgorithm):
         self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
                                "quadratic_pattern":self._decide_rules_by_quadratic_pattern,
                                "prefix":self._decide_rules_prefix,"suffix":self._decide_rules_suffix}
-        self.decide_rules_func=self.decide_rules_map["quadratic_pattern"]
+        self.decide_rules_func=self.decide_rules_map["prefix"]
+
+        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["quadratic"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -243,8 +245,6 @@ class SplitEquations(AbstractAlgorithm):
                 current_eq_node[1]["status"] = UNSAT
                 return (UNSAT, current_formula)
 
-    def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
-        return f.eq_list[0], Formula(f.eq_list[1:])
 
     def _decide_rules_by_quadratic_pattern(self,current_eq:Equation):
         #when the term to be replace is quadratic, shift
@@ -252,26 +252,23 @@ class SplitEquations(AbstractAlgorithm):
             if self.prefix_rules == True:
                 first_left_term=current_eq.left_terms[0]
                 first_right_term=current_eq.right_terms[0]
+                first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
                 first_left_term_occurrence_in_right_terms=current_eq.right_terms.count(first_left_term)
-                first_left_term_occurrence_in_left_terms=current_eq.left_terms.count(first_right_term)
                 first_right_term_occurrence_in_left_terms=current_eq.left_terms.count(first_right_term)
                 first_right_term_occurrence_in_right_terms=current_eq.right_terms.count(first_right_term)
 
                 if first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term_occurrence_in_left_terms<=first_left_term_occurrence_in_right_terms:
                     self.prefix_rules= False
                     self.apply_rules = apply_rules_suffix
-                    #print("V-T",current_eq.eq_str_pretty)
 
                 elif first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
                     self.prefix_rules = False
                     self.apply_rules = apply_rules_suffix
-                    #print("T-V",current_eq.eq_str_pretty)
 
                 elif first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term!=first_right_term:
                      if first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
                          self.prefix_rules = False
                          self.apply_rules = apply_rules_suffix
-                         #print("V-V",current_eq.eq_str_pretty)
 
                 else:
                     pass
@@ -279,8 +276,8 @@ class SplitEquations(AbstractAlgorithm):
             else:
                 last_left_term=current_eq.left_terms[-1]
                 last_right_term=current_eq.right_terms[-1]
+                last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
                 last_left_term_occurrence_in_right_terms=current_eq.right_terms.count(last_left_term)
-                last_left_term_occurrence_in_left_terms=current_eq.left_terms.count(last_right_term)
                 last_right_term_occurrence_in_left_terms=current_eq.left_terms.count(last_right_term)
                 last_right_term_occurrence_in_right_terms=current_eq.right_terms.count(last_right_term)
 

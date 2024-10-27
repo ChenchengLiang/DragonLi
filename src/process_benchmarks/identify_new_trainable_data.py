@@ -19,7 +19,7 @@ import argparse
 
 
 def main():
-    benchmark_name=f"01_track_multi_word_equations_eq_2_50_generated_train_10001_20000"
+    benchmark_name=f"01_track_multi_word_equations_eq_2_50_generated_train_20001_30000"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
     create_folder(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
 

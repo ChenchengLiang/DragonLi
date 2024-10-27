@@ -12,6 +12,9 @@ class AbstractAlgorithm(ABC):
         self.equation_list = equation_list
         self.gnn_call_flag = False
 
+        self.post_process_ordered_formula_func_map = {"None":self._post_process_ordered_formula_none,"quadratic":self._post_process_ordered_formula_quadratic_pattern}
+        self.post_process_ordered_formula_func=self.post_process_ordered_formula_func_map["None"]
+
     @abstractmethod
     def run(self):
         pass
@@ -94,6 +97,61 @@ class AbstractAlgorithm(ABC):
             if self.gnn_call_flag == True:
                 current_node[1]["gnn_call"] = True
                 self.gnn_call_flag = False
+
+            ordered_formula=self.post_process_ordered_formula_func(ordered_formula)
             return ordered_formula
         else:
             return f
+
+    def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
+        return f.eq_list[0], Formula(f.eq_list[1:])
+
+    def _post_process_ordered_formula_none(self, f: Formula) -> Formula:
+        return f
+
+    def _post_process_ordered_formula_quadratic_pattern(self, f: Formula) -> Formula:
+        loop_eq=[]
+        non_loop_eq=[]
+
+        for i,current_eq in enumerate(f.eq_list):
+            #print(f"post process i:{i}/{f_length}")
+
+
+
+            first_left_term = current_eq.left_terms[0]
+            first_right_term = current_eq.right_terms[0]
+            first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
+            first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+            first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+            first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
+
+            last_left_term = current_eq.left_terms[-1]
+            last_right_term = current_eq.right_terms[-1]
+            last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
+            last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+            last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+            last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
+
+            #print(current_eq.eq_str_pretty)
+            #print(first_right_term.get_value_str,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms)
+
+
+            def prefix_loop():
+                if (first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term_occurrence_in_left_terms<=first_left_term_occurrence_in_right_terms) or (first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms) or (first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term!=first_right_term and (first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms)):
+                    #print("prefix_loop")
+                    return True
+                else:
+                    return False
+            def suffix_loop():
+                if (last_left_term.value_type==Variable and last_right_term.value_type==Terminal and last_left_term_occurrence_in_left_terms<=last_left_term_occurrence_in_right_terms) or (last_left_term.value_type==Terminal and last_right_term.value_type==Variable and last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms) or (last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term!=last_right_term and (last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms)):
+                    #print("suffix_loop")
+                    return True
+                else:
+                    return False
+
+            if prefix_loop() and suffix_loop():
+                loop_eq.append(current_eq)
+            else:
+                non_loop_eq.append(current_eq)
+
+        return Formula(non_loop_eq+loop_eq)
