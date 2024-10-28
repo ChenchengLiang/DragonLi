@@ -31,59 +31,59 @@ def main():
     algorithm = "SplitEquations"
     solver_param_list = [
         # branch:fixed, order equations: no category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method fixed"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method hybrid_fixed_random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method shortest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method longest"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method fixed"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_fixed_random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method shortest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method longest"
+        #           ]],
         #
         #branch:fixed, order equations: category
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category"
-        #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_shortest"
-        #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_longest"
-        #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_random"
-        #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_fixed_random"
-        #           ]],
-        #
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category"
+                  ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_shortest"
+                  ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_longest"
+                  ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_random"
+                  ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_fixed_random"
+                  ]],
+
         
         
         #branch:random, order equations: no category

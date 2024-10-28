@@ -32,6 +32,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/34/34.eq"  # trap prefix and suffix a X = Y X b
     #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix and suffix X a = b X Y
     #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # X = Y a X
+    # file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
 
 
     # multiple equations

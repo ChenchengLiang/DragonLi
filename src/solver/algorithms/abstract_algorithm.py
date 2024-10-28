@@ -12,7 +12,10 @@ class AbstractAlgorithm(ABC):
         self.equation_list = equation_list
         self.gnn_call_flag = False
 
-        self.post_process_ordered_formula_func_map = {"None":self._post_process_ordered_formula_none,"quadratic":self._post_process_ordered_formula_quadratic_pattern}
+        self.post_process_ordered_formula_func_map = {"None":self._post_process_ordered_formula_none,
+                                                      "quadratic":self._post_process_ordered_formula_quadratic_pattern,
+                                                      "quadratic_prefix":self._post_process_ordered_formula_quadratic_pattern_prefix,
+                                                      "quadratic_suffix":self._post_process_ordered_formula_quadratic_pattern_suffix}
         self.post_process_ordered_formula_func=self.post_process_ordered_formula_func_map["None"]
 
     @abstractmethod
@@ -116,8 +119,6 @@ class AbstractAlgorithm(ABC):
         for i,current_eq in enumerate(f.eq_list):
             #print(f"post process i:{i}/{f_length}")
 
-
-
             first_left_term = current_eq.left_terms[0]
             first_right_term = current_eq.right_terms[0]
             first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
@@ -136,22 +137,71 @@ class AbstractAlgorithm(ABC):
             #print(first_right_term.get_value_str,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms)
 
 
-            def prefix_loop():
-                if (first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term_occurrence_in_left_terms<=first_left_term_occurrence_in_right_terms) or (first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms) or (first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term!=first_right_term and (first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms)):
-                    #print("prefix_loop")
-                    return True
-                else:
-                    return False
-            def suffix_loop():
-                if (last_left_term.value_type==Variable and last_right_term.value_type==Terminal and last_left_term_occurrence_in_left_terms<=last_left_term_occurrence_in_right_terms) or (last_left_term.value_type==Terminal and last_right_term.value_type==Variable and last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms) or (last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term!=last_right_term and (last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms)):
-                    #print("suffix_loop")
-                    return True
-                else:
-                    return False
-
-            if prefix_loop() and suffix_loop():
+            if self._prefix_loop(first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms) and self._suffix_loop(last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
                 loop_eq.append(current_eq)
             else:
                 non_loop_eq.append(current_eq)
 
         return Formula(non_loop_eq+loop_eq)
+
+    def _post_process_ordered_formula_quadratic_pattern_prefix(self, f: Formula) -> Formula:
+        loop_eq=[]
+        non_loop_eq=[]
+
+        for i,current_eq in enumerate(f.eq_list):
+            first_left_term = current_eq.left_terms[0]
+            first_right_term = current_eq.right_terms[0]
+            first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
+            first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+            first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+            first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
+
+            if self._prefix_loop(first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms):
+                loop_eq.append(current_eq)
+            else:
+                non_loop_eq.append(current_eq)
+
+        return Formula(non_loop_eq+loop_eq)
+
+    def _post_process_ordered_formula_quadratic_pattern_suffix(self, f: Formula) -> Formula:
+        loop_eq=[]
+        non_loop_eq=[]
+
+        for i,current_eq in enumerate(f.eq_list):
+
+            last_left_term = current_eq.left_terms[-1]
+            last_right_term = current_eq.right_terms[-1]
+            last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
+            last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+            last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+            last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
+
+            if self._suffix_loop(last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
+                loop_eq.append(current_eq)
+            else:
+                non_loop_eq.append(current_eq)
+
+        return Formula(non_loop_eq+loop_eq)
+
+    def _prefix_loop(self,first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms):
+        if (
+                first_left_term.value_type == Variable and first_right_term.value_type == Terminal and first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms) or (
+                first_left_term.value_type == Terminal and first_right_term.value_type == Variable and first_right_term_occurrence_in_right_terms <= first_right_term_occurrence_in_left_terms) or (
+                first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term != first_right_term and (
+                first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms <= first_right_term_occurrence_in_left_terms)):
+            # print("prefix_loop")
+            return True
+        else:
+            return False
+
+    def _suffix_loop(self,last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
+        if (
+                last_left_term.value_type == Variable and last_right_term.value_type == Terminal and last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms) or (
+                last_left_term.value_type == Terminal and last_right_term.value_type == Variable and last_right_term_occurrence_in_right_terms <= last_right_term_occurrence_in_left_terms) or (
+                last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term != last_right_term and (
+                last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms <= last_right_term_occurrence_in_left_terms)):
+            # print("suffix_loop")
+            return True
+        else:
+            return False
+

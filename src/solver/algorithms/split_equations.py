@@ -43,12 +43,13 @@ class SplitEquations(AbstractAlgorithm):
         self.prefix_suffix_change_frequency = 100
         self.prefix_rules_count = 0
         self.suffix_rules_count = 0
-        self.decide_rules_map={"probability":self._decide_rules_by_probability,"frequency":self._decide_rules_by_frequency,
-                               "quadratic_pattern":self._decide_rules_by_quadratic_pattern,
-                               "prefix":self._decide_rules_prefix,"suffix":self._decide_rules_suffix}
-        self.decide_rules_func=self.decide_rules_map["prefix"]
+        self.decide_rules_map = {"probability": self._decide_rules_by_probability,
+                                 "frequency": self._decide_rules_by_frequency,
+                                 "quadratic_pattern": self._decide_rules_by_quadratic_pattern,
+                                 "prefix": self._decide_rules_prefix, "suffix": self._decide_rules_suffix}
+        self.decide_rules_func = self.decide_rules_map["quadratic_pattern"]
 
-        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["quadratic"]
+        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["None"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -215,7 +216,6 @@ class SplitEquations(AbstractAlgorithm):
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")
 
-
             self.decide_rules_func(current_eq)
             self._count_rule_type()
 
@@ -245,76 +245,74 @@ class SplitEquations(AbstractAlgorithm):
                 current_eq_node[1]["status"] = UNSAT
                 return (UNSAT, current_formula)
 
-
-    def _decide_rules_by_quadratic_pattern(self,current_eq:Equation):
-        #when the term to be replace is quadratic, shift
-        if current_eq.left_hand_side_length!=0 and current_eq.right_hand_side_length!=0:
+    def _decide_rules_by_quadratic_pattern(self, current_eq: Equation):
+        # when the term to be replace is quadratic, shift
+        if current_eq.left_hand_side_length != 0 and current_eq.right_hand_side_length != 0:
             if self.prefix_rules == True:
-                first_left_term=current_eq.left_terms[0]
-                first_right_term=current_eq.right_terms[0]
+                first_left_term = current_eq.left_terms[0]
+                first_right_term = current_eq.right_terms[0]
                 first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
-                first_left_term_occurrence_in_right_terms=current_eq.right_terms.count(first_left_term)
-                first_right_term_occurrence_in_left_terms=current_eq.left_terms.count(first_right_term)
-                first_right_term_occurrence_in_right_terms=current_eq.right_terms.count(first_right_term)
+                first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+                first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+                first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
 
-                if first_left_term.value_type==Variable and first_right_term.value_type==Terminal and first_left_term_occurrence_in_left_terms<=first_left_term_occurrence_in_right_terms:
-                    self.prefix_rules= False
-                    self.apply_rules = apply_rules_suffix
-
-                elif first_left_term.value_type==Terminal and first_right_term.value_type==Variable and first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
+                if first_left_term.value_type == Variable and first_right_term.value_type == Terminal and first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms:
                     self.prefix_rules = False
                     self.apply_rules = apply_rules_suffix
 
-                elif first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term!=first_right_term:
-                     if first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms<=first_right_term_occurrence_in_left_terms:
-                         self.prefix_rules = False
-                         self.apply_rules = apply_rules_suffix
+                elif first_left_term.value_type == Terminal and first_right_term.value_type == Variable and first_right_term_occurrence_in_right_terms <= first_right_term_occurrence_in_left_terms:
+                    self.prefix_rules = False
+                    self.apply_rules = apply_rules_suffix
+
+                elif first_left_term.value_type == Variable and first_right_term.value_type == Variable and first_left_term != first_right_term and (
+                        first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms or first_right_term_occurrence_in_right_terms <= first_right_term_occurrence_in_left_terms):
+                    self.prefix_rules = False
+                    self.apply_rules = apply_rules_suffix
 
                 else:
                     pass
 
             else:
-                last_left_term=current_eq.left_terms[-1]
-                last_right_term=current_eq.right_terms[-1]
+                last_left_term = current_eq.left_terms[-1]
+                last_right_term = current_eq.right_terms[-1]
                 last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
-                last_left_term_occurrence_in_right_terms=current_eq.right_terms.count(last_left_term)
-                last_right_term_occurrence_in_left_terms=current_eq.left_terms.count(last_right_term)
-                last_right_term_occurrence_in_right_terms=current_eq.right_terms.count(last_right_term)
+                last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+                last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+                last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
 
-                if last_left_term.value_type==Variable and last_right_term.value_type==Terminal and last_left_term_occurrence_in_left_terms<=last_left_term_occurrence_in_right_terms:
-                    self.prefix_rules= True
-                    self.apply_rules = apply_rules_prefix
-
-                elif last_left_term.value_type==Terminal and last_right_term.value_type==Variable and last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms:
+                if last_left_term.value_type == Variable and last_right_term.value_type == Terminal and last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms:
                     self.prefix_rules = True
                     self.apply_rules = apply_rules_prefix
 
-                elif last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term!=last_right_term:
-                        if last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms<=last_right_term_occurrence_in_left_terms:
-                            self.prefix_rules = True
-                            self.apply_rules = apply_rules_prefix
+                elif last_left_term.value_type == Terminal and last_right_term.value_type == Variable and last_right_term_occurrence_in_right_terms <= last_right_term_occurrence_in_left_terms:
+                    self.prefix_rules = True
+                    self.apply_rules = apply_rules_prefix
+
+                elif last_left_term.value_type == Variable and last_right_term.value_type == Variable and last_left_term != last_right_term and (
+                        last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms or last_right_term_occurrence_in_right_terms <= last_right_term_occurrence_in_left_terms):
+                    self.prefix_rules = True
+                    self.apply_rules = apply_rules_prefix
 
                 else:
                     pass
 
-
-
-    def _decide_rules_by_frequency(self,current_eq):
+    def _decide_rules_by_frequency(self, current_eq):
         if self.total_split_eq_call % self.prefix_suffix_change_frequency == 0:
             self.prefix_rules = not self.prefix_rules
             self.apply_rules = apply_rules_prefix if self.prefix_rules == True else apply_rules_suffix
 
         # self._count_rule_type()
 
-    def _decide_rules_by_probability(self,current_eq):
+    def _decide_rules_by_probability(self, current_eq):
         probability = random.random()
         self.apply_rules = apply_rules_prefix if probability < 0.5 else apply_rules_suffix
 
         # self._count_rule_type()
-    def _decide_rules_prefix(self,current_eq):
+
+    def _decide_rules_prefix(self, current_eq):
         self.apply_rules = apply_rules_prefix
 
-    def _decide_rules_suffix(self,current_eq):
+    def _decide_rules_suffix(self, current_eq):
         self.apply_rules = apply_rules_suffix
 
     def _count_rule_type(self):
