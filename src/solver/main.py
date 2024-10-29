@@ -25,7 +25,7 @@ def main():
     # debug path
     #file_path = bench_folder + "/examples_choose_eq/kepler/48327_quad-002-1-unsat_0.eq" # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/kepler/48381_quad-001-1-unsat_0.eq"
-    file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
+    #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
     #file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix. a X = C X Y [X=Y'Y] -> a Y' = CY'Y
@@ -33,6 +33,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix and suffix X a = b X Y
     #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # X = Y a X
     # file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
+    file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
 
 
     # multiple equations
@@ -110,7 +111,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "hybrid_category_fixed_random",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}

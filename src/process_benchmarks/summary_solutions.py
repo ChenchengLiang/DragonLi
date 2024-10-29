@@ -28,7 +28,7 @@ def main():
     if bench_name is None:
         bench_name="03_track_train_task_3_5001_10000"
 
-    main_key = "this:fixed_termination_condition_0_category"# empty will output all pair combinations
+    main_key = "this:fixed_termination_condition_0_hybrid_category_fixed_random"#"this:fixed_termination_condition_0_category"# empty will output all pair combinations
     summary_folder = project_folder+"/src/process_benchmarks/summary"
 
 

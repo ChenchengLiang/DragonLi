@@ -12,11 +12,11 @@ class AbstractAlgorithm(ABC):
         self.equation_list = equation_list
         self.gnn_call_flag = False
 
-        self.post_process_ordered_formula_func_map = {"None":self._post_process_ordered_formula_none,
-                                                      "quadratic":self._post_process_ordered_formula_quadratic_pattern,
-                                                      "quadratic_prefix":self._post_process_ordered_formula_quadratic_pattern_prefix,
-                                                      "quadratic_suffix":self._post_process_ordered_formula_quadratic_pattern_suffix}
-        self.post_process_ordered_formula_func=self.post_process_ordered_formula_func_map["None"]
+        self.post_process_ordered_formula_func_map = {"None": self._post_process_ordered_formula_none,
+                                                      "quadratic": self._post_process_ordered_formula_quadratic_pattern,
+                                                      "quadratic_prefix": self._post_process_ordered_formula_quadratic_pattern_prefix,
+                                                      "quadratic_suffix": self._post_process_ordered_formula_quadratic_pattern_suffix}
+        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["None"]
 
     @abstractmethod
     def run(self):
@@ -55,7 +55,7 @@ class AbstractAlgorithm(ABC):
 
     def extract_values_from_terms(self, term_list, assignments):
         value_list = []
-        for t in [t for t in term_list if t.value != EMPTY_TERMINAL]: #ignore empty terminal
+        for t in [t for t in term_list if t.value != EMPTY_TERMINAL]:  # ignore empty terminal
             if type(t.value) == Variable:
                 terminal_list = assignments.get_assignment(t.value)
                 for tt in terminal_list:
@@ -64,44 +64,48 @@ class AbstractAlgorithm(ABC):
                 value_list.append(t.get_value_str)
         return value_list
 
-
-    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[int, Dict]:
+    def record_eq_node_and_edges(self, eq: Equation, previous_node: Tuple[int, Dict], edge_label: str) -> Tuple[
+        int, Dict]:
         current_node_number = self.total_node_number
         label = f"{eq.eq_str}"
         current_node = (
             current_node_number,
-            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0,"gnn_call":False})
+            {"label": label, "status": None, "output_to_file": False, "shape": "box", "back_track_count": 0,
+             "gnn_call": False})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
-        self.eq_node_number+=1
-        self.total_node_number+=1
+        self.eq_node_number += 1
+        self.total_node_number += 1
         return current_node
 
-    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str,depth:int) -> \
+    def record_node_and_edges(self, f: Formula, previous_node: Tuple[int, Dict], edge_label: str, depth: int) -> \
             Tuple[int, Dict]:
         current_node_number = self.total_node_number
         label = f"{f.eq_list_str}"
         current_node = (
             current_node_number,
             {"label": label, "status": None, "output_to_file": False,
-             "shape": "ellipse", "back_track_count": 0,"gnn_call":False,"depth":depth})
+             "shape": "ellipse", "back_track_count": 0, "gnn_call": False, "depth": depth})
         self.nodes.append(current_node)
         self.edges.append((previous_node[0], current_node_number, {'label': edge_label}))
-        self.total_node_number+=1
+        self.total_node_number += 1
         return current_node
 
-    def order_equations_func_wrapper(self, f: Formula,current_node:Tuple[int,Dict]) -> Formula:
+    def order_equations_func_wrapper(self, f: Formula, current_node: Tuple[int, Dict]) -> Formula:
         if f.eq_list_length > 1:
             self.total_rank_call += 1
-            f.unsat_core= self.unsat_core
-            f.current_total_split_eq_call=self.total_split_eq_call
+            f.unsat_core = self.unsat_core
+            f.current_total_split_eq_call = self.total_split_eq_call
             ordered_formula, category_call = self.order_equations_func(f, self.total_category_call)
+            is_category_call = True if category_call - self.total_category_call > 0 else False
             self.total_category_call = category_call
             if self.gnn_call_flag == True:
                 current_node[1]["gnn_call"] = True
                 self.gnn_call_flag = False
 
-            ordered_formula=self.post_process_ordered_formula_func(ordered_formula)
+            if is_category_call == False:
+                ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
+            # ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
             return ordered_formula
         else:
             return f
@@ -113,77 +117,95 @@ class AbstractAlgorithm(ABC):
         return f
 
     def _post_process_ordered_formula_quadratic_pattern(self, f: Formula) -> Formula:
-        loop_eq=[]
-        non_loop_eq=[]
+        loop_eq = []
+        non_loop_eq = []
 
-        for i,current_eq in enumerate(f.eq_list):
-            #print(f"post process i:{i}/{f_length}")
+        for i, current_eq in enumerate(f.eq_list):
+            # print(f"post process i:{i}/{f_length}")
 
-            first_left_term = current_eq.left_terms[0]
-            first_right_term = current_eq.right_terms[0]
-            first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
-            first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
-            first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
-            first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
+            if current_eq.left_hand_side_length != 0 and current_eq.right_hand_side_length != 0:
 
-            last_left_term = current_eq.left_terms[-1]
-            last_right_term = current_eq.right_terms[-1]
-            last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
-            last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
-            last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
-            last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
+                first_left_term = current_eq.left_terms[0]
+                first_right_term = current_eq.right_terms[0]
+                first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
+                first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+                first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+                first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
 
-            #print(current_eq.eq_str_pretty)
-            #print(first_right_term.get_value_str,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms)
+                last_left_term = current_eq.left_terms[-1]
+                last_right_term = current_eq.right_terms[-1]
+                last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
+                last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+                last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+                last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
 
+                # print(current_eq.eq_str_pretty)
+                # print(first_right_term.get_value_str,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms)
 
-            if self._prefix_loop(first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms) and self._suffix_loop(last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
-                loop_eq.append(current_eq)
-            else:
-                non_loop_eq.append(current_eq)
+                if self._prefix_loop(first_left_term, first_right_term, first_left_term_occurrence_in_left_terms,
+                                     first_left_term_occurrence_in_right_terms,
+                                     first_right_term_occurrence_in_left_terms,
+                                     first_right_term_occurrence_in_right_terms) and self._suffix_loop(last_left_term,
+                                                                                                       last_right_term,
+                                                                                                       last_left_term_occurrence_in_left_terms,
+                                                                                                       last_left_term_occurrence_in_right_terms,
+                                                                                                       last_right_term_occurrence_in_left_terms,
+                                                                                                       last_right_term_occurrence_in_right_terms):
+                    loop_eq.append(current_eq)
+                else:
+                    non_loop_eq.append(current_eq)
 
-        return Formula(non_loop_eq+loop_eq)
+        return Formula(non_loop_eq + loop_eq)
 
     def _post_process_ordered_formula_quadratic_pattern_prefix(self, f: Formula) -> Formula:
-        loop_eq=[]
-        non_loop_eq=[]
+        loop_eq = []
+        non_loop_eq = []
 
-        for i,current_eq in enumerate(f.eq_list):
-            first_left_term = current_eq.left_terms[0]
-            first_right_term = current_eq.right_terms[0]
-            first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
-            first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
-            first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
-            first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
+        for i, current_eq in enumerate(f.eq_list):
+            if current_eq.left_hand_side_length != 0 and current_eq.right_hand_side_length != 0:
 
-            if self._prefix_loop(first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms):
-                loop_eq.append(current_eq)
-            else:
-                non_loop_eq.append(current_eq)
+                first_left_term = current_eq.left_terms[0]
+                first_right_term = current_eq.right_terms[0]
+                first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
+                first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+                first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+                first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
 
-        return Formula(non_loop_eq+loop_eq)
+                if self._prefix_loop(first_left_term, first_right_term, first_left_term_occurrence_in_left_terms,
+                                     first_left_term_occurrence_in_right_terms,
+                                     first_right_term_occurrence_in_left_terms,
+                                     first_right_term_occurrence_in_right_terms):
+                    loop_eq.append(current_eq)
+                else:
+                    non_loop_eq.append(current_eq)
+
+        return Formula(non_loop_eq + loop_eq)
 
     def _post_process_ordered_formula_quadratic_pattern_suffix(self, f: Formula) -> Formula:
-        loop_eq=[]
-        non_loop_eq=[]
+        loop_eq = []
+        non_loop_eq = []
 
-        for i,current_eq in enumerate(f.eq_list):
+        for i, current_eq in enumerate(f.eq_list):
+            if current_eq.left_hand_side_length != 0 and current_eq.right_hand_side_length != 0:
+                last_left_term = current_eq.left_terms[-1]
+                last_right_term = current_eq.right_terms[-1]
+                last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
+                last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+                last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+                last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
 
-            last_left_term = current_eq.left_terms[-1]
-            last_right_term = current_eq.right_terms[-1]
-            last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
-            last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
-            last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
-            last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
+                if self._suffix_loop(last_left_term, last_right_term, last_left_term_occurrence_in_left_terms,
+                                     last_left_term_occurrence_in_right_terms, last_right_term_occurrence_in_left_terms,
+                                     last_right_term_occurrence_in_right_terms):
+                    loop_eq.append(current_eq)
+                else:
+                    non_loop_eq.append(current_eq)
 
-            if self._suffix_loop(last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
-                loop_eq.append(current_eq)
-            else:
-                non_loop_eq.append(current_eq)
+        return Formula(non_loop_eq + loop_eq)
 
-        return Formula(non_loop_eq+loop_eq)
-
-    def _prefix_loop(self,first_left_term,first_right_term,first_left_term_occurrence_in_left_terms,first_left_term_occurrence_in_right_terms,first_right_term_occurrence_in_left_terms,first_right_term_occurrence_in_right_terms):
+    def _prefix_loop(self, first_left_term, first_right_term, first_left_term_occurrence_in_left_terms,
+                     first_left_term_occurrence_in_right_terms, first_right_term_occurrence_in_left_terms,
+                     first_right_term_occurrence_in_right_terms):
         if (
                 first_left_term.value_type == Variable and first_right_term.value_type == Terminal and first_left_term_occurrence_in_left_terms <= first_left_term_occurrence_in_right_terms) or (
                 first_left_term.value_type == Terminal and first_right_term.value_type == Variable and first_right_term_occurrence_in_right_terms <= first_right_term_occurrence_in_left_terms) or (
@@ -194,7 +216,9 @@ class AbstractAlgorithm(ABC):
         else:
             return False
 
-    def _suffix_loop(self,last_left_term,last_right_term,last_left_term_occurrence_in_left_terms,last_left_term_occurrence_in_right_terms,last_right_term_occurrence_in_left_terms,last_right_term_occurrence_in_right_terms):
+    def _suffix_loop(self, last_left_term, last_right_term, last_left_term_occurrence_in_left_terms,
+                     last_left_term_occurrence_in_right_terms, last_right_term_occurrence_in_left_terms,
+                     last_right_term_occurrence_in_right_terms):
         if (
                 last_left_term.value_type == Variable and last_right_term.value_type == Terminal and last_left_term_occurrence_in_left_terms <= last_left_term_occurrence_in_right_terms) or (
                 last_left_term.value_type == Terminal and last_right_term.value_type == Variable and last_right_term_occurrence_in_right_terms <= last_right_term_occurrence_in_left_terms) or (
@@ -204,4 +228,3 @@ class AbstractAlgorithm(ABC):
             return True
         else:
             return False
-
