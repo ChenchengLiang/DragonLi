@@ -463,12 +463,10 @@ def _eq_number_statistics(track_name,first_summary_data_rows, first_summary_titl
         solver_based_data_dict_unknown[solver] =y_axis_unknown_number_list
 
 
-
-
     # get eq numbers for each problem
     first_summary_data_rows_eq_numbers=[]
     for row in first_summary_data_rows:
-        file_name=row[0]
+        file_name=strip_file_name_suffix(row[0])+".eq"
         file_path=f"{bench_folder}/{track_name}/ALL/ALL/{file_name}"
         parsed_eq_dict=perse_eq_file(file_path)
         eq_number=len(parsed_eq_dict["equation_list"])
