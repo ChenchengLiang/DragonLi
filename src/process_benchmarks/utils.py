@@ -1,20 +1,22 @@
-from src.solver.Constants import SHELL_TIMEOUT, solver_command_map, project_folder
-import os
-import time
-import subprocess
-from src.solver.Constants import UNKNOWN, SAT, UNSAT, bench_folder
-from src.solver.independent_utils import strip_file_name_suffix, color_print, remove_duplicates, create_folder
 import csv
-from typing import List, Dict, Tuple
 import glob
-from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, \
-    RECURSION_ERROR, RED, GREEN, COLORRESET, eval_container_path
-import random
-from src.solver.independent_utils import mean, check_list_consistence, time_it, handle_files_with_target_string, \
-    handle_duplicate_files, apply_to_all_files, delete_duplicate_lines
+import os
 import shutil
+import subprocess
+from random import randint
+from statistics import median
+from time import time
+from typing import List, Dict, Tuple
+
 from tqdm import tqdm
 
+from src.solver.Constants import INTERNAL_TIMEOUT, BRANCH_CLOSED, MAX_PATH_REACHED, RECURSION_DEPTH_EXCEEDED, \
+    RECURSION_ERROR, RED, COLORRESET, eval_container_path
+from src.solver.Constants import SHELL_TIMEOUT, solver_command_map, project_folder
+from src.solver.Constants import UNKNOWN, SAT, UNSAT, bench_folder
+from src.solver.independent_utils import mean, check_list_consistence, time_it, handle_files_with_target_string, \
+    handle_duplicate_files, apply_to_all_files, delete_duplicate_lines
+from src.solver.independent_utils import strip_file_name_suffix, color_print, remove_duplicates, create_folder
 from src.solver.utils_parser import perse_eq_file
 
 
@@ -140,7 +142,7 @@ def run_on_one_problem(file_path: str, parameters_list: List[str], solver: str, 
 def create_a_shell_file(file_path, parameter_list="", solver="", log=False,shell_timeout=SHELL_TIMEOUT):
     parameter_str = " ".join(parameter_list)
     shell_folder = project_folder + "/src/process_benchmarks/temp_shell"
-    random_integer = random.randint(1, 100000)
+    random_integer = randint(1, 100000)
     shell_file_name = "run-" + os.path.basename(file_path) + "-" + str(random_integer) + ".sh"
     shell_file_path = os.path.join(shell_folder, shell_file_name)
     timeout_command = "timeout " + str(shell_timeout)
@@ -167,12 +169,12 @@ def run_a_shell_file(shell_file_path: str, problem_file_path: str, solver: str, 
         print("-" * 10)
         print("run " + shell_file_path)
     run_shell_command = ["sh", shell_file_path]
-    start = time.time()
+    start = time()
 
     completed_process = subprocess.run(run_shell_command, capture_output=True, text=True, shell=False)
     # eld = subprocess.Popen(run_shell_command, stdout=subprocess.DEVNULL, shell=False)
     # eld.wait()
-    end = time.time()
+    end = time()
     used_time = end - start
     ############print(completed_process)
     #########print("Output from script:", completed_process.stdout)
@@ -423,6 +425,10 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
 
     print("----------------------- pairwise comparison done ----------------------------")
 
+    #################### statistics according to number of eqs ########################
+    print("----------------------- statistics according to number of eqs ----------------------------")
+    print("----------------------- statistics according to number of done ----------------------------")
+
 
 def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
                           one_pairwise_folder, common_and_unique_solved_dict):
@@ -458,7 +464,8 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
                  "satisfiability_list": satisfiability_list,"file_name_list":file_name_list,
                  "x_data_mean": mean(solver_1_data_list), "y_data_mean": mean(solver_2_data_list),
                  "x_data_min": min(solver_1_data_list), "y_data_min": min(solver_2_data_list),
-                 "x_data_max": max(solver_1_data_list), "y_data_max": max(solver_2_data_list)}
+                 "x_data_max": max(solver_1_data_list), "y_data_max": max(solver_2_data_list),
+                 "x_data_median": median(solver_1_data_list),"y_data_median": median(solver_2_data_list)}
     data_dict.update(common_and_unique_solved_dict)
     plot_scatter(one_pairwise_folder, data_dict)
 
@@ -506,8 +513,8 @@ def plot_scatter(save_directory, data_dict):
 
     title = (
         f"{data_dict['measurement']} - {data_dict['x_title']} vs {data_dict['y_title']} <br>"
-        f"x_mean: {data_dict['x_data_mean']}, x_min: {data_dict['x_data_min']}, x_max: {data_dict['x_data_max']} <br>"
-        f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']} <br>"
+        f"x_mean: {data_dict['x_data_mean']}, x_min: {data_dict['x_data_min']}, x_max: {data_dict['x_data_max']}, x_median: {data_dict['x_data_median']} <br>"
+        f"y_mean: {data_dict['y_data_mean']}, y_min: {data_dict['y_data_min']}, y_max: {data_dict['y_data_max']}, y_median:  {data_dict['y_data_median']} <br>"
         f"Common solved SAT: {data_dict['common_solved_sat_number']}, UNSAT: {data_dict['common_solved_unsat_number']} <br>"
         f"{data_dict['unique_0']} <br>"
         f"{data_dict['unique_1']}"

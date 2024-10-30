@@ -1,11 +1,10 @@
 import gc
-import os.path
 import random
-import sys
-from typing import List, Dict, Tuple, Callable
 
-import dgl
-import torch
+from typing import List, Dict, Tuple, Callable
+from sys import setrecursionlimit, getrecursionlimit
+from dgl import batch
+from torch import no_grad,stack,mean,concat
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
@@ -49,7 +48,7 @@ class SplitEquations(AbstractAlgorithm):
                                  "prefix": self._decide_rules_prefix, "suffix": self._decide_rules_suffix}
         self.decide_rules_func = self.decide_rules_map["prefix"]
 
-        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["quadratic_prefix"]
+        self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["None"]
 
         self.fresh_variable_counter = 0
         self.total_gnn_call = 0
@@ -129,8 +128,8 @@ class SplitEquations(AbstractAlgorithm):
         self.dgl_hash_table_hit = 0
 
         print("----- Settings -----")
-        sys.setrecursionlimit(recursion_limit)
-        print("recursion limit number", sys.getrecursionlimit())
+        setrecursionlimit(recursion_limit)
+        print("recursion limit number", getrecursionlimit())
 
         print("order_equations_method:", self.parameters["order_equations_method"])
 
@@ -472,19 +471,19 @@ class SplitEquations(AbstractAlgorithm):
         return G_list_dgl
 
     def _get_rank_list(self, G_list_dgl):
-        with torch.no_grad():
+        with no_grad():
 
             # use different module of gnn_rank_model
             # embedding output [n,1,128]
-            G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(dgl.batch(G_list_dgl))
+            G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))
 
             # concat target output [n,1,256]
-            mean_tensor = torch.mean(G_list_embeddings, dim=0)  # [1,128]
+            mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
             input_eq_embeddings_list = []
             for g in G_list_embeddings:
-                # input_eq_embeddings_list.append(torch.concat([g, mean_tensor], dim=1))
-                input_eq_embeddings_list.append(torch.concat([g, mean_tensor]))  # For multi filters
-            input_eq_embeddings_list = torch.stack(input_eq_embeddings_list)
+                # input_eq_embeddings_list.append(concat([g, mean_tensor], dim=1))
+                input_eq_embeddings_list.append(concat([g, mean_tensor]))  # For multi filters
+            input_eq_embeddings_list = stack(input_eq_embeddings_list)
 
             # classifier
             classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
@@ -523,8 +522,8 @@ class SplitEquations(AbstractAlgorithm):
         G_list_dgl = self._get_G_list_dgl(f)
 
         # predict
-        with torch.no_grad():
-            classifier_output = self.gnn_rank_model(dgl.batch(G_list_dgl)).squeeze()
+        with no_grad():
+            classifier_output = self.gnn_rank_model(batch(G_list_dgl)).squeeze()
 
         rank_list: List[float] = []
         for one_output in classifier_output:
@@ -568,7 +567,7 @@ class SplitEquations(AbstractAlgorithm):
         else:
             pass
 
-        with torch.no_grad():
+        with no_grad():
             classifier_output = self.gnn_rank_model(G_list_dgl).squeeze()
         rank_list = classifier_output.tolist()
         # print("predict time:", time.time() - predict_time_start)

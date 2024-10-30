@@ -35,6 +35,11 @@ def main():
     # file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
     file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
 
+    """
+    X = Y X b
+    number of X in right side >= number of X in left side
+    """
+
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT

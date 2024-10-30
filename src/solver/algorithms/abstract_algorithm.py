@@ -105,7 +105,6 @@ class AbstractAlgorithm(ABC):
 
             if is_category_call == False:
                 ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
-            # ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
             return ordered_formula
         else:
             return f
