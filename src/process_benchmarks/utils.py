@@ -3,6 +3,7 @@ import glob
 import os
 import shutil
 import subprocess
+import plotly.graph_objects as go
 from random import randint
 from statistics import median
 from time import time
@@ -302,8 +303,12 @@ def _construct_first_and_second_summary(summary_folder, summary_file_dict):
 
 
 def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
+    print("----------------------- _construct_first_and_second_summary ----------------------------")
+
     first_summary_data_rows, first_summary_title_row, first_summary_solver_row, second_summary_title_row, second_summary_data_rows, satisfiability_dict = _construct_first_and_second_summary(
         summary_folder, summary_file_dict)
+
+    print("----------------------- compute_measurement_for_common_solved_problems ----------------------------")
 
     compute_measurement_for_common_solved_problems(first_summary_data_rows, first_summary_title_row,
                                                    first_summary_solver_row, second_summary_title_row,
@@ -354,6 +359,14 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
     _write_summary_to_cvs(summary_folder, track_name, first_summary_title_row, first_summary_solver_row,
                           first_summary_data_rows, second_summary_title_row, second_summary_data_rows)
 
+    #################### statistics according to number of eqs ########################
+    print("----------------------- statistics according to number of eqs ----------------------------")
+
+    save_directory=os.path.join(summary_folder,f"{track_name}_summary")
+    _eq_number_statistics(track_name,first_summary_data_rows, first_summary_title_row, first_summary_solver_row,save_directory)
+
+    print("----------------------- statistics according to number of done ----------------------------")
+
     #################### pair-wise comparison ########################
     print("----------------------- pairwise comparison ----------------------------")
 
@@ -400,10 +413,10 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
         common_and_unique_solved_dict.update(unique_solver_dict)
         # print(pairwise_dict)
 
-        track_name = "-".join([k for k in pairwise_dict])
-        one_pairwise_folder = os.path.join(pairwise_folder, track_name)
+        pairwise_track_name = "-".join([k for k in pairwise_dict])
+        one_pairwise_folder = os.path.join(pairwise_folder, pairwise_track_name)
         create_folder(one_pairwise_folder, log=False)
-        _write_summary_to_cvs(one_pairwise_folder, track_name, first_summary_title_row, first_summary_solver_row,
+        _write_summary_to_cvs(one_pairwise_folder, pairwise_track_name, first_summary_title_row, first_summary_solver_row,
                               first_summary_data_rows, second_summary_title_row, second_summary_data_rows)
         # print("first_summary_title_row")
         # print(first_summary_title_row)
@@ -423,11 +436,69 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
                               first_summary_data_rows,
                               one_pairwise_folder, common_and_unique_solved_dict)
 
+        _eq_number_statistics(track_name,first_summary_data_rows, first_summary_title_row, first_summary_solver_row,
+                              one_pairwise_folder)
+
     print("----------------------- pairwise comparison done ----------------------------")
 
-    #################### statistics according to number of eqs ########################
-    print("----------------------- statistics according to number of eqs ----------------------------")
-    print("----------------------- statistics according to number of done ----------------------------")
+
+
+def _eq_number_statistics(track_name,first_summary_data_rows, first_summary_title_row, first_summary_solver_row,save_directoary):
+    solver_list=list(set(first_summary_solver_row[1:]))
+    offset_column = 3
+    eq_upperbound = 100
+
+
+    solver_based_data_dict_sat={}
+    solver_based_data_dict_unsat={}
+    solver_based_data_dict_unknown={}
+    for solver in solver_list:
+        y_axis_sat_number_list={i:0 for i in range(1,eq_upperbound+1)}
+        solver_based_data_dict_sat[solver] =y_axis_sat_number_list
+
+        y_axis_unsat_number_list={i:0 for i in range(1,eq_upperbound+1)}
+        solver_based_data_dict_unsat[solver] =y_axis_unsat_number_list
+
+        y_axis_unknown_number_list={i:0 for i in range(1,eq_upperbound+1)}
+        solver_based_data_dict_unknown[solver] =y_axis_unknown_number_list
+
+
+
+
+    # get eq numbers for each problem
+    first_summary_data_rows_eq_numbers=[]
+    for row in first_summary_data_rows:
+        file_name=row[0]
+        file_path=f"{bench_folder}/{track_name}/ALL/ALL/{file_name}"
+        parsed_eq_dict=perse_eq_file(file_path)
+        eq_number=len(parsed_eq_dict["equation_list"])
+        first_summary_data_rows_eq_numbers.append(eq_number)
+
+    solver_satisfiability_column = 1
+    for solver in solver_list:
+
+        for (row, eq_number) in zip(first_summary_data_rows, first_summary_data_rows_eq_numbers):
+            #print(solver_satisfiability_column,row)
+            if solver_satisfiability_column>=len(row):
+                satisfiability=UNKNOWN
+            else:
+                satisfiability = row[solver_satisfiability_column]
+            if satisfiability==SAT:
+                solver_based_data_dict_sat[solver][eq_number]+=1
+            elif satisfiability==UNSAT:
+                solver_based_data_dict_unsat[solver][eq_number]+=1
+            elif satisfiability==UNKNOWN:
+                solver_based_data_dict_unknown[solver][eq_number]+=1
+
+        solver_satisfiability_column += offset_column
+
+
+    plot_scatter_eq_number(solver_based_data_dict_sat, solver_based_data_dict_unsat, solver_based_data_dict_unknown,
+                           save_directoary)
+
+
+
+
 
 
 def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_row, first_summary_data_rows,
@@ -487,8 +558,104 @@ def summarize_satisfiability(status_list):
 
     # If only 'UNKNOWN' remains, return 'UNKNOWN'
     return UNKNOWN
+
+def _merge_solvr_text(one_dict):
+    merged_sat = {}
+    for i in range(1, 101):
+        for solver in one_dict.keys():
+            solved_number = one_dict[solver][i]
+            if (i, solved_number) in merged_sat:
+                merged_sat[(i, solved_number)] += solver + " <br>"
+            else:
+                merged_sat[(i, solved_number)] = solver + " <br>"
+
+    return merged_sat
+
+def plot_scatter_eq_number(sat_dict, unsat_dict, unknown_dict, save_directory):
+
+    #merge solver text
+    merged_sat=_merge_solvr_text(sat_dict)
+    merged_unsat=_merge_solvr_text(unsat_dict)
+    merged_unknown=_merge_solvr_text(unknown_dict)
+
+    # Create the scatter plot
+    fig = go.Figure()
+
+    # Scatter plot of data points
+    x_axis = list(range(1, 101))
+
+
+    y_axis_sat =[key[1] for key in merged_sat]
+    text_list = list(merged_sat.values())
+    fig.add_trace(go.Scatter(
+        x=x_axis, y=y_axis_sat, mode='markers',
+        text=text_list,
+        marker=dict(color="green", symbol="circle",size=12),
+        name="SAT"
+
+    ))
+
+    y_axis_unsat = [key[1] for key in merged_unsat]
+    text_list = list(merged_unsat.values())
+    fig.add_trace(go.Scatter(
+        x=x_axis, y=y_axis_unsat, mode='markers',
+        text=text_list,
+        marker=dict(color="red", symbol="x",size=12),
+        name="UNSAT"
+    ))
+
+    y_axis_unknown = [key[1] for key in merged_unknown]
+    text_list = list(merged_unknown.values())
+    fig.add_trace(go.Scatter(
+        x=x_axis, y=y_axis_unknown, mode='markers',
+        text=text_list,
+        marker=dict(color="blue", symbol="diamond",size=12),
+        name="UNKNOWN"
+    ))
+
+    fig.write_html(f"{save_directory}/eq_number_scatter_plot.html")
+
+
+
+    # Create the scatter plot highlighting
+    fig = go.Figure()
+
+    # Scatter plot of data points
+    x_axis = list(range(1, 101))
+    solver_1=list(sat_dict.keys())[0]
+    solver_2=list(sat_dict.keys())[1]
+
+    fig=_add_highlighting_trace(merged_sat, solver_1, solver_2, fig,x_axis,"circle","SAT")
+
+    fig=_add_highlighting_trace(merged_unsat, solver_1, solver_2, fig,x_axis,"x","UNSAT")
+
+    fig=_add_highlighting_trace(merged_unknown, solver_1, solver_2, fig,x_axis,"diamond","UNKNOWN")
+
+
+    fig.write_html(f"{save_directory}/eq_number_scatter_plot_highlighting.html")
+
+def _add_highlighting_trace(merged_dict, solver_1, solver_2, fig,x_axis,symbol,point_name):
+    y_axis_sat = [key[1] for key in merged_dict]
+    text_list = list(merged_dict.values())
+    color_list = []
+    for text in text_list:
+        if solver_1 in text:
+            color_list.append("green")
+        elif solver_2 in text:
+            color_list.append("red")
+        else:
+            color_list.append("black")
+    fig.add_trace(go.Scatter(
+        x=x_axis, y=y_axis_sat, mode='markers',
+        text=text_list,
+        marker=dict(color=color_list, symbol=symbol,size=12),
+        name=point_name
+    ))
+    return fig
+
 def plot_scatter(save_directory, data_dict):
     import plotly.graph_objects as go
+    import numpy as np
 
     # Define a color for each satisfiability category
     color_map = {
@@ -503,13 +670,37 @@ def plot_scatter(save_directory, data_dict):
     }
     colors = [color_map[sat] for sat in data_dict["satisfiability_list"]]
     shapes = [shape_map[sat] for sat in data_dict["satisfiability_list"]]
+
     # Create the scatter plot
-    fig = go.Figure(
-        data=go.Scatter(x=data_dict["x_data"], y=data_dict["y_data"], mode='markers',
-                        text=data_dict["file_name_list"], marker=dict(
-                color=colors,  # Apply color settings here
-                symbol=shapes  # Apply shape settings here
-            )))
+    fig = go.Figure()
+    # Scatter plot of data points
+    fig.add_trace(go.Scatter(
+        x=data_dict["x_data"], y=data_dict["y_data"], mode='markers',
+        text=data_dict["file_name_list"],
+        marker=dict(color=colors, symbol=shapes)
+    ))
+
+    # Calculate diagonal line (y = x) range on log scale
+    x_min, x_max = min(data_dict["x_data"]), max(data_dict["x_data"])
+    y_min, y_max = min(data_dict["y_data"]), max(data_dict["y_data"])
+    if x_min == 0:
+        x_min = 1
+    if y_min == 0:
+        y_min = 1
+
+    # Set limits for the diagonal line based on combined x and y ranges
+    min_val = min(x_min, y_min)
+    max_val = max(x_max, y_max)
+    diagonal_x = np.logspace(np.log10(min_val), np.log10(max_val), num=100)
+    diagonal_y = diagonal_x  # y = x line
+
+    # Add diagonal line trace
+    fig.add_trace(go.Scatter(
+        x=diagonal_x, y=diagonal_y,
+        mode='lines',
+        line=dict(color='blue', dash='solid'),
+        name='y = x'
+    ))
 
     title = (
         f"{data_dict['measurement']} - {data_dict['x_title']} vs {data_dict['y_title']} <br>"

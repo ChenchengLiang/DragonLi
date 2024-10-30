@@ -27,12 +27,12 @@ def main():
 
 
     all_folders=os.listdir(path)
-    print(len(all_folders),all_folders)
+    #print(len(all_folders),all_folders)
 
 
     csv_file_dict = {os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
-    print(len(csv_file_dict),csv_file_dict)
+    #print(len(csv_file_dict),csv_file_dict)
 
     #read divided csv to memory
     for i,folder in enumerate(all_folders):
@@ -51,8 +51,7 @@ def main():
     merged_csv_file_dict={os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
     for k,one_file in csv_file_dict.items():
-        print(k)
-        print(one_file)
+
         first_row = []
         second_rows=[]
         further_rows=[]

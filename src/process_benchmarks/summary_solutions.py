@@ -51,7 +51,7 @@ def main():
                     # else:
                     #     summary_file_dict[
                     #         solver + ":" + parameter_str] = solver  + "_" + track + "_summary.csv"
-        print(summary_file_dict)
+        #print(summary_file_dict)
         summary_one_track(summary_folder, summary_file_dict, track,main_key)
 
 
