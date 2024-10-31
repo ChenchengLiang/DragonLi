@@ -446,7 +446,8 @@ def summary_one_track(summary_folder, summary_file_dict, track_name,main_key):
 
 
 def _eq_number_statistics(track_name,first_summary_data_rows, first_summary_title_row, first_summary_solver_row,save_directoary):
-    solver_list=list(set(first_summary_solver_row[1:]))
+    solver_list=remove_duplicates(first_summary_solver_row[1:])
+
     offset_column = 3
     eq_upperbound = 100
 
