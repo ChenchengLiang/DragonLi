@@ -3,6 +3,8 @@ import glob
 import os
 import shutil
 import subprocess
+from symbol import yield_arg
+
 import plotly.graph_objects as go
 from random import randint
 from statistics import median
@@ -558,16 +560,44 @@ def summarize_satisfiability(status_list):
     return UNKNOWN
 
 def _merge_solvr_text(one_dict):
-    merged_sat = {}
+    merged = {}
     for i in range(1, 101):
         for solver in one_dict.keys():
             solved_number = one_dict[solver][i]
-            if (i, solved_number) in merged_sat:
-                merged_sat[(i, solved_number)] += solver + " <br>"
+            if (i, solved_number) in merged:
+                merged[(i, solved_number)] += solver + " <br>"
             else:
-                merged_sat[(i, solved_number)] = solver + " <br>"
+                merged[(i, solved_number)] = solver + " <br>"
 
-    return merged_sat
+    return merged
+
+
+def _form_scatter_data(fig,merged_dict,color,symbol,point_name):
+    x_axis = []
+    y_axis = []
+    text_list=[]
+    for key in merged_dict:
+        x_axis.append(key[0])
+        y_axis.append(key[1])
+        text_list.append(merged_dict[key])
+    fig.add_trace(go.Scatter(
+        x=x_axis, y=y_axis, mode='markers',
+        text=text_list,
+        marker=dict(color=color, symbol=symbol, size=12),
+        name=point_name
+
+    ))
+    return fig
+
+def _add_axis_labels_and_title(fig):
+    # Add axis labels and a title to the plot
+    fig.update_layout(
+        title="Scatter Plot of Equation Numbers",
+        xaxis_title="Equation Number",
+        yaxis_title="Number of Solved Equations",
+        legend_title="Result Type"
+    )
+    return fig
 
 def plot_scatter_eq_number(sat_dict, unsat_dict, unknown_dict, save_directory):
 
@@ -580,36 +610,13 @@ def plot_scatter_eq_number(sat_dict, unsat_dict, unknown_dict, save_directory):
     fig = go.Figure()
 
     # Scatter plot of data points
-    x_axis = list(range(1, 101))
+    fig=_form_scatter_data(fig,merged_sat,"green","circle","SAT")
 
+    fig=_form_scatter_data(fig,merged_unsat,"red","x","UNSAT")
 
-    y_axis_sat =[key[1] for key in merged_sat]
-    text_list = list(merged_sat.values())
-    fig.add_trace(go.Scatter(
-        x=x_axis, y=y_axis_sat, mode='markers',
-        text=text_list,
-        marker=dict(color="green", symbol="circle",size=12),
-        name="SAT"
+    fig=_form_scatter_data(fig,merged_unknown,"blue","diamond","UNKNOWN")
 
-    ))
-
-    y_axis_unsat = [key[1] for key in merged_unsat]
-    text_list = list(merged_unsat.values())
-    fig.add_trace(go.Scatter(
-        x=x_axis, y=y_axis_unsat, mode='markers',
-        text=text_list,
-        marker=dict(color="red", symbol="x",size=12),
-        name="UNSAT"
-    ))
-
-    y_axis_unknown = [key[1] for key in merged_unknown]
-    text_list = list(merged_unknown.values())
-    fig.add_trace(go.Scatter(
-        x=x_axis, y=y_axis_unknown, mode='markers',
-        text=text_list,
-        marker=dict(color="blue", symbol="diamond",size=12),
-        name="UNKNOWN"
-    ))
+    fig=_add_axis_labels_and_title(fig)
 
     fig.write_html(f"{save_directory}/eq_number_scatter_plot.html")
 
@@ -623,18 +630,26 @@ def plot_scatter_eq_number(sat_dict, unsat_dict, unknown_dict, save_directory):
     solver_1=list(sat_dict.keys())[0]
     solver_2=list(sat_dict.keys())[1]
 
-    fig=_add_highlighting_trace(merged_sat, solver_1, solver_2, fig,x_axis,"circle","SAT")
+    fig=_add_highlighting_trace(merged_sat, solver_1, solver_2, fig,"circle","SAT")
 
-    fig=_add_highlighting_trace(merged_unsat, solver_1, solver_2, fig,x_axis,"x","UNSAT")
+    fig=_add_highlighting_trace(merged_unsat, solver_1, solver_2, fig,"x","UNSAT")
 
-    fig=_add_highlighting_trace(merged_unknown, solver_1, solver_2, fig,x_axis,"diamond","UNKNOWN")
+    fig=_add_highlighting_trace(merged_unknown, solver_1, solver_2, fig,"diamond","UNKNOWN")
+
+    fig=_add_axis_labels_and_title(fig)
 
 
     fig.write_html(f"{save_directory}/eq_number_scatter_plot_highlighting.html")
 
-def _add_highlighting_trace(merged_dict, solver_1, solver_2, fig,x_axis,symbol,point_name):
-    y_axis_sat = [key[1] for key in merged_dict]
-    text_list = list(merged_dict.values())
+def _add_highlighting_trace(merged_dict, solver_1, solver_2, fig,symbol,point_name):
+    x_axis = []
+    y_axis = []
+    text_list = []
+    for key in merged_dict:
+        x_axis.append(key[0])
+        y_axis.append(key[1])
+        text_list.append(merged_dict[key])
+
     color_list = []
     for text in text_list:
         if solver_1 in text:
@@ -644,7 +659,7 @@ def _add_highlighting_trace(merged_dict, solver_1, solver_2, fig,x_axis,symbol,p
         else:
             color_list.append("black")
     fig.add_trace(go.Scatter(
-        x=x_axis, y=y_axis_sat, mode='markers',
+        x=x_axis, y=y_axis, mode='markers',
         text=text_list,
         marker=dict(color=color_list, symbol=symbol,size=12),
         name=point_name
