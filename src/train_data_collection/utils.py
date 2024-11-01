@@ -276,6 +276,10 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
             print("read answer from file")
             with open(answer_file_path, "r") as f:
                 satisfiability = f.read().strip("\n")
+        elif train_data_solvability=="UNSAT":
+            satisfiability = "UNSAT"
+        elif train_data_solvability=="SAT":
+            satisfiability = "SAT"
         else:
             result_dict = run_on_one_problem(file_path=file_path,
                                              parameters_list=parameters_list,
