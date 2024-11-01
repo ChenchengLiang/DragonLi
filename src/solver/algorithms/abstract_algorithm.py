@@ -102,9 +102,10 @@ class AbstractAlgorithm(ABC):
             if self.gnn_call_flag == True:
                 current_node[1]["gnn_call"] = True
                 self.gnn_call_flag = False
+            current_node[1]["is_category_call"]=is_category_call
 
-            if is_category_call == False:
-                ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
+            # if is_category_call == False:
+            #     ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
             return ordered_formula
         else:
             return f

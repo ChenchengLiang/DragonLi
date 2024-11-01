@@ -52,7 +52,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.max_deep_for_extraction = 3
         self.max_found_sat_path_extraction = 10
         self.max_found_unsat_leaf_node_extraction = 5000
-        self.max_found_path_extraction = 20
+        self.max_found_path_extraction = 1000
         self.max_found_unsat_first_layer_node = 1
         self.max_found_unsat_each_layer_node=1
         self.max_total_split_eq_call=20000
@@ -151,7 +151,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         # initialize the tree with a node
         initial_node: Tuple[int, Dict] = (
             0, {"label": "start", "status": None, "output_to_file": False, "shape": "circle",
-                "back_track_count": 0, "gnn_call": False,"depth":0})
+                "back_track_count": 0, "gnn_call": False,"depth":0,"is_category_call":False})
         self.nodes.append(initial_node)
 
         try:
@@ -193,7 +193,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         self.total_split_eq_call += 1
 
         if self.total_split_eq_call % 1000 == 0:
-            print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth}, spent time:{time.time()-self.start_time} -----")
+            print(f"----- total_split_eq_call:{self.total_split_eq_call}, current_depth:{current_depth},"
+                  f" spent time:{time.time()-self.start_time}, found paths: {self.found_path} -----")
 
         current_node = self.record_node_and_edges(original_formula, previous_branch_node, edge_label,current_depth)
 
@@ -420,7 +421,8 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         if all(s[1]==UNKNOWN for s in branch_eq_satisfiability_list):
             pass
         else:
-            if "category" in self.parameters["order_equations_method"]:  # category
+            if current_node[1]["is_category_call"]==True:
+            #if "category" in self.parameters["order_equations_method"]:  # category
                 categoried_eq_list: List[Tuple[Equation, int]] = _category_formula_by_rules(
                     current_formula)
                 # Check if the equation categories are only 5 and 6
@@ -538,7 +540,7 @@ class SplitEquationsExtractData(AbstractAlgorithm):
         node_id_list=[]
         for value in self.best_unsat_path_data:
             (branch_eq_satisfiability_list, current_node) = value
-            print("branch_eq_satisfiability_list",branch_eq_satisfiability_list)
+            #print("branch_eq_satisfiability_list",branch_eq_satisfiability_list)
             if all(s[1] == UNKNOWN for s in branch_eq_satisfiability_list):
                 pass
             else:

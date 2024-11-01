@@ -91,6 +91,7 @@ Local: Set parameter and run identify_new_trainable_data.py
 
 3. Divide problem set for cluster
 Local: set parameter and run divided_folder.py
+divide data in folder merged_new_trainable_data
 The folder should looks like benchmark/z3/UNSAT/*.eq, benchmark/ostrich/UNSAT/*.eq,..., benchmark divided_i/UNSAT/*.eq
 
 4. Extract unsatcores
