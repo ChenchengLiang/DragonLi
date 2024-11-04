@@ -23,9 +23,9 @@ from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 def main():
     # generate track
-    start_idx = 1
-    end_idx = 10000
-    track_name = f"01_track_multi_word_equations_eq_2_50_generated_bootstrapping_{start_idx}_{end_idx}"
+    start_idx = 30001
+    end_idx = 40000
+    track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)

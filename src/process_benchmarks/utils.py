@@ -520,7 +520,11 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
     for row in first_summary_data_rows:
         file_name_list.append(row[0])
         first_satisfiability=_convert_string(row[satisfiability_column_index])
-        second_satisfiability=_convert_string(row[satisfiability_column_index+offset_column])
+        second_satisfiability_column_index=satisfiability_column_index+offset_column
+        if second_satisfiability_column_index>=len(row):
+            second_satisfiability=UNKNOWN
+        else:
+            second_satisfiability=_convert_string(row[satisfiability_column_index+offset_column])
         summarized_satisfiability=summarize_satisfiability([first_satisfiability,second_satisfiability])
         satisfiability_list.append(summarized_satisfiability)
         solver_1_data_list.append(_convert_string(row[column_index_solver_1]))

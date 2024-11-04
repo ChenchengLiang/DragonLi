@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "01_track_multi_word_equations_eq_2_50_generated_train_core+UNSAT+bootstrapping_core"
+    track_name = "01_track_multi_word_equations_eq_2_50_generated_train_core+UNSAT+bootstrapping_core+UNSAT"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"
@@ -355,8 +355,8 @@ def split_to_train_valid_with_zip(source_folder, satisfiability, train_folder, v
     for file in valid_files:
         file_name = os.path.basename(file)
         shutil.copy(file, os.path.join(valid_folder, file_name))
-        answer_file = file.replace(".eq", ".answer")
-        shutil.copy(answer_file, os.path.join(valid_folder, os.path.basename(answer_file)))
+        #answer_file = file.replace(".eq", ".answer")
+        #shutil.copy(answer_file, os.path.join(valid_folder, os.path.basename(answer_file)))
         file_name_before_at = file_name.split(".eq")[0]
         all_filenames=get_filenames(f"{source_folder}/temp/train")
         all_filenames = [os.path.basename(name) for name in all_filenames]
@@ -371,8 +371,8 @@ def split_to_train_valid_with_zip(source_folder, satisfiability, train_folder, v
     for file in train_files:
         file_name = os.path.basename(file)
         shutil.copy(file, os.path.join(train_folder, file_name))
-        answer_file = file.replace(".eq", ".answer")
-        shutil.copy(answer_file, os.path.join(train_folder, os.path.basename(answer_file)))
+        #answer_file = file.replace(".eq", ".answer")
+        #shutil.copy(answer_file, os.path.join(train_folder, os.path.basename(answer_file)))
         file_name_before_at = file_name.split(".eq")[0]
         all_filenames = get_filenames(f"{source_folder}/temp/train")
         all_filenames=[os.path.basename(name) for name in all_filenames]
