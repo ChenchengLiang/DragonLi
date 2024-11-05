@@ -13,6 +13,7 @@ class AbstractAlgorithm(ABC):
         self.gnn_call_flag = False
 
         self.post_process_ordered_formula_func_map = {"None": self._post_process_ordered_formula_none,
+                                                      "verbose": self._post_process_ordered_formula_verbose,
                                                       "quadratic": self._post_process_ordered_formula_quadratic_pattern,
                                                       "quadratic_prefix": self._post_process_ordered_formula_quadratic_pattern_prefix,
                                                       "quadratic_suffix": self._post_process_ordered_formula_quadratic_pattern_suffix}
@@ -106,6 +107,7 @@ class AbstractAlgorithm(ABC):
 
             # if is_category_call == False:
             #     ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
+            #ordered_formula = self.post_process_ordered_formula_func(ordered_formula)
             return ordered_formula
         else:
             return f
@@ -113,6 +115,38 @@ class AbstractAlgorithm(ABC):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
+    def _post_process_ordered_formula_verbose(self, f: Formula) -> Formula:
+        #current_eq,_=self.get_first_eq(f)
+        #print(current_eq.eq_str_pretty)
+        # if current_eq.left_hand_side_length != 0 and current_eq.right_hand_side_length != 0:
+        #     first_left_term = current_eq.left_terms[0]
+        #     first_right_term = current_eq.right_terms[0]
+        #     first_left_term_occurrence_in_left_terms = current_eq.left_terms.count(first_left_term)
+        #     first_left_term_occurrence_in_right_terms = current_eq.right_terms.count(first_left_term)
+        #     first_right_term_occurrence_in_left_terms = current_eq.left_terms.count(first_right_term)
+        #     first_right_term_occurrence_in_right_terms = current_eq.right_terms.count(first_right_term)
+        #     if self._prefix_loop(first_left_term, first_right_term, first_left_term_occurrence_in_left_terms,
+        #                          first_left_term_occurrence_in_right_terms, first_right_term_occurrence_in_left_terms,
+        #                          first_right_term_occurrence_in_right_terms):
+        #         print("prefix_loop")
+        #         print(current_eq.eq_str_pretty)
+
+
+            # last_left_term = current_eq.left_terms[-1]
+            # last_right_term = current_eq.right_terms[-1]
+            # last_left_term_occurrence_in_left_terms = current_eq.left_terms.count(last_left_term)
+            # last_left_term_occurrence_in_right_terms = current_eq.right_terms.count(last_left_term)
+            # last_right_term_occurrence_in_left_terms = current_eq.left_terms.count(last_right_term)
+            # last_right_term_occurrence_in_right_terms = current_eq.right_terms.count(last_right_term)
+            #
+            # if self._suffix_loop(last_left_term, last_right_term, last_left_term_occurrence_in_left_terms,
+            #                      last_left_term_occurrence_in_right_terms, last_right_term_occurrence_in_left_terms,
+            #                      last_right_term_occurrence_in_right_terms):
+            #     print("suffix_loop")
+            #     print(current_eq.eq_str_pretty)
+
+
+        return f
     def _post_process_ordered_formula_none(self, f: Formula) -> Formula:
         return f
 

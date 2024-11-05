@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="01_track_multi_word_equations_eq_2_50_generated_train_20001_30000_for_unsatcore"
+    track_name="01_track_multi_word_equations_eq_2_50_generated_train_30001_40000_for_unsatcore"
     file_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)

@@ -35,7 +35,17 @@ def main():
     # file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
     #file_path = bench_folder + "/examples_choose_eq/39/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_329.eq"
-    file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
+    #file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
+    #file_path = bench_folder + "/examples_choose_eq/41/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_183.eq"
+    file_path = bench_folder + "/examples_choose_eq/42/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_747.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_1.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-2/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_10.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-3/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_1000.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-4/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_102.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-5/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_103.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
+
+
     """
     X = Y X b
     number of X in right side >= number of X in left side
@@ -142,8 +152,8 @@ def main():
         os.remove(log_file)
 
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

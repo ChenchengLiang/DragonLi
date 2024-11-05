@@ -522,13 +522,16 @@ def _one_pair_measurement(column, first_summary_title_row, first_summary_solver_
         first_satisfiability=_convert_string(row[satisfiability_column_index])
         second_satisfiability_column_index=satisfiability_column_index+offset_column
         if second_satisfiability_column_index>=len(row):
-            second_satisfiability=UNKNOWN
+            second_satisfiability="None"
         else:
             second_satisfiability=_convert_string(row[satisfiability_column_index+offset_column])
         summarized_satisfiability=summarize_satisfiability([first_satisfiability,second_satisfiability])
         satisfiability_list.append(summarized_satisfiability)
         solver_1_data_list.append(_convert_string(row[column_index_solver_1]))
-        solver_2_data_list.append(_convert_string(row[column_index_solver_2]))
+        if column_index_solver_2>=len(row):
+            solver_2_data_list.append(0)
+        else:
+            solver_2_data_list.append(_convert_string(row[column_index_solver_2]))
 
     if all(x == 0 for x in solver_1_data_list):
         return None
