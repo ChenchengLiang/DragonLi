@@ -21,11 +21,11 @@ from typing import List, Tuple
 
 def main():
     # generate track
-    start_idx = 35001
-    end_idx = 40000
-    track_name = f"03_track_train_task_3_{start_idx}_{end_idx}"
+    start_idx = 1
+    end_idx = 1000
+    track_name = f"04_track_train_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_3)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
@@ -320,8 +320,8 @@ def get_variables_and_terminals(max_variables=15, max_terminals=10):
     num_terminals = random.randint(1, max_terminals)
 
     # Generate variable and terminal sets
-    variables = [string.ascii_uppercase[i] for i in range(num_variables)]
-    terminals = random.sample(string.ascii_lowercase, num_terminals)
+    variables = [string.ascii_uppercase[i] for i in range(num_variables)] #start from A
+    terminals = random.sample(string.ascii_lowercase, num_terminals) #not start from a
     return variables, terminals
 
 
