@@ -24,8 +24,8 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_20001_30000"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_30001_40000"
-    rank_task = 2
-    graph_type = "graph_3"
+    rank_task = 1
+    graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
 
 

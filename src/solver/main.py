@@ -37,13 +37,16 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/39/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_329.eq"
     #file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
     #file_path = bench_folder + "/examples_choose_eq/41/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_183.eq"
-    file_path = bench_folder + "/examples_choose_eq/42/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_747.eq"
+    #file_path = bench_folder + "/examples_choose_eq/42/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_747.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_1.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-2/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_10.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-3/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_1000.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-4/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_102.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-5/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_103.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
+    file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
+
+    file_path = bench_folder + "/examples_choose_eq/prefix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_216.eq"
 
 
     """
@@ -127,7 +130,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "hybrid_category_fixed_random",
+                                           "order_equations_method": "category",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}
