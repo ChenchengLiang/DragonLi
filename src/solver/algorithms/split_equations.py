@@ -46,7 +46,7 @@ class SplitEquations(AbstractAlgorithm):
                                  "frequency": self._decide_rules_by_frequency,
                                  "quadratic_pattern": self._decide_rules_by_quadratic_pattern,
                                  "prefix": self._decide_rules_prefix, "suffix": self._decide_rules_suffix}
-        self.decide_rules_func = self.decide_rules_map["suffix"]
+        self.decide_rules_func = self.decide_rules_map["prefix"]
 
         self.post_process_ordered_formula_func = self.post_process_ordered_formula_func_map["None"]
 

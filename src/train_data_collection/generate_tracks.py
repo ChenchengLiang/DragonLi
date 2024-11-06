@@ -23,9 +23,10 @@ from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 def main():
     # generate track
-    start_idx = 30001
-    end_idx = 40000
-    track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
+    start_idx = 1001
+    end_idx = 2000
+    #track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
+    track_name = f"04_track_train_old_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -91,7 +92,11 @@ def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, m
     return result, variables, terminals, [(replaced_left, replaced_right)]
 
 
-def generate_letter_pool(length, use_uppercase=True, custom_letters=None):
+def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
+    # Choose a number of variables or terminals
+    #length = random.randint(1, max_length)
+    length=max_length
+
     if custom_letters:
         letters = custom_letters
     else:
@@ -102,7 +107,7 @@ def generate_letter_pool(length, use_uppercase=True, custom_letters=None):
 
     for i in range(length):
         letter_index = i % num_letters
-        number = i // num_letters
+        number = i // num_letters # generate the index for A_1, A_2, A_3, ...
 
         if number == 0:
             pool.append(letters[letter_index])
@@ -338,17 +343,29 @@ def generate_conjunctive_track_03(file_name, index):
 
 
 def generate_one_track_4_v2(file_name, index):
-    min_eq = 2
-    max_eq = 50
+    # new setting
+    # min_eq = 2
+    # max_eq = 50
+    # max_variables = 10
+    # max_terminals = 10
+    # one_side_max_length = 50
+    # track_1_func=generate_one_track_1_v2 # letter pool = max_length
+
+    # old setting
+    min_eq = 1
+    max_eq = 100
     max_variables = 10
-    max_terminals = 10
-    one_side_max_length = 50
+    max_terminals = 6
+    one_side_max_length = 60
+    track_1_func=generate_one_track_1 # letter pool = random.randint(1, max_length)
+
+
     eq_number = random.randint(min_eq, max_eq)
     eq_list=[]
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
-        result, variables, terminals, eq=generate_one_track_1_v2(file_name, index, max_variables=max_variables, max_terminals=max_terminals, max_length=one_side_max_length)
+        result, variables, terminals, eq = track_1_func(file_name, index, max_variables=max_variables, max_terminals=max_terminals, max_length=one_side_max_length)
         left_list = eq[0][0]
         right_list = eq[0][1]
         temp_variable_list=[v for v in variables if v in left_list + right_list]
