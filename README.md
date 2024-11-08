@@ -1,3 +1,11 @@
+## DragonLi
+
+DragonLi is a solver for string equations, which aims to find solutions to equations involving strings rather than numerical values. These equations consist of sequences of characters, and the solver works to determine how unknown strings can be combined to satisfy given relationships.
+
+DragonLi solves string equations by recursively applying a set of calculus rules to simplify the first terms on both sides of an equation. These rules reduce the complexity of the equation by making assumptions about the lengths of the terms. This iterative process constructs a proof tree, where each node represents a string equation, and each edge represents a branch resulting from the application of a calculus rule.
+
+A key feature of DragonLi is its use of deep learning-based heuristics to guide the branching order while constructing the proof tree. This significantly boosts the solving efficiency. Specifically, each branching point is represented as a graph, which is used to train a Graph Neural Network (GNN). The trained GNN model is then employed to guide the branching process, making DragonLi highly efficient in finding solutions.
+
 ## Build Environment
 
 We first build [Apptainer](https://apptainer.org/docs/admin/main/index.html) images (similar to docker) to serve as our environment.
