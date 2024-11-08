@@ -16,7 +16,7 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 0
+    rank_task = 1
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=2000
@@ -28,8 +28,8 @@ def main():
 
 
 
-    for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_UNSAT+core_rank_task_0"]:
-    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_UNSAT+core_rank_task_1"]:
+    #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_UNSAT+core_rank_task_0"]:
+    for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_UNSAT+core_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_UNSAT+core_rank_task_2"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_5_20_generated_train_1_20000_one_core_rank_task_1"]:
@@ -58,7 +58,7 @@ def main():
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [
-                                                    "GCNSplit"]:  # ["GCN","GIN","GCNwithGAP","MultiGNNs"]:  # ["GCN", "GAT", "GIN","GCNwithGAP","MultiGNNs"]
+                                                    "GCNSplit"]:  # ["GCN","GINSplit","GCNwithGAP","MultiGNNs"]:
                                                     for share_gnn in [False]:
                                                         if model_type == "GAT":
                                                             for num_heads in [1]:

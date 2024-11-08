@@ -16,7 +16,7 @@ import csv
 
 
 def main():
-    collect_answers_from_divided_folders(benchmark="01_track_multi_word_equations_eq_2_50_generated_train_1_10000")
+    collect_answers_from_divided_folders(benchmark="04_track_woorpje_train_1_10000")
 
 
 

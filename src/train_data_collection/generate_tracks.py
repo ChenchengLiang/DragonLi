@@ -2,7 +2,6 @@ import configparser
 import os
 import sys
 
-
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
@@ -23,14 +22,14 @@ from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 def main():
     # generate track
-    start_idx = 1001
-    end_idx = 2000
-    #track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_train_old_{start_idx}_{end_idx}"
+    start_idx = 1
+    end_idx = 10000
+    # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
+    track_name = f"04_track_woorpje_train_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
-    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
@@ -52,10 +51,10 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
         equation_str, variable_list, terminal_list, eq_list = equation_generator(filename, i)
         # generate eq file
-        if len(variable_list)>26 or len(terminal_list)>26:
+        if len(variable_list) > 26 or len(terminal_list) > 26:
             pass
         else:
-            equation_str=formatting_results(variable_list, terminal_list, eq_list)
+            equation_str = formatting_results(variable_list, terminal_list, eq_list)
         with open(filename, 'w') as file:
             file.write(equation_str)
         # generate smt2 file
@@ -63,7 +62,7 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
 
 
 def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, max_length=300,
-                         write_replacement_log=False):
+                         write_replacement_log=False, terminal_pool=None, variable_pool=None):
     _, terminals = get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
@@ -94,8 +93,8 @@ def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, m
 
 def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
     # Choose a number of variables or terminals
-    #length = random.randint(1, max_length)
-    length=max_length
+    # length = random.randint(1, max_length)
+    length = max_length
 
     if custom_letters:
         letters = custom_letters
@@ -107,7 +106,7 @@ def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
 
     for i in range(length):
         letter_index = i % num_letters
-        number = i // num_letters # generate the index for A_1, A_2, A_3, ...
+        number = i // num_letters  # generate the index for A_1, A_2, A_3, ...
 
         if number == 0:
             pool.append(letters[letter_index])
@@ -117,9 +116,25 @@ def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
     return pool
 
 
-def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10, max_length=300):
+def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10,
+                            max_length=300, terminal_pool=None,
+                            variable_pool=None):
     terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
     variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
+    random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
+    eq_left = random_terminal_list
+    eq_right = random_terminal_list
+
+    # replace terminals with variables
+    replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool)
+
+    result = formatting_results_v2(variable_pool, terminal_pool, [(replaced_left, replaced_right)])
+
+    return result, variable_pool, terminal_pool, [(replaced_left, replaced_right)]
+
+
+def generate_one_track_1_woorpje(file_name, index, max_variables=15,
+                                 max_terminals=10, max_length=300, terminal_pool=None, variable_pool=None):
     random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
     eq_left = random_terminal_list
     eq_right = random_terminal_list
@@ -159,10 +174,10 @@ def replace_one_side(original_list, variable_pool, max_replace_variable_length):
     random_substring_length = random.randint(0, len(original_list) - random_start_index)
     random_end_index = random_start_index + random_substring_length
 
-    #choose the replacement variables not in existing variables
-    current_variable_list=[t for t in original_list if t in variable_pool]
-    available_variable_pool= [v for v in variable_pool if v not in current_variable_list]
-    if available_variable_pool==[]:
+    # choose the replacement variables not in existing variables
+    current_variable_list = [t for t in original_list if t in variable_pool]
+    available_variable_pool = [v for v in variable_pool if v not in current_variable_list]
+    if available_variable_pool == []:
         return original_list
 
     replacement_variable_list = [random.choice(available_variable_pool) for _ in range(max_replace_variable_length)]
@@ -349,27 +364,45 @@ def generate_one_track_4_v2(file_name, index):
     # max_variables = 10
     # max_terminals = 10
     # one_side_max_length = 50
+    # terminal_pool = None
+    # variable_pool = None
     # track_1_func=generate_one_track_1_v2 # letter pool = max_length
 
     # old setting
+    # min_eq = 1
+    # max_eq = 100
+    # max_variables = 10
+    # max_terminals = 6
+    # one_side_max_length = 60
+    # terminal_pool=None
+    # variable_pool=None
+    # track_1_func=generate_one_track_1 # letter pool = random.randint(1, max_length)
+
+    # woorpje setting
     min_eq = 1
     max_eq = 100
     max_variables = 10
     max_terminals = 6
     one_side_max_length = 60
-    track_1_func=generate_one_track_1 # letter pool = random.randint(1, max_length)
-
+    variable_pool, terminal_pool = get_variables_and_terminals(max_variables=max_variables,
+                                                               max_terminals=max_terminals)
+    track_1_func = generate_one_track_1_woorpje
 
     eq_number = random.randint(min_eq, max_eq)
-    eq_list=[]
+    eq_list = []
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
-        result, variables, terminals, eq = track_1_func(file_name, index, max_variables=max_variables, max_terminals=max_terminals, max_length=one_side_max_length)
+        result, variables, terminals, eq = track_1_func(file_name, index,
+                                                        max_variables=max_variables,
+                                                        max_terminals=max_terminals,
+                                                        max_length=one_side_max_length,
+                                                        terminal_pool=terminal_pool,
+                                                        variable_pool=variable_pool)
         left_list = eq[0][0]
         right_list = eq[0][1]
-        temp_variable_list=[v for v in variables if v in left_list + right_list]
-        temp_terminal_list=[t for t in terminals if t in left_list + right_list]
+        temp_variable_list = [v for v in variables if v in left_list + right_list]
+        temp_terminal_list = [t for t in terminals if t in left_list + right_list]
         variable_list.extend(temp_variable_list)
         terminal_list.extend(temp_terminal_list)
         variable_list = remove_duplicates(variable_list)
@@ -477,16 +510,15 @@ def generate_one_SAT_multi_word_equation_track(file_name, index):
     return result, variable_list, terminal_list, eq_list
 
 
-
-
 def get_variables_and_terminals(max_variables=15, max_terminals=10):
     # Choose a number of variables and terminals
     num_variables = random.randint(1, max_variables)
     num_terminals = random.randint(1, max_terminals)
 
     # Generate variable and terminal sets
-    variables = [string.ascii_uppercase[i] for i in range(num_variables)]
-    terminals = random.sample(string.ascii_lowercase, num_terminals)
+    variables = [string.ascii_uppercase[i] for i in range(num_variables)] #start by A
+    terminals = [string.ascii_lowercase[i] for i in range(num_terminals)] #start by a
+    #terminals = random.sample(string.ascii_lowercase, num_terminals) #not start by a
     return variables, terminals
 
 

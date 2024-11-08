@@ -745,15 +745,6 @@ class GINEmbedding(BaseEmbedding):
             self.gnn_layers.append(GINConv(mlp, learn_eps=True))
 
 
-    def _build_layers(self, hidden_feats, num_gnn_layers):
-        # mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU(),
-        #                     nn.Linear(hidden_feats, hidden_feats))
-        mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
-        self.gnn_layers.append(GINConv(mlp, learn_eps=True))
-        for _ in range(num_gnn_layers - 1):
-            mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
-            self.gnn_layers.append(GINConv(mlp, learn_eps=True))
-
 
 class SharedGNN(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN'):

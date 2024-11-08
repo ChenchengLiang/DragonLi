@@ -44,16 +44,16 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/suffix-4/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_102.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-5/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_103.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
-    file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
+    #file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
 
-    file_path = bench_folder + "/examples_choose_eq/prefix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_216.eq"
+    #file_path = bench_folder + "/examples_choose_eq/prefix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_216.eq"
 
 
     """
     X = Y X b
     number of X in right side >= number of X in left side
     """
-
+    file_path = bench_folder + "/examples_choose_eq/gnn-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_690.eq"
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
@@ -112,9 +112,9 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type = "graph_5"
+    graph_type = "graph_2"
     task = "task_3"
-    rank_task = 0
+    rank_task = 1
     label_size = rank_task_label_size_map[rank_task]
     model_type = "GCNSplit"
     gnn_model_path = f"{project_folder}/Models/model_0_{graph_type}_{model_type}.pth"
@@ -130,13 +130,13 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "hybrid_category_fixed_random",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "gnn_first_n_iterations",
+                                               "order_equations_method": "category_gnn",
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
@@ -154,9 +154,9 @@ def main():
     if os.path.exists(log_file):
         os.remove(log_file)
 
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
     #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
-    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
+    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
     # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)

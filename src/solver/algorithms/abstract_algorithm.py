@@ -103,6 +103,9 @@ class AbstractAlgorithm(ABC):
             if self.gnn_call_flag == True:
                 current_node[1]["gnn_call"] = True
                 self.gnn_call_flag = False
+                print(f"node number: {current_node[0]}, gnn_order")
+                ordered_formula.print_eq_list()
+
             current_node[1]["is_category_call"]=is_category_call
 
             # if is_category_call == False:
