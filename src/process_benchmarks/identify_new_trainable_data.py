@@ -19,12 +19,12 @@ import argparse
 
 
 def main():
-    benchmark_name=f"01_track_multi_word_equations_eq_2_50_generated_train_30001_40000"
+    benchmark_name=f"04_track_woorpje_train_10001_30000"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
     create_folder(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
 
     #this_solver_rank_option="graph_1_hybrid_category_gnn_random_each_n_iterations_GCNSplit"
-    this_solver_rank_option="hybrid_category_fixed_random"
+    this_solver_rank_option="category_random"
     summary_file_this_solver = f"this_fixed_termination_condition_0_{this_solver_rank_option}_{benchmark_name}_summary.csv"
     log_string=""
     # learn from these target solvers when targer solver is this solver replace ":" with "_" in the name
