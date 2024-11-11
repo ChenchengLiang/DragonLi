@@ -22,10 +22,10 @@ from src.solver.DataTypes import formatting_results, formatting_results_v2
 
 def main():
     # generate track
-    start_idx = 10001
-    end_idx = 30000
+    start_idx = 1
+    end_idx = 100
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_woorpje_train_{start_idx}_{end_idx}"
+    track_name = f"04_track_woorpje_eval_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -62,7 +62,7 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
 
 
 def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, max_length=300,
-                         write_replacement_log=False, terminal_pool=None, variable_pool=None):
+                         write_replacement_log=False, terminal_pool=None, variable_pool=None,fixed_length=60,substring_length=5):
     _, terminals = get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
@@ -118,7 +118,7 @@ def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
 
 def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10,
                             max_length=300, terminal_pool=None,
-                            variable_pool=None):
+                            variable_pool=None,fixed_length=60,substring_length=5):
     terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
     variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
     random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
@@ -134,13 +134,14 @@ def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10
 
 
 def generate_one_track_1_woorpje(file_name, index, max_variables=15,
-                                 max_terminals=10, max_length=300, terminal_pool=None, variable_pool=None):
-    random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
+                                 max_terminals=10, max_length=300, terminal_pool=None, variable_pool=None,fixed_length=60,substring_length=5):
+    #random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
+    random_terminal_list = [random.choice(terminal_pool) for _ in range(fixed_length)]
     eq_left = random_terminal_list
     eq_right = random_terminal_list
 
     # replace terminals with variables
-    replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool)
+    replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool,substring_length=substring_length)
 
     result = formatting_results_v2(variable_pool, terminal_pool, [(replaced_left, replaced_right)])
 
@@ -152,27 +153,29 @@ def replace_sublist(terminal_list, replacement_variable_list, start_index, end_i
     return terminal_list
 
 
-def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool):
-    max_replace_variable_length = 5
+def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool,substring_length=5):
+    max_replace_variable_length = 1
     max_replace_time = 5
     left_list = original_left_list.copy()
     right_list = original_right_list.copy()
 
     replace_time = random.randint(0, max_replace_time)
     for i in range(replace_time):
-        left_list = replace_one_side(left_list, variable_pool, max_replace_variable_length)
+        left_list = replace_one_side(left_list, variable_pool, max_replace_variable_length,substring_length=substring_length)
 
     for i in range(replace_time):
-        right_list = replace_one_side(right_list, variable_pool, max_replace_variable_length)
+        right_list = replace_one_side(right_list, variable_pool, max_replace_variable_length,substring_length=substring_length)
+
 
     return left_list, right_list
 
 
-def replace_one_side(original_list, variable_pool, max_replace_variable_length):
+def replace_one_side(original_list, variable_pool, max_replace_variable_length,substring_length=5):
     # substring index
     random_start_index = random.randint(0, len(original_list))
-    random_substring_length = random.randint(0, len(original_list) - random_start_index)
-    random_end_index = random_start_index + random_substring_length
+    #random_substring_length = random.randint(0, len(original_list) - random_start_index)
+    #substring_length=random_substring_length
+    random_end_index = random_start_index + substring_length
 
     # choose the replacement variables not in existing variables
     current_variable_list = [t for t in original_list if t in variable_pool]
@@ -384,8 +387,11 @@ def generate_one_track_4_v2(file_name, index):
     max_variables = 10
     max_terminals = 6
     one_side_max_length = 60
+    fixed_length = random.randint(1, one_side_max_length)
+    substring_length = random.randint(1, one_side_max_length)
     variable_pool, terminal_pool = get_variables_and_terminals(max_variables=max_variables,
                                                                max_terminals=max_terminals)
+    #todo decide replacement substring
     track_1_func = generate_one_track_1_woorpje
 
     eq_number = random.randint(min_eq, max_eq)
@@ -398,7 +404,9 @@ def generate_one_track_4_v2(file_name, index):
                                                         max_terminals=max_terminals,
                                                         max_length=one_side_max_length,
                                                         terminal_pool=terminal_pool,
-                                                        variable_pool=variable_pool)
+                                                        variable_pool=variable_pool,
+                                                        fixed_length=fixed_length,
+                                                        substring_length=substring_length)
         left_list = eq[0][0]
         right_list = eq[0][1]
         temp_variable_list = [v for v in variables if v in left_list + right_list]
