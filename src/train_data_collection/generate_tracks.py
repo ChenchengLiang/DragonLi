@@ -18,12 +18,12 @@ import shutil
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from typing import List, Tuple
 from src.solver.DataTypes import formatting_results, formatting_results_v2
-
+import json
 
 def main():
     # generate track
     start_idx = 1
-    end_idx = 100
+    end_idx = 200
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
     track_name = f"04_track_woorpje_eval_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
@@ -62,7 +62,8 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
 
 
 def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, max_length=300,
-                         write_replacement_log=False, terminal_pool=None, variable_pool=None,fixed_length=60,substring_length=5):
+                         write_replacement_log=False, terminal_pool=None, variable_pool=None, fixed_length=60,
+                         substring_length=5, substring_variable_map={}, eq_string_list=[], eq_index=0):
     _, terminals = get_variables_and_terminals(max_variables=max_variables, max_terminals=max_terminals)
 
     # Create a random string of the terminals
@@ -118,7 +119,8 @@ def generate_letter_pool(max_length, use_uppercase=True, custom_letters=None):
 
 def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10,
                             max_length=300, terminal_pool=None,
-                            variable_pool=None,fixed_length=60,substring_length=5):
+                            variable_pool=None, fixed_length=60, substring_length=5, substring_variable_map={},
+                            eq_string_list=[], eq_index=0):
     terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
     variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
     random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
@@ -133,19 +135,99 @@ def generate_one_track_1_v2(file_name, index, max_variables=15, max_terminals=10
     return result, variable_pool, terminal_pool, [(replaced_left, replaced_right)]
 
 
+def replace_one_side_by_substring_map(one_side, substring, substring_variable_map,reversed_substring_variable_map):
+    if random.random() < 0.5:
+        number_of_substring = one_side.count(substring)
+        if number_of_substring > 1:
+            replace_time = random.randint(1, number_of_substring)
+            one_side = _random_replace(one_side, substring, substring_variable_map[substring], replace_time)
+        elif number_of_substring == 1:
+            one_side = one_side.replace(substring, substring_variable_map[substring])
+        else:
+            #recover the variable to substring in substring_variable_map until current substring is found
+            recovered_ones_side = one_side
+            out_loop_break = False
+            for key in reversed_substring_variable_map:
+                for i in range (recovered_ones_side.count(key)):
+                    recovered_ones_side = recovered_ones_side.replace(key, reversed_substring_variable_map[key],1)
+                    if recovered_ones_side.count(substring)==1:
+                        recovered_ones_side.replace(substring, substring_variable_map[substring])
+                        out_loop_break=True
+                        break
+                if out_loop_break == True:
+                    break
+            if out_loop_break == True:
+                one_side = recovered_ones_side
+
+    return one_side
+
+def _random_replace(s, target, replacement, n):
+    # Find all positions where the target substring occurs
+    indices = []
+    start = 0
+    while start < len(s):
+        start = s.find(target, start)
+        if start == -1:
+            break
+        indices.append(start)
+        start += 1  # Move past the current match to avoid infinite loop
+
+    # Ensure we have enough occurrences to replace
+    if len(indices) < n:
+        raise ValueError("Not enough occurrences of the substring to replace")
+
+    # Shuffle the indices
+    random.shuffle(indices)
+
+    # Perform replacements at the first n shuffled positions
+    s_list = list(s)  # Convert string to a list for easier mutation
+    for i in range(n):
+        index = indices[i]
+        s_list[index:index + len(target)] = list(replacement)
+
+    # Convert the list back to a string
+    return ''.join(s_list)
+
 def generate_one_track_1_woorpje(file_name, index, max_variables=15,
-                                 max_terminals=10, max_length=300, terminal_pool=None, variable_pool=None,fixed_length=60,substring_length=5):
-    #random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
-    random_terminal_list = [random.choice(terminal_pool) for _ in range(fixed_length)]
-    eq_left = random_terminal_list
-    eq_right = random_terminal_list
+                                 max_terminals=10, max_length=300, terminal_pool=None, variable_pool=None,
+                                 fixed_length=60, substring_length=5, substring_variable_map={}, eq_string_list=[],
+                                 eq_index=0):
+    # random_terminal_list = [random.choice(terminal_pool) for _ in range(random.randint(1, max_length))]
+    # random_terminal_list = [random.choice(terminal_pool) for _ in range(fixed_length)]
+    # eq_left = random_terminal_list
+    # eq_right = random_terminal_list
+    #
+    # # replace terminals with variables
+    # replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool,substring_length=substring_length)
+    #
 
-    # replace terminals with variables
-    replaced_left, replaced_right = replace_substring_with_new_variables_v2(eq_left, eq_right, variable_pool,substring_length=substring_length)
+    # generate random string with fixed length
+    # random_string=generate_random_string(fixed_length, terminal_pool)
 
-    result = formatting_results_v2(variable_pool, terminal_pool, [(replaced_left, replaced_right)])
+    # read random string from pre generated random string
+    random_string = eq_string_list[eq_index]
+    eq_left = random_string
+    eq_right = random_string
 
-    return result, variable_pool, terminal_pool, [(replaced_left, replaced_right)]
+    reversed_substring_variable_map = {v: k for k, v in substring_variable_map.items()}
+    # for each replacable substring, replace with variable by 0.5 probability
+    shuffled_substring_variable_map=list(substring_variable_map.items())
+    random.shuffle(shuffled_substring_variable_map)
+    for substring,v in shuffled_substring_variable_map:
+        # randomly replace substring with variable
+        eq_left = replace_one_side_by_substring_map(eq_left, substring, substring_variable_map,reversed_substring_variable_map)
+        eq_right = replace_one_side_by_substring_map(eq_right, substring, substring_variable_map,reversed_substring_variable_map)
+
+    replaced_left = list(eq_left)
+    replaced_right = list(eq_right)
+
+    updated_variable_pool = remove_duplicates([x for x in replaced_left + replaced_right if x in variable_pool])
+    updated_terminal_pool = remove_duplicates([x for x in replaced_left + replaced_right if x in terminal_pool])
+
+    # formatting the result replaced_left:List[str], replaced_right:List[str]
+    result = formatting_results_v2(updated_variable_pool, updated_terminal_pool, [(replaced_left, replaced_right)])
+
+    return result, updated_variable_pool, updated_terminal_pool, [(replaced_left, replaced_right)]
 
 
 def replace_sublist(terminal_list, replacement_variable_list, start_index, end_index):
@@ -153,7 +235,7 @@ def replace_sublist(terminal_list, replacement_variable_list, start_index, end_i
     return terminal_list
 
 
-def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool,substring_length=5):
+def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool, substring_length=5):
     max_replace_variable_length = 1
     max_replace_time = 5
     left_list = original_left_list.copy()
@@ -161,20 +243,21 @@ def replace_substring_with_new_variables_v2(original_left_list, original_right_l
 
     replace_time = random.randint(0, max_replace_time)
     for i in range(replace_time):
-        left_list = replace_one_side(left_list, variable_pool, max_replace_variable_length,substring_length=substring_length)
+        left_list = replace_one_side(left_list, variable_pool, max_replace_variable_length,
+                                     substring_length=substring_length)
 
     for i in range(replace_time):
-        right_list = replace_one_side(right_list, variable_pool, max_replace_variable_length,substring_length=substring_length)
-
+        right_list = replace_one_side(right_list, variable_pool, max_replace_variable_length,
+                                      substring_length=substring_length)
 
     return left_list, right_list
 
 
-def replace_one_side(original_list, variable_pool, max_replace_variable_length,substring_length=5):
+def replace_one_side(original_list, variable_pool, max_replace_variable_length, substring_length=5):
     # substring index
     random_start_index = random.randint(0, len(original_list))
-    #random_substring_length = random.randint(0, len(original_list) - random_start_index)
-    #substring_length=random_substring_length
+    # random_substring_length = random.randint(0, len(original_list) - random_start_index)
+    # substring_length=random_substring_length
     random_end_index = random_start_index + substring_length
 
     # choose the replacement variables not in existing variables
@@ -360,6 +443,16 @@ def generate_conjunctive_track_03(file_name, index):
     return result, variable_list, terminal_list, eq_list
 
 
+def generate_random_string(length, pool):
+    return ''.join(random.choice(pool) for _ in range(length))
+
+
+def generate_random_substring(s):
+    length = random.randint(1, len(s) - 1)  # Randomly select a length between 1 and the length of the string
+    start_index = random.randint(0, len(s) - length)  # Randomly select a starting index
+    return s[start_index:start_index + length]  # Extract the substring
+
+
 def generate_one_track_4_v2(file_name, index):
     # new setting
     # min_eq = 2
@@ -384,17 +477,40 @@ def generate_one_track_4_v2(file_name, index):
     # woorpje setting
     min_eq = 1
     max_eq = 100
+    eq_number = random.randint(min_eq, max_eq)
     max_variables = 10
     max_terminals = 6
     one_side_max_length = 60
-    fixed_length = random.randint(1, one_side_max_length)
+    fixed_length = random.randint(2, one_side_max_length)
     substring_length = random.randint(1, one_side_max_length)
     variable_pool, terminal_pool = get_variables_and_terminals(max_variables=max_variables,
                                                                max_terminals=max_terminals)
-    #todo decide replacement substring
+
+    #todo: for debug fix variable and terminal pool
+    # variable_pool = list("BAC")
+    # terminal_pool = list("dcab")
+    # fixed_length = 8
+    # eq_number = 117
+
+    # generate each eq string
+    eq_string_list = []
+    for i in range(eq_number):
+        eq_string_list.append(generate_random_string(fixed_length, terminal_pool))
+
+    # decide replacement substring
+    substring_variable_map = {}
+    eq_sample_size = min(len(eq_string_list), len(variable_pool))
+    eq_sample = random.sample(eq_string_list, eq_sample_size)
+    for i, v in enumerate(variable_pool):
+        # select a random substring from the eq string
+        substring_to_be_replaced = generate_random_substring(eq_sample[i % eq_sample_size])
+        substring_variable_map[substring_to_be_replaced] = v
+
+    #todo:for debug fix variable and terminal pool
+    #substring_variable_map={"dc":"B","aadc":"A","aadcb":"C"}
+
     track_1_func = generate_one_track_1_woorpje
 
-    eq_number = random.randint(min_eq, max_eq)
     eq_list = []
     variable_list = []
     terminal_list = []
@@ -406,7 +522,9 @@ def generate_one_track_4_v2(file_name, index):
                                                         terminal_pool=terminal_pool,
                                                         variable_pool=variable_pool,
                                                         fixed_length=fixed_length,
-                                                        substring_length=substring_length)
+                                                        substring_length=substring_length,
+                                                        substring_variable_map=substring_variable_map,
+                                                        eq_string_list=eq_string_list, eq_index=i)
         left_list = eq[0][0]
         right_list = eq[0][1]
         temp_variable_list = [v for v in variables if v in left_list + right_list]
@@ -427,6 +545,24 @@ def generate_one_track_4_v2(file_name, index):
 
         with open(track_info_file, 'w') as file:
             file.write(track_info_str)
+
+
+    #output substring_variable_map to file
+    substring_variable_map_file_name = f"{strip_file_name_suffix(file_name)}.json"
+    reversed_substring_variable_map = {v: k for k, v in substring_variable_map.items()}
+    with open(substring_variable_map_file_name, 'w') as file:
+        json.dump(reversed_substring_variable_map, file, indent=4)
+
+    if len(variable_list)==1:
+        print("one variable")
+    if len(terminal_list)==1:
+        print("one terminal")
+    if len(variable_list)==0:
+        print("no variable")
+    if len(terminal_list)==0:
+        print("no terminal")
+
+
     return result, variable_list, terminal_list, eq_list
 
 
@@ -524,9 +660,9 @@ def get_variables_and_terminals(max_variables=15, max_terminals=10):
     num_terminals = random.randint(1, max_terminals)
 
     # Generate variable and terminal sets
-    variables = [string.ascii_uppercase[i] for i in range(num_variables)] #start by A
-    terminals = [string.ascii_lowercase[i] for i in range(num_terminals)] #start by a
-    #terminals = random.sample(string.ascii_lowercase, num_terminals) #not start by a
+    variables = [string.ascii_uppercase[i] for i in range(num_variables)]  # start by A
+    terminals = [string.ascii_lowercase[i] for i in range(num_terminals)]  # start by a
+    # terminals = random.sample(string.ascii_lowercase, num_terminals) #not start by a
     return variables, terminals
 
 

@@ -17,9 +17,12 @@ def main():
     #eval data
     #benchmark_name = "01_track_multi_word_equations_5_20_generated_eval_1_1000"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
-    benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
+    #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "zaligvinder+smtlib_eval"
     #benchmark_name = "04_track_woorpje_eval_1_1000"
+    benchmark_name = "04_track_woorpje_eval_1_200"
+    #benchmark_name = "04_track_Woorpje_original_dividied_for_eval"
+    
     #train data
     #benchmark_name = "zaligvinder+smtlib_train"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_20001_30000"
@@ -37,31 +40,31 @@ def main():
     algorithm = "SplitEquations"
     solver_param_list = [
         # branch:fixed, order equations: no category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method fixed"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method hybrid_fixed_random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method shortest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method longest"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method fixed"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_fixed_random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method shortest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method longest"
+        #           ]],
 
         #branch:fixed, order equations: category
         ["this", ["fixed", "--termination_condition termination_condition_0",
@@ -201,11 +204,11 @@ def main():
         #           ]],
 
 
-        # ["z3", []],
-        # ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        # ["ostrich", []],
-        # ["cvc5", []],
-        # ["woorpje", []],
+        ["z3", []],
+        ["z3-noodler", ["smt.string_solver=\"noodler\""]],
+        ["ostrich", []],
+        ["cvc5", []],
+        ["woorpje", []],
 
         # gnn based configurations, branch: fixed, order: no category
         # ["this", ["fixed", "--termination_condition termination_condition_0",
