@@ -19,10 +19,8 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "zaligvinder+smtlib_eval"
-    #benchmark_name = "04_track_woorpje_eval_1_1000"
+    benchmark_name = "04_track_woorpje_eval_1_1000"
     #benchmark_name = "04_track_woorpje_eval_1_200"
-    #benchmark_name = "04_track_woorpje_eval_1_200_v3"
-    benchmark_name = "04_track_woorpje_eval_1_200_v3_1"
     #benchmark_name = "04_track_Woorpje_original_dividied_for_eval"
 
     #train data

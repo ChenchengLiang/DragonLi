@@ -23,9 +23,9 @@ import json
 def main():
     # generate track
     start_idx = 1
-    end_idx = 200
+    end_idx = 20000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_woorpje_eval_{start_idx}_{end_idx}_v3_1"
+    track_name = f"04_track_woorpje_train_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -472,11 +472,15 @@ def generate_random_string(length, pool):
 
 
 def generate_random_substring(s):
-    length = random.randint(1, len(s) - 1)  # Randomly select a length between 1 and the length of the string
-    start_index = random.randint(0, len(s) - length)  # Randomly select a starting index
-    return s[start_index:start_index + length]  # Extract the substring
+    if len(s)>1:
+        length = random.randint(1, len(s) - 1)  # Randomly select a length between 1 and the length of the string
+        start_index = random.randint(0, len(s) - length)  # Randomly select a starting index
+        return s[start_index:start_index + length]  # Extract the substring
+    else:
+        return s
 
 def generate_one_track_4_v3(file_name, index):
+    log=False
     min_eq = 1
     max_eq = 100
     eq_number = random.randint(min_eq, max_eq)
@@ -534,21 +538,22 @@ def generate_one_track_4_v3(file_name, index):
         with open(track_info_file, 'w') as file:
             file.write(track_info_str)
 
-    # output substring_variable_map to file
-    substring_variable_map_file_name = f"{strip_file_name_suffix(file_name)}.json"
-    reversed_substring_variable_map = {v: k for k, v in substring_variable_map.items()}
-    with open(substring_variable_map_file_name, 'w') as file:
-        json.dump(reversed_substring_variable_map, file, indent=4)
+    if log==True:
+        # output substring_variable_map to file
+        substring_variable_map_file_name = f"{strip_file_name_suffix(file_name)}.json"
+        reversed_substring_variable_map = {v: k for k, v in substring_variable_map.items()}
+        with open(substring_variable_map_file_name, 'w') as file:
+            json.dump(reversed_substring_variable_map, file, indent=4)
 
-    # debug info
-    if len(variable_list) == 1:
-        print("one variable")
-    if len(terminal_list) == 1:
-        print("one terminal")
-    if len(variable_list) == 0:
-        print("no variable")
-    if len(terminal_list) == 0:
-        print("no terminal")
+        # debug info
+        if len(variable_list) == 1:
+            print("one variable")
+        if len(terminal_list) == 1:
+            print("one terminal")
+        if len(variable_list) == 0:
+            print("no variable")
+        if len(terminal_list) == 0:
+            print("no terminal")
 
     return result, variable_list, terminal_list, eq_list
 
