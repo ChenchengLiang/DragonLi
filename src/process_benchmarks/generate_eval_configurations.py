@@ -20,9 +20,11 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "zaligvinder+smtlib_eval"
     #benchmark_name = "04_track_woorpje_eval_1_1000"
-    benchmark_name = "04_track_woorpje_eval_1_200"
+    #benchmark_name = "04_track_woorpje_eval_1_200"
+    #benchmark_name = "04_track_woorpje_eval_1_200_v3"
+    benchmark_name = "04_track_woorpje_eval_1_200_v3_1"
     #benchmark_name = "04_track_Woorpje_original_dividied_for_eval"
-    
+
     #train data
     #benchmark_name = "zaligvinder+smtlib_train"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_20001_30000"
@@ -31,7 +33,7 @@ def main():
     #benchmark_name = "04_track_woorpje_train_1_10000"
     #benchmark_name = "04_track_woorpje_train_10001_30000"
     rank_task = 1
-    graph_type = "graph_5"
+    graph_type = "graph_1"
     model_type = "GCNSplit"  # "GINSplit"
 
 
