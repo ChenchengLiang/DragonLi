@@ -4,7 +4,7 @@ from src.solver.Constants import SAT, UNSAT, UNKNOWN, HYBRID_ORDER_EQUATION_RATE
 from src.solver.DataTypes import Equation, Formula, Term, Variable, _update_term_in_eq_list, _update_term_list, \
     Terminal, IsomorphicTailSymbol
 import random
-
+from collections import defaultdict
 from src.solver.independent_utils import color_print, time_it, log_print_to_file
 
 
@@ -825,32 +825,54 @@ def _create_fresh_variables(fresh_variable_counter) -> Tuple[Term, int]:
     return fresh_variable_term, fresh_variable_counter
 
 
+# def _get_global_info(eq_list: List[Equation]):
+#     global_info = {}
+#     variable_global_occurrences = {}
+#     terminal_global_occurrences = {}
+#     for eq in eq_list:
+#         for term in eq.term_list:
+#
+#             if term.value_type == Variable:
+#                 if term.value not in variable_global_occurrences:
+#                     variable_global_occurrences[term.value] = 0
+#                 variable_global_occurrences[term.value] += 1
+#             elif term.value_type == Terminal:
+#                 if term.value not in terminal_global_occurrences:
+#                     terminal_global_occurrences[term.value] = 0
+#                 terminal_global_occurrences[term.value] += 1
+#
+#     global_info["variable_global_occurrences"] = variable_global_occurrences
+#     global_info["terminal_global_occurrences"] = terminal_global_occurrences
+#
+#     # for eq in eq_list:
+#     #     print(eq.eq_str)
+#     # for k, v in global_info.items():
+#     #     print(k)
+#     #     print(v)
+#     return global_info
+
+
 def _get_global_info(eq_list: List[Equation]):
-    global_info = {}
-    variable_global_occurrences = {}
-    terminal_global_occurrences = {}
+    # Initialize defaultdicts for automatic handling of missing keys
+    variable_global_occurrences = defaultdict(int)
+    terminal_global_occurrences = defaultdict(int)
+
+    # Iterate through equations and terms, counting occurrences
     for eq in eq_list:
         for term in eq.term_list:
-
+            term_value = term.value
             if term.value_type == Variable:
-                if term.value not in variable_global_occurrences:
-                    variable_global_occurrences[term.value] = 0
-                variable_global_occurrences[term.value] += 1
+                variable_global_occurrences[term_value] += 1
             elif term.value_type == Terminal:
-                if term.value not in terminal_global_occurrences:
-                    terminal_global_occurrences[term.value] = 0
-                terminal_global_occurrences[term.value] += 1
+                terminal_global_occurrences[term_value] += 1
 
-    global_info["variable_global_occurrences"] = variable_global_occurrences
-    global_info["terminal_global_occurrences"] = terminal_global_occurrences
+    # Create the global info dictionary
+    global_info = {
+        "variable_global_occurrences": dict(variable_global_occurrences),
+        "terminal_global_occurrences": dict(terminal_global_occurrences),
+    }
 
-    # for eq in eq_list:
-    #     print(eq.eq_str)
-    # for k, v in global_info.items():
-    #     print(k)
-    #     print(v)
     return global_info
-
 
 def order_branches_fixed(children: List[Tuple[Equation, Formula]]) -> List[Tuple[Equation, Formula]]:
     return children

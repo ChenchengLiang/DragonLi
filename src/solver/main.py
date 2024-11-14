@@ -28,14 +28,14 @@ def main():
     # debug path
     #file_path = bench_folder + "/examples_choose_eq/kepler/48327_quad-002-1-unsat_0.eq" # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/kepler/48381_quad-001-1-unsat_0.eq"
-    file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
+    #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
     #file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix. a X = C X Y [X=Y'Y] -> a Y' = CY'Y
     #file_path = bench_folder + "/examples_choose_eq/34/34.eq"  # trap prefix and suffix a X = Y X b
     #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix and suffix X a = b X Y
     #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # X = Y a X
-    # file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
+    #file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
     #file_path = bench_folder + "/examples_choose_eq/39/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_329.eq"
     #file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
@@ -49,7 +49,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
 
-    #file_path = bench_folder + "/examples_choose_eq/prefix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_216.eq"
+    file_path = bench_folder + "/examples_choose_eq/prefix-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_216.eq"
 
 
     """
@@ -140,7 +140,7 @@ def main():
                                            "label_size": label_size,"rank_task":rank_task}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "category_gnn",
+                                               "order_equations_method": "gnn",
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
@@ -163,9 +163,9 @@ def main():
     #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
-    result_dict = profile_function(solver.solve, parsed_content, visualize=False, output_train_data=True)
+    #result_dict = profile_function(solver.solve, parsed_content, visualize=False, output_train_data=True)
 
-    #result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
+    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
     print_results(result_dict)
 

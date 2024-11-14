@@ -4,7 +4,7 @@ import random
 from typing import List, Dict, Tuple, Callable
 from sys import setrecursionlimit, getrecursionlimit
 from dgl import batch
-from torch import no_grad,stack,mean,concat
+from torch import no_grad,stack,mean,concat,cat
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
@@ -20,7 +20,7 @@ from src.solver.visualize_util import visualize_path_html, visualize_path_png, d
 from . import graph_to_gnn_format
 from .abstract_algorithm import AbstractAlgorithm
 from .utils import softmax
-from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info
+from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info, time_it, empty_function
 from ..models.Dataset import get_one_dgl_graph
 
 
@@ -33,6 +33,8 @@ class SplitEquations(AbstractAlgorithm):
         self.nodes = []
         self.edges = []
         self.visualize_gnn_input = False
+        self.visualize_gnn_input_func = empty_function if self.visualize_gnn_input == False else draw_graph
+
 
         self.file_name = strip_file_name_suffix(parameters["file_path"])
         self.unsat_core = _get_unsatcore(self.file_name, parameters, equation_list)
@@ -434,6 +436,7 @@ class SplitEquations(AbstractAlgorithm):
                 condition = True
         return condition
 
+    @time_it
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()
         global_info = _get_global_info(f.eq_list)
@@ -463,12 +466,13 @@ class SplitEquations(AbstractAlgorithm):
                 self.dgl_hash_table[hashed_eq] = dgl_graph
 
             G_list_dgl.append(dgl_graph)
-            if self.visualize_gnn_input == True:
-                draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
-                           filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
+
+            self.visualize_gnn_input_func(nodes=split_eq_nodes, edges=split_eq_edges,filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
+
 
         gc.enable()
         return G_list_dgl
+
 
     def _get_rank_list(self, G_list_dgl):
         with no_grad():
@@ -495,6 +499,30 @@ class SplitEquations(AbstractAlgorithm):
                 rank_list.append(rank_softmax[0])
 
         return rank_list
+
+    # @time_it
+    # def _get_rank_list(self, G_list_dgl):
+    #     from torch import softmax
+    #     with no_grad():
+    #         # Compute embeddings for the batch of graphs
+    #         G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))  # [n, 1, 128]
+    #
+    #         # Compute the mean tensor across embeddings
+    #         mean_tensor = mean(G_list_embeddings, dim=0, keepdim=True)  # [1, 128]
+    #
+    #         input_eq_embeddings_list = []
+    #         for g in G_list_embeddings:
+    #             # input_eq_embeddings_list.append(concat([g, mean_tensor], dim=1))
+    #             input_eq_embeddings_list.append(concat([g, mean_tensor]))  # For multi filters
+    #         input_eq_embeddings_list = stack(input_eq_embeddings_list)
+    #
+    #         # Classifier output
+    #         classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n, 2]
+    #
+    #         # Apply softmax and extract the first column as the score
+    #         rank_list = softmax(classifier_output, dim=-1)[:, :, 0].squeeze().tolist()
+    #
+    #     return rank_list
 
     def _sort_eq_list_by_prediction(self, rank_list, eq_list):
         prediction_list = []
@@ -534,6 +562,7 @@ class SplitEquations(AbstractAlgorithm):
         formula_with_sorted_eq_list = self._sort_eq_list_by_prediction(rank_list, f.eq_list)
 
         return formula_with_sorted_eq_list, category_call
+
 
     def _order_equations_gnn_rank_task_1(self, f: Formula, category_call=0) -> (Formula, int):
         self.total_gnn_call += 1

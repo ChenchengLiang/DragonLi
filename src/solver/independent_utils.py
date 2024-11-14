@@ -19,6 +19,9 @@ import pstats
 from src.solver.Constants import project_folder, bench_folder
 
 
+def empty_function(*args, **kwargs):
+    pass
+
 def profile_function(func, *args, **kwargs):
     """
     A wrapper function to profile any function with arbitrary arguments.
@@ -38,7 +41,9 @@ def profile_function(func, *args, **kwargs):
 
     # Output profiling stats
     s = io.StringIO()
-    ps = pstats.Stats(profiler, stream=s).sort_stats("cumtime")
+    #ps = pstats.Stats(profiler, stream=s).sort_stats("cumtime")
+    #ps = pstats.Stats(profiler, stream=s).sort_stats("ncalls")
+    ps = pstats.Stats(profiler, stream=s).sort_stats("tottime")
     ps.print_stats(10)  # Show top 10 results sorted by cumulative time
     print(s.getvalue())  # Print profiling results
 
