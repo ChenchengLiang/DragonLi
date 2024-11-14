@@ -19,7 +19,7 @@ from src.solver.utils_parser import perse_eq_file
 import os
 
 def main():
-    benchmark_name="04_track_woorpje_train_10001_30000_unsatcore_temp"
+    benchmark_name="04_track_woorpje_train_1_20000_unsatcores_train"
     for fo in os.listdir(bench_folder + "/" + benchmark_name):
         folder_basename=os.path.basename(fo)
         if "divided" in folder_basename:

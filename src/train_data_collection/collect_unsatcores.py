@@ -15,7 +15,7 @@ import glob
 import shutil
 
 def main():
-    benchmark_name="04_track_woorpje_train_10001_30000_unsatcore"
+    benchmark_name="04_track_woorpje_train_1_20000_unsatcores"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")

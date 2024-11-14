@@ -12,7 +12,6 @@ sys.path.append(path)
 from src.solver.Constants import bench_folder, project_folder
 from src.solver.independent_utils import write_configurations_to_json_file
 
-
 def main():
     #eval data
     #benchmark_name = "01_track_multi_word_equations_5_20_generated_eval_1_1000"
@@ -28,7 +27,7 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_20001_30000"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000"
     #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_train_30001_40000"
-    #benchmark_name = "04_track_woorpje_train_1_10000"
+    #benchmark_name = "04_track_woorpje_train_1_20000"
     #benchmark_name = "04_track_woorpje_train_10001_30000"
     rank_task = 1
     graph_type = "graph_1"

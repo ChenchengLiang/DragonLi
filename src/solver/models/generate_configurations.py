@@ -34,9 +34,10 @@ def main():
     #for benchmark in ["04_track_woorpje_train_rank_task_0"]:
     #for benchmark in ["04_track_woorpje_train_rank_task_1"]:
     #for benchmark in ["04_track_woorpje_train_rank_task_2"]:
-    #for benchmark in ["04_track_woorpje_train_unsatcores_rank_task_0"]:
-    for benchmark in ["04_track_woorpje_train_unsatcores_rank_task_1"]:
-    #for benchmark in ["04_track_woorpje_train_unsatcores_rank_task_2"]:
+
+    # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_0"]:
+    for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_1"]:
+    # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_2"]:

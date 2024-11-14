@@ -13,8 +13,36 @@ from collections import OrderedDict
 import functools
 import sys
 import io
+import cProfile
+import pstats
 
 from src.solver.Constants import project_folder, bench_folder
+
+
+def profile_function(func, *args, **kwargs):
+    """
+    A wrapper function to profile any function with arbitrary arguments.
+
+    Parameters:
+    func (callable): The function to be profiled.
+    *args: Variable positional arguments to pass to the function.
+    **kwargs: Variable keyword arguments to pass to the function.
+    """
+    profiler = cProfile.Profile()
+    profiler.enable()  # Start profiling
+
+    # Call the target function with provided arguments
+    result = func(*args, **kwargs)
+
+    profiler.disable()  # Stop profiling
+
+    # Output profiling stats
+    s = io.StringIO()
+    ps = pstats.Stats(profiler, stream=s).sort_stats("cumtime")
+    ps.print_stats(10)  # Show top 10 results sorted by cumulative time
+    print(s.getvalue())  # Print profiling results
+
+    return result
 
 
 def delete_large_file(file_path, size_limit=10):

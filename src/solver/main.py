@@ -18,14 +18,17 @@ from src.solver.utils import print_results, graph_func_map
 from src.solver.algorithms import EnumerateAssignments, EnumerateAssignmentsUsingGenerator, \
     ElimilateVariablesRecursive, SplitEquations
 from src.solver.DataTypes import Equation
-from src.solver.independent_utils import strip_file_name_suffix
+from src.solver.independent_utils import strip_file_name_suffix, profile_function
+
+import cProfile
+import pstats
 
 
 def main():
     # debug path
     #file_path = bench_folder + "/examples_choose_eq/kepler/48327_quad-002-1-unsat_0.eq" # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/kepler/48381_quad-001-1-unsat_0.eq"
-    #file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
+    file_path = bench_folder + "/examples_choose_eq/30/30.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/31/31.eq" #suffix timeout
     #file_path = bench_folder + "/examples_choose_eq/32/32.eq" #trap prefix. X a = Y X C [X=YY'], [Y=XX'], [X=Y]
     #file_path = bench_folder + "/examples_choose_eq/33/33.eq"  # trap suffix. a X = C X Y [X=Y'Y] -> a Y' = CY'Y
@@ -53,7 +56,8 @@ def main():
     X = Y X b
     number of X in right side >= number of X in left side
     """
-    file_path = bench_folder + "/examples_choose_eq/gnn-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_690.eq"
+    # gnn test
+    #file_path = bench_folder + "/examples_choose_eq/gnn-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_690.eq"
 
     # multiple equations
     #file_path = bench_folder + "/examples_choose_eq/1/test1.eq"  # SAT
@@ -154,14 +158,14 @@ def main():
     if os.path.exists(log_file):
         os.remove(log_file)
 
+
     solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
     #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
-    # solver = Solver(algorithm=ElimilateVariablesRecursive,algorithm_parameters=algorithm_parameters_ElimilateVariablesRecursive)
-    # solver = Solver(EnumerateAssignmentsUsingGenerator, max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    # solver = Solver(algorithm=EnumerateAssignments,max_variable_length=max_variable_length,algorithm_parameters=algorithm_parameters)
-    result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
+    result_dict = profile_function(solver.solve, parsed_content, visualize=False, output_train_data=True)
+
+    #result_dict = solver.solve(parsed_content, visualize=False, output_train_data=True)
 
     print_results(result_dict)
 
