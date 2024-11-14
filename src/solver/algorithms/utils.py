@@ -27,16 +27,27 @@ def graph_to_gnn_format(nodes: List[Node], edges: List[Edge], label: int = -1, s
                             GlobalVariableOccurrenceSymbol:3,GlobalTerminalOccurrenceSymbol:4,
                             GlobalVariableOccurrenceSymbol_0:3, GlobalVariableOccurrenceSymbol_1:4,GlobalTerminalOccurrenceSymbol_0:5,GlobalTerminalOccurrenceSymbol_1:6}
     edge_type_to_int_map = {None: 1}
-    graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
-                  "label": label,"satisfiability":satisfiability}
-    for node in nodes:
-        #graph_dict["nodes"].append(node.id)
-        graph_dict["node_types"].append(node_type_to_int_map[node.type])
-    graph_dict["nodes"]=len(nodes)
-    for edge in edges:
-        graph_dict["edges"].append([edge.source, edge.target])
-        #graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
-    graph_dict["edge_types"]=[1]
+    # Initialize graph dictionary
+    graph_dict = {
+        "nodes": len(nodes),  # Directly assign the node count
+        "node_types": [node_type_to_int_map[node.type] for node in nodes],  # List comprehension for node types
+        "edges": [[edge.source, edge.target] for edge in edges],  # List comprehension for edges
+        "edge_types": [1],  # Only one edge type is used, assigned once
+        "label": label,
+        "satisfiability": satisfiability
+    }
+    #
+    #
+    # graph_dict = {"nodes": [], "node_types": [], "edges": [], "edge_types": [],
+    #               "label": label,"satisfiability":satisfiability}
+    # for node in nodes:
+    #     #graph_dict["nodes"].append(node.id)
+    #     graph_dict["node_types"].append(node_type_to_int_map[node.type])
+    # graph_dict["nodes"]=len(nodes)
+    # for edge in edges:
+    #     graph_dict["edges"].append([edge.source, edge.target])
+    #     #graph_dict["edge_types"].append(edge_type_to_int_map[edge.type])
+    # graph_dict["edge_types"]=[1]
 
     return graph_dict
 

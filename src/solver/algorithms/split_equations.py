@@ -442,6 +442,10 @@ class SplitEquations(AbstractAlgorithm):
         global_info = _get_global_info(f.eq_list)
         G_list_dgl = []
 
+        # Local references to the hash table and counter for efficiency
+        dgl_hash_table = self.dgl_hash_table
+        dgl_hash_table_hit = self.dgl_hash_table_hit
+
         for index, eq in enumerate(f.eq_list):
 
             split_eq_nodes, split_eq_edges = self.graph_func(eq.left_terms, eq.right_terms, global_info)
@@ -457,19 +461,20 @@ class SplitEquations(AbstractAlgorithm):
 
             # hash eq+global info to dgl
             hashed_eq, _ = hash_graph_with_glob_info(split_eq_nodes, split_eq_edges)
-            if hashed_eq in self.dgl_hash_table:
-                dgl_graph = self.dgl_hash_table[hashed_eq]
-                self.dgl_hash_table_hit += 1
+            if hashed_eq in dgl_hash_table:
+                dgl_graph = dgl_hash_table[hashed_eq]
+                dgl_hash_table_hit += 1
             else:
                 graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
                 dgl_graph, _ = get_one_dgl_graph(graph_dict)
-                self.dgl_hash_table[hashed_eq] = dgl_graph
+                dgl_hash_table[hashed_eq] = dgl_graph
 
             G_list_dgl.append(dgl_graph)
 
             self.visualize_gnn_input_func(nodes=split_eq_nodes, edges=split_eq_edges,filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
 
-
+        # Update the hit count back to the global variable
+        self.dgl_hash_table_hit = dgl_hash_table_hit
         gc.enable()
         return G_list_dgl
 
