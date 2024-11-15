@@ -55,7 +55,7 @@ def main():
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
-                                    for hidden_dim in [16]:  # [64, 128]:
+                                    for hidden_dim in [64]:  # [64, 128]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [

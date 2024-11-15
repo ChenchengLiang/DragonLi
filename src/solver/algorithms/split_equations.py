@@ -478,7 +478,7 @@ class SplitEquations(AbstractAlgorithm):
         gc.enable()
         return G_list_dgl
 
-
+    @time_it
     def _get_rank_list(self, G_list_dgl):
         with no_grad():
 
@@ -488,14 +488,13 @@ class SplitEquations(AbstractAlgorithm):
 
             # concat target output [n,1,256]
             mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
-            input_eq_embeddings_list = []
-            for g in G_list_embeddings:
-                # input_eq_embeddings_list.append(concat([g, mean_tensor], dim=1))
-                input_eq_embeddings_list.append(concat([g, mean_tensor]))  # For multi filters
-            input_eq_embeddings_list = stack(input_eq_embeddings_list)
 
+            mean_tensor_expanded = mean_tensor.squeeze(0) .expand(len(G_list_embeddings), -1)  # Shape: [n, 128]
+            result_tensor = cat([G_list_embeddings, mean_tensor_expanded], dim=1)
+
+   
             # classifier
-            classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
+            classifier_output = self.gnn_rank_model.classifier(result_tensor)  # [n,2]
 
             # transform [x,y] to one score
             rank_list = []

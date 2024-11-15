@@ -11,7 +11,7 @@ from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
 from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders, kill_gunicorn_processes, \
-    identity_function
+    identity_function, time_it
 
 from torch import nn, optim
 import pytorch_lightning as pl
@@ -450,7 +450,7 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         self.gnn_hidden_dim = gnn_hidden_dim
 
-    # dealing batch graphs
+
     def forward(self, batch_graphs, is_test=False):
 
         # embeddings_list=[]
@@ -466,6 +466,8 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
         #     concatenated_embedding = torch.cat([first_element, mean_tensor])
         #     batch_result_list.append(concatenated_embedding)
         # batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
+        #
+        # return batch_result_list_stacked
 
         # ##########################
 
@@ -473,6 +475,7 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
         for one_data in batch_graphs:
             embeddings = self.embedding(one_data)
             embeddings_list.append(embeddings)
+
 
         # Step 1: Pad tensors to the same length
         padded_embeddings = pad_sequence(embeddings_list, batch_first=True) # Shape: (batch_size, max_len, feature_dim)
@@ -490,7 +493,6 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
 
         # Step 4: Concatenate back
         result_tensor = torch.cat([first_column, mean_rest], dim=1)
-
 
         return result_tensor
 
