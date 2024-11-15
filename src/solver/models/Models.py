@@ -25,6 +25,7 @@ import os
 from src.solver.Constants import project_folder, bench_folder, checkpoint_folder
 from pytorch_lightning.loggers import MLFlowLogger
 from functools import partial
+from torch.nn.utils.rnn import pad_sequence
 
 ############################################# Rank task 1 #############################################
 
@@ -451,20 +452,47 @@ class GNNRankTask1BatchProcessMultiFilter(nn.Module):
 
     # dealing batch graphs
     def forward(self, batch_graphs, is_test=False):
-        batch_result_list = []
+
+        # embeddings_list=[]
+        # batch_result_list = []
+        # for one_data in batch_graphs:
+        #     embeddings = self.embedding(one_data)
+        #     embeddings_list.append(embeddings)
+        #
+        # for embeddings in embeddings_list:
+        #     first_element = embeddings[0]
+        #     embed_slice = embeddings[1:]
+        #     mean_tensor = torch.mean(embed_slice, dim=0)
+        #     concatenated_embedding = torch.cat([first_element, mean_tensor])
+        #     batch_result_list.append(concatenated_embedding)
+        # batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
+
+        # ##########################
+
+        embeddings_list = []
         for one_data in batch_graphs:
             embeddings = self.embedding(one_data)
+            embeddings_list.append(embeddings)
 
-            # g concat GNN embeddings
-            first_element = embeddings[0]
-            embed_slice = embeddings[1:]
-            mean_tensor = torch.mean(embed_slice, dim=0)
-            #concatenated_embedding = torch.cat([first_element, mean_tensor], dim=1)
-            concatenated_embedding = torch.cat([first_element, mean_tensor])
-            batch_result_list.append(concatenated_embedding)
+        # Step 1: Pad tensors to the same length
+        padded_embeddings = pad_sequence(embeddings_list, batch_first=True) # Shape: (batch_size, max_len, feature_dim)
 
-        batch_result_list_stacked = torch.stack(batch_result_list, dim=0)
-        return batch_result_list_stacked
+        # Step 2: Separate the first column (batch_first=True makes it easier to slice)
+        first_column = padded_embeddings[:, 0, :]  # Shape: (batch_size, feature_dim)
+
+        # Step 3: Compute mean of the remaining columns along the time dimension (ignoring padding)
+        mask = (
+                torch.arange(padded_embeddings.shape[1], device='cuda')[None, :, None]  # Create on GPU
+                < torch.tensor([t.shape[0] for t in embeddings_list], device='cuda')[:, None, None]  # Create on GPU
+        )
+        rest_columns = padded_embeddings[:, 1:, :]
+        mean_rest = (rest_columns * mask[:, 1:, :]).sum(dim=1) / mask[:, 1:, :].sum(dim=1)
+
+        # Step 4: Concatenate back
+        result_tensor = torch.cat([first_column, mean_rest], dim=1)
+
+
+        return result_tensor
 
 class GNNRankTask1(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):

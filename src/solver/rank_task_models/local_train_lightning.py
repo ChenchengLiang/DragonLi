@@ -41,7 +41,7 @@ from pytorch_lightning.profilers import PyTorchProfiler
 
 def main():
     parameters = {}
-    parameters["benchmark_folder"] = "choose_eq_train"
+    parameters["benchmark_folder"] = "unsatcore_generation_test_rank_task_1"
     mlflow_wrapper(parameters)
 
     random_seed = 42
@@ -61,6 +61,7 @@ def train_wrapper(parameters):
     ############### Dataset initialization ################
 
     parameters["graph_type"] = "graph_1"
+    parameters["rank_task"] = 1
 
     parameters["train_data_folder_epoch_map"]={"divided_1":0}
     parameters["configuration_file"]=f"{project_folder}/Models/configurations/config_0.json"
@@ -80,6 +81,10 @@ def train_wrapper(parameters):
     parameters["gnn_dropout_rate"] = dropout_rate
 
     parameters["label_size"] = 2
+    parameters["gnn_num_filters"]=1
+    parameters["classifier_num_filter"]=1
+    parameters["classifier_pool_type"]="concat"
+    parameters["gnn_pool_type"]="concat"
 
     parameters["save_criterion"] = "valid_accuracy"
     parameters["model_save_path"] = os.path.join(project_folder, "Models",
@@ -91,28 +96,30 @@ def train_wrapper(parameters):
     parameters["num_epochs"] = 10
     parameters["train_step"] = 10
 
-    # Decide on the GNN type based on parameters
-    embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
-    if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
-        raise ValueError("Unsupported model type")
+    # # Decide on the GNN type based on parameters
+    # embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
+    # if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
+    #     raise ValueError("Unsupported model type")
+    #
+    # gnn_model = GNNRankTask1BatchProcess(
+    #     input_feature_dim=parameters["node_type"],
+    #     gnn_hidden_dim=parameters["gnn_hidden_dim"],
+    #     gnn_layer_num=parameters["gnn_layer_num"],
+    #     gnn_dropout_rate=parameters["gnn_dropout_rate"],
+    #     embedding_type=embedding_type
+    # )
+    # first_layer_ffnn_hidden_dim_factor= 2 if type(gnn_model) == GNNRankTask1 or type(gnn_model)==GNNRankTask1BatchProcess else 1
+    #
+    #
+    # classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
+    #                           ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
+    #                           first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
+    #                           ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
+    #
+    #
+    # model = GraphClassifierLightning(gnn_model, classifier_2, model_parameters=parameters)
 
-    gnn_model = GNNRankTask1BatchProcess(
-        input_feature_dim=parameters["node_type"],
-        gnn_hidden_dim=parameters["gnn_hidden_dim"],
-        gnn_layer_num=parameters["gnn_layer_num"],
-        gnn_dropout_rate=parameters["gnn_dropout_rate"],
-        embedding_type=embedding_type
-    )
-    first_layer_ffnn_hidden_dim_factor= 2 if type(gnn_model) == GNNRankTask1 or type(gnn_model)==GNNRankTask1BatchProcess else 1
-
-
-    classifier_2 = Classifier(ffnn_hidden_dim=parameters["ffnn_hidden_dim"],
-                              ffnn_layer_num=parameters["ffnn_layer_num"], output_dim=2,
-                              first_layer_ffnn_hidden_dim_factor=first_layer_ffnn_hidden_dim_factor,
-                              ffnn_dropout_rate=parameters["ffnn_dropout_rate"])
-
-
-    model = GraphClassifierLightning(gnn_model, classifier_2, model_parameters=parameters)
+    model = initialize_model_lightning(parameters)
 
     logger = MLFlowLogger(experiment_name=parameters["experiment_name"], run_id=parameters["run_id"])
     profiler = "simple"

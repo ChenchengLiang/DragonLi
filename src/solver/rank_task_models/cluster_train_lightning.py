@@ -49,6 +49,8 @@ def main():
         with open(configuration_file) as f:
             train_config = json.load(f)
 
+    # Clear the cache
+    torch.cuda.empty_cache()
 
     #with mlflow.start_run(run_id=train_config["run_id"]) as mlflow_run:
     color_print(text=f"use the existing run id {train_config['run_id']}", color="yellow")

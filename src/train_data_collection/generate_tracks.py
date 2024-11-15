@@ -24,13 +24,13 @@ import json
 def main():
     # generate track
     start_idx = 1
-    end_idx = 200
+    end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_woorpje_test_{start_idx}_{end_idx}"
+    track_name = f"04_track_DragonLi_test_generate_one_random_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
 
     # divide tracks
@@ -687,22 +687,22 @@ def generate_one_track_4_v2(file_name, index):
 
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
-    min_eq = 2
-    max_eq = 5
+    min_eq = 1
+    max_eq = 100
     max_variables = 10
-    max_terminals = 10
-    one_side_max_length = 50
+    max_terminals = 6
+    one_side_max_length = 60
     eq_number = random.randint(min_eq, max_eq)
     eq_list = []
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
-        # result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
+        result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
         # result, variables, terminals, eqs = generate_one_track_3(file_name,index)
-        result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=max_variables,
-                                                                 max_terminals=max_terminals,
-                                                                 max_length=one_side_max_length,
-                                                                 write_replacement_log=False)
+        # result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=max_variables,
+        #                                                          max_terminals=max_terminals,
+        #                                                          max_length=one_side_max_length,
+        #                                                          write_replacement_log=False)
         left_str = eqs[0][0]
         right_str = eqs[0][1]
         variable_list.extend(variables)

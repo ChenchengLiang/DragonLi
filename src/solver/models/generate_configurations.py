@@ -36,10 +36,10 @@ def main():
     #for benchmark in ["04_track_woorpje_train_rank_task_2"]:
 
     # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_0"]:
-    for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_1"]:
+    #for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_1"]:
     # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_0"]:
-    #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:
+    for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_1"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core_rank_task_2"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_0"]:
     #for benchmark in ["unsatcore_01_track_multi_word_equations_generated_train_1_40000_one_core+proof_tree_new_graph_rank_task_1"]:
@@ -55,7 +55,7 @@ def main():
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
-                                    for hidden_dim in [128]:  # [64, 128]:
+                                    for hidden_dim in [16]:  # [64, 128]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [
