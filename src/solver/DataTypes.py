@@ -848,6 +848,8 @@ def construct_tree(nodes, edges, graph_type, equation_node, variable_nodes, term
     return global_node_counter
 
 
+
+
 def get_eq_graph_1(left_terms: List[Term], right_terms: List[Term], global_info: Dict = {}):
     return _construct_graph(left_terms, right_terms, graph_type="graph_1", global_info=global_info)
 

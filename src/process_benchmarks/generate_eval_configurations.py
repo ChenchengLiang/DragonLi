@@ -19,7 +19,7 @@ def main():
     #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
     #benchmark_name = "zaligvinder+smtlib_eval"
     benchmark_name = "04_track_woorpje_eval_1_1000"
-    #benchmark_name = "04_track_woorpje_eval_1_200"
+    #benchmark_name = "04_track_woorpje_test_1_200"
     #benchmark_name = "04_track_Woorpje_original_dividied_for_eval"
 
     #train data
@@ -30,7 +30,7 @@ def main():
     #benchmark_name = "04_track_woorpje_train_1_20000"
     #benchmark_name = "04_track_woorpje_train_10001_30000"
     rank_task = 1
-    graph_type = "graph_1"
+    graph_type = "graph_5"
     model_type = "GCNSplit"  # "GINSplit"
 
 
@@ -66,31 +66,31 @@ def main():
         #           ]],
 
         #branch:fixed, order equations: category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_shortest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_longest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method hybrid_category_fixed_random"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_shortest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_longest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_category_fixed_random"
+        #           ]],
 
         
         
@@ -203,11 +203,11 @@ def main():
         #           ]],
 
 
-        ["z3", []],
-        ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        ["ostrich", []],
-        ["cvc5", []],
-        ["woorpje", []],
+        #["z3", []],
+        # ["z3-noodler", ["smt.string_solver=\"noodler\""]],
+        # ["ostrich", []],
+        # ["cvc5", []],
+        # ["woorpje", []],
 
         # gnn based configurations, branch: fixed, order: no category
         # ["this", ["fixed", "--termination_condition termination_condition_0",
@@ -269,64 +269,64 @@ def main():
 
 
         # gnn based configurations, branch: fixed, order: category, random process: no
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_gnn",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_gnn_first_n_iterations",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_gnn_formula_size",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_gnn_each_n_iterations",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_gnn",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_gnn_first_n_iterations",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_gnn_formula_size",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_gnn_each_n_iterations",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
 
         # gnn based configurations, branch: fixed, order: category, random process: yes
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_gnn_random",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_gnn_random_first_n_iterations",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_gnn_random_formula_size",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_gnn_random_each_n_iterations",
-        #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
-        #           f"--gnn_task {task}",
-        #           f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_gnn_random",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_gnn_random_first_n_iterations",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_gnn_random_formula_size",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_gnn_random_each_n_iterations",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
 
         # gnn based configurations, branch: random, order: no category
         # ["this", ["random", "--termination_condition termination_condition_0",

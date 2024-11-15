@@ -48,14 +48,14 @@ def main():
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
         #for graph_type in ["graph_1"]:
-        for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
-                for classifier_num_filter in [1,2,4]:#[1, 2, 4]:
+                for classifier_num_filter in [1]:#[1, 2, 4]:
                     for gnn_num_filters in [1]:#[1,2,4]:
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
-                                    for hidden_dim in [256]:  # [64, 128]:
+                                    for hidden_dim in [128]:  # [64, 128]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [

@@ -436,7 +436,7 @@ class SplitEquations(AbstractAlgorithm):
                 condition = True
         return condition
 
-    @time_it
+
     def _get_G_list_dgl(self, f: Formula):
         gc.disable()
         global_info = _get_global_info(f.eq_list)
@@ -505,29 +505,6 @@ class SplitEquations(AbstractAlgorithm):
 
         return rank_list
 
-    # @time_it
-    # def _get_rank_list(self, G_list_dgl):
-    #     from torch import softmax
-    #     with no_grad():
-    #         # Compute embeddings for the batch of graphs
-    #         G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))  # [n, 1, 128]
-    #
-    #         # Compute the mean tensor across embeddings
-    #         mean_tensor = mean(G_list_embeddings, dim=0, keepdim=True)  # [1, 128]
-    #
-    #         input_eq_embeddings_list = []
-    #         for g in G_list_embeddings:
-    #             # input_eq_embeddings_list.append(concat([g, mean_tensor], dim=1))
-    #             input_eq_embeddings_list.append(concat([g, mean_tensor]))  # For multi filters
-    #         input_eq_embeddings_list = stack(input_eq_embeddings_list)
-    #
-    #         # Classifier output
-    #         classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n, 2]
-    #
-    #         # Apply softmax and extract the first column as the score
-    #         rank_list = softmax(classifier_output, dim=-1)[:, :, 0].squeeze().tolist()
-    #
-    #     return rank_list
 
     def _sort_eq_list_by_prediction(self, rank_list, eq_list):
         prediction_list = []
