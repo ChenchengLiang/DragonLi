@@ -4,7 +4,7 @@ import random
 from typing import List, Dict, Tuple, Callable
 from sys import setrecursionlimit, getrecursionlimit
 from dgl import batch
-from torch import no_grad,stack,mean,concat,cat
+from torch import no_grad,stack,mean,concat,cat,softmax
 
 from src.solver.Constants import recursion_limit, \
     RECURSION_DEPTH_EXCEEDED, RECURSION_ERROR, UNSAT, SAT, UNKNOWN, RESTART_INITIAL_MAX_DEEP, \
@@ -19,7 +19,7 @@ from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
 from .abstract_algorithm import AbstractAlgorithm
-from .utils import softmax
+
 from ..independent_utils import log_control, strip_file_name_suffix, hash_graph_with_glob_info, time_it, empty_function
 from ..models.Dataset import get_one_dgl_graph
 
@@ -478,28 +478,27 @@ class SplitEquations(AbstractAlgorithm):
         gc.enable()
         return G_list_dgl
 
-    @time_it
+
     def _get_rank_list(self, G_list_dgl):
         with no_grad():
 
             # use different module of gnn_rank_model
             # embedding output [n,1,128]
             G_list_embeddings = self.gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))
+            G_list_embeddings_length =  G_list_embeddings.shape[0]
 
             # concat target output [n,1,256]
             mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
 
-            mean_tensor_expanded = mean_tensor.squeeze(0) .expand(len(G_list_embeddings), -1)  # Shape: [n, 128]
+            mean_tensor_expanded = mean_tensor.squeeze(0) .expand(G_list_embeddings_length, -1)  # Shape: [n, 128]
             input_eq_embeddings_list = cat([G_list_embeddings, mean_tensor_expanded], dim=1)
 
             # classifier
             classifier_output = self.gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
 
-            # transform [x,y] to one score
-            rank_list = []
-            for rank in classifier_output.tolist():  # rank [2]
-                rank_softmax = softmax(rank)
-                rank_list.append(rank_softmax[0])
+            rank_list = softmax(classifier_output, dim=1)[:, 0].tolist()
+
+
 
         return rank_list
 
@@ -533,10 +532,7 @@ class SplitEquations(AbstractAlgorithm):
         with no_grad():
             classifier_output = self.gnn_rank_model(batch(G_list_dgl)).squeeze()
 
-        rank_list: List[float] = []
-        for one_output in classifier_output:
-            softmax_one_output = softmax(one_output.tolist())
-            rank_list.append(softmax_one_output[0])
+        rank_list = softmax(classifier_output, dim=1)[:, 0].tolist()
 
         # sort
         formula_with_sorted_eq_list = self._sort_eq_list_by_prediction(rank_list, f.eq_list)
