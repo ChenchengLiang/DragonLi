@@ -33,7 +33,7 @@ def main():
     #benchmark_name = "04_track_woorpje_train_1_20000"
     #benchmark_name = "04_track_woorpje_train_10001_30000"
     rank_task = 1
-    graph_type = "graph_1"
+    graph_type = "graph_3"
     model_type = "GCNSplit"  # "GINSplit"
 
 

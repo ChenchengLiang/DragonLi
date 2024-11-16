@@ -15,7 +15,12 @@ import glob
 import shutil
 
 def main():
-    benchmark_name="04_track_woorpje_train_1_20000_unsatcores"
+    '''
+    unsatcores for proof tree is stored as .unsatcore files need use generate_train_data_from_solver_one_folder.py to generate train data
+    one unsatcore is stored in the folder *_unsat_cores, use generate_train_data_from_unsatcores.py to generate train data
+    :return:
+    '''
+    benchmark_name="merge_unsatcore_test"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")

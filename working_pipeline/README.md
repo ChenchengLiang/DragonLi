@@ -100,7 +100,7 @@ Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
 5. Merge extracted unsatcores and divided to extract training data
 Local: set parameter and run collect_unsatcores.py
    get two sets, one for extract from proof tree, one from first unsatcore
-Local: set parameter and run divided_folder.py for the proof tree
+Local & Uppmax: set parameter and run divided_folder.py for the proof tree then use generate_train_data_from_solver_one_folder.py to generate data 
 Local: set parameter and run generate_train_data_from_unsatcores.py to generate data from first unsatcore
 
 
