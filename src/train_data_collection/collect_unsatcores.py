@@ -20,7 +20,7 @@ def main():
     one unsatcore is stored in the folder *_unsat_cores, use generate_train_data_from_unsatcores.py to generate train data
     :return:
     '''
-    benchmark_name="merge_unsatcore_test"
+    benchmark_name="unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_10001_20000"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")
