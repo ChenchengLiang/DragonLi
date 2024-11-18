@@ -20,7 +20,15 @@ def get_dm(parameters):
 
 def get_gnn_and_classifier(parameters):
     # Decide on the GNN type based on parameters
-    embedding_type = "GCN" if parameters["model_type"] == "GCNSplit" else "GIN"
+    if parameters["model_type"] == "GCNSplit":
+        embedding_type = "GCN"
+    elif parameters["model_type"] == "GINSplit":
+        embedding_type = "GIN"
+    elif parameters["model_type"] == "GATSplit":
+        embedding_type = "GAT"
+    else:
+        raise ValueError("Unsupported model type")
+    
     if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
         raise ValueError("Unsupported model type")
 

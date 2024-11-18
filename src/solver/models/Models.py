@@ -10,6 +10,8 @@ import dgl
 from dgl.nn.pytorch import GraphConv, GATConv, GINConv
 from dgl.nn.pytorch.glob import GlobalAttentionPooling
 from dgl.nn.pytorch import SumPooling
+from torch.nn.functional import dropout
+
 from src.solver.independent_utils import color_print, hash_one_dgl_graph, get_folders, kill_gunicorn_processes, \
     identity_function, time_it
 
@@ -276,7 +278,14 @@ class GNNRankTask2MultiFilter(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',
                  pooling_type='mean',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask2MultiFilter, self).__init__()
-        embedding_class = GCNEmbeddingMultiFilter if embedding_type == 'GCN' else GINEmbeddingMultiFilter
+
+        if embedding_type == 'GCN':
+            embedding_class=GCNEmbeddingMultiFilter
+        elif embedding_type == 'GIN':
+            embedding_class=GINEmbeddingMultiFilter
+        elif embedding_type == 'GAT':
+            embedding_class=GATEmbeddingMultiFilter
+
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         if pooling_type == 'mean':
@@ -391,7 +400,13 @@ class GNNRankTask0HashTable(nn.Module):
 class GNNRankTask0HashTableMultiFilter(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask0HashTableMultiFilter, self).__init__()
-        embedding_class = GCNEmbeddingMultiFilter if embedding_type == 'GCN' else GINEmbeddingMultiFilter
+        if embedding_type == 'GCN':
+            embedding_class = GCNEmbeddingMultiFilter
+        elif embedding_type == 'GIN':
+            embedding_class = GINEmbeddingMultiFilter
+        elif embedding_type == 'GAT':
+            embedding_class = GATEmbeddingMultiFilter
+
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
 
@@ -445,7 +460,13 @@ class GNNRankTask1BatchProcess(nn.Module):
 class GNNRankTask1BatchProcessMultiFilter(nn.Module):
     def __init__(self, input_feature_dim, gnn_hidden_dim, gnn_layer_num, gnn_dropout_rate=0.5, embedding_type='GCN',gnn_num_filters=1,gnn_pool_type="concat"):
         super(GNNRankTask1BatchProcessMultiFilter, self).__init__()
-        embedding_class = GCNEmbeddingMultiFilter if embedding_type == 'GCN' else GINEmbeddingMultiFilter
+        if embedding_type == 'GCN':
+            embedding_class = GCNEmbeddingMultiFilter
+        elif embedding_type == 'GIN':
+            embedding_class = GINEmbeddingMultiFilter
+        elif embedding_type == 'GAT':
+            embedding_class = GATEmbeddingMultiFilter
+
         self.embedding = embedding_class(num_node_types=input_feature_dim, hidden_feats=gnn_hidden_dim,
                                          num_gnn_layers=gnn_layer_num, dropout_rate=gnn_dropout_rate,num_filters=gnn_num_filters,pool_type=gnn_pool_type)
         self.gnn_hidden_dim = gnn_hidden_dim
@@ -712,6 +733,29 @@ class GINEmbeddingMultiFilter(BaseEmbeddingMultiFilter):
                                                       num_filters=num_filters, pool_type=pool_type)
         self._build_layers(hidden_feats, num_gnn_layers)
 
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        # mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU(),
+        #                     nn.Linear(hidden_feats, hidden_feats))
+        mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
+        self.gnn_layers.append(GINConv(mlp, learn_eps=True))
+        for _ in range(num_gnn_layers - 1):
+            mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
+            self.gnn_layers.append(GINConv(mlp, learn_eps=True))
+
+class GATEmbeddingMultiFilter(BaseEmbeddingMultiFilter):
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate, num_filters=1, pool_type="concat"):
+        super(GATEmbeddingMultiFilter, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate,
+                                                      num_filters=num_filters, pool_type=pool_type)
+        self._build_layers(hidden_feats, num_gnn_layers)
+
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=True))
+        for _ in range(num_gnn_layers - 1):
+            self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=True))
+
+        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=False))
+
+########################################################################
 
 class BaseEmbedding(nn.Module):
     def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
@@ -773,6 +817,18 @@ class GINEmbedding(BaseEmbedding):
         for _ in range(num_gnn_layers - 1):
             mlp = nn.Sequential(nn.Linear(hidden_feats, hidden_feats), nn.ReLU())
             self.gnn_layers.append(GINConv(mlp, learn_eps=True))
+
+class GATEmbedding(BaseEmbedding):
+    def __init__(self, num_node_types, hidden_feats, num_gnn_layers, dropout_rate):
+        super(GATEmbedding, self).__init__(num_node_types, hidden_feats, num_gnn_layers, dropout_rate)
+        self._build_layers(hidden_feats, num_gnn_layers)
+
+    def _build_layers(self, hidden_feats, num_gnn_layers):
+        self.gnn_layers.append(GATConv(hidden_feats,hidden_feats,1,concat=True))
+        for _ in range(num_gnn_layers - 1):
+            self.gnn_layers.append(GATConv(hidden_feats,hidden_feats,1,concat=True))
+
+        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=False))
 
 
 
@@ -847,7 +903,7 @@ class GATWithNFFNN(BaseWithNFFNN):
                                            gnn_dropout_rate=gnn_dropout_rate, ffnn_dropout_rate=ffnn_dropout_rate)
         self.gat_layers = nn.ModuleList(
             [GATConv(gnn_hidden_dim, gnn_hidden_dim, num_heads) for _ in range(gnn_layer_num - 1)])
-        self.gat_final = GATConv(gnn_hidden_dim * num_heads, gnn_hidden_dim, 1)
+        self.gat_final = GATConv(gnn_hidden_dim * num_heads, gnn_hidden_dim, 1,concat=False)
 
     def gnn_forward(self, g, h):
         for i, layer in enumerate(self.gat_layers):
