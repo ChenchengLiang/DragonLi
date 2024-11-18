@@ -23,20 +23,25 @@ import json
 
 def main():
     # generate track
-    start_idx = 1
-    end_idx = 1000
+    start_idx = 40001
+    end_idx = 60000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_DragonLi_test_generate_one_random_{start_idx}_{end_idx}"
+    track_name = f"04_track_DragonLi_train_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
-    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
+    file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
-    # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+    #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+
+    print("data generating finished")
+
+    print("statistic files reading finished")
 
     # divide tracks
     dvivde_track_for_cluster(track_folder, chunk_size=50)
 
     print("done")
+
 
 
 def save_equations(start_index, end_index, folder, track_name, equation_generator):
@@ -48,6 +53,8 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
     all_folder = folder + "/ALL"
     if not os.path.exists(all_folder):
         os.makedirs(all_folder)
+
+    file_name_list=[]
     for i in range(start_index, end_index + 1):  # +1 because range is exclusive at the end
         print("---", str(i), "----")
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
@@ -61,6 +68,8 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
             file.write(equation_str)
         # generate smt2 file
         one_eq_file_to_smt2(filename)
+        file_name_list.append(filename)
+    return file_name_list
 
 
 def generate_one_track_1(file_name, index, max_variables=15, max_terminals=10, max_length=300,
@@ -607,11 +616,6 @@ def generate_one_track_4_v2(file_name, index):
     variable_pool, terminal_pool = get_variables_and_terminals(max_variables=max_variables,
                                                                max_terminals=max_terminals)
 
-    # todo: for debug fix variable and terminal pool
-    # variable_pool = list("BAC")
-    # terminal_pool = list("dcab")
-    # fixed_length = 8
-    # eq_number = 117
 
     # generate each eq string
     eq_string_list = []
@@ -627,8 +631,6 @@ def generate_one_track_4_v2(file_name, index):
         substring_to_be_replaced = generate_random_substring(eq_sample[i % eq_sample_size])
         substring_variable_map[substring_to_be_replaced] = v
 
-    # todo:for debug fix variable and terminal pool
-    # substring_variable_map={"dc":"B","aadc":"A","aadcb":"C"}
 
     track_1_func = generate_one_track_1_woorpje
 
@@ -697,18 +699,20 @@ def generate_one_track_4(file_name, index):
     variable_list = []
     terminal_list = []
     for i in range(eq_number):
-        result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
+        # result, variables, terminals, eqs=generate_one_random(max_variables=10, max_terminals=6, max_length=60)
         # result, variables, terminals, eqs = generate_one_track_3(file_name,index)
-        # result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=max_variables,
-        #                                                          max_terminals=max_terminals,
-        #                                                          max_length=one_side_max_length,
-        #                                                          write_replacement_log=False)
+        result, variables, terminals, eqs = generate_one_track_1(file_name, index, max_variables=max_variables,
+                                                                 max_terminals=max_terminals,
+                                                                 max_length=one_side_max_length,
+                                                                 write_replacement_log=False)
         left_str = eqs[0][0]
         right_str = eqs[0][1]
+
         variable_list.extend(variables)
         terminal_list.extend(terminals)
         variable_list = remove_duplicates(variable_list)
         terminal_list = remove_duplicates(terminal_list)
+
         eq_list.append((left_str, right_str))
     result = formatting_results(''.join(variable_list), ''.join(terminal_list), eq_list)
 
@@ -719,6 +723,7 @@ def generate_one_track_4(file_name, index):
         track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
         with open(track_info_file, 'w') as file:
             file.write(track_info_str)
+
 
     return result, variable_list, terminal_list, eq_list
 
@@ -780,8 +785,8 @@ def get_variables_and_terminals(max_variables=15, max_terminals=10):
 
     # Generate variable and terminal sets
     variables = [string.ascii_uppercase[i] for i in range(num_variables)]  # start by A
-    terminals = [string.ascii_lowercase[i] for i in range(num_terminals)]  # start by a
-    # terminals = random.sample(string.ascii_lowercase, num_terminals) #not start by a
+    #terminals = [string.ascii_lowercase[i] for i in range(num_terminals)]  # start by a
+    terminals = random.sample(string.ascii_lowercase, num_terminals) #not start by a
     return variables, terminals
 
 

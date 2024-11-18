@@ -693,6 +693,7 @@ class BaseEmbeddingMultiFilter(nn.Module):
             h_filter = h
             for i, layer in enumerate(filter_layers):
                 h_filter = self.apply_layer(g, h_filter, layer, i)
+                h_filter=h_filter.squeeze(1)
             g.ndata['h'] = h_filter
             # hg=self.global_attention_pooling(g, h)
             hg = dgl.mean_nodes(g, 'h')
@@ -749,11 +750,17 @@ class GATEmbeddingMultiFilter(BaseEmbeddingMultiFilter):
         self._build_layers(hidden_feats, num_gnn_layers)
 
     def _build_layers(self, hidden_feats, num_gnn_layers):
-        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=True))
+        num_heads=1
+        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, num_heads))
         for _ in range(num_gnn_layers - 1):
-            self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=True))
+            self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, num_heads))
 
-        self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 1, concat=False))
+
+        # self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 2, concat=True))
+        # for _ in range(num_gnn_layers - 1):
+        #     self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 2, concat=True))
+        #
+        # self.gnn_layers.append(GATConv(hidden_feats, hidden_feats, 2, concat=False))
 
 ########################################################################
 
@@ -903,7 +910,7 @@ class GATWithNFFNN(BaseWithNFFNN):
                                            gnn_dropout_rate=gnn_dropout_rate, ffnn_dropout_rate=ffnn_dropout_rate)
         self.gat_layers = nn.ModuleList(
             [GATConv(gnn_hidden_dim, gnn_hidden_dim, num_heads) for _ in range(gnn_layer_num - 1)])
-        self.gat_final = GATConv(gnn_hidden_dim * num_heads, gnn_hidden_dim, 1,concat=False)
+        self.gat_final = GATConv(gnn_hidden_dim * num_heads, gnn_hidden_dim, 1)
 
     def gnn_forward(self, g, h):
         for i, layer in enumerate(self.gat_layers):

@@ -28,9 +28,7 @@ def get_gnn_and_classifier(parameters):
         embedding_type = "GAT"
     else:
         raise ValueError("Unsupported model type")
-    
-    if parameters["model_type"] not in ["GCNSplit", "GINSplit"]:
-        raise ValueError("Unsupported model type")
+
 
     if parameters["rank_task"] == 0:
 

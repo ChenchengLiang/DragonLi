@@ -21,7 +21,7 @@ def main():
     learning_rate = 0.001
     train_batch_size=500
     valid_batch_size_factor = 1
-    valid_batch_size = 2000
+    valid_batch_size = 1000
     node_type = rank_task_node_type_map[rank_task]
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
@@ -50,57 +50,36 @@ def main():
         #for graph_type in ["graph_1"]:
         for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
-                for classifier_num_filter in [1,2]:#[1, 2, 4]:
+                for classifier_num_filter in [1]:#[1, 2, 4]:
                     for gnn_num_filters in [1,2]:#[1,2,4]:
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
-                                    for hidden_dim in [128,256]:  # [64, 128]:
+                                    for hidden_dim in [128,264]:  # [64, 128]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [
-                                                    "GCNSplit"]:  # ["GCN","GINSplit","GCNwithGAP","MultiGNNs"]:
+                                                    "GCNSplit"]:  # ["GCNSplit","GINSplit",GATSplit,"GCNwithGAP","MultiGNNs"]:
                                                     for share_gnn in [False]:
-                                                        if model_type == "GAT":
-                                                            for num_heads in [1]:
-                                                                configurations.append({
-                                                                    "benchmark": benchmark, "graph_type": graph_type,
-                                                                    "model_type": model_type, "task": task, "rank_task": rank_task,
-                                                                    "num_epochs": num_epochs, "learning_rate": learning_rate,
-                                                                    "save_criterion": "valid_accuracy", "batch_size": batch_size,
-                                                                    "gnn_hidden_dim": hidden_dim,
-                                                                    "gnn_layer_num": gnn_layer_num, "num_heads": num_heads,
-                                                                    "gnn_dropout_rate": dropout_rate,
-                                                                    "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num,
-                                                                    "label_size": label_size,
-                                                                    "ffnn_dropout_rate": dropout_rate, "node_type": node_type,
-                                                                    "train_step": train_step,
-                                                                    "share_gnn": share_gnn, "pooling_type": multi_classification_pooling_type,
-                                                                    "valid_batch_size_factor": valid_batch_size_factor,
-                                                                    "valid_batch_size": valid_batch_size,
-                                                                    "classifier_pool_type":classifier_pool_type,
-                                                                    "classifier_num_filter":classifier_num_filter,"gnn_num_filters":gnn_num_filters,"gnn_pool_type":gnn_pool_type
-                                                                })
-                                                        else:
-                                                            configurations.append({
-                                                                "benchmark": benchmark, "graph_type": graph_type,
-                                                                "model_type": model_type, "task": task, "rank_task": rank_task,
-                                                                "num_epochs": num_epochs,
-                                                                "learning_rate": learning_rate,
-                                                                "save_criterion": "valid_accuracy", "batch_size": batch_size,
-                                                                "gnn_hidden_dim": hidden_dim,
-                                                                "gnn_layer_num": gnn_layer_num, "num_heads": 0,
-                                                                "gnn_dropout_rate": dropout_rate,
-                                                                "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num,
-                                                                "label_size": label_size,
-                                                                "ffnn_dropout_rate": dropout_rate, "node_type": node_type,
-                                                                "train_step": train_step,
-                                                                "share_gnn": share_gnn, "pooling_type": multi_classification_pooling_type,
-                                                                "valid_batch_size_factor": valid_batch_size_factor,
-                                                                "valid_batch_size": valid_batch_size,
-                                                                "classifier_pool_type": classifier_pool_type,
-                                                                "classifier_num_filter": classifier_num_filter,"gnn_num_filters":gnn_num_filters,"gnn_pool_type":gnn_pool_type
-                                                            })
+                                                        configurations.append({
+                                                            "benchmark": benchmark, "graph_type": graph_type,
+                                                            "model_type": model_type, "task": task, "rank_task": rank_task,
+                                                            "num_epochs": num_epochs,
+                                                            "learning_rate": learning_rate,
+                                                            "save_criterion": "valid_accuracy", "batch_size": batch_size,
+                                                            "gnn_hidden_dim": hidden_dim,
+                                                            "gnn_layer_num": gnn_layer_num, "num_heads": 1,
+                                                            "gnn_dropout_rate": dropout_rate,
+                                                            "ffnn_hidden_dim": hidden_dim, "ffnn_layer_num": ffnn_layer_num,
+                                                            "label_size": label_size,
+                                                            "ffnn_dropout_rate": dropout_rate, "node_type": node_type,
+                                                            "train_step": train_step,
+                                                            "share_gnn": share_gnn, "pooling_type": multi_classification_pooling_type,
+                                                            "valid_batch_size_factor": valid_batch_size_factor,
+                                                            "valid_batch_size": valid_batch_size,
+                                                            "classifier_pool_type": classifier_pool_type,
+                                                            "classifier_num_filter": classifier_num_filter,"gnn_num_filters":gnn_num_filters,"gnn_pool_type":gnn_pool_type
+                                                        })
 
     # Writing the dictionary to a JSON file
     configuration_folder = project_folder + "/Models/configurations"
