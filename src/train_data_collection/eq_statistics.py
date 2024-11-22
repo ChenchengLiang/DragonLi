@@ -1,34 +1,44 @@
 import json
 import os
 from typing import List
-
+import gc
 from src.solver.Constants import bench_folder
-from src.solver.DataTypes import Equation
 
 from src.solver.Parser import EqParser, Parser
-from src.solver.independent_utils import strip_file_name_suffix, create_folder
+from src.solver.independent_utils import strip_file_name_suffix, create_folder, hash_graph_with_glob_info
 import statistics
 from tqdm import tqdm
 import plotly.graph_objects as go
 import networkx as nx
 
+from src.solver.models.Dataset import get_one_dgl_graph
+from src.solver.models.utils import load_model
+from src.solver.Constants import project_folder
+from torch import no_grad, cat, mean
+from dgl import batch
+from src.solver.DataTypes import Equation, Formula
+from src.solver.algorithms.split_equation_utils import _get_global_info
+from src.solver.utils import graph_func_map
+from src.solver.algorithms import graph_to_gnn_format
+
 
 def main():
+    folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
+    final_statistic_file_1=statistics_for_one_folder(folder)
 
-    # folder = f"{bench_folder}/04_track_DragonLi_eval_1_1000/ALL/ALL"
-    # final_statistic_file_1=statistics_for_one_folder(folder)
-    #
     # folder = f"{bench_folder}/01_track_multi_word_equations_generated_eval_1001_2000/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder)
 
-    final_statistic_file_1 = f"{bench_folder}/04_track_DragonLi_eval_1_1000/final_statistic.json"
-    final_statistic_file_2=f"{bench_folder}/01_track_multi_word_equations_generated_eval_1001_2000/final_statistic.json"
-    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    # final_statistic_file_1 = f"{bench_folder}/04_track_DragonLi_eval_1_1000/final_statistic.json"
+    # final_statistic_file_2 = f"{bench_folder}/01_track_multi_word_equations_generated_eval_1001_2000/final_statistic.json"
+    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
-    comparison_folder=create_folder(f"{os.path.dirname(os.path.dirname(final_statistic_file_1))}/two_benchmark_comparison")
-    benchmark_1=os.path.basename(os.path.dirname(final_statistic_file_1))
-    benchmark_2=os.path.basename(os.path.dirname(final_statistic_file_2))
+    comparison_folder = create_folder(
+        f"{os.path.dirname(os.path.dirname(final_statistic_file_1))}/two_benchmark_comparison")
+    benchmark_1 = os.path.basename(os.path.dirname(final_statistic_file_1))
+    benchmark_2 = os.path.basename(os.path.dirname(final_statistic_file_2))
 
     # load json file final_statistic_file_1 to dict
     with open(final_statistic_file_1, 'r') as file:
@@ -37,13 +47,15 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     with open(final_statistic_file_2, 'r') as file:
         final_statistic_dict_2 = json.load(file)
 
-    differences_of_two_dict={}
+    differences_of_two_dict = {}
     for key in final_statistic_dict_1.keys():
         if key in final_statistic_dict_2.keys():
-            if isinstance(final_statistic_dict_1[key],dict):
-                compare_histograms(key,benchmark_1,benchmark_2,final_statistic_dict_1[key],final_statistic_dict_2[key],output_html=f"{comparison_folder}/{key}.html")
+            if isinstance(final_statistic_dict_1[key], dict):
+                compare_histograms(key, benchmark_1, benchmark_2, final_statistic_dict_1[key],
+                                   final_statistic_dict_2[key], output_html=f"{comparison_folder}/{key}.html")
             else:
-                differences_of_two_dict[f"abs_difference_{key}"]=abs(final_statistic_dict_1[key]-final_statistic_dict_2[key])
+                differences_of_two_dict[f"abs_difference_{key}"] = abs(
+                    final_statistic_dict_1[key] - final_statistic_dict_2[key])
         else:
             print(f"key {key} not match")
 
@@ -55,8 +67,11 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     return differences_of_two_dict_file
 
 
-
 def statistics_for_one_folder(folder):
+    # load gnn model
+    graph_type = "graph_3"
+    gnn_model_path = f"{project_folder}/Models/model_2_{graph_type}_GCNSplit.pth"
+    gnn_rank_model = load_model(gnn_model_path)
 
     # get parser
     parser = Parser(EqParser())
@@ -70,6 +85,8 @@ def statistics_for_one_folder(folder):
 
     # get statistics for each eq file
     statistic_file_name_list = []
+    global_dgl_hash_table = {}
+    global_dgl_hash_table_hit = 0
     for eq_file in tqdm(eq_file_list, total=len(eq_file_list), desc="Processing eq files"):
         eq_file_path = os.path.join(folder, eq_file)
 
@@ -85,6 +102,25 @@ def statistics_for_one_folder(folder):
         terminal_occurrence_list = []
         number_of_vairables_each_eq_list = []
         number_of_terminals_each_eq_list = []
+
+        # todo get graph embedding for formula
+        graph_func = graph_func_map[graph_type]
+        G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
+                                                                         dgl_hash_table=global_dgl_hash_table,
+                                                                         dgl_hash_table_hit=global_dgl_hash_table_hit)
+        global_dgl_hash_table = dgl_hash_table
+        global_dgl_hash_table_hit = dgl_hash_table_hit
+
+        with no_grad():
+            # embedding output [n,1,128]
+            G_list_embeddings = gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))
+
+            # concat target output [n,1,256]
+            mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
+            graph_level_embedding = mean_tensor.squeeze(0).tolist()
+
+
+        #get statistics for each equation
         for eq in eq_list:
             # get equation length
             eq_length_list.append(eq.term_length)
@@ -104,6 +140,8 @@ def statistics_for_one_folder(folder):
             # get number of variables and terminals
             number_of_vairables_each_eq_list.append(eq.variable_number)
             number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
+
+
 
         # summary info
         line_offset = 3
@@ -146,13 +184,19 @@ def statistics_for_one_folder(folder):
                           "variable_occurrence_list": variable_occurrence_list,
                           "terminal_occurrence_list": terminal_occurrence_list,
                           "number_of_vairables_each_eq_list": number_of_vairables_each_eq_list,
-                          "number_of_terminals_each_eq_list": number_of_terminals_each_eq_list, }
+                          "number_of_terminals_each_eq_list": number_of_terminals_each_eq_list,
+                          "graph_level_embedding": graph_level_embedding,
+                          "eq_embedding_list":G_list_embeddings.tolist()}
         # save statistics to file
         statistic_file_name = f"{strip_file_name_suffix(eq_file_path)}_statistics.json"
         statistic_file_name_list.append(statistic_file_name)
         with open(statistic_file_name, 'w') as file:
             json.dump(statistic_dict, file, indent=4)
 
+    return benchmark_level_statistics(folder, statistic_file_name_list)
+
+
+def benchmark_level_statistics(folder, statistic_file_name_list):
     # get final_statistic_dict
     final_statistic_dict = {"total_variable_occurrence": 0,
                             "total_terminal_occurrence": 0,
@@ -264,13 +308,15 @@ def statistics_for_one_folder(folder):
     final_statistic_dict["max_variable_occurrence_of_equation"] = max(variable_occurrence_list_of_all_equations)
     final_statistic_dict["average_variable_occurrence_of_equation"] = statistics.mean(
         variable_occurrence_list_of_all_equations)
-    final_statistic_dict["stdev_variable_occurrence_of_equation"] = custom_stdev(variable_occurrence_list_of_all_equations)
+    final_statistic_dict["stdev_variable_occurrence_of_equation"] = custom_stdev(
+        variable_occurrence_list_of_all_equations)
 
     final_statistic_dict["min_terminal_occurrence_of_equation"] = min(terminal_occurrence_list_of_all_equations)
     final_statistic_dict["max_terminal_occurrence_of_equation"] = max(terminal_occurrence_list_of_all_equations)
     final_statistic_dict["average_terminal_occurrence_of_equation"] = statistics.mean(
         terminal_occurrence_list_of_all_equations)
-    final_statistic_dict["stdev_terminal_occurrence_of_equation"] = custom_stdev(terminal_occurrence_list_of_all_equations)
+    final_statistic_dict["stdev_terminal_occurrence_of_equation"] = custom_stdev(
+        terminal_occurrence_list_of_all_equations)
 
     final_statistic_dict["min_variable_number_of_equation"] = min(variable_number_list_of_all_equations)
     final_statistic_dict["max_variable_number_of_equation"] = max(variable_number_list_of_all_equations)
@@ -289,6 +335,7 @@ def statistics_for_one_folder(folder):
 
     return final_statistic_file
 
+
 def custom_stdev(data):
     if len(data) < 2:
         # If there's only one data point, return 0 (no variability)
@@ -298,7 +345,7 @@ def custom_stdev(data):
         return statistics.stdev(data)
 
 
-def compare_histograms(dict_name,benchmark_1,benchmark_2,dict1, dict2, output_html='comparison_histogram.html'):
+def compare_histograms(dict_name, benchmark_1, benchmark_2, dict1, dict2, output_html='comparison_histogram.html'):
     # Ensure data_dict1 and data_dict2 have keys as x-axis and values as y-axis
     x1 = list(dict1.keys())
     y1 = list(dict1.values())
@@ -331,6 +378,39 @@ def compare_histograms(dict_name,benchmark_1,benchmark_2,dict1, dict2, output_ht
     # Save the figure as an HTML file
     fig.write_html(output_html)
     print(f"Comparison histogram saved to {output_html}")
+
+
+def _get_G_list_dgl(f: Formula, graph_func, dgl_hash_table, dgl_hash_table_hit):
+    gc.disable()
+    global_info = _get_global_info(f.eq_list)
+    G_list_dgl = []
+
+    # Local references to the hash table and counter for efficiency
+    dgl_hash_table = dgl_hash_table
+    dgl_hash_table_hit = dgl_hash_table_hit
+
+    for index, eq in enumerate(f.eq_list):
+
+        split_eq_nodes, split_eq_edges = graph_func(eq.left_terms, eq.right_terms, global_info)
+
+        # hash eq+global info to dgl
+        hashed_eq, _ = hash_graph_with_glob_info(split_eq_nodes, split_eq_edges)
+        if hashed_eq in dgl_hash_table:
+            dgl_graph = dgl_hash_table[hashed_eq]
+            dgl_hash_table_hit += 1
+        else:
+            graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges)
+            dgl_graph, _ = get_one_dgl_graph(graph_dict)
+            dgl_hash_table[hashed_eq] = dgl_graph
+
+        G_list_dgl.append(dgl_graph)
+
+        # self.visualize_gnn_input_func(nodes=split_eq_nodes, edges=split_eq_edges,filename=self.file_name + f"_rank_call_{self.total_rank_call}_{index}")
+
+    # Update the hit count back to the global variable
+    dgl_hash_table_hit = dgl_hash_table_hit
+    gc.enable()
+    return G_list_dgl, dgl_hash_table, dgl_hash_table_hit
 
 
 if __name__ == '__main__':
