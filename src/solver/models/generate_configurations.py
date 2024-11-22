@@ -21,19 +21,20 @@ def main():
     learning_rate = 0.001
     train_batch_size=500
     valid_batch_size_factor = 1
-    valid_batch_size = 1000
+    valid_batch_size = 2000
     node_type = rank_task_node_type_map[rank_task]
     label_size = rank_task_label_size_map[rank_task]
     configurations = []
 
 
 
+
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_0"]:
-    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_1"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_treerank_task_2"]:
-    #for benchmark in ["04_track_woorpje_train_rank_task_0"]:
-    #for benchmark in ["04_track_woorpje_train_rank_task_1"]:
-    #for benchmark in ["04_track_woorpje_train_rank_task_2"]:
+    #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_0"]:
+    for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_1"]:
+    #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_2"]:
 
     # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_0"]:
     #for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_1"]:
@@ -48,14 +49,14 @@ def main():
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
         #for graph_type in ["graph_1"]:
-        for graph_type in ["graph_1"]:#["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
                 for classifier_num_filter in [1]:#[1, 2, 4]:
-                    for gnn_num_filters in [1,2]:#[1,2,4]:
+                    for gnn_num_filters in [1]:#[1,2,4]:
                         for gnn_pool_type in ["concat"]:
                             for gnn_layer_num in [2]:
                                 for ffnn_layer_num in [2]:
-                                    for hidden_dim in [128,264]:  # [64, 128]:
+                                    for hidden_dim in [128]:  # [64, 128]:
                                         for dropout_rate in [0.2,0.5]:
                                             for batch_size in [train_batch_size]:
                                                 for model_type in [

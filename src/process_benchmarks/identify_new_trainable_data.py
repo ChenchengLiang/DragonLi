@@ -19,7 +19,7 @@ import argparse
 
 
 def main():
-    benchmark_name=f"04_track_DragonLi_train_40001_60000"
+    benchmark_name=f"04_track_DragonLi_train_60001_80000"
     merged_summary_folder = project_folder+f"/src/process_benchmarks/summary/merge_summary/{benchmark_name}_summary"
     create_folder(project_folder+f"/src/process_benchmarks/summary/{benchmark_name}_new_trainable_data")
 

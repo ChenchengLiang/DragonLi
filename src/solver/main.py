@@ -47,9 +47,9 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/suffix-4/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_102.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-5/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_103.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
-    #file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
+    file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
 
-    file_path = bench_folder + "/examples_choose_eq/extract_unsatcore_proof_tree/g_01_track_multi_word_equations_eq_2_50_generated_train_1_10000_3689.eq"
+    #file_path = bench_folder + "/examples_choose_eq/extract_unsatcore_proof_tree/g_01_track_multi_word_equations_eq_2_50_generated_train_1_10000_3689.eq"
 
 
     """
@@ -116,7 +116,7 @@ def main():
     parsed_content = parser.parse(file_path)
     print("parsed_content:", parsed_content)
 
-    graph_type = "graph_1"
+    graph_type = "graph_3"
     task = "task_3"
     rank_task = 1
     label_size = rank_task_label_size_map[rank_task]
@@ -140,7 +140,7 @@ def main():
                                            "label_size": label_size,"rank_task":rank_task}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "gnn",
+                                               "order_equations_method": "category_gnn",
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
@@ -159,8 +159,8 @@ def main():
         os.remove(log_file)
 
 
-    #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-    solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
+    solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+    #solver = Solver(algorithm=SplitEquationsExtractData, algorithm_parameters=algorithm_parameters_SplitEquationsExtractData)
     #solver = Solver(algorithm=SplitEquations, algorithm_parameters=algorithm_parameters_SplitEquations)
 
     #result_dict = profile_function(solver.solve, parsed_content, visualize=False, output_train_data=True)

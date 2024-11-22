@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="unsatcores_04_track_DragonLi_train_40001_60000"
+    track_name="unsatcores_04_track_DragonLi_train_40001_80000_proof_tree"
     file_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)

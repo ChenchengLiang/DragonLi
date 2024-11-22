@@ -26,7 +26,7 @@ def main():
     start_idx = 1
     end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_DragonLi_eval_{start_idx}_{end_idx}"
+    track_name = f"04_track_DragonLi_eval_one_side_max_length_120_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
