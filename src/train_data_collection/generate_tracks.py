@@ -26,7 +26,7 @@ def main():
     start_idx = 1
     end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_DragonLi_eval_one_side_max_length_120_{start_idx}_{end_idx}"
+    track_name = f"04_track_DragonLi_eval_max_replace_variable_length_10_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
@@ -283,7 +283,7 @@ def replace_sublist(terminal_list, replacement_variable_list, start_index, end_i
 
 
 def replace_substring_with_new_variables_v2(original_left_list, original_right_list, variable_pool, substring_length=5):
-    max_replace_variable_length = 1
+    max_replace_variable_length = 10
     max_replace_time = 5
     left_list = original_left_list.copy()
     right_list = original_right_list.copy()
@@ -324,7 +324,7 @@ def replace_substring_with_new_variables(left, right, replacement_log):
     variables = []
     left_length = len(left)
     right_length = len(right)
-    max_replace_variable_length = 5
+    max_replace_variable_length = 1
     max_replace_time = 5
 
     replacement_log = replacement_log + f"-lhs- \n"

@@ -23,15 +23,21 @@ from src.solver.algorithms import graph_to_gnn_format
 
 
 def main():
-    folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
-    final_statistic_file_1=statistics_for_one_folder(folder)
+    # folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
+    # final_statistic_file_1=statistics_for_one_folder(folder)
 
-    # folder = f"{bench_folder}/01_track_multi_word_equations_generated_eval_1001_2000/ALL/ALL"
-    # final_statistic_file_2 = statistics_for_one_folder(folder)
+    benchmark_1 = "04_track_DragonLi_eval_max_replace_variable_length_10_1_1000"
+    benchmark_2 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
 
-    # final_statistic_file_1 = f"{bench_folder}/04_track_DragonLi_eval_1_1000/final_statistic.json"
-    # final_statistic_file_2 = f"{bench_folder}/01_track_multi_word_equations_generated_eval_1001_2000/final_statistic.json"
-    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    final_statistic_file_1 = statistics_for_one_folder(folder)
+
+    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    final_statistic_file_2 = statistics_for_one_folder(folder)
+
+    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
@@ -119,8 +125,7 @@ def statistics_for_one_folder(folder):
             mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
             graph_level_embedding = mean_tensor.squeeze(0).tolist()
 
-
-        #get statistics for each equation
+        # get statistics for each equation
         for eq in eq_list:
             # get equation length
             eq_length_list.append(eq.term_length)
@@ -140,8 +145,6 @@ def statistics_for_one_folder(folder):
             # get number of variables and terminals
             number_of_vairables_each_eq_list.append(eq.variable_number)
             number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
-
-
 
         # summary info
         line_offset = 3
@@ -186,7 +189,7 @@ def statistics_for_one_folder(folder):
                           "number_of_vairables_each_eq_list": number_of_vairables_each_eq_list,
                           "number_of_terminals_each_eq_list": number_of_terminals_each_eq_list,
                           "graph_level_embedding": graph_level_embedding,
-                          "eq_embedding_list":G_list_embeddings.tolist()}
+                          "eq_embedding_list": G_list_embeddings.tolist()}
         # save statistics to file
         statistic_file_name = f"{strip_file_name_suffix(eq_file_path)}_statistics.json"
         statistic_file_name_list.append(statistic_file_name)
