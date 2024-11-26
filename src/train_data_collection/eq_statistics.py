@@ -10,7 +10,7 @@ import statistics
 from tqdm import tqdm
 import plotly.graph_objects as go
 import networkx as nx
-
+from scipy.stats import wasserstein_distance
 from src.solver.models.Dataset import get_one_dgl_graph
 from src.solver.models.utils import load_model
 from src.solver.Constants import project_folder
@@ -23,6 +23,10 @@ from src.solver.algorithms import graph_to_gnn_format
 from sklearn.decomposition import PCA
 import plotly.express as px
 import numpy as np
+from scipy.stats import entropy
+from scipy.stats import ttest_ind
+
+
 
 def main():
 
@@ -38,17 +42,17 @@ def main():
 
 
     benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
-    model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
-    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
-    final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
-
+    # model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+    #
     benchmark_2 = "04_track_DragonLi_eval_1_1000"
-    model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
-    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+    # model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-
-
+    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
     compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
@@ -81,12 +85,13 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
 
     # save differences_of_two_dic to file
     differences_of_two_dict_file = f"{comparison_folder}/differences_of_two_dict.json"
-    print(differences_of_two_dict_file)
+    print(f"differences_of_two_dict_file save to {differences_of_two_dict_file}")
     with open(differences_of_two_dict_file, "w") as f:
         json.dump(differences_of_two_dict, f, indent=4)
 
     # get PCA for GNN embedding
-    get_two_PCA(benchmark_1_name,benchmark_2_name,final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+    pca_1,pca_2=get_two_PCA(benchmark_1_name,benchmark_2_name,final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+
 
     return differences_of_two_dict_file
 
@@ -512,14 +517,23 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
     E1_pca = combined_pca[:n1]  # The PCA result for E1
     E2_pca = combined_pca[n1:]  # The PCA result for E2
 
+    pca_average_wasserstein_distance, pac_wasserstein_distance_list = compute_wasserstein_distance(E1_pca, E2_pca)
+    pca_t_stat_list, pca_p_val_list = compute_ttest_ind(E1_pca, E2_pca)
+    centroid_distance_value,centroid_a,centroid_b = centroid_distance(E1_pca, E2_pca)
+
+
     # Step 4: Create an Interactive Scatter Plot with Plotly
     fig = px.scatter(
         x=np.concatenate((E1_pca[:, 0], E2_pca[:, 0])),  # X-axis for both sets
         y=np.concatenate((E1_pca[:, 1], E2_pca[:, 1])),  # Y-axis for both sets
-        color=[benchmark_name_1] * n1 + [benchmark_name_2] * len(E2),  # Use different colors for each set
+        color=["blue"] * n1 + ["red"] * len(E2),  # Use different colors for each set
         labels={'x': 'Principal Component 1', 'y': 'Principal Component 2'},
-        title='PCA of Two Sets of Graph Embeddings',
+        title=f"PCA of Two Sets of Graph Embeddings <br> pca_average_wasserstein_distance: {pca_average_wasserstein_distance} "
+              f"<br> pac_wasserstein_distance_list: {pac_wasserstein_distance_list} "
+              f"<br> pca_t_stat_list: {pca_t_stat_list} <br> pca_p_val_list: {pca_p_val_list} "
+              f"<br> centroid_distance_value: {centroid_distance_value}",
         template='plotly',  # Use a Plotly template for a nice visual style
+        opacity=0.3,
     )
 
     # Step 5: Customize Plot Appearance
@@ -530,11 +544,79 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
         showlegend=True,
     )
 
+    fig.add_scatter(
+        x=[centroid_a[0]],
+        y=[centroid_a[1]],
+        mode='markers',
+        name=f"centroid {benchmark_name_1}",
+        marker=dict(size=20, opacity=1, color='blue',line=dict(width=2, color='black')),
+    )
+
+    fig.add_scatter(
+        x=[centroid_b[0]],
+        y=[centroid_b[1]],
+        mode='markers',
+        name=f"centroid {benchmark_name_2}",
+        marker=dict(size=20, opacity=1, color='red', line=dict(width=2, color='black')),
+    )
+
+
     # Step 6: Save the Plotly Figure to an HTML File
     html_file_path = f"{html_directory}/pca_two_graph_embedding_plot.html"
     fig.write_html(html_file_path)
 
     print(f"Plot saved as {html_file_path}")
+
+    return E1_pca, E2_pca
+
+def compute_wasserstein_distance(data1, data2):
+    # minimum cost of transforming one probability distribution into another
+    data1 = np.array(data1)
+    data2 = np.array(data2)
+    # Compute Wasserstein distance for each dimension
+    distance_list=[]
+    for i in range(data1.shape[1]):
+        distance = wasserstein_distance(data1[:, i], data2[:, i])
+        distance_list.append(distance)
+
+    # Average Wasserstein distance across all
+    average_wasserstein_distance=statistics.mean(distance_list)
+    return average_wasserstein_distance,distance_list
+
+def compute_ttest_ind(data_1,data_2):
+    # determine if the means of the two distributions are significantly different for each feature
+    #p_val<0.05 means the means are significantly different
+    # larger t-statistic means more differences
+    data_1 = np.array(data_1)
+    data_2 = np.array(data_2)
+    # Compute ttest for each dimension
+    t_stat_list=[]
+    p_val_list=[]
+    for i in range(data_1.shape[1]):
+        t_stat, p_val = ttest_ind(data_1[:, i], data_2[:, i])
+        t_stat_list.append(t_stat)
+        p_val_list.append(p_val)
+
+    return t_stat_list,p_val_list
+
+def centroid_distance(set_a, set_b):
+    # Function to calculate the centroid of a set of coordinates
+    def calculate_centroid(coordinates):
+        x_coords = [x for x, y in coordinates]
+        y_coords = [y for x, y in coordinates]
+        centroid_x = np.mean(x_coords)
+        centroid_y = np.mean(y_coords)
+        return (centroid_x, centroid_y)
+
+    # Calculate centroids
+    centroid_a = calculate_centroid(set_a)
+    centroid_b = calculate_centroid(set_b)
+
+    # Calculate Euclidean distance between the two centroids
+    distance = np.sqrt((centroid_b[0] - centroid_a[0])**2 + (centroid_b[1] - centroid_a[1])**2)
+
+
+    return distance,centroid_a,centroid_b
 
 if __name__ == '__main__':
     main()
