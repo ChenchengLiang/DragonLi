@@ -508,7 +508,8 @@ class SplitEquations(AbstractAlgorithm):
         for pred, split_eq in zip(rank_list, eq_list):
             prediction_list.append([pred, split_eq])
 
-        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)
+        #sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)# decending order
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=False)# ascending order
 
         # print("-" * 10)
         # print("before sort")

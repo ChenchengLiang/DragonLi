@@ -23,21 +23,27 @@ from src.solver.algorithms import graph_to_gnn_format
 
 
 def main():
-    # folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
-    # final_statistic_file_1=statistics_for_one_folder(folder)
 
-    benchmark_1 = "04_track_DragonLi_eval_max_replace_variable_length_10_1_1000"
-    benchmark_2 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    benchmark_0 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
+    model_dict_0={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
+    folder = f"{bench_folder}/{benchmark_0}/ALL/ALL"
+    final_statistic_file_0 = statistics_for_one_folder(folder, model_dict_0)
 
-    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
-    final_statistic_file_1 = statistics_for_one_folder(folder)
+    # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    # model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+    #
+    # benchmark_2 = "04_track_DragonLi_eval_1_1000"
+    # model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    final_statistic_file_2 = statistics_for_one_folder(folder)
 
-    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
-    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
-    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    #
+    # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
@@ -73,11 +79,9 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     return differences_of_two_dict_file
 
 
-def statistics_for_one_folder(folder):
+def statistics_for_one_folder(folder,model_dict):
     # load gnn model
-    graph_type = "graph_3"
-    gnn_model_path = f"{project_folder}/Models/model_2_{graph_type}_GCNSplit.pth"
-    gnn_rank_model = load_model(gnn_model_path)
+    gnn_rank_model = load_gnn_model(model_dict)
 
     # get parser
     parser = Parser(EqParser())
@@ -96,12 +100,21 @@ def statistics_for_one_folder(folder):
     for eq_file in tqdm(eq_file_list, total=len(eq_file_list), desc="Processing eq files"):
         eq_file_path = os.path.join(folder, eq_file)
 
-        # read one file
-        parsed_content = parser.parse(eq_file_path)
-        variable_list: List[str] = [v.value for v in parsed_content["variables"]]
-        terminal_list: List[str] = [t.value for t in parsed_content["terminals"]]
+        # read one eq file
+        parsed_content_eq = parser.parse(eq_file_path)
+        variable_list: List[str] = [v.value for v in parsed_content_eq["variables"]]
+        terminal_list: List[str] = [t.value for t in parsed_content_eq["terminals"]]
         terminal_list.remove("\"\"")  # remove empty string
-        eq_list: List[Equation] = parsed_content["equation_list"]
+        eq_list: List[Equation] = parsed_content_eq["equation_list"]
+        
+        #read one unsatcore file
+        unsatcore_file=eq_file_path.replace(".eq",".unsatcore")
+        if os.path.exists(unsatcore_file):
+            parsed_contend_unsatcore = parser.parse(unsatcore_file)
+            unsatcore_eq_list: List[Equation] = parsed_contend_unsatcore["equation_list"]
+        else:
+            unsatcore_eq_list = []
+        
 
         eq_length_list = []
         variable_occurrence_list = []
@@ -110,7 +123,7 @@ def statistics_for_one_folder(folder):
         number_of_terminals_each_eq_list = []
 
         # todo get graph embedding for formula
-        graph_func = graph_func_map[graph_type]
+        graph_func = graph_func_map[model_dict["graph_type"]]
         G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
                                                                          dgl_hash_table=global_dgl_hash_table,
                                                                          dgl_hash_table_hit=global_dgl_hash_table_hit)
@@ -123,7 +136,7 @@ def statistics_for_one_folder(folder):
 
             # concat target output [n,1,256]
             mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
-            graph_level_embedding = mean_tensor.squeeze(0).tolist()
+            G_embedding = mean_tensor.squeeze(0).tolist()
 
         # get statistics for each equation
         for eq in eq_list:
@@ -161,8 +174,10 @@ def statistics_for_one_folder(folder):
 
         # get statistics
         statistic_dict = {"number_of_equations": len(eq_list),
+                          "number_of_unsatcore_equations": len(unsatcore_eq_list),
                           "number_of_variables": len(variable_list),
                           "number_of_terminals": len(terminal_list),
+
 
                           "min_eq_length": min(eq_length_list),
                           "max_eq_length": max(eq_length_list),
@@ -188,7 +203,7 @@ def statistics_for_one_folder(folder):
                           "terminal_occurrence_list": terminal_occurrence_list,
                           "number_of_vairables_each_eq_list": number_of_vairables_each_eq_list,
                           "number_of_terminals_each_eq_list": number_of_terminals_each_eq_list,
-                          "graph_level_embedding": graph_level_embedding,
+                          "G_embedding": G_embedding,
                           "eq_embedding_list": G_list_embeddings.tolist()}
         # save statistics to file
         statistic_file_name = f"{strip_file_name_suffix(eq_file_path)}_statistics.json"
@@ -211,6 +226,11 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "max_eq_number_of_problems": 0,
                             "average_eq_number_of_problems": 0,
                             "stdev_eq_number_of_problems": 0,
+
+                            "min_unsatcore_eq_number_of_problems": 0,
+                            "max_unsatcore_eq_number_of_problems": 0,
+                            "average_unsatcore_eq_number_of_problems": 0,
+                            "stdev_unsatcore_eq_number_of_problems": 0,
 
                             "min_eq_length": 0,
                             "max_eq_length": 0,
@@ -253,6 +273,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             }
 
     eq_number_list_of_problems = []
+    unsatcore_eq_number_list_of_problems=[]
     eq_length_list_of_problems = []
     variable_occurrence_list_of_problems = []
     terminal_occurrence_list_of_problems = []
@@ -271,6 +292,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             final_statistic_dict["total_terminal_occurrence"] += sum(statistic["terminal_occurrence_list"])
             eq_length_list_of_problems.extend(statistic["eq_length_list"])
             eq_number_list_of_problems.append(statistic["number_of_equations"])
+            unsatcore_eq_number_list_of_problems.append(statistic["number_of_unsatcore_equations"])
 
             variable_occurrence_list_of_problems.append(sum(statistic["variable_occurrence_list"]))
             terminal_occurrence_list_of_problems.append(sum(statistic["terminal_occurrence_list"]))
@@ -289,6 +311,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["max_eq_number_of_problems"] = max(eq_number_list_of_problems)
     final_statistic_dict["average_eq_number_of_problems"] = statistics.mean(eq_number_list_of_problems)
     final_statistic_dict["stdev_eq_number_of_problems"] = custom_stdev(eq_number_list_of_problems)
+
+
+    final_statistic_dict["min_unsatcore_eq_number_of_problems"] = min(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["max_unsatcore_eq_number_of_problems"] = max(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["average_unsatcore_eq_number_of_problems"] = statistics.mean(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["stdev_unsatcore_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
 
     final_statistic_dict["min_eq_length"] = min(eq_length_list_of_problems)
     final_statistic_dict["max_eq_length"] = max(eq_length_list_of_problems)
@@ -414,6 +442,12 @@ def _get_G_list_dgl(f: Formula, graph_func, dgl_hash_table, dgl_hash_table_hit):
     dgl_hash_table_hit = dgl_hash_table_hit
     gc.enable()
     return G_list_dgl, dgl_hash_table, dgl_hash_table_hit
+
+
+def load_gnn_model(model_dict):
+    # load gnn model
+    gnn_model_path = f"/home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns/mlruns/{model_dict['experiment_id']}/{model_dict['run_id']}/artifacts/model_2_{model_dict['graph_type']}_GCNSplit.pth"
+    return load_model(gnn_model_path)
 
 
 if __name__ == '__main__':
