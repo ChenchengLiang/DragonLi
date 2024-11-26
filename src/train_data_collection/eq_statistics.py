@@ -20,37 +20,43 @@ from src.solver.DataTypes import Equation, Formula
 from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.utils import graph_func_map
 from src.solver.algorithms import graph_to_gnn_format
-
+from sklearn.decomposition import PCA
+import plotly.express as px
+import numpy as np
 
 def main():
 
-    benchmark_0 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
-    model_dict_0={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
-    folder = f"{bench_folder}/{benchmark_0}/ALL/ALL"
-    final_statistic_file_0 = statistics_for_one_folder(folder, model_dict_0)
-
-    # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
-    # model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
-    # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
-    # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+    # benchmark_0 = "04_track_DragonLi_test_1_100"
+    # model_dict_0={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
+    # folder = f"{bench_folder}/{benchmark_0}/ALL/ALL"
+    # final_statistic_file_0 = statistics_for_one_folder(folder, model_dict_0)
     #
-    # benchmark_2 = "04_track_DragonLi_eval_1_1000"
-    # model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
-    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
-
-
-    #
-    # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
-    # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    # final_statistic_file_1 = f"{bench_folder}/{benchmark_0}/final_statistic.json"
+    # final_statistic_file_2 = f"{bench_folder}/unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree/final_statistic.json"
     # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+
+
+
+    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+
+    benchmark_2 = "04_track_DragonLi_eval_1_1000"
+    model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+
+
+
+    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     comparison_folder = create_folder(
         f"{os.path.dirname(os.path.dirname(final_statistic_file_1))}/two_benchmark_comparison")
-    benchmark_1 = os.path.basename(os.path.dirname(final_statistic_file_1))
-    benchmark_2 = os.path.basename(os.path.dirname(final_statistic_file_2))
+    benchmark_1_name = os.path.basename(os.path.dirname(final_statistic_file_1))
+    benchmark_2_name = os.path.basename(os.path.dirname(final_statistic_file_2))
 
     # load json file final_statistic_file_1 to dict
     with open(final_statistic_file_1, 'r') as file:
@@ -63,8 +69,10 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     for key in final_statistic_dict_1.keys():
         if key in final_statistic_dict_2.keys():
             if isinstance(final_statistic_dict_1[key], dict):
-                compare_histograms(key, benchmark_1, benchmark_2, final_statistic_dict_1[key],
+                compare_histograms(key, benchmark_1_name, benchmark_2_name, final_statistic_dict_1[key],
                                    final_statistic_dict_2[key], output_html=f"{comparison_folder}/{key}.html")
+            elif isinstance(final_statistic_dict_1[key], list):
+                pass
             else:
                 differences_of_two_dict[f"abs_difference_{key}"] = abs(
                     final_statistic_dict_1[key] - final_statistic_dict_2[key])
@@ -76,6 +84,10 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     print(differences_of_two_dict_file)
     with open(differences_of_two_dict_file, "w") as f:
         json.dump(differences_of_two_dict, f, indent=4)
+
+    # get PCA for GNN embedding
+    get_two_PCA(benchmark_1_name,benchmark_2_name,final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+
     return differences_of_two_dict_file
 
 
@@ -270,6 +282,8 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "equation_number:number_of_problems": {i: 0 for i in range(1, 101)},
                             "variable_number:number_of_problems": {i: 0 for i in range(0, 27)},
                             "terminal_number:number_of_problems": {i: 0 for i in range(0, 27)},
+
+                            "GNN_embedding_list": []
                             }
 
     eq_number_list_of_problems = []
@@ -281,6 +295,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     terminal_occurrence_list_of_all_equations = []
     variable_number_list_of_all_equations = []
     terminal_number_list_of_all_equations = []
+    GNN_embedding_list = []
     for statistic_file_name in statistic_file_name_list:
         with open(statistic_file_name, 'r') as file:
             statistic = json.load(file)
@@ -301,6 +316,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
 
             variable_number_list_of_all_equations.extend(statistic["number_of_vairables_each_eq_list"])
             terminal_number_list_of_all_equations.extend(statistic["number_of_terminals_each_eq_list"])
+            GNN_embedding_list.append(statistic["G_embedding"])
+
+
+    html_directory=os.path.dirname(os.path.dirname(folder))
+    get_one_PCA(GNN_embedding_list, html_directory)
+
 
     final_statistic_dict["total_variable_occurrence_ratio"] = final_statistic_dict["total_variable_occurrence"] / \
                                                               final_statistic_dict["total_eq_symbol"]
@@ -359,8 +380,10 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["average_terminal_number_of_equation"] = statistics.mean(terminal_number_list_of_all_equations)
     final_statistic_dict["stdev_terminal_number_of_equation"] = custom_stdev(terminal_number_list_of_all_equations)
 
+    final_statistic_dict["GNN_embedding_list"] = GNN_embedding_list
+
     # save final_statistic_dict to final_statistic.json
-    final_statistic_file = f"{os.path.dirname(os.path.dirname(folder))}/final_statistic.json"
+    final_statistic_file = f"{html_directory}/final_statistic.json"
     with open(final_statistic_file, "w") as f:
         json.dump(final_statistic_dict, f, indent=4)
 
@@ -449,6 +472,69 @@ def load_gnn_model(model_dict):
     gnn_model_path = f"/home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns/mlruns/{model_dict['experiment_id']}/{model_dict['run_id']}/artifacts/model_2_{model_dict['graph_type']}_GCNSplit.pth"
     return load_model(gnn_model_path)
 
+def get_one_PCA(E, html_directory):
+    pca = PCA(n_components=2)  # Reduce to 2 dimensions for easy visualization
+    E_pca = pca.fit_transform(E)
+
+    #visualize using plotly
+    fig = px.scatter(
+        x=E_pca[:, 0],  # X-axis: First principal component
+        y=E_pca[:, 1],  # Y-axis: Second principal component
+        labels={'x': 'Principal Component 1', 'y': 'Principal Component 2'},
+        title='PCA of Graph Embeddings',
+        template='plotly',  # Using a Plotly template for a nice visual style
+    )
+
+    # Step 4: Customize Plot Appearance
+    fig.update_traces(marker=dict(size=10, color='blue', opacity=0.6, line=dict(width=1, color='white')))
+    fig.update_layout(
+        xaxis_title="Principal Component 1",
+        yaxis_title="Principal Component 2",
+        showlegend=False,
+    )
+
+    html_file_path = f"{html_directory}/pca_graph_embedding_plot.html"
+    fig.write_html(html_file_path)
+
+    print(f"Plot saved as {html_file_path}")
+
+def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
+    # Step 1: Combine Embeddings
+    # Concatenate the two sets of embeddings along rows to apply PCA together
+    combined_embeddings = np.vstack((E1, E2))
+
+    # Step 2: Apply PCA
+    pca = PCA(n_components=2)  # Reduce to 2 dimensions for easy visualization
+    combined_pca = pca.fit_transform(combined_embeddings)
+
+    # Step 3: Split PCA Transformed Data Back to Each Set
+    n1 = len(E1)
+    E1_pca = combined_pca[:n1]  # The PCA result for E1
+    E2_pca = combined_pca[n1:]  # The PCA result for E2
+
+    # Step 4: Create an Interactive Scatter Plot with Plotly
+    fig = px.scatter(
+        x=np.concatenate((E1_pca[:, 0], E2_pca[:, 0])),  # X-axis for both sets
+        y=np.concatenate((E1_pca[:, 1], E2_pca[:, 1])),  # Y-axis for both sets
+        color=[benchmark_name_1] * n1 + [benchmark_name_2] * len(E2),  # Use different colors for each set
+        labels={'x': 'Principal Component 1', 'y': 'Principal Component 2'},
+        title='PCA of Two Sets of Graph Embeddings',
+        template='plotly',  # Use a Plotly template for a nice visual style
+    )
+
+    # Step 5: Customize Plot Appearance
+    fig.update_traces(marker=dict(size=10, opacity=0.6, line=dict(width=1, color='white')))
+    fig.update_layout(
+        xaxis_title="Principal Component 1",
+        yaxis_title="Principal Component 2",
+        showlegend=True,
+    )
+
+    # Step 6: Save the Plotly Figure to an HTML File
+    html_file_path = f"{html_directory}/pca_two_graph_embedding_plot.html"
+    fig.write_html(html_file_path)
+
+    print(f"Plot saved as {html_file_path}")
 
 if __name__ == '__main__':
     main()
