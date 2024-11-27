@@ -29,12 +29,12 @@ def main():
     if benchmark_name == None:
 
         #eval data
-        benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+        #benchmark_name = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
         #benchmark_name = "01_track_multi_word_equations_generated_eval_1001_2000"
         #benchmark_name = "zaligvinder+smtlib_eval"
         #benchmark_name = "04_track_woorpje_eval_1_1000"
         #benchmark_name = "04_track_Woorpje_original_dividied_for_eval"
-        #benchmark_name = "04_track_DragonLi_eval_1_1000"
+        benchmark_name = "04_track_DragonLi_eval_1_1000"
         # benchmark_name "04_track_DragonLi_test_generate_one_random_1_1000"
 
         #train data
@@ -47,7 +47,7 @@ def main():
         #benchmark_name = "04_track_DragonLi_train_40001_60000"
 
     rank_task = 1
-    graph_type = "graph_1"
+    graph_type = "graph_3"
     model_type = "GCNSplit"  # "GINSplit"
 
 

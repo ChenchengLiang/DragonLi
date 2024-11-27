@@ -1,5 +1,7 @@
+import glob
 import json
 import os
+import shutil
 from typing import List
 import gc
 from src.solver.Constants import bench_folder
@@ -29,6 +31,12 @@ from scipy.stats import ttest_ind
 
 
 def main():
+    #unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree
+    # model_dict = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+    #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
+
+    #unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
+    # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
     # benchmark_0 = "04_track_DragonLi_test_1_100"
     # model_dict_0={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
@@ -41,13 +49,13 @@ def main():
 
 
 
-    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
-    # model_dict_1={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+    benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
+    # model_dict_1={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
     # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
-    #
-    benchmark_2 = "04_track_DragonLi_eval_1_1000"
-    # model_dict_2={"graph_type":"graph_3", "experiment_id":"786449904194763400", "run_id":"ec25835b29c948769d3a913783865d3d"}
+
+    benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+    # model_dict_2={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
@@ -57,6 +65,11 @@ def main():
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
+    benchmark_1_folder = os.path.dirname(final_statistic_file_1)
+    benchmark_2_folder = os.path.dirname(final_statistic_file_2)
+    benchmark_1_comparison_folder=create_folder(f"{os.path.dirname(final_statistic_file_1)}/compare_with_{os.path.basename(benchmark_2_folder)}")
+    benchmark_2_comparison_folder=create_folder(f"{os.path.dirname(final_statistic_file_2)}/compare_with_{os.path.basename(benchmark_1_folder)}")
+
     comparison_folder = create_folder(
         f"{os.path.dirname(os.path.dirname(final_statistic_file_1))}/two_benchmark_comparison")
     benchmark_1_name = os.path.basename(os.path.dirname(final_statistic_file_1))
@@ -90,7 +103,14 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
         json.dump(differences_of_two_dict, f, indent=4)
 
     # get PCA for GNN embedding
-    pca_1,pca_2=get_two_PCA(benchmark_1_name,benchmark_2_name,final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+    pca_1,pca_2=get_two_PCA(benchmark_1_name,benchmark_2_name,
+                            final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+
+
+    #move results to benchmark_1 and benchmark_2 folder
+    for file in glob.glob(f"{comparison_folder}/*"):
+        shutil.copy(file,benchmark_1_comparison_folder)
+        shutil.copy(file,benchmark_2_comparison_folder)
 
 
     return differences_of_two_dict_file
