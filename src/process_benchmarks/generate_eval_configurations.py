@@ -284,7 +284,7 @@ def main():
         #           f"--gnn_task {task}",
         #           f"--rank_task {rank_task}"]],
 
-
+        #gnn_first_n_iterations_category
         # gnn based configurations, branch: fixed, order: category, random process: no
         ["this", ["fixed", "--termination_condition termination_condition_0",
                   f"--graph_type {graph_type}",
@@ -297,6 +297,13 @@ def main():
                   f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
                   f"--order_equations_method category_gnn_first_n_iterations",
+                  f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
+                  f"--gnn_task {task}",
+                  f"--rank_task {rank_task}"]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method gnn_first_n_iterations_category",
                   f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
                   f"--gnn_task {task}",
                   f"--rank_task {rank_task}"]],

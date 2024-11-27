@@ -14,7 +14,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
     _get_global_info, order_branches_fixed, order_branches_random, \
     order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, apply_rules_prefix, \
-    apply_rules_suffix
+    apply_rules_suffix, order_equations_category
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -78,6 +78,7 @@ class SplitEquations(AbstractAlgorithm):
             "category_gnn": self._order_equations_category_gnn,  # first category then gnn
             "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
             "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
+            "gnn_first_n_iterations_category":self._order_equations_gnn_first_n_iterations_category,
             "category_gnn_formula_size": self._order_equations_category_gnn_formula_size,
             "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
             "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
@@ -211,6 +212,10 @@ class SplitEquations(AbstractAlgorithm):
             return satisfiability, current_formula
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
+
+            #todo debug chruncate eq list to see if it learns the unsatcores
+            # if self.total_gnn_call==1:
+            #     current_formula=Formula(current_formula.eq_list[:10])
 
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
@@ -361,6 +366,12 @@ class SplitEquations(AbstractAlgorithm):
     def _order_equations_category_gnn_first_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         condition = self.total_gnn_call < self.first_n_itarations
         return self._order_equations_category_gnn_with_conditions(f, condition, category_call)
+
+    def _order_equations_gnn_first_n_iterations_category(self, f: Formula, category_call=0) -> (Formula, int):
+        if self.total_gnn_call < self.first_n_itarations:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return order_equations_category(f, category_call)
 
     def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         condition = self.total_rank_call % self.each_n_iterations == 0
