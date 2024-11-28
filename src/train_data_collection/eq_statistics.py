@@ -5,7 +5,7 @@ import shutil
 from typing import List
 import gc
 from src.solver.Constants import bench_folder
-
+from torch import no_grad, stack, mean, concat, cat, softmax
 from src.solver.Parser import EqParser, Parser
 from src.solver.independent_utils import strip_file_name_suffix, create_folder, hash_graph_with_glob_info
 import statistics
@@ -29,46 +29,46 @@ from scipy.stats import entropy
 from scipy.stats import ttest_ind
 
 
-
 def main():
-    #unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree
-    # model_dict = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
-    #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
+    # unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree
+    # model_dict = {"graph_type": "graph_3", "experiment_id": "786449904194763400", "run_id": "ec25835b29c948769d3a913783865d3d"}
 
-    #unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
+    # unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
     # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
-    # benchmark_0 = "04_track_DragonLi_test_1_100"
-    # model_dict_0={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
-    # folder = f"{bench_folder}/{benchmark_0}/ALL/ALL"
-    # final_statistic_file_0 = statistics_for_one_folder(folder, model_dict_0)
-    #
-    # final_statistic_file_1 = f"{bench_folder}/{benchmark_0}/final_statistic.json"
-    # final_statistic_file_2 = f"{bench_folder}/unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree/final_statistic.json"
-    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_valid"
+    model_dict_1={"graph_type": "graph_3", "experiment_id": "786449904194763400", "run_id": "ec25835b29c948769d3a913783865d3d"}
+    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
+    # benchmark_2 = "04_track_DragonLi_eval_1_1000"
+    # model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+    #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-
-    benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
+    # benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
     # model_dict_1={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
     # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
-    benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+    # benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
     # model_dict_2={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
-    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
-    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     benchmark_1_folder = os.path.dirname(final_statistic_file_1)
     benchmark_2_folder = os.path.dirname(final_statistic_file_2)
-    benchmark_1_comparison_folder=create_folder(f"{os.path.dirname(final_statistic_file_1)}/compare_with_{os.path.basename(benchmark_2_folder)}")
-    benchmark_2_comparison_folder=create_folder(f"{os.path.dirname(final_statistic_file_2)}/compare_with_{os.path.basename(benchmark_1_folder)}")
+    benchmark_1_comparison_folder = create_folder(
+        f"{os.path.dirname(final_statistic_file_1)}/compare_with_{os.path.basename(benchmark_2_folder)}")
+    benchmark_2_comparison_folder = create_folder(
+        f"{os.path.dirname(final_statistic_file_2)}/compare_with_{os.path.basename(benchmark_1_folder)}")
 
     comparison_folder = create_folder(
         f"{os.path.dirname(os.path.dirname(final_statistic_file_1))}/two_benchmark_comparison")
@@ -103,20 +103,19 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
         json.dump(differences_of_two_dict, f, indent=4)
 
     # get PCA for GNN embedding
-    pca_1,pca_2=get_two_PCA(benchmark_1_name,benchmark_2_name,
-                            final_statistic_dict_1["GNN_embedding_list"], final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+    pca_1, pca_2 = get_two_PCA(benchmark_1_name, benchmark_2_name,
+                               final_statistic_dict_1["GNN_embedding_list"],
+                               final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
 
-
-    #move results to benchmark_1 and benchmark_2 folder
+    # move results to benchmark_1 and benchmark_2 folder
     for file in glob.glob(f"{comparison_folder}/*"):
-        shutil.copy(file,benchmark_1_comparison_folder)
-        shutil.copy(file,benchmark_2_comparison_folder)
-
+        shutil.copy(file, benchmark_1_comparison_folder)
+        shutil.copy(file, benchmark_2_comparison_folder)
 
     return differences_of_two_dict_file
 
 
-def statistics_for_one_folder(folder,model_dict):
+def statistics_for_one_folder(folder, model_dict):
     # load gnn model
     gnn_rank_model = load_gnn_model(model_dict)
 
@@ -143,15 +142,14 @@ def statistics_for_one_folder(folder,model_dict):
         terminal_list: List[str] = [t.value for t in parsed_content_eq["terminals"]]
         terminal_list.remove("\"\"")  # remove empty string
         eq_list: List[Equation] = parsed_content_eq["equation_list"]
-        
-        #read one unsatcore file
-        unsatcore_file=eq_file_path.replace(".eq",".unsatcore")
+
+        # read one unsatcore file
+        unsatcore_file = eq_file_path.replace(".eq", ".unsatcore")
         if os.path.exists(unsatcore_file):
             parsed_contend_unsatcore = parser.parse(unsatcore_file)
             unsatcore_eq_list: List[Equation] = parsed_contend_unsatcore["equation_list"]
         else:
             unsatcore_eq_list = []
-        
 
         eq_length_list = []
         variable_occurrence_list = []
@@ -159,7 +157,7 @@ def statistics_for_one_folder(folder,model_dict):
         number_of_vairables_each_eq_list = []
         number_of_terminals_each_eq_list = []
 
-        # todo get graph embedding for formula
+        # get graph embedding for formula
         graph_func = graph_func_map[model_dict["graph_type"]]
         G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
                                                                          dgl_hash_table=global_dgl_hash_table,
@@ -174,6 +172,29 @@ def statistics_for_one_folder(folder,model_dict):
             # concat target output [n,1,256]
             mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
             G_embedding = mean_tensor.squeeze(0).tolist()
+
+            G_list_embeddings_length = G_list_embeddings.shape[0]
+            mean_tensor_expanded = mean_tensor.squeeze(0).expand(G_list_embeddings_length, -1)  # Shape: [n, 128]
+            input_eq_embeddings_list = cat([G_list_embeddings, mean_tensor_expanded], dim=1)
+
+            # classifier
+            classifier_output = gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
+
+            rank_list = softmax(classifier_output, dim=1)[:, 0].tolist()
+
+            prediction_list = []
+            for pred, split_eq in zip(rank_list, eq_list):
+                prediction_list.append([pred, split_eq])
+
+            sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)  # decending order
+
+            formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
+
+
+        # compute unsatcore prediction accuracy
+        offset_window=0
+        unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),offset_window)
+
 
         # get statistics for each equation
         for eq in eq_list:
@@ -214,7 +235,7 @@ def statistics_for_one_folder(folder,model_dict):
                           "number_of_unsatcore_equations": len(unsatcore_eq_list),
                           "number_of_variables": len(variable_list),
                           "number_of_terminals": len(terminal_list),
-
+                          "unsatcore_accuracy": unsatcore_accuracy,
 
                           "min_eq_length": min(eq_length_list),
                           "max_eq_length": max(eq_length_list),
@@ -258,6 +279,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "total_eq_symbol": 0,
                             "total_variable_occurrence_ratio": 0,
                             "total_terminal_occurrence_ratio": 0,
+                            "total_unsatcore_accuracy": 0,
 
                             "min_eq_number_of_problems": 0,
                             "max_eq_number_of_problems": 0,
@@ -312,7 +334,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             }
 
     eq_number_list_of_problems = []
-    unsatcore_eq_number_list_of_problems=[]
+    unsatcore_eq_number_list_of_problems = []
     eq_length_list_of_problems = []
     variable_occurrence_list_of_problems = []
     terminal_occurrence_list_of_problems = []
@@ -321,6 +343,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     variable_number_list_of_all_equations = []
     terminal_number_list_of_all_equations = []
     GNN_embedding_list = []
+    unsatcore_accuracy_list=[]
     for statistic_file_name in statistic_file_name_list:
         with open(statistic_file_name, 'r') as file:
             statistic = json.load(file)
@@ -342,12 +365,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             variable_number_list_of_all_equations.extend(statistic["number_of_vairables_each_eq_list"])
             terminal_number_list_of_all_equations.extend(statistic["number_of_terminals_each_eq_list"])
             GNN_embedding_list.append(statistic["G_embedding"])
+            unsatcore_accuracy_list.append(statistic["unsatcore_accuracy"])
 
-
-    html_directory=os.path.dirname(os.path.dirname(folder))
+    html_directory = os.path.dirname(os.path.dirname(folder))
     get_one_PCA(GNN_embedding_list, html_directory)
 
-
+    final_statistic_dict["total_unsatcore_accuracy"] = statistics.mean(unsatcore_accuracy_list)
     final_statistic_dict["total_variable_occurrence_ratio"] = final_statistic_dict["total_variable_occurrence"] / \
                                                               final_statistic_dict["total_eq_symbol"]
     final_statistic_dict["total_terminal_occurrence_ratio"] = final_statistic_dict["total_terminal_occurrence"] / \
@@ -358,10 +381,10 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["average_eq_number_of_problems"] = statistics.mean(eq_number_list_of_problems)
     final_statistic_dict["stdev_eq_number_of_problems"] = custom_stdev(eq_number_list_of_problems)
 
-
     final_statistic_dict["min_unsatcore_eq_number_of_problems"] = min(unsatcore_eq_number_list_of_problems)
     final_statistic_dict["max_unsatcore_eq_number_of_problems"] = max(unsatcore_eq_number_list_of_problems)
-    final_statistic_dict["average_unsatcore_eq_number_of_problems"] = statistics.mean(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["average_unsatcore_eq_number_of_problems"] = statistics.mean(
+        unsatcore_eq_number_list_of_problems)
     final_statistic_dict["stdev_unsatcore_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
 
     final_statistic_dict["min_eq_length"] = min(eq_length_list_of_problems)
@@ -497,11 +520,12 @@ def load_gnn_model(model_dict):
     gnn_model_path = f"/home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns/mlruns/{model_dict['experiment_id']}/{model_dict['run_id']}/artifacts/model_2_{model_dict['graph_type']}_GCNSplit.pth"
     return load_model(gnn_model_path)
 
+
 def get_one_PCA(E, html_directory):
     pca = PCA(n_components=2)  # Reduce to 2 dimensions for easy visualization
     E_pca = pca.fit_transform(E)
 
-    #visualize using plotly
+    # visualize using plotly
     fig = px.scatter(
         x=E_pca[:, 0],  # X-axis: First principal component
         y=E_pca[:, 1],  # Y-axis: Second principal component
@@ -523,7 +547,8 @@ def get_one_PCA(E, html_directory):
 
     print(f"Plot saved as {html_file_path}")
 
-def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
+
+def get_two_PCA(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
     # Step 1: Combine Embeddings
     # Concatenate the two sets of embeddings along rows to apply PCA together
     combined_embeddings = np.vstack((E1, E2))
@@ -539,8 +564,7 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
 
     pca_average_wasserstein_distance, pac_wasserstein_distance_list = compute_wasserstein_distance(E1_pca, E2_pca)
     pca_t_stat_list, pca_p_val_list = compute_ttest_ind(E1_pca, E2_pca)
-    centroid_distance_value,centroid_a,centroid_b = centroid_distance(E1_pca, E2_pca)
-
+    centroid_distance_value, centroid_a, centroid_b = centroid_distance(E1_pca, E2_pca)
 
     # Step 4: Create an Interactive Scatter Plot with Plotly
     fig = px.scatter(
@@ -569,7 +593,7 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
         y=[centroid_a[1]],
         mode='markers',
         name=f"centroid {benchmark_name_1}",
-        marker=dict(size=20, opacity=1, color='blue',line=dict(width=2, color='black')),
+        marker=dict(size=20, opacity=1, color='blue', line=dict(width=2, color='black')),
     )
 
     fig.add_scatter(
@@ -580,7 +604,6 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
         marker=dict(size=20, opacity=1, color='red', line=dict(width=2, color='black')),
     )
 
-
     # Step 6: Save the Plotly Figure to an HTML File
     html_file_path = f"{html_directory}/pca_two_graph_embedding_plot.html"
     fig.write_html(html_file_path)
@@ -589,35 +612,38 @@ def get_two_PCA(benchmark_name_1,benchmark_name_2,E1, E2, html_directory):
 
     return E1_pca, E2_pca
 
+
 def compute_wasserstein_distance(data1, data2):
     # minimum cost of transforming one probability distribution into another
     data1 = np.array(data1)
     data2 = np.array(data2)
     # Compute Wasserstein distance for each dimension
-    distance_list=[]
+    distance_list = []
     for i in range(data1.shape[1]):
         distance = wasserstein_distance(data1[:, i], data2[:, i])
         distance_list.append(distance)
 
     # Average Wasserstein distance across all
-    average_wasserstein_distance=statistics.mean(distance_list)
-    return average_wasserstein_distance,distance_list
+    average_wasserstein_distance = statistics.mean(distance_list)
+    return average_wasserstein_distance, distance_list
 
-def compute_ttest_ind(data_1,data_2):
+
+def compute_ttest_ind(data_1, data_2):
     # determine if the means of the two distributions are significantly different for each feature
-    #p_val<0.05 means the means are significantly different
+    # p_val<0.05 means the means are significantly different
     # larger t-statistic means more differences
     data_1 = np.array(data_1)
     data_2 = np.array(data_2)
     # Compute ttest for each dimension
-    t_stat_list=[]
-    p_val_list=[]
+    t_stat_list = []
+    p_val_list = []
     for i in range(data_1.shape[1]):
         t_stat, p_val = ttest_ind(data_1[:, i], data_2[:, i])
         t_stat_list.append(t_stat)
         p_val_list.append(p_val)
 
-    return t_stat_list,p_val_list
+    return t_stat_list, p_val_list
+
 
 def centroid_distance(set_a, set_b):
     # Function to calculate the centroid of a set of coordinates
@@ -633,10 +659,18 @@ def centroid_distance(set_a, set_b):
     centroid_b = calculate_centroid(set_b)
 
     # Calculate Euclidean distance between the two centroids
-    distance = np.sqrt((centroid_b[0] - centroid_a[0])**2 + (centroid_b[1] - centroid_a[1])**2)
+    distance = np.sqrt((centroid_b[0] - centroid_a[0]) ** 2 + (centroid_b[1] - centroid_a[1]) ** 2)
+
+    return distance, centroid_a, centroid_b
 
 
-    return distance,centroid_a,centroid_b
+def unsatcore_prediction_accuracy(predicted: Formula, ground_truth: Formula,offset_window):
+    corrected_count = 0
+    for i in range(0,min(predicted.eq_list_length,ground_truth.eq_list_length+offset_window)):
+        if predicted.eq_list[i] in ground_truth.eq_list:
+            corrected_count += 1
+    return corrected_count / len(ground_truth.eq_list)
+
 
 if __name__ == '__main__':
     main()

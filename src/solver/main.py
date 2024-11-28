@@ -140,7 +140,7 @@ def main():
                                            "label_size": label_size,"rank_task":rank_task}
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "category_gnn",
+                                               "order_equations_method": "category_gnn_first_n_iterations",# "gnn_first_n_iterations_category"
                                                "gnn_model_path": gnn_model_path,
                                                "termination_condition": "termination_condition_0",
                                                "graph_type": graph_type, "graph_func": graph_func_map[graph_type],

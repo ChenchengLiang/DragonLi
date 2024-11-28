@@ -519,16 +519,16 @@ class SplitEquations(AbstractAlgorithm):
         for pred, split_eq in zip(rank_list, eq_list):
             prediction_list.append([pred, split_eq])
 
-        #sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)# decending order
-        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=False)# ascending order
+        sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)# decending order
+        #sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=False)# ascending order, this make gnn become worst which indicate gnn is useful
 
         # print("-" * 10)
         # print("before sort")
         # for rank,eq in zip(rank_list,eq_list):
-        #     print(rank,eq.eq_str)
+        #     print(rank,eq.eq_str,eq.variable_number)
         # print("after sort")
         # for x in sorted_prediction_list:
-        #     print(x[0],x[1].eq_str)
+        #     print(x[0],x[1].eq_str,x[1].variable_number)
 
         formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
         return formula_with_sorted_eq_list
