@@ -324,7 +324,7 @@ def replace_substring_with_new_variables(left, right, replacement_log):
     variables = []
     left_length = len(left)
     right_length = len(right)
-    max_replace_variable_length = 1
+    max_replace_variable_length = 5
     max_replace_time = 5
 
     replacement_log = replacement_log + f"-lhs- \n"
