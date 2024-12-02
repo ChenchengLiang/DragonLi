@@ -4,6 +4,7 @@ import os
 import shutil
 from typing import List
 import gc
+
 from src.solver.Constants import bench_folder
 from torch import no_grad, stack, mean, concat, cat, softmax
 from src.solver.Parser import EqParser, Parser
@@ -27,6 +28,7 @@ import plotly.express as px
 import numpy as np
 from scipy.stats import entropy
 from scipy.stats import ttest_ind
+from sklearn.manifold import TSNE
 
 
 def main():
@@ -36,8 +38,9 @@ def main():
     # unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
     # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
-    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_valid"
-    model_dict_1={"graph_type": "graph_3", "experiment_id": "786449904194763400", "run_id": "ec25835b29c948769d3a913783865d3d"}
+    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    model_dict_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+                    "run_id": "ec25835b29c948769d3a913783865d3d"}
     folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
     final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
@@ -53,7 +56,8 @@ def main():
     # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
     # benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
-    # model_dict_2={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
+    # model_dict_2 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
+    #                 "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
@@ -107,6 +111,11 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
                                final_statistic_dict_1["GNN_embedding_list"],
                                final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
 
+    # get TSNE for GNN embedding
+    tsne_1, tsne_2 = get_two_TSNE(benchmark_1_name, benchmark_2_name,
+                                  final_statistic_dict_1["GNN_embedding_list"],
+                                  final_statistic_dict_2["GNN_embedding_list"], comparison_folder)
+
     # move results to benchmark_1 and benchmark_2 folder
     for file in glob.glob(f"{comparison_folder}/*"):
         shutil.copy(file, benchmark_1_comparison_folder)
@@ -151,12 +160,6 @@ def statistics_for_one_folder(folder, model_dict):
         else:
             unsatcore_eq_list = []
 
-        eq_length_list = []
-        variable_occurrence_list = []
-        terminal_occurrence_list = []
-        number_of_vairables_each_eq_list = []
-        number_of_terminals_each_eq_list = []
-
         # get graph embedding for formula
         graph_func = graph_func_map[model_dict["graph_type"]]
         G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
@@ -190,13 +193,47 @@ def statistics_for_one_folder(folder, model_dict):
 
             formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
 
+        # compute adjacent matrix and eigenvalues
+        adjacent_matrix_eigenvalues_list = []
+        # adjacent_matrix_eigenvalues_list = get_adjacent_matrix_eigenvalues(f,graph_func)
 
         # compute unsatcore prediction accuracy
-        offset_window=0
-        unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),offset_window)
+        offset_window = 0
+        unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),
+                                                           offset_window)
 
+        # get statistics for each usnatcore equation
+        unsatcore_eq_length_list = []
+        unsatcore_variable_occurrence_list = []
+        unsatcore_terminal_occurrence_list = []
+        unsatcore_number_of_vairables_each_eq_list = []
+        unsatcore_number_of_terminals_each_eq_list = []
+        for eq in unsatcore_eq_list:
+            # get equation length
+            unsatcore_eq_length_list.append(eq.term_length)
+
+            # get variable occurrence
+            variable_occurrence_map = {v: 0 for v in variable_list}
+            for v in variable_list:
+                variable_occurrence_map[v] += (eq.eq_str).count(v)
+            unsatcore_variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
+
+            # get terminal occurrence
+            terminal_occurrence_map = {t: 0 for t in terminal_list}
+            for t in terminal_list:
+                terminal_occurrence_map[t] += (eq.eq_str).count(t)
+            unsatcore_terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
+
+            # get number of variables and terminals
+            unsatcore_number_of_vairables_each_eq_list.append(eq.variable_number)
+            unsatcore_number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
 
         # get statistics for each equation
+        eq_length_list = []
+        variable_occurrence_list = []
+        terminal_occurrence_list = []
+        number_of_vairables_each_eq_list = []
+        number_of_terminals_each_eq_list = []
         for eq in eq_list:
             # get equation length
             eq_length_list.append(eq.term_length)
@@ -235,7 +272,6 @@ def statistics_for_one_folder(folder, model_dict):
                           "number_of_unsatcore_equations": len(unsatcore_eq_list),
                           "number_of_variables": len(variable_list),
                           "number_of_terminals": len(terminal_list),
-                          "unsatcore_accuracy": unsatcore_accuracy,
 
                           "min_eq_length": min(eq_length_list),
                           "max_eq_length": max(eq_length_list),
@@ -255,14 +291,42 @@ def statistics_for_one_folder(folder, model_dict):
                           "average_terminal_occurrence": statistics.mean(terminal_occurrence_list),
                           "stdev_terminal_occurrence": custom_stdev(terminal_occurrence_list),
 
+                          "unsatcore_accuracy": unsatcore_accuracy,
+
+                          "unsatcore_min_eq_length_of": min(unsatcore_eq_length_list),
+                          "unsatcore_max_eq_length_of": max(unsatcore_eq_length_list),
+                          "unsatcore_average_eq_length_of": statistics.mean(unsatcore_eq_length_list),
+                          "unsatcore_stdev_eq_length_of": custom_stdev(unsatcore_eq_length_list),
+
+                          "unsatcore_min_variable_occurrence_of": min(unsatcore_variable_occurrence_list),
+                          "unsatcore_max_variable_occurrence_of": max(unsatcore_variable_occurrence_list),
+                          "unsatcore_average_variable_occurrence_of": statistics.mean(
+                              unsatcore_variable_occurrence_list),
+                          "unsatcore_stdev_variable_occurrence_of": custom_stdev(unsatcore_variable_occurrence_list),
+
+                          "unsatcore_min_terminal_occurrence_of": min(unsatcore_terminal_occurrence_list),
+                          "unsatcore_max_terminal_occurrence_of": max(unsatcore_terminal_occurrence_list),
+                          "unsatcore_average_terminal_occurrence_of": statistics.mean(
+                              unsatcore_terminal_occurrence_list),
+                          "unsatcore_stdev_terminal_occurrence_of": custom_stdev(unsatcore_terminal_occurrence_list),
+
+                          "unsatcore_variable_occurrence_ratio": sum(unsatcore_variable_occurrence_list) / sum(
+                              unsatcore_eq_length_list),
+                          "unsatcore_terminal_occurrence_ratio": sum(unsatcore_terminal_occurrence_list) / sum(
+                              unsatcore_eq_length_list),
+
                           "info_summary_with_id": info_summary_with_id,
                           "eq_length_list": eq_length_list,
                           "variable_occurrence_list": variable_occurrence_list,
                           "terminal_occurrence_list": terminal_occurrence_list,
+                          "unsatcore_eq_length_list": unsatcore_eq_length_list,
+                          "unsatcore_variable_occurrence_list": unsatcore_variable_occurrence_list,
+                          "unsatcore_terminal_occurrence_list": unsatcore_terminal_occurrence_list,
                           "number_of_vairables_each_eq_list": number_of_vairables_each_eq_list,
                           "number_of_terminals_each_eq_list": number_of_terminals_each_eq_list,
                           "G_embedding": G_embedding,
-                          "eq_embedding_list": G_list_embeddings.tolist()}
+                          "eq_embedding_list": G_list_embeddings.tolist(),
+                          "adjacent_matrix_eigenvalues_list": adjacent_matrix_eigenvalues_list}
         # save statistics to file
         statistic_file_name = f"{strip_file_name_suffix(eq_file_path)}_statistics.json"
         statistic_file_name_list.append(statistic_file_name)
@@ -286,11 +350,6 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "average_eq_number_of_problems": 0,
                             "stdev_eq_number_of_problems": 0,
 
-                            "min_unsatcore_eq_number_of_problems": 0,
-                            "max_unsatcore_eq_number_of_problems": 0,
-                            "average_unsatcore_eq_number_of_problems": 0,
-                            "stdev_unsatcore_eq_number_of_problems": 0,
-
                             "min_eq_length": 0,
                             "max_eq_length": 0,
                             "average_eq_length": 0,
@@ -305,6 +364,27 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "max_terminal_occurrence_of_problem": 0,
                             "average_terminal_occurrence_of_problem": 0,
                             "stdev_terminal_occurrence_of_problem": 0,
+
+                            "unsatcore_min_eq_number_of_problems": 0,
+                            "unsatcore_max_eq_number_of_problems": 0,
+                            "unsatcore_average_eq_number_of_problems": 0,
+                            "unsatcore_stdev_eq_number_of_problems": 0,
+                            "unsatcore_eq_number_ratio": 0,
+
+                            "unsatcore_min_eq_length": 0,
+                            "unsatcore_max_eq_length": 0,
+                            "unsatcore_average_eq_length": 0,
+                            "unsatcore_stdev_eq_length": 0,
+
+                            "unsatcore_min_variable_occurrence_of_problem": 0,
+                            "unsatcore_max_variable_occurrence_of_problem": 0,
+                            "unsatcore_average_variable_occurrence_of_problem": 0,
+                            "unsatcore_stdev_variable_occurrence_of_problem": 0,
+
+                            "unsatcore_min_terminal_occurrence_of_problem": 0,
+                            "unsatcore_max_terminal_occurrence_of_problem": 0,
+                            "unsatcore_average_terminal_occurrence_of_problem": 0,
+                            "unsatcore_stdev_terminal_occurrence_of_problem": 0,
 
                             "min_variable_occurrence_of_equation": 0,
                             "max_variable_occurrence_of_equation": 0,
@@ -343,7 +423,10 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     variable_number_list_of_all_equations = []
     terminal_number_list_of_all_equations = []
     GNN_embedding_list = []
-    unsatcore_accuracy_list=[]
+    unsatcore_accuracy_list = []
+    unsatcore_eq_length_list_of_problems = []
+    unsatcore_variable_occurrence_list_of_problems = []
+    unsatcore_terminal_occurrence_list_of_problems = []
     for statistic_file_name in statistic_file_name_list:
         with open(statistic_file_name, 'r') as file:
             statistic = json.load(file)
@@ -355,10 +438,15 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             final_statistic_dict["total_terminal_occurrence"] += sum(statistic["terminal_occurrence_list"])
             eq_length_list_of_problems.extend(statistic["eq_length_list"])
             eq_number_list_of_problems.append(statistic["number_of_equations"])
-            unsatcore_eq_number_list_of_problems.append(statistic["number_of_unsatcore_equations"])
 
             variable_occurrence_list_of_problems.append(sum(statistic["variable_occurrence_list"]))
             terminal_occurrence_list_of_problems.append(sum(statistic["terminal_occurrence_list"]))
+
+            unsatcore_eq_number_list_of_problems.append(statistic["number_of_unsatcore_equations"])
+            unsatcore_eq_length_list_of_problems.extend(statistic["unsatcore_eq_length_list"])
+            unsatcore_variable_occurrence_list_of_problems.append(sum(statistic["unsatcore_variable_occurrence_list"]))
+            unsatcore_terminal_occurrence_list_of_problems.append(sum(statistic["unsatcore_terminal_occurrence_list"]))
+
             variable_occurrence_list_of_all_equations.extend(statistic["variable_occurrence_list"])
             terminal_occurrence_list_of_all_equations.extend(statistic["terminal_occurrence_list"])
 
@@ -381,12 +469,6 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["average_eq_number_of_problems"] = statistics.mean(eq_number_list_of_problems)
     final_statistic_dict["stdev_eq_number_of_problems"] = custom_stdev(eq_number_list_of_problems)
 
-    final_statistic_dict["min_unsatcore_eq_number_of_problems"] = min(unsatcore_eq_number_list_of_problems)
-    final_statistic_dict["max_unsatcore_eq_number_of_problems"] = max(unsatcore_eq_number_list_of_problems)
-    final_statistic_dict["average_unsatcore_eq_number_of_problems"] = statistics.mean(
-        unsatcore_eq_number_list_of_problems)
-    final_statistic_dict["stdev_unsatcore_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
-
     final_statistic_dict["min_eq_length"] = min(eq_length_list_of_problems)
     final_statistic_dict["max_eq_length"] = max(eq_length_list_of_problems)
     final_statistic_dict["average_eq_length"] = statistics.mean(eq_length_list_of_problems)
@@ -403,6 +485,37 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["average_terminal_occurrence_of_problem"] = statistics.mean(
         terminal_occurrence_list_of_problems)
     final_statistic_dict["stdev_terminal_occurrence_of_problem"] = custom_stdev(terminal_occurrence_list_of_problems)
+
+    final_statistic_dict["unsatcore_min_eq_number_of_problems"] = min(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["unsatcore_max_eq_number_of_problems"] = max(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["unsatcore_average_eq_number_of_problems"] = statistics.mean(
+        unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["unsatcore_stdev_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
+    final_statistic_dict["unsatcore_eq_number_ratio"] = sum(unsatcore_eq_number_list_of_problems) / sum(
+        eq_number_list_of_problems)
+
+    final_statistic_dict["unsatcore_min_eq_length"] = min(unsatcore_eq_length_list_of_problems)
+    final_statistic_dict["unsatcore_max_eq_length"] = max(unsatcore_eq_length_list_of_problems)
+    final_statistic_dict["unsatcore_average_eq_length"] = statistics.mean(unsatcore_eq_length_list_of_problems)
+    final_statistic_dict["unsatcore_stdev_eq_length"] = custom_stdev(unsatcore_eq_length_list_of_problems)
+
+    final_statistic_dict["unsatcore_min_variable_occurrence_of_problem"] = min(
+        unsatcore_variable_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_max_variable_occurrence_of_problem"] = max(
+        unsatcore_variable_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_average_variable_occurrence_of_problem"] = statistics.mean(
+        unsatcore_variable_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_stdev_variable_occurrence_of_problem"] = custom_stdev(
+        unsatcore_variable_occurrence_list_of_problems)
+
+    final_statistic_dict["unsatcore_min_terminal_occurrence_of_problem"] = min(
+        unsatcore_terminal_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_max_terminal_occurrence_of_problem"] = max(
+        unsatcore_terminal_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_average_terminal_occurrence_of_problem"] = statistics.mean(
+        unsatcore_terminal_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_stdev_terminal_occurrence_of_problem"] = custom_stdev(
+        unsatcore_terminal_occurrence_list_of_problems)
 
     final_statistic_dict["min_variable_occurrence_of_equation"] = min(variable_occurrence_list_of_all_equations)
     final_statistic_dict["max_variable_occurrence_of_equation"] = max(variable_occurrence_list_of_all_equations)
@@ -494,6 +607,8 @@ def _get_G_list_dgl(f: Formula, graph_func, dgl_hash_table, dgl_hash_table_hit):
     for index, eq in enumerate(f.eq_list):
 
         split_eq_nodes, split_eq_edges = graph_func(eq.left_terms, eq.right_terms, global_info)
+        nx_nodes = [n.id for n in split_eq_nodes]
+        nx_edges = [(e.source, e.target) for e in split_eq_edges]
 
         # hash eq+global info to dgl
         hashed_eq, _ = hash_graph_with_glob_info(split_eq_nodes, split_eq_edges)
@@ -549,15 +664,18 @@ def get_one_PCA(E, html_directory):
 
 
 def get_two_PCA(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
-    # Step 1: Combine Embeddings
+    '''
+    PCA finds the directions of greatest variance in your data and represents these directions as principal components.
+    These components are linear combinations of the original features and represent the directions in which the data varies the most
+    '''
     # Concatenate the two sets of embeddings along rows to apply PCA together
     combined_embeddings = np.vstack((E1, E2))
 
-    # Step 2: Apply PCA
+    # Apply PCA
     pca = PCA(n_components=2)  # Reduce to 2 dimensions for easy visualization
     combined_pca = pca.fit_transform(combined_embeddings)
 
-    # Step 3: Split PCA Transformed Data Back to Each Set
+    # Split PCA Transformed Data Back to Each Set
     n1 = len(E1)
     E1_pca = combined_pca[:n1]  # The PCA result for E1
     E2_pca = combined_pca[n1:]  # The PCA result for E2
@@ -566,7 +684,7 @@ def get_two_PCA(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
     pca_t_stat_list, pca_p_val_list = compute_ttest_ind(E1_pca, E2_pca)
     centroid_distance_value, centroid_a, centroid_b = centroid_distance(E1_pca, E2_pca)
 
-    # Step 4: Create an Interactive Scatter Plot with Plotly
+    # Create an Interactive Scatter Plot with Plotly
     fig = px.scatter(
         x=np.concatenate((E1_pca[:, 0], E2_pca[:, 0])),  # X-axis for both sets
         y=np.concatenate((E1_pca[:, 1], E2_pca[:, 1])),  # Y-axis for both sets
@@ -580,7 +698,7 @@ def get_two_PCA(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
         opacity=0.3,
     )
 
-    # Step 5: Customize Plot Appearance
+    # Customize Plot Appearance
     fig.update_traces(marker=dict(size=10, opacity=0.6, line=dict(width=1, color='white')))
     fig.update_layout(
         xaxis_title="Principal Component 1",
@@ -604,13 +722,83 @@ def get_two_PCA(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
         marker=dict(size=20, opacity=1, color='red', line=dict(width=2, color='black')),
     )
 
-    # Step 6: Save the Plotly Figure to an HTML File
+    # Save the Plotly Figure to an HTML File
     html_file_path = f"{html_directory}/pca_two_graph_embedding_plot.html"
     fig.write_html(html_file_path)
 
     print(f"Plot saved as {html_file_path}")
 
     return E1_pca, E2_pca
+
+
+def get_two_TSNE(benchmark_name_1, benchmark_name_2, E1, E2, html_directory):
+    '''
+    t-SNE is a non-linear dimensionality reduction technique that preserves the local structure of the data,
+    making it well-suited for visualizing high-dimensional data in lower dimensions.
+    '''
+    # Concatenate the two sets of embeddings along rows to apply t-SNE together
+    combined_embeddings = np.vstack((E1, E2))
+
+    # Apply t-SNE
+    tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000)
+    combined_tsne = tsne.fit_transform(combined_embeddings)
+
+    # Split t-SNE Transformed Data Back to Each Set
+    n1 = len(E1)
+    E1_tsne = combined_tsne[:n1]  # The t-SNE result for E1
+    E2_tsne = combined_tsne[n1:]  # The t-SNE result for E2
+
+    # Compute distances and statistics
+    tsne_average_wasserstein_distance, tsne_wasserstein_distance_list = compute_wasserstein_distance(E1_tsne, E2_tsne)
+    tsne_t_stat_list, tsne_p_val_list = compute_ttest_ind(E1_tsne, E2_tsne)
+    centroid_distance_value, centroid_a, centroid_b = centroid_distance(E1_tsne, E2_tsne)
+
+    # Create an Interactive Scatter Plot with Plotly
+    fig = px.scatter(
+        x=np.concatenate((E1_tsne[:, 0], E2_tsne[:, 0])),  # X-axis for both sets
+        y=np.concatenate((E1_tsne[:, 1], E2_tsne[:, 1])),  # Y-axis for both sets
+        color=["blue"] * n1 + ["red"] * len(E2),  # Use different colors for each set
+        labels={'x': 't-SNE Component 1', 'y': 't-SNE Component 2'},
+        title=f"t-SNE of Two Sets of Graph Embeddings <br> tsne_average_wasserstein_distance: {tsne_average_wasserstein_distance} "
+              f"<br> tsne_wasserstein_distance_list: {tsne_wasserstein_distance_list} "
+              f"<br> tsne_t_stat_list: {tsne_t_stat_list} <br> tsne_p_val_list: {tsne_p_val_list} "
+              f"<br> centroid_distance_value: {centroid_distance_value}",
+        template='plotly',  # Use a Plotly template for a nice visual style
+        opacity=0.3,
+    )
+
+    # Customize Plot Appearance
+    fig.update_traces(marker=dict(size=10, opacity=0.6, line=dict(width=1, color='white')))
+    fig.update_layout(
+        xaxis_title="t-SNE Component 1",
+        yaxis_title="t-SNE Component 2",
+        showlegend=True,
+    )
+
+    # Add centroids to the plot
+    fig.add_scatter(
+        x=[centroid_a[0]],
+        y=[centroid_a[1]],
+        mode='markers',
+        name=f"centroid {benchmark_name_1}",
+        marker=dict(size=20, opacity=1, color='blue', line=dict(width=2, color='black')),
+    )
+
+    fig.add_scatter(
+        x=[centroid_b[0]],
+        y=[centroid_b[1]],
+        mode='markers',
+        name=f"centroid {benchmark_name_2}",
+        marker=dict(size=20, opacity=1, color='red', line=dict(width=2, color='black')),
+    )
+
+    # Save the Plotly Figure to an HTML File
+    html_file_path = f"{html_directory}/tsne_two_graph_embedding_plot.html"
+    fig.write_html(html_file_path)
+
+    print(f"Plot saved as {html_file_path}")
+
+    return E1_tsne, E2_tsne
 
 
 def compute_wasserstein_distance(data1, data2):
@@ -664,12 +852,44 @@ def centroid_distance(set_a, set_b):
     return distance, centroid_a, centroid_b
 
 
-def unsatcore_prediction_accuracy(predicted: Formula, ground_truth: Formula,offset_window):
-    corrected_count = 0
-    for i in range(0,min(predicted.eq_list_length,ground_truth.eq_list_length+offset_window)):
-        if predicted.eq_list[i] in ground_truth.eq_list:
-            corrected_count += 1
-    return corrected_count / len(ground_truth.eq_list)
+def unsatcore_prediction_accuracy(predicted: Formula, ground_truth: Formula, offset_window):
+    if ground_truth.eq_list_length == 0:
+        return 0
+    else:
+        corrected_count = 0
+        denominator = min(predicted.eq_list_length, ground_truth.eq_list_length + offset_window)
+        for i in range(0, denominator):
+            if predicted.eq_list[i] in ground_truth.eq_list:
+                corrected_count += 1
+        return corrected_count / denominator
+
+
+def get_adjacent_matrix_eigenvalues(f, graph_func):
+    global_info = _get_global_info(f.eq_list)
+    nx_graph_list = []
+    for index, eq in enumerate(f.eq_list):
+        split_eq_nodes, split_eq_edges = graph_func(eq.left_terms, eq.right_terms, global_info)
+        nx_nodes = [n.id for n in split_eq_nodes]
+        nx_edges = [(e.source, e.target) for e in split_eq_edges]
+        nx_g = nx.DiGraph()
+        nx_g.add_nodes_from(nx_nodes)
+        nx_g.add_edges_from(nx_edges)
+        nx_graph_list.append(nx_g)
+
+    adjacent_matrix_eigenvalues_list = []
+    for eq_graph in nx_graph_list:
+        # print("---")
+        # print("nodes:",eq_graph.nodes)
+        # print("edges:",eq_graph.edges)
+        # print("is strongly connected:",nx.is_strongly_connected(eq_graph))
+        # scc = list(nx.strongly_connected_components(eq_graph))
+        # print("Strongly Connected Components:", scc)
+        adj_matrix = nx.adjacency_matrix(eq_graph).toarray()
+        eigenvalues = np.linalg.eigvals(adj_matrix)
+        adjacent_matrix_eigenvalues_list.append(list(eigenvalues))
+        # print("adj_matrix",adj_matrix)
+        # print("eigenvalues",eigenvalues)
+    return adjacent_matrix_eigenvalues_list
 
 
 if __name__ == '__main__':

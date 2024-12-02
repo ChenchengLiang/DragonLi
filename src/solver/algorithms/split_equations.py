@@ -79,6 +79,7 @@ class SplitEquations(AbstractAlgorithm):
             "category_gnn_each_n_iterations": self._order_equations_category_gnn_each_n_iterations,
             "category_gnn_first_n_iterations": self._order_equations_category_gnn_first_n_iterations,
             "gnn_first_n_iterations_category":self._order_equations_gnn_first_n_iterations_category,
+            "gnn_first_n_iterations_category_random":self._order_equations_gnn_first_n_iterations_category_random,
             "category_gnn_formula_size": self._order_equations_category_gnn_formula_size,
             "hybrid_category_gnn_random": self._order_equations_hybrid_category_gnn_random,
             "hybrid_category_gnn_random_each_n_iterations": self._order_equations_hybrid_category_gnn_random_each_n_iterations,
@@ -372,6 +373,12 @@ class SplitEquations(AbstractAlgorithm):
             return self._order_equations_gnn(f, category_call)
         else:
             return order_equations_category(f, category_call)
+
+    def _order_equations_gnn_first_n_iterations_category_random(self, f: Formula, category_call=0) -> (Formula, int):
+        if self.total_gnn_call < self.first_n_itarations:
+            return self._order_equations_gnn(f, category_call)
+        else:
+            return order_equations_category_random(f, category_call)
 
     def _order_equations_category_gnn_each_n_iterations(self, f: Formula, category_call=0) -> (Formula, int):
         condition = self.total_rank_call % self.each_n_iterations == 0
