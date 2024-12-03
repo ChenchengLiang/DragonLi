@@ -7,8 +7,7 @@ from src.solver.DataTypes import Term
 
 def one_eq_file_to_smt2(file_path):
     # parse .eq
-    parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
-    parser = Parser(parser_type)
+    parser = Parser(EqParser())
     parsed_content = parser.parse(file_path)
     #print("parsed_content:",parsed_content)
 

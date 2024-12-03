@@ -118,7 +118,7 @@ def flatten_list(nested_list:Iterable)->List:
     return flattened
 
 def strip_file_name_suffix(file_name):
-    return file_name.replace(".eq", "").replace(".smt2", "").replace(".smt", "")
+    return file_name.replace(".eq", "").replace(".smt2", "").replace(".smt", "").replace(".predicted_unsatcore", "")
 
 def dump_to_json_with_format(graph_dict,file_path):
     # Dump each top-level item in graph_dict to a string

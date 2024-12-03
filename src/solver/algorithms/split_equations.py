@@ -214,9 +214,7 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
 
-            #todo debug chruncate eq list to see if it learns the unsatcores
-            # if self.total_gnn_call==1:
-            #     current_formula=Formula(current_formula.eq_list[:10])
+            #todo output predicted rank
 
             current_eq, separated_formula = self.get_first_eq(current_formula)
 

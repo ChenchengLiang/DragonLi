@@ -38,32 +38,32 @@ def main():
     # unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
     # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
-    benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
-    model_dict_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
-                    "run_id": "ec25835b29c948769d3a913783865d3d"}
-    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
-    final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
-
+    # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    # model_dict_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+    #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+    #
     # benchmark_2 = "04_track_DragonLi_eval_1_1000"
     # model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
     #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-    # benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
-    # model_dict_1={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
-    # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
-    # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
+    benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
+    model_dict_1={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
+    folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
+    final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
-    # benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
-    # model_dict_2 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
-    #                 "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
-    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+    benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+    model_dict_2 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
+                    "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
+    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-    # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
-    # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
-    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
@@ -203,30 +203,37 @@ def statistics_for_one_folder(folder, model_dict):
                                                            offset_window)
 
         # get statistics for each usnatcore equation
-        unsatcore_eq_length_list = []
-        unsatcore_variable_occurrence_list = []
-        unsatcore_terminal_occurrence_list = []
-        unsatcore_number_of_vairables_each_eq_list = []
-        unsatcore_number_of_terminals_each_eq_list = []
-        for eq in unsatcore_eq_list:
-            # get equation length
-            unsatcore_eq_length_list.append(eq.term_length)
+        if len(unsatcore_eq_list)>0:
+            unsatcore_eq_length_list = []
+            unsatcore_variable_occurrence_list = []
+            unsatcore_terminal_occurrence_list = []
+            unsatcore_number_of_vairables_each_eq_list = []
+            unsatcore_number_of_terminals_each_eq_list = []
+            for eq in unsatcore_eq_list:
+                # get equation length
+                unsatcore_eq_length_list.append(eq.term_length)
 
-            # get variable occurrence
-            variable_occurrence_map = {v: 0 for v in variable_list}
-            for v in variable_list:
-                variable_occurrence_map[v] += (eq.eq_str).count(v)
-            unsatcore_variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
+                # get variable occurrence
+                variable_occurrence_map = {v: 0 for v in variable_list}
+                for v in variable_list:
+                    variable_occurrence_map[v] += (eq.eq_str).count(v)
+                unsatcore_variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
 
-            # get terminal occurrence
-            terminal_occurrence_map = {t: 0 for t in terminal_list}
-            for t in terminal_list:
-                terminal_occurrence_map[t] += (eq.eq_str).count(t)
-            unsatcore_terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
+                # get terminal occurrence
+                terminal_occurrence_map = {t: 0 for t in terminal_list}
+                for t in terminal_list:
+                    terminal_occurrence_map[t] += (eq.eq_str).count(t)
+                unsatcore_terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
 
-            # get number of variables and terminals
-            unsatcore_number_of_vairables_each_eq_list.append(eq.variable_number)
-            unsatcore_number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
+                # get number of variables and terminals
+                unsatcore_number_of_vairables_each_eq_list.append(eq.variable_number)
+                unsatcore_number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
+        else:
+            unsatcore_eq_length_list = [0]
+            unsatcore_variable_occurrence_list = [0]
+            unsatcore_terminal_occurrence_list = [0]
+            unsatcore_number_of_vairables_each_eq_list = [0]
+            unsatcore_number_of_terminals_each_eq_list = [0]
 
         # get statistics for each equation
         eq_length_list = []
@@ -310,9 +317,9 @@ def statistics_for_one_folder(folder, model_dict):
                               unsatcore_terminal_occurrence_list),
                           "unsatcore_stdev_terminal_occurrence_of": custom_stdev(unsatcore_terminal_occurrence_list),
 
-                          "unsatcore_variable_occurrence_ratio": sum(unsatcore_variable_occurrence_list) / sum(
+                          "unsatcore_variable_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_variable_occurrence_list) / sum(
                               unsatcore_eq_length_list),
-                          "unsatcore_terminal_occurrence_ratio": sum(unsatcore_terminal_occurrence_list) / sum(
+                          "unsatcore_terminal_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_terminal_occurrence_list) / sum(
                               unsatcore_eq_length_list),
 
                           "info_summary_with_id": info_summary_with_id,
