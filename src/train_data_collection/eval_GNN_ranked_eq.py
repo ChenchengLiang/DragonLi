@@ -94,9 +94,8 @@ def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_paramet
     first_solved_solver = None
     unsatcore_smt2_file = None
     for solver, parameter_list in solver_parameter_list_map.items():
-        print(f"        solver:{solver}")
         start_time = time.time()
-        if solver == "this":
+        if solver == "this" or solver == "woorpje":
             result_dict = run_on_one_problem(current_unsatcore_eq_file, parameter_list, solver,
                                              solver_log=solver_log,
                                              shell_timeout=shell_timeout_for_one_run)
@@ -108,6 +107,8 @@ def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_paramet
         solving_time = time.time() - start_time
 
         satisfiability = result_dict["result"]
+
+        print(f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}")
         if satisfiability == "UNSAT":
             print(f"SOLVED, solver {solver}, satisfiability {satisfiability}")
             first_solved_solver = solver
