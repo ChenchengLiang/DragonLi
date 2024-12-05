@@ -110,3 +110,5 @@ Eval unsatcore pipeline:
 2. Local: send GNN models to UPPMAX /home/cheli243/boosting-string-equation-solving-by-GNNs/mlruns
    Divide the benchmark into n=5 chunk size, the final directory should be benchmark/divided_i/*.eq
 3. Uppmax: sh word_equation_submit_eval_unsatcore_parallel.sh benchmark_name
+4. Uppmax: sh word_equation_submit_generate_unsatcore_from_all_solvers_parallel.sh benchmark_name
+5. Local: collect_eval_unsatcore.py to get the final result

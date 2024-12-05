@@ -119,6 +119,7 @@ def main():
                 shutil.move(current_unsatcore_eq_file, unsatcore_summary_folder)
                 shutil.move(unsatcore_smt2_file, unsatcore_summary_folder)
                 os.remove(current_unsatcore_eq_file+".answer")
+                shutil.copy(file, unsatcore_summary_folder)
 
                 break
 

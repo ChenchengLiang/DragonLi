@@ -62,13 +62,16 @@ def main():
         for s, sat in zip(solver_list, satisfiability_list):
             print(f"{s}:{sat}")
 
+        if os.path.exists(strip_file_name_suffix(eq_file) + ".answer"):
+            os.remove(strip_file_name_suffix(eq_file) + ".answer")
+
         if "UNSAT" in satisfiability_list and "SAT" in satisfiability_list:
             color_print("inconsistent", "red")
         elif "SAT" in satisfiability_list:
             color_print("SAT, no need to find unsat core", "blue")
         else: # unsat or unknown, begin to find unsatcore
 
-            # delete n to 1 eqs to find the unsat core
+            # delete n to 1 eqs to find the unsat core (increase eq number systematically)
             found_unsatcore = False
             total_eq_number = len(parsed_content["equation_list"])
             delete_eq_number_list = list(reversed(range(1, total_eq_number)))
@@ -83,7 +86,10 @@ def main():
                                                                                        eq_number_to_delete)
 
                 for index, unsatcore in enumerate(unsarcore_list_sorted):
-                    print(f"    Delete {eq_number_to_delete} from {total_eq_number}, {index}/{len(unsarcore_list_sorted)}")
+                    log_text = f"    Delete {eq_number_to_delete} from {total_eq_number}, {index}/{len(unsarcore_list_sorted)}"
+                    print(log_text)
+                    solvability_log += log_text + "\n"
+
                     # store to eq file
                     current_unsatcore_formula = Formula(unsatcore)
                     eq_string_to_file = current_unsatcore_formula.eq_string_for_file()
@@ -103,7 +109,7 @@ def main():
                     solvability_log += log_from_differernt_solvers
 
                     if satisfiability == "UNSAT":
-                        unsatcore_summary_folder = create_folder(f"{strip_file_name_suffix(file)}_unsatcore")
+                        unsatcore_summary_folder = create_folder(f"{strip_file_name_suffix(eq_file)}_unsatcore")
                         summary_dict = {"original_eq_number": ranked_formula.eq_list_length,
                                         "current_unsatcore_eq_number": current_unsatcore_formula.eq_list_length,
                                         "satisfiability": satisfiability,
