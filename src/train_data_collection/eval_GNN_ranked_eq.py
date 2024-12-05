@@ -15,7 +15,7 @@ import argparse
 import os
 import shutil
 import time
-
+from src.train_data_collection.utils import solve_the_core_by_different_solver, clean_temp_files_while_extract_unsatcore
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.Constants import bench_folder, rank_task_label_size_map, benchmark_A_model, benchmark_B_model, \
@@ -49,7 +49,7 @@ def main():
 
     rank_task = 1
     task = "rank_task"
-    benchmark_model = benchmark_A_model
+    benchmark_model = benchmark_B_model
     gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
     print("gnn_model_path:", gnn_model_path)
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
@@ -124,45 +124,10 @@ def main():
 
             else:
                 # clean temp current eq and smt unsat core files
-                if os.path.exists(current_unsatcore_eq_file):
-                    os.remove(current_unsatcore_eq_file)
-                if os.path.exists(unsatcore_smt2_file):
-                    os.remove(unsatcore_smt2_file)
-                if os.path.exists(current_unsatcore_eq_file+".answer"):
-                    os.remove(current_unsatcore_eq_file+".answer")
+                clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore_smt2_file)
 
 
-def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_parameter_list_map, solver_log,
-                                       shell_timeout_for_one_run):
-    satisfiability = "UNKNOWN"
-    first_solved_solver = None
-    unsatcore_smt2_file = None
-    log=""
-    for solver, parameter_list in solver_parameter_list_map.items():
-        start_time = time.time()
-        if solver == "this" or solver == "woorpje":
-            result_dict = run_on_one_problem(current_unsatcore_eq_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        else:
-            unsatcore_smt2_file = one_eq_file_to_smt2(current_unsatcore_eq_file)
-            result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        solving_time = time.time() - start_time
 
-        satisfiability = result_dict["result"]
-        log_text=f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
-        print(log_text)
-        log+=log_text+"\n"
-        if satisfiability == "UNSAT":
-            log_text=f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
-            print(log_text)
-            log+=log_text+"\n"
-            first_solved_solver = solver
-            break
-
-    return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log
 
 
 if __name__ == '__main__':

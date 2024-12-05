@@ -11,6 +11,44 @@ from src.solver.Constants import bench_folder, project_folder, UNKNOWN, rank_tas
 from src.solver.independent_utils import strip_file_name_suffix
 from src.solver.utils import print_results, graph_func_map
 
+
+
+
+
+
+
+def main():
+    file_folder = f"{bench_folder}/eval_unsatcore_01_track_multi_word_equations_eq_2_50_generated_eval_1_1000/ALL"
+
+
+    benchmark_model = benchmark_B_model
+
+
+    rank_task = 1
+    label_size = rank_task_label_size_map[rank_task]
+
+    gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
+
+    algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
+                                               "order_equations_method": "gnn_first_n_iterations_category",
+                                               "gnn_model_path": gnn_model_path,
+                                               "termination_condition": "termination_condition_0",
+                                               "graph_type": benchmark_model['graph_type'], "graph_func": graph_func_map[benchmark_model['graph_type']],
+                                               "label_size": label_size, "rank_task": rank_task}
+
+    for file_path in glob.glob(f"{file_folder}/*.eq"):
+
+        parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
+        parser = Parser(parser_type)
+        parsed_content = parser.parse(file_path)
+        #print("parsed_content:", parsed_content)
+
+
+        solver = Solver(algorithm=SplitEquationsOutputEqs, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
+
+        result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
+
+
 class SplitEquationsOutputEqs(SplitEquations):
     def __init__(self, terminals: List[Terminal], variables: List[Variable], equation_list: List[Equation],
                  parameters: Dict):
@@ -37,45 +75,5 @@ class SplitEquationsOutputEqs(SplitEquations):
         #unsat_core_smt2_file = one_eq_file_to_smt2(unsat_core_eq_file)
 
         return UNKNOWN, ranked_formula
-
-
-
-
-
-def main():
-    file_folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
-
-
-    benchmark_model = benchmark_A_model
-
-
-    task = "task_3"
-    rank_task = 1
-    label_size = rank_task_label_size_map[rank_task]
-
-    gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
-    eq_satisfiability = "UNSAT"
-
-    algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",
-                                               "order_equations_method": "gnn_first_n_iterations_category",
-                                               "gnn_model_path": gnn_model_path,
-                                               "termination_condition": "termination_condition_0",
-                                               "graph_type": benchmark_model['graph_type'], "graph_func": graph_func_map[benchmark_model['graph_type']],
-                                               "label_size": label_size, "rank_task": rank_task}
-
-    for file_path in glob.glob(f"{file_folder}/*.eq"):
-
-        parser_type = EqParser() if file_path.endswith(".eq") else SMT2Parser()
-        parser = Parser(parser_type)
-        parsed_content = parser.parse(file_path)
-        #print("parsed_content:", parsed_content)
-
-
-        solver = Solver(algorithm=SplitEquationsOutputEqs, algorithm_parameters=algorithm_parameters_SplitEquations_gnn)
-
-        result_dict = solver.solve(parsed_content, visualize=False, output_train_data=False)
-
-
-
 if __name__ == '__main__':
     main()

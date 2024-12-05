@@ -1,3 +1,4 @@
+from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.process_benchmarks.utils import run_on_one_problem
 from src.solver.algorithms.split_equation_utils import _get_global_info
 from src.solver.independent_utils import strip_file_name_suffix, dump_to_json_with_format, zip_folder, save_to_pickle, \
@@ -14,14 +15,73 @@ import os
 import shutil
 import json
 from src.solver.Constants import satisfiability_to_int_label, UNKNOWN, SAT, UNSAT, bench_folder
-from src.solver.DataTypes import Equation
+from src.solver.DataTypes import Equation, Formula
 from src.solver.algorithms.utils import merge_graphs, graph_to_gnn_format, concatenate_eqs
 from src.solver.visualize_util import draw_graph
 import zipfile
 import fnmatch
 from tqdm import tqdm
 import sys
+import time
+from itertools import combinations
 
+
+
+def clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore_smt2_file):
+    if os.path.exists(current_unsatcore_eq_file):
+        os.remove(current_unsatcore_eq_file)
+    if os.path.exists(unsatcore_smt2_file):
+        os.remove(unsatcore_smt2_file)
+    if os.path.exists(current_unsatcore_eq_file + ".answer"):
+        os.remove(current_unsatcore_eq_file + ".answer")
+
+def get_sorted_unsatcore_list_with_fixed_eq_number(eq_list:List[Equation],eq_number_to_delete):
+    combination_list = list(combinations(eq_list, eq_number_to_delete))
+
+    unsatcore_list: List[List[Equation]] = []
+    for index, eq_list_to_delete in enumerate(combination_list):
+        unsatcore: List[Equation] = [eq for eq in eq_list if
+                                     eq not in eq_list_to_delete]
+        unsatcore_list.append(unsatcore)
+
+    unsatcore_list_with_size = [(eq_list, Formula(eq_list).formula_size) for eq_list in unsatcore_list]
+    unsarcore_list_sorted = sorted(unsatcore_list_with_size, key=lambda x: x[1])
+    unsarcore_list_sorted = [x for x, s in unsarcore_list_sorted]
+
+    return unsarcore_list_sorted
+
+
+def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_parameter_list_map, solver_log,
+                                       shell_timeout_for_one_run):
+    satisfiability = "UNKNOWN"
+    first_solved_solver = None
+    unsatcore_smt2_file = None
+    log=""
+    for solver, parameter_list in solver_parameter_list_map.items():
+        start_time = time.time()
+        if solver == "this" or solver == "woorpje":
+            result_dict = run_on_one_problem(current_unsatcore_eq_file, parameter_list, solver,
+                                             solver_log=solver_log,
+                                             shell_timeout=shell_timeout_for_one_run)
+        else:
+            unsatcore_smt2_file = one_eq_file_to_smt2(current_unsatcore_eq_file)
+            result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
+                                             solver_log=solver_log,
+                                             shell_timeout=shell_timeout_for_one_run)
+        solving_time = time.time() - start_time
+
+        satisfiability = result_dict["result"]
+        log_text=f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
+        print(log_text)
+        log+=log_text+"\n"
+        if satisfiability == "UNSAT":
+            log_text=f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
+            print(log_text)
+            log+=log_text+"\n"
+            first_solved_solver = solver
+            break
+
+    return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log
 
 def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
     folder = benchmark + "/" + file_folder

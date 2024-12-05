@@ -13,7 +13,7 @@ sys.path.append(path)
 
 
 from tqdm import tqdm
-
+from src.train_data_collection.utils import get_sorted_unsatcore_list_with_fixed_eq_number
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.solver.DataTypes import Equation, Formula
 from src.solver.utils_parser import perse_eq_file
@@ -117,17 +117,8 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
         if found_unsatcore:
             break
 
-        combination_list = list(combinations(parsed_content["equation_list"], eq_number_to_delete))
 
-
-        unsatcore_list:List[List[Equation]]=[]
-        for index, eq_list_to_delete in enumerate(combination_list):
-            unsatcore: List[Equation] = [eq for eq in parsed_content["equation_list"] if eq not in eq_list_to_delete]
-            unsatcore_list.append(unsatcore)
-
-        unsatcore_list_with_size=[(eq_list,Formula(eq_list).formula_size)for eq_list in unsatcore_list]
-        unsarcore_list_sorted=sorted(unsatcore_list_with_size,key=lambda x:x[1])
-        unsarcore_list_sorted=[x for x,s in unsarcore_list_sorted]
+        unsarcore_list_sorted=get_sorted_unsatcore_list_with_fixed_eq_number(parsed_content["equation_list"],eq_number_to_delete)
 
 
 
