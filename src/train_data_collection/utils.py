@@ -26,8 +26,7 @@ import time
 from itertools import combinations
 
 
-
-def clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore_smt2_file):
+def clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file, unsatcore_smt2_file):
     if os.path.exists(current_unsatcore_eq_file):
         os.remove(current_unsatcore_eq_file)
     if os.path.exists(unsatcore_smt2_file):
@@ -35,7 +34,8 @@ def clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore
     if os.path.exists(current_unsatcore_eq_file + ".answer"):
         os.remove(current_unsatcore_eq_file + ".answer")
 
-def get_sorted_unsatcore_list_with_fixed_eq_number(eq_list:List[Equation],eq_number_to_delete):
+
+def get_sorted_unsatcore_list_with_fixed_eq_number(eq_list: List[Equation], eq_number_to_delete):
     combination_list = list(combinations(eq_list, eq_number_to_delete))
 
     unsatcore_list: List[List[Equation]] = []
@@ -51,37 +51,49 @@ def get_sorted_unsatcore_list_with_fixed_eq_number(eq_list:List[Equation],eq_num
     return unsarcore_list_sorted
 
 
+def run_one_problem_according_to_solver(solver, eq_file, parameter_list, solver_log, shell_timeout_for_one_run):
+    unsatcore_smt2_file=""
+    start_time = time.time()
+    if "this" in solver:
+        result_dict = run_on_one_problem(eq_file, parameter_list, "this",
+                                         solver_log=solver_log,
+                                         shell_timeout=shell_timeout_for_one_run)
+    elif solver == "woorpje":
+        result_dict = run_on_one_problem(eq_file, parameter_list, solver,
+                                         solver_log=solver_log,
+                                         shell_timeout=shell_timeout_for_one_run)
+    else:
+        unsatcore_smt2_file = one_eq_file_to_smt2(eq_file)
+        result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
+                                         solver_log=solver_log,
+                                         shell_timeout=shell_timeout_for_one_run)
+    solving_time = time.time() - start_time
+    return result_dict, solving_time, unsatcore_smt2_file
+
+
 def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_parameter_list_map, solver_log,
                                        shell_timeout_for_one_run):
     satisfiability = "UNKNOWN"
     first_solved_solver = None
-    unsatcore_smt2_file = None
-    log=""
+    log = ""
     for solver, parameter_list in solver_parameter_list_map.items():
-        start_time = time.time()
-        if solver == "this" or solver == "woorpje":
-            result_dict = run_on_one_problem(current_unsatcore_eq_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        else:
-            unsatcore_smt2_file = one_eq_file_to_smt2(current_unsatcore_eq_file)
-            result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        solving_time = time.time() - start_time
+        result_dict, solving_time, unsatcore_smt2_file = run_one_problem_according_to_solver(solver, current_unsatcore_eq_file,
+                                                                        parameter_list, solver_log,
+                                                                        shell_timeout_for_one_run)
 
         satisfiability = result_dict["result"]
-        log_text=f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
+        log_text = f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
         print(log_text)
-        log+=log_text+"\n"
+        log += log_text + "\n"
         if satisfiability == "UNSAT":
-            log_text=f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
+            log_text = f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
             print(log_text)
-            log+=log_text+"\n"
+            log += log_text + "\n"
             first_solved_solver = solver
             break
 
     return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log
+
 
 def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
     folder = benchmark + "/" + file_folder
@@ -95,7 +107,8 @@ def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
     for file in glob.glob(folder + "/*"):
         shutil.move(file, all_folder)
 
-    total_file_list= glob.glob(all_folder + "/*.eq") if len(glob.glob(all_folder + "/*.eq")) !=0 else glob.glob(all_folder + "/*.smt2")
+    total_file_list = glob.glob(all_folder + "/*.eq") if len(glob.glob(all_folder + "/*.eq")) != 0 else glob.glob(
+        all_folder + "/*.smt2")
 
     for i, eq_file in enumerate(total_file_list):
         if i % chunk_size == 0:
@@ -103,8 +116,8 @@ def dvivde_track_for_cluster(benchmark, file_folder="ALL", chunk_size=50):
             divided_folder_name = folder + "/divided_" + str(folder_counter)
             os.mkdir(divided_folder_name)
         file_name = strip_file_name_suffix(eq_file)
-        #this only copy one file but faster
-        #shutil.copy(eq_file, divided_folder_name)
+        # this only copy one file but faster
+        # shutil.copy(eq_file, divided_folder_name)
         for f in glob.glob(file_name + ".*"):
             shutil.copy(f, divided_folder_name)
 
@@ -152,11 +165,11 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 rank_eq_list, rank_eq_file_list, label_list, satisfiability_list = _read_label_and_eqs_for_rank(
                     zip_file_content, f, parser)
                 global_info = _get_global_info(rank_eq_list)
-                #print("\nglobal_info", global_info)
-                #total_variable_occurrence = sum(global_info["variable_global_occurrences"].values())
-                #total_terminal_occurrence = sum(global_info["terminal_global_occurrences"].values())
-                #print("total_variable_occurrence", total_variable_occurrence)
-                #print("total_terminal_occurrence", total_terminal_occurrence)
+                # print("\nglobal_info", global_info)
+                # total_variable_occurrence = sum(global_info["variable_global_occurrences"].values())
+                # total_terminal_occurrence = sum(global_info["terminal_global_occurrences"].values())
+                # print("total_variable_occurrence", total_variable_occurrence)
+                # print("total_terminal_occurrence", total_terminal_occurrence)
 
                 multi_graph_dict = {}
                 for i, (split_eq, split_file, split_label, split_satisfiability) in enumerate(
@@ -164,15 +177,14 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                     # add global information
                     split_eq_nodes, split_eq_edges = graph_func(split_eq.left_terms, split_eq.right_terms, global_info)
 
-
                     if visualize == True:
                         draw_graph(nodes=split_eq_nodes, edges=split_eq_edges,
                                    filename=graph_folder + "/" + split_file.replace("train/", ""))
 
                     graph_dict = graph_to_gnn_format(split_eq_nodes, split_eq_edges, label=split_label,
                                                      satisfiability=split_satisfiability)
-                    #print("split_file",split_file)
-                    #print("graph_dict",graph_dict["nodes"])
+                    # print("split_file",split_file)
+                    # print("graph_dict",graph_dict["nodes"])
                     multi_graph_dict[i] = graph_dict
 
                 json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
@@ -186,8 +198,6 @@ def output_rank_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable
                 # if len(multi_graph_dict)<50:
                 #     json_file = graph_folder + "/" + f.replace(".label.json", ".graph.json").replace("train/", "")
                 #     dump_to_json_with_format(multi_graph_dict, json_file)
-
-
 
 
 def output_split_eq_graphs(zip_file: str, graph_folder: str, graph_func: Callable, visualize: bool = False):
@@ -288,8 +298,7 @@ def get_parser():
     return Parser(parser_type)
 
 
-def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,train_data_solvability):
-
+def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters, train_data_solvability):
     graph_type = "graph_1"
     if algorithm == "SplitEquationsExtractData":
         parameters_list = ["fixed", "--termination_condition termination_condition_0",
@@ -319,7 +328,8 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
     else:
         shutil.rmtree(train_eq_folder)
         os.mkdir(train_eq_folder)
-    for f in glob.glob(all_eq_folder + "/*.eq") + glob.glob(all_eq_folder + "/*.answer") + glob.glob(all_eq_folder + "/*.unsatcore"):
+    for f in glob.glob(all_eq_folder + "/*.eq") + glob.glob(all_eq_folder + "/*.answer") + glob.glob(
+            all_eq_folder + "/*.unsatcore"):
         shutil.copy(f, train_eq_folder)
 
     # extract train data
@@ -336,9 +346,9 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
             print("read answer from file")
             with open(answer_file_path, "r") as f:
                 satisfiability = f.read().strip("\n")
-        elif train_data_solvability=="UNSAT":
+        elif train_data_solvability == "UNSAT":
             satisfiability = "UNSAT"
-        elif train_data_solvability=="SAT":
+        elif train_data_solvability == "SAT":
             satisfiability = "SAT"
         else:
             result_dict = run_on_one_problem(file_path=file_path,
@@ -356,12 +366,9 @@ def generate_train_data_in_one_folder(folder, algorithm, algorithm_parameters,tr
                            f"--eq_satisfiability {satisfiability}"
                            ]
 
-
         result_dict = run_on_one_problem(file_path=file_path,
                                          parameters_list=parameters_list,
                                          solver="this", solver_log=True)
-
-
 
     # compress
     zip_folder(folder_path=train_eq_folder, output_zip_file=train_eq_folder + ".zip")
@@ -428,7 +435,8 @@ def prepare_and_save_datasets_rank(parameters):
     elif parameters["rank_task"] == 1:
         dataset = WordEquationDatasetMultiClassificationRankTask1(graph_folder=graph_folder)
     elif parameters["rank_task"] == 2:
-        dataset = WordEquationDatasetMultiClassificationRankTask2(graph_folder=graph_folder,label_size=parameters["label_size"])
+        dataset = WordEquationDatasetMultiClassificationRankTask2(graph_folder=graph_folder,
+                                                                  label_size=parameters["label_size"])
     else:
         raise ValueError("rank_task should be 0,1,2")
 

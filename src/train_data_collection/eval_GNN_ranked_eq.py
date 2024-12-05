@@ -1,15 +1,11 @@
-
 import sys
 import configparser
-
 
 # Read path from config.ini
 config = configparser.ConfigParser()
 config.read("config.ini")
 path = config.get('Path', 'local')
 sys.path.append(path)
-
-
 
 import argparse
 import os
@@ -59,13 +55,46 @@ def main():
                                  #          f"--algorithm SplitEquations",
                                  #          f"--graph_type {benchmark_model['graph_type']}",
                                  #          f"--order_equations_method category_random", ],
-                                 "this": ["fixed", "--termination_condition termination_condition_0",
-                                           f"--graph_type {benchmark_model['graph_type']}",
-                                           f"--algorithm SplitEquations",
-                                           f"--order_equations_method category_gnn_first_n_iterations",
-                                           f"--gnn_model_path {gnn_model_path}" ,
-                                           f"--gnn_task {task}",
-                                           f"--rank_task {rank_task}"],
+                                 "this:category_gnn_first_n_iterations": ["fixed",
+                                                                          "--termination_condition termination_condition_0",
+                                                                          f"--graph_type {benchmark_model['graph_type']}",
+                                                                          f"--algorithm SplitEquations",
+                                                                          f"--order_equations_method category_gnn_first_n_iterations",
+                                                                          f"--gnn_model_path {gnn_model_path}",
+                                                                          f"--gnn_task {task}",
+                                                                          f"--rank_task {rank_task}"],
+                                 "this:gnn_first_n_iterations_category": ["fixed",
+                                                                          "--termination_condition termination_condition_0",
+                                                                          f"--graph_type {benchmark_model['graph_type']}",
+                                                                          f"--algorithm SplitEquations",
+                                                                          f"--order_equations_method gnn_first_n_iterations_category",
+                                                                          f"--gnn_model_path {gnn_model_path}",
+                                                                          f"--gnn_task {task}",
+                                                                          f"--rank_task {rank_task}"],
+                                 "this:category_gnn": ["fixed",
+                                                       "--termination_condition termination_condition_0",
+                                                       f"--graph_type {benchmark_model['graph_type']}",
+                                                       f"--algorithm SplitEquations",
+                                                       f"--order_equations_method category_gnn",
+                                                       f"--gnn_model_path {gnn_model_path}",
+                                                       f"--gnn_task {task}",
+                                                       f"--rank_task {rank_task}"],
+                                 "this:category_gnn_formula_size": ["fixed",
+                                                                    "--termination_condition termination_condition_0",
+                                                                    f"--graph_type {benchmark_model['graph_type']}",
+                                                                    f"--algorithm SplitEquations",
+                                                                    f"--order_equations_method category_gnn_formula_size",
+                                                                    f"--gnn_model_path {gnn_model_path}",
+                                                                    f"--gnn_task {task}",
+                                                                    f"--rank_task {rank_task}"],
+                                 "this:category_gnn_each_n_iterations": ["fixed",
+                                                                         "--termination_condition termination_condition_0",
+                                                                         f"--graph_type {benchmark_model['graph_type']}",
+                                                                         f"--algorithm SplitEquations",
+                                                                         f"--order_equations_method category_gnn_each_n_iterations",
+                                                                         f"--gnn_model_path {gnn_model_path}",
+                                                                         f"--gnn_task {task}",
+                                                                         f"--rank_task {rank_task}"],
                                  }
     shell_timeout_for_one_run = 20
 
@@ -79,13 +108,13 @@ def main():
         parsed_content = parser.parse(file)
         ranked_formula = Formula(parsed_content["equation_list"])
 
-        solvability_log=""
+        solvability_log = ""
         # increase the eq one by one and check if it is still unsat
         for i in range(ranked_formula.eq_list_length):
             current_core_eq_number = i + 1
-            log_text= f"    current_core_eq_number:{current_core_eq_number}"
+            log_text = f"    current_core_eq_number:{current_core_eq_number}"
             print(log_text)
-            solvability_log+=log_text + "\n"
+            solvability_log += log_text + "\n"
             current_formula = Formula(ranked_formula.eq_list[:current_core_eq_number])
 
             # generate current unsat core eq file
@@ -95,10 +124,10 @@ def main():
                 f.write(eq_string_to_file)
 
             # solve the current unsat core eq file by different solvers
-            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time,log_from_differernt_solvers = solve_the_core_by_different_solver(
+            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log_from_differernt_solvers = solve_the_core_by_different_solver(
                 current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
 
-            solvability_log+=log_from_differernt_solvers
+            solvability_log += log_from_differernt_solvers
 
             if satisfiability == "UNSAT":
                 # give statistics log
@@ -118,17 +147,14 @@ def main():
                 # include results to a folder
                 shutil.move(current_unsatcore_eq_file, unsatcore_summary_folder)
                 shutil.move(unsatcore_smt2_file, unsatcore_summary_folder)
-                os.remove(current_unsatcore_eq_file+".answer")
+                os.remove(current_unsatcore_eq_file + ".answer")
                 shutil.copy(file, unsatcore_summary_folder)
 
                 break
 
             else:
                 # clean temp current eq and smt unsat core files
-                clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore_smt2_file)
-
-
-
+                clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file, unsatcore_smt2_file)
 
 
 if __name__ == '__main__':

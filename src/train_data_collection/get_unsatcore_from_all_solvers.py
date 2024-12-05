@@ -17,7 +17,8 @@ from src.solver.Constants import bench_folder
 import glob
 from tqdm import tqdm
 from src.train_data_collection.utils import solve_the_core_by_different_solver, \
-    get_sorted_unsatcore_list_with_fixed_eq_number, clean_temp_files_while_extract_unsatcore
+    get_sorted_unsatcore_list_with_fixed_eq_number, clean_temp_files_while_extract_unsatcore, \
+    run_one_problem_according_to_solver
 from src.solver.DataTypes import Formula, Equation
 from src.solver.Parser import EqParser, Parser
 from src.solver.independent_utils import strip_file_name_suffix, create_folder, color_print
@@ -42,11 +43,11 @@ def main():
     solver_log = False
 
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
-                                 "ostrich": [], "woorpje": [], "this": ["fixed",
-                                                                        f"--termination_condition termination_condition_0",
-                                                                        f"--algorithm SplitEquations",
-                                                                        f"--graph_type graph_1",
-                                                                        f"--order_equations_method category_random", ]}
+                                 "ostrich": [], "woorpje": [], "this:category_random": ["fixed",
+                                                                                        f"--termination_condition termination_condition_0",
+                                                                                        f"--algorithm SplitEquations",
+                                                                                        f"--graph_type graph_1",
+                                                                                        f"--order_equations_method category_random", ]}
     shell_timeout_for_one_run = 20
 
     benchmark_folder = f"{working_folder}/{folder}"
@@ -57,8 +58,9 @@ def main():
         parsed_content = parser.parse(eq_file)
         ranked_formula = Formula(parsed_content["equation_list"])
 
-        #check the satisfiability first.
-        solver_list,satisfiability_list = check_satisfiability(solver_parameter_list_map, eq_file, solver_log, shell_timeout_for_one_run)
+        # check the satisfiability first.
+        solver_list, satisfiability_list = check_satisfiability(solver_parameter_list_map, eq_file, solver_log,
+                                                                shell_timeout_for_one_run)
         for s, sat in zip(solver_list, satisfiability_list):
             print(f"{s}:{sat}")
 
@@ -69,13 +71,12 @@ def main():
             color_print("inconsistent", "red")
         elif "SAT" in satisfiability_list:
             color_print("SAT, no need to find unsat core", "blue")
-        else: # unsat or unknown, begin to find unsatcore
+        else:  # unsat or unknown, begin to find unsatcore
 
             # delete n to 1 eqs to find the unsat core (increase eq number systematically)
             found_unsatcore = False
             total_eq_number = len(parsed_content["equation_list"])
             delete_eq_number_list = list(reversed(range(1, total_eq_number)))
-
 
             solvability_log = ""
             for eq_number_to_delete in tqdm(delete_eq_number_list, desc="deleting progress"):
@@ -127,34 +128,29 @@ def main():
                         shutil.move(unsatcore_smt2_file, unsatcore_summary_folder)
                         os.remove(current_unsatcore_eq_file + ".answer")
 
-                        found_unsatcore=True
+                        found_unsatcore = True
 
                         break
 
                     else:
                         # clean temp current eq and smt unsat core files
-                        clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file,unsatcore_smt2_file)
+                        clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file, unsatcore_smt2_file)
 
 
-
-def check_satisfiability(solver_parameter_list_map,eq_file,solver_log,shell_timeout_for_one_run):
+def check_satisfiability(solver_parameter_list_map, eq_file, solver_log, shell_timeout_for_one_run):
     solver_list = []
     satisfiability_list = []
 
     for solver, parameter_list in solver_parameter_list_map.items():
-        if solver == "this" or solver == "woorpje":
-            result_dict = run_on_one_problem(eq_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        else:
-            unsatcore_smt2_file = one_eq_file_to_smt2(eq_file)
-            result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
+        result_dict, solving_time, unsatcore_smt2_file = run_one_problem_according_to_solver(solver, eq_file,
+                                                                                             parameter_list, solver_log,
+                                                                                             shell_timeout_for_one_run)
+
         solver_list.append(solver)
         satisfiability_list.append(result_dict["result"])
 
-    return solver_list,satisfiability_list
+    return solver_list, satisfiability_list
+
 
 if __name__ == '__main__':
     main()
