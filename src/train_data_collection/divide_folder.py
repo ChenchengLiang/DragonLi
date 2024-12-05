@@ -16,8 +16,9 @@ import shutil
 
 def main():
     # generate track
-    track_name="unsatcores_04_track_DragonLi_train_40001_80000_proof_tree"
-    file_folder="UNSAT"
+    track_name="eval_gnn_prediction_test_cluster"
+    file_folder="ALL"
+    nested_folder=""
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 
@@ -26,14 +27,18 @@ def main():
 
     divided_folder_list = [train_folder for train_folder in get_folders(f"{track_folder}/{file_folder}") if
                            "divided" in train_folder]
-    print("divided_folder_list",len(divided_folder_list))
+    print("divided_folder_list", len(divided_folder_list))
 
-    # move files to divided_i/file_folder
-    for divided_folder in divided_folder_list:
-        temp_file=f"{track_folder}/{file_folder}/temp"
-        shutil.move(f"{track_folder}/{file_folder}/{divided_folder}",temp_file)
-        os.mkdir(f"{track_folder}/{file_folder}/{divided_folder}")
-        shutil.move(temp_file,f"{track_folder}/{file_folder}/{divided_folder}/{file_folder}")
+    if nested_folder == "":
+        pass
+
+    else:
+        # move files to divided_i/file_folder
+        for divided_folder in divided_folder_list:
+            temp_file=f"{track_folder}/{file_folder}/temp"
+            shutil.move(f"{track_folder}/{file_folder}/{divided_folder}",temp_file)
+            os.mkdir(f"{track_folder}/{file_folder}/{divided_folder}")
+            shutil.move(temp_file,f"{track_folder}/{file_folder}/{divided_folder}/{nested_folder}")
 
 
 if __name__ == '__main__':

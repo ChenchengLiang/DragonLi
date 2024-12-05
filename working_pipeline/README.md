@@ -105,3 +105,8 @@ Local: set parameter and run generate_train_data_from_unsatcores.py to generate 
 
 
 
+Eval unsatcore pipeline:
+1. Local: set parameter and run output_ranked_eq.py to get .predicted_unsatcore
+2. Local: send GNN models to UPPMAX /home/cheli243/boosting-string-equation-solving-by-GNNs/mlruns
+   Divide the benchmark into n=5 chunk size, the final directory should be benchmark/divided_i/*.eq
+3. Uppmax: sh word_equation_submit_eval_unsatcore_parallel.sh benchmark_name

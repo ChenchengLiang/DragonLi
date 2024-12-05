@@ -1,3 +1,14 @@
+import sys
+import configparser
+
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path', 'local')
+sys.path.append(path)
+
+
 import argparse
 import os
 import shutil
@@ -59,7 +70,7 @@ def main():
                 f.write(eq_string_to_file)
 
             # solve the current unsat core eq file by different solvers
-            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time = solve_the_core_by_different_solver(
+            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log_from_differernt_solvers = solve_the_core_by_different_solver(
                 current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
 
             if satisfiability == "UNSAT":

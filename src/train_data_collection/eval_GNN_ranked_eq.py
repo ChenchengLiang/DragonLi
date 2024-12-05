@@ -1,3 +1,16 @@
+
+import sys
+import configparser
+
+
+# Read path from config.ini
+config = configparser.ConfigParser()
+config.read("config.ini")
+path = config.get('Path', 'local')
+sys.path.append(path)
+
+
+
 import argparse
 import os
 import shutil
@@ -38,7 +51,7 @@ def main():
     task = "rank_task"
     benchmark_model = benchmark_A_model
     gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
-    print(gnn_model_path)
+    print("gnn_model_path:", gnn_model_path)
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
                                  "ostrich": [], "woorpje": [],
                                  # "this": ["fixed",
@@ -56,18 +69,23 @@ def main():
                                  }
     shell_timeout_for_one_run = 20
 
-    benchmark_folder = f"{working_folder}/{folder}/UNSAT"
+    benchmark_folder = f"{working_folder}/{folder}"
     file_list = glob.glob(benchmark_folder + "/*.predicted_unsatcore")
+    print("benchmark_folder:", benchmark_folder)
+    print(f"file_list:{file_list}")
     for file in tqdm(file_list, desc="file_list processing progress"):
         # parse .predicted_unsatcore file
         print(f"--- current file:{file} ---")
         parsed_content = parser.parse(file)
         ranked_formula = Formula(parsed_content["equation_list"])
 
+        solvability_log=""
         # increase the eq one by one and check if it is still unsat
         for i in range(ranked_formula.eq_list_length):
             current_core_eq_number = i + 1
-            print(f"    current_core_eq_number:{current_core_eq_number}")
+            log_text= f"    current_core_eq_number:{current_core_eq_number}"
+            print(log_text)
+            solvability_log+=log_text + "\n"
             current_formula = Formula(ranked_formula.eq_list[:current_core_eq_number])
 
             # generate current unsat core eq file
@@ -77,8 +95,10 @@ def main():
                 f.write(eq_string_to_file)
 
             # solve the current unsat core eq file by different solvers
-            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time = solve_the_core_by_different_solver(
+            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time,log_from_differernt_solvers = solve_the_core_by_different_solver(
                 current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
+
+            solvability_log+=log_from_differernt_solvers
 
             if satisfiability == "UNSAT":
                 # give statistics log
@@ -91,9 +111,14 @@ def main():
                 with open(f"{unsatcore_summary_folder}/summary.json", "w") as f:
                     json.dump(summary_dict, f, indent=4)
 
+                # log solvability
+                with open(f"{unsatcore_summary_folder}/solvability_log.txt", "w") as f:
+                    f.write(solvability_log)
+
                 # include results to a folder
                 shutil.move(current_unsatcore_eq_file, unsatcore_summary_folder)
                 shutil.move(unsatcore_smt2_file, unsatcore_summary_folder)
+                os.remove(current_unsatcore_eq_file+".answer")
 
                 break
 
@@ -103,6 +128,8 @@ def main():
                     os.remove(current_unsatcore_eq_file)
                 if os.path.exists(unsatcore_smt2_file):
                     os.remove(unsatcore_smt2_file)
+                if os.path.exists(current_unsatcore_eq_file+".answer"):
+                    os.remove(current_unsatcore_eq_file+".answer")
 
 
 def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_parameter_list_map, solver_log,
@@ -110,6 +137,7 @@ def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_paramet
     satisfiability = "UNKNOWN"
     first_solved_solver = None
     unsatcore_smt2_file = None
+    log=""
     for solver, parameter_list in solver_parameter_list_map.items():
         start_time = time.time()
         if solver == "this" or solver == "woorpje":
@@ -124,14 +152,17 @@ def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_paramet
         solving_time = time.time() - start_time
 
         satisfiability = result_dict["result"]
-
-        print(f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}")
+        log_text=f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
+        print(log_text)
+        log+=log_text+"\n"
         if satisfiability == "UNSAT":
-            print(f"SOLVED, solver {solver}, satisfiability {satisfiability}")
+            log_text=f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
+            print(log_text)
+            log+=log_text+"\n"
             first_solved_solver = solver
             break
 
-    return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time
+    return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log
 
 
 if __name__ == '__main__':
