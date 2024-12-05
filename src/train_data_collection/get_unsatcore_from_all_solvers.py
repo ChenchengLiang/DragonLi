@@ -2,11 +2,9 @@ import argparse
 import os
 import shutil
 import time
-
 from src.process_benchmarks.eq2smt_utils import one_eq_file_to_smt2
 from src.process_benchmarks.utils import run_on_one_problem
-from src.solver.Constants import bench_folder, rank_task_label_size_map, benchmark_A_model, benchmark_B_model, \
-    mlflow_folder
+from src.solver.Constants import bench_folder
 import glob
 from tqdm import tqdm
 
@@ -14,8 +12,6 @@ from src.solver.DataTypes import Formula
 from src.solver.Parser import EqParser, Parser
 from src.solver.independent_utils import strip_file_name_suffix, create_folder
 import json
-
-from src.solver.utils import graph_func_map
 
 
 def main():
@@ -34,26 +30,12 @@ def main():
     parser = Parser(EqParser())
     solver_log = False
 
-    rank_task = 1
-    task = "rank_task"
-    benchmark_model = benchmark_A_model
-    gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
-    print(gnn_model_path)
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
-                                 "ostrich": [], "woorpje": [],
-                                 # "this": ["fixed",
-                                 #          f"--termination_condition termination_condition_0",
-                                 #          f"--algorithm SplitEquations",
-                                 #          f"--graph_type {benchmark_model['graph_type']}",
-                                 #          f"--order_equations_method category_random", ],
-                                 "this": ["fixed", "--termination_condition termination_condition_0",
-                                           f"--graph_type {benchmark_model['graph_type']}",
-                                           f"--algorithm SplitEquations",
-                                           f"--order_equations_method category_gnn_first_n_iterations",
-                                           f"--gnn_model_path {gnn_model_path}" ,
-                                           f"--gnn_task {task}",
-                                           f"--rank_task {rank_task}"],
-                                 }
+                                 "ostrich": [], "woorpje": [], "this": ["fixed",
+                                                                        f"--termination_condition termination_condition_0",
+                                                                        f"--algorithm SplitEquations",
+                                                                        f"--graph_type graph_1",
+                                                                        f"--order_equations_method category_random", ]}
     shell_timeout_for_one_run = 20
 
     benchmark_folder = f"{working_folder}/{folder}/UNSAT"
@@ -105,33 +87,7 @@ def main():
                     os.remove(unsatcore_smt2_file)
 
 
-def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_parameter_list_map, solver_log,
-                                       shell_timeout_for_one_run):
-    satisfiability = "UNKNOWN"
-    first_solved_solver = None
-    unsatcore_smt2_file = None
-    for solver, parameter_list in solver_parameter_list_map.items():
-        start_time = time.time()
-        if solver == "this" or solver == "woorpje":
-            result_dict = run_on_one_problem(current_unsatcore_eq_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        else:
-            unsatcore_smt2_file = one_eq_file_to_smt2(current_unsatcore_eq_file)
-            result_dict = run_on_one_problem(unsatcore_smt2_file, parameter_list, solver,
-                                             solver_log=solver_log,
-                                             shell_timeout=shell_timeout_for_one_run)
-        solving_time = time.time() - start_time
 
-        satisfiability = result_dict["result"]
-
-        print(f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}")
-        if satisfiability == "UNSAT":
-            print(f"SOLVED, solver {solver}, satisfiability {satisfiability}")
-            first_solved_solver = solver
-            break
-
-    return satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time
 
 
 if __name__ == '__main__':

@@ -6,7 +6,8 @@ from src.solver.DataTypes import Terminal, Variable, Equation, Formula
 from src.solver.Parser import EqParser, Parser, SMT2Parser
 from src.solver.Solver import Solver
 from src.solver.algorithms import SplitEquations
-from src.solver.Constants import bench_folder, project_folder, UNKNOWN, rank_task_label_size_map
+from src.solver.Constants import bench_folder, project_folder, UNKNOWN, rank_task_label_size_map, benchmark_A_model, \
+    benchmark_B_model, mlflow_folder
 from src.solver.independent_utils import strip_file_name_suffix
 from src.solver.utils import print_results, graph_func_map
 
@@ -44,10 +45,6 @@ class SplitEquationsOutputEqs(SplitEquations):
 def main():
     file_folder = f"{bench_folder}/04_track_DragonLi_test_1_100/ALL/ALL"
 
-    benchmark_A_model = {"experiment_id": "786449904194763400", "run_id": "ec25835b29c948769d3a913783865d3d",
-                         "graph_type": "graph_3"}
-    benchmark_B_model = {"experiment_id": "510045020715475220", "run_id": "f04ef1f40ef446639e7e2983369dc3db",
-                         "graph_type": "graph_1"}
 
     benchmark_model = benchmark_A_model
 
@@ -55,11 +52,8 @@ def main():
     task = "task_3"
     rank_task = 1
     label_size = rank_task_label_size_map[rank_task]
-    model_type = "GCNSplit"
-    ml_folder="/home/cheli243/Desktop/CodeToGit/string-equation-solver/cluster-mlruns/mlruns"
 
-
-    gnn_model_path = f"{ml_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{model_type}.pth"
+    gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
     eq_satisfiability = "UNSAT"
 
     algorithm_parameters_SplitEquations_gnn = {"branch_method": "fixed",

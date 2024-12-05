@@ -78,6 +78,17 @@ RED = "\033[31m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
 COLORRESET = "\033[0m"  # Resets the color to default
+
+
+
+
+benchmark_A_model = {"experiment_id": "786449904194763400", "run_id": "ec25835b29c948769d3a913783865d3d",
+                         "graph_type": "graph_3","model_type":"GCNSplit"}
+benchmark_B_model = {"experiment_id": "510045020715475220", "run_id": "f04ef1f40ef446639e7e2983369dc3db",
+                         "graph_type": "graph_1","model_type":"GCNSplit"}
+
+
+
 '''
 Syntax:
 Formula : Equation | Formula ∧ Formula
