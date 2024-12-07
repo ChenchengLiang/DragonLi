@@ -38,7 +38,7 @@ def main():
     # unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
     # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
-    # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree"
+    # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_valid"
     # model_dict_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
     #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
     # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
@@ -50,20 +50,21 @@ def main():
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
-    benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree"
-    model_dict_1={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
+    benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_valid"
+    model_dict_1 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
+                    "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
     folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
     final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
 
-    benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
-    model_dict_2 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
-                    "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
-    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
-
-    final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
-    final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
-    compare_two_folders(final_statistic_file_1, final_statistic_file_2)
+    # benchmark_2 = "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+    # model_dict_2 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
+    #                 "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
+    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+    #
+    # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
+    # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
+    # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
@@ -202,8 +203,11 @@ def statistics_for_one_folder(folder, model_dict):
         unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),
                                                            offset_window)
 
+        eq_number_included_in_unsatcore, residual_eq_number_included_in_unsatcore, predicted_unsatcore_radundant_ratio = unsatcore_prediction_eval(
+            formula_with_sorted_eq_list, Formula(unsatcore_eq_list), offset_window)
+
         # get statistics for each usnatcore equation
-        if len(unsatcore_eq_list)>0:
+        if len(unsatcore_eq_list) > 0:
             unsatcore_eq_length_list = []
             unsatcore_variable_occurrence_list = []
             unsatcore_terminal_occurrence_list = []
@@ -299,6 +303,9 @@ def statistics_for_one_folder(folder, model_dict):
                           "stdev_terminal_occurrence": custom_stdev(terminal_occurrence_list),
 
                           "unsatcore_accuracy": unsatcore_accuracy,
+                          "eq_number_included_in_unsatcore": eq_number_included_in_unsatcore,
+                          "residual_eq_number_included_in_unsatcore": residual_eq_number_included_in_unsatcore,
+                          "predicted_unsatcore_radundant_ratio": predicted_unsatcore_radundant_ratio,
 
                           "unsatcore_min_eq_length_of": min(unsatcore_eq_length_list),
                           "unsatcore_max_eq_length_of": max(unsatcore_eq_length_list),
@@ -317,9 +324,11 @@ def statistics_for_one_folder(folder, model_dict):
                               unsatcore_terminal_occurrence_list),
                           "unsatcore_stdev_terminal_occurrence_of": custom_stdev(unsatcore_terminal_occurrence_list),
 
-                          "unsatcore_variable_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_variable_occurrence_list) / sum(
+                          "unsatcore_variable_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(
+                              unsatcore_variable_occurrence_list) / sum(
                               unsatcore_eq_length_list),
-                          "unsatcore_terminal_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_terminal_occurrence_list) / sum(
+                          "unsatcore_terminal_occurrence_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(
+                              unsatcore_terminal_occurrence_list) / sum(
                               unsatcore_eq_length_list),
 
                           "info_summary_with_id": info_summary_with_id,
@@ -351,6 +360,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "total_variable_occurrence_ratio": 0,
                             "total_terminal_occurrence_ratio": 0,
                             "total_unsatcore_accuracy": 0,
+                            "predicted_unsatcore_radundant_ratio": 0,
 
                             "min_eq_number_of_problems": 0,
                             "max_eq_number_of_problems": 0,
@@ -371,6 +381,16 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "max_terminal_occurrence_of_problem": 0,
                             "average_terminal_occurrence_of_problem": 0,
                             "stdev_terminal_occurrence_of_problem": 0,
+
+                            "eq_number_included_in_unsatcore_min": 0,
+                            "eq_number_included_in_unsatcore_max": 0,
+                            "eq_number_included_in_unsatcore_average": 0,
+                            "eq_number_included_in_unsatcore_stdev": 0,
+
+                            "residual_eq_number_included_in_unsatcore_min": 0,
+                            "residual_eq_number_included_in_unsatcore_max": 0,
+                            "residual_eq_number_included_in_unsatcore_average": 0,
+                            "residual_eq_number_included_in_unsatcore_stdev": 0,
 
                             "unsatcore_min_eq_number_of_problems": 0,
                             "unsatcore_max_eq_number_of_problems": 0,
@@ -431,9 +451,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     terminal_number_list_of_all_equations = []
     GNN_embedding_list = []
     unsatcore_accuracy_list = []
+    predicted_unsatcore_radundant_ratio_list = []
     unsatcore_eq_length_list_of_problems = []
     unsatcore_variable_occurrence_list_of_problems = []
     unsatcore_terminal_occurrence_list_of_problems = []
+    eq_number_included_in_unsatcore_list = []
+    residual_eq_number_included_in_unsatcore_list = []
     for statistic_file_name in statistic_file_name_list:
         with open(statistic_file_name, 'r') as file:
             statistic = json.load(file)
@@ -451,6 +474,8 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
 
             unsatcore_eq_number_list_of_problems.append(statistic["number_of_unsatcore_equations"])
             unsatcore_eq_length_list_of_problems.extend(statistic["unsatcore_eq_length_list"])
+            eq_number_included_in_unsatcore_list.append(statistic["eq_number_included_in_unsatcore"])
+            residual_eq_number_included_in_unsatcore_list.append(statistic["residual_eq_number_included_in_unsatcore"])
             unsatcore_variable_occurrence_list_of_problems.append(sum(statistic["unsatcore_variable_occurrence_list"]))
             unsatcore_terminal_occurrence_list_of_problems.append(sum(statistic["unsatcore_terminal_occurrence_list"]))
 
@@ -461,11 +486,14 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             terminal_number_list_of_all_equations.extend(statistic["number_of_terminals_each_eq_list"])
             GNN_embedding_list.append(statistic["G_embedding"])
             unsatcore_accuracy_list.append(statistic["unsatcore_accuracy"])
+            predicted_unsatcore_radundant_ratio_list.append(statistic["predicted_unsatcore_radundant_ratio"])
 
     html_directory = os.path.dirname(os.path.dirname(folder))
     get_one_PCA(GNN_embedding_list, html_directory)
 
     final_statistic_dict["total_unsatcore_accuracy"] = statistics.mean(unsatcore_accuracy_list)
+    final_statistic_dict["predicted_unsatcore_radundant_ratio"] = statistics.mean(
+        predicted_unsatcore_radundant_ratio_list)
     final_statistic_dict["total_variable_occurrence_ratio"] = final_statistic_dict["total_variable_occurrence"] / \
                                                               final_statistic_dict["total_eq_symbol"]
     final_statistic_dict["total_terminal_occurrence_ratio"] = final_statistic_dict["total_terminal_occurrence"] / \
@@ -500,6 +528,21 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["unsatcore_stdev_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
     final_statistic_dict["unsatcore_eq_number_ratio"] = sum(unsatcore_eq_number_list_of_problems) / sum(
         eq_number_list_of_problems)
+
+    final_statistic_dict["eq_number_included_in_unsatcore_min"] = min(eq_number_included_in_unsatcore_list)
+    final_statistic_dict["eq_number_included_in_unsatcore_max"] = max(eq_number_included_in_unsatcore_list)
+    final_statistic_dict["eq_number_included_in_unsatcore_average"] = statistics.mean(
+        eq_number_included_in_unsatcore_list)
+    final_statistic_dict["eq_number_included_in_unsatcore_stdev"] = custom_stdev(eq_number_included_in_unsatcore_list)
+
+    final_statistic_dict["residual_eq_number_included_in_unsatcore_min"] = min(
+        residual_eq_number_included_in_unsatcore_list)
+    final_statistic_dict["residual_eq_number_included_in_unsatcore_max"] = max(
+        residual_eq_number_included_in_unsatcore_list)
+    final_statistic_dict["residual_eq_number_included_in_unsatcore_average"] = statistics.mean(
+        residual_eq_number_included_in_unsatcore_list)
+    final_statistic_dict["residual_eq_number_included_in_unsatcore_stdev"] = custom_stdev(
+        residual_eq_number_included_in_unsatcore_list)
 
     final_statistic_dict["unsatcore_min_eq_length"] = min(unsatcore_eq_length_list_of_problems)
     final_statistic_dict["unsatcore_max_eq_length"] = max(unsatcore_eq_length_list_of_problems)
@@ -857,6 +900,27 @@ def centroid_distance(set_a, set_b):
     distance = np.sqrt((centroid_b[0] - centroid_a[0]) ** 2 + (centroid_b[1] - centroid_a[1]) ** 2)
 
     return distance, centroid_a, centroid_b
+
+
+def unsatcore_prediction_eval(predicted: Formula, ground_truth: Formula, offset_window):
+    if ground_truth.eq_list_length == 0:
+        return 0
+    else:
+        found_eq_in_unsatcore = 0
+        eq_number_to_include_unsatcore = 0
+        for i, eq in enumerate(predicted.eq_list):
+            if eq in ground_truth.eq_list:
+                found_eq_in_unsatcore += 1
+            if found_eq_in_unsatcore == ground_truth.eq_list_length:
+                eq_number_to_include_unsatcore = i + 1
+                break
+
+        residual_eq_number_to_include_unsatcore = predicted.eq_list_length - eq_number_to_include_unsatcore
+
+        predicted_unsatcore_radundant_ratio = (
+                                                          eq_number_to_include_unsatcore - ground_truth.eq_list_length) / eq_number_to_include_unsatcore
+
+        return eq_number_to_include_unsatcore, residual_eq_number_to_include_unsatcore, predicted_unsatcore_radundant_ratio
 
 
 def unsatcore_prediction_accuracy(predicted: Formula, ground_truth: Formula, offset_window):
