@@ -8,7 +8,7 @@ import gc
 from src.solver.Constants import bench_folder
 from torch import no_grad, stack, mean, concat, cat, softmax
 from src.solver.Parser import EqParser, Parser
-from src.solver.independent_utils import strip_file_name_suffix, create_folder, hash_graph_with_glob_info
+from src.solver.independent_utils import strip_file_name_suffix, create_folder, hash_graph_with_glob_info,custom_stdev
 import statistics
 from tqdm import tqdm
 import plotly.graph_objects as go
@@ -601,13 +601,6 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     return final_statistic_file
 
 
-def custom_stdev(data):
-    if len(data) < 2:
-        # If there's only one data point, return 0 (no variability)
-        return 0
-    else:
-        # Otherwise, use the statistics.stdev() function
-        return statistics.stdev(data)
 
 
 def compare_histograms(dict_name, benchmark_1, benchmark_2, dict1, dict2, output_html='comparison_histogram.html'):

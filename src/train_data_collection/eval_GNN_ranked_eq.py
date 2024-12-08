@@ -45,7 +45,7 @@ def main():
 
     rank_task = 1
     task = "rank_task"
-    benchmark_model = benchmark_B_model
+    benchmark_model = benchmark_A_model
     gnn_model_path = f"{mlflow_folder}/{benchmark_model['experiment_id']}/{benchmark_model['run_id']}/artifacts/model_0_{benchmark_model['graph_type']}_{benchmark_model['model_type']}.pth"
     print("gnn_model_path:", gnn_model_path)
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],

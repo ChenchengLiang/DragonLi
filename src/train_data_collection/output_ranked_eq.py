@@ -18,10 +18,10 @@ from src.solver.utils import print_results, graph_func_map
 
 
 def main():
-    file_folder = f"{bench_folder}/eval_gnn_prediction_test/divided_1"
+    file_folder = f"{bench_folder}/eval_unsatcore_01_track_multi_word_equations_eq_2_50_generated_eval_1_1000_test/ALL"
 
 
-    benchmark_model = benchmark_A_model
+    benchmark_model = benchmark_B_model
 
 
     rank_task = 1

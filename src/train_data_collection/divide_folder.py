@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="eval_unsatcore_01_track_multi_word_equations_eq_2_50_generated_eval_1_1000"
+    track_name="eval_unsatcore_04_track_DragonLi_eval_1_1000"
     file_folder="ALL"
     nested_folder=""
     track_folder = bench_folder + "/"+track_name

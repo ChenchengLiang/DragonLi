@@ -15,8 +15,17 @@ import sys
 import io
 import cProfile
 import pstats
-
 from src.solver.Constants import project_folder, bench_folder
+import statistics
+
+
+def custom_stdev(data):
+    if len(data) < 2:
+        # If there's only one data point, return 0 (no variability)
+        return 0
+    else:
+        # Otherwise, use the statistics.stdev() function
+        return statistics.stdev(data)
 
 
 def empty_function(*args, **kwargs):
