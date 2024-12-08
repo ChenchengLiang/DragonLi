@@ -91,6 +91,7 @@ def main():
                     "unsatcore_size/original_problem_size_ratio_max": max(unsatcore_size_original_problem_size_ratio_list),
                     "predicted_unsatcore_size/original_problem_size_total_ratio": predicted_unsatcore_size_original_problem_size_ratio,
                     "predicted_unsatcore_size/original_problem_size_ratio_min": min(predicted_unsatcore_size_original_problem_size_ratio_list),
+                    "predicted_unsatcore_size/original_problem_size_ratio_max": max(predicted_unsatcore_size_original_problem_size_ratio_list),
 }
 
 
