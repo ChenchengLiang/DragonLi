@@ -85,7 +85,7 @@ def solve_the_core_by_different_solver(current_unsatcore_eq_file, solver_paramet
         log_text = f"        solver:{solver}, satisfiability:{satisfiability}, solving_time:{solving_time}"
         print(log_text)
         log += log_text + "\n"
-        if satisfiability == "UNSAT":
+        if satisfiability == "UNSAT" or satisfiability == "SAT":
             log_text = f"        SOLVED, solver:{solver}, satisfiability:{satisfiability}"
             print(log_text)
             log += log_text + "\n"
