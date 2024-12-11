@@ -1,6 +1,5 @@
 import networkx as nx
 import matplotlib.pyplot as plt
-from pyvis.network import Network
 import plotly.graph_objects as go
 from graphviz import Digraph
 from PIL import Image,ImageFile

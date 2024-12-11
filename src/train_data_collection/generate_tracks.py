@@ -26,9 +26,10 @@ def main():
     start_idx = 1
     end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"04_track_DragonLi_eval_max_replace_variable_length_10_{start_idx}_{end_idx}"
+    track_name = f"Benchmark_C_eval_eq_1_100_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
-    file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
+    #file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
@@ -448,7 +449,7 @@ def generate_one_track_3(file_name, index):
         # replace each b with lhs or rhs of eq from track 1
         for item in one_hand_side_str:
             if item == "b":
-                _, _, _, eqs = generate_one_track_1(file_name, index, max_variables=24, max_terminals=24, max_length=20,
+                _, _, _, eqs = generate_one_track_1(file_name, index, max_variables=10, max_terminals=6, max_length=20,
                                                     write_replacement_log=False)
                 l = eqs[0][0]
                 r = eqs[0][1]
@@ -473,7 +474,7 @@ def generate_one_track_3(file_name, index):
 
 
 def generate_conjunctive_track_03(file_name, index):
-    eq_number = random.randint(2, 20)
+    eq_number = random.randint(1, 100)
     eq_list = []
     variable_list = []
     terminal_list = []
@@ -690,7 +691,7 @@ def generate_one_track_4_v2(file_name, index):
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
     min_eq = 1
-    max_eq = 100
+    max_eq = 200
     max_variables = 10
     max_terminals = 6
     one_side_max_length = 60

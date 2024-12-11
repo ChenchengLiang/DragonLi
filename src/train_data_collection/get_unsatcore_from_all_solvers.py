@@ -51,10 +51,18 @@ def main():
                                                                                         f"--algorithm SplitEquations",
                                                                                         f"--graph_type graph_1",
                                                                                         f"--order_equations_method category_random", ]}
-    shell_timeout_for_one_run = 10
+    shell_timeout_for_one_run = 20
 
     benchmark_folder = f"{working_folder}/{folder}"
-    file_list = glob.glob(benchmark_folder + "/*.eq")
+    resolved_path_benchmark_folder = os.path.realpath(benchmark_folder)
+    print(glob.glob("/*"))
+    print(glob.glob("/cfs/*"))
+    print(glob.glob("/cfs/klemming/*"))
+    print(os.listdir(resolved_path_benchmark_folder))
+
+
+    file_list = glob.glob(f"{resolved_path_benchmark_folder}/*.eq")
+    print(f"file_list:{file_list}")
     for eq_file in tqdm(file_list, desc="file_list processing progress"):
         # parse .predicted_unsatcore file
         print(f"--- current file:{eq_file} ---")
@@ -88,38 +96,47 @@ def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_m
     total_eq_number = original_formula.eq_list_length
     current_formula = Formula(original_formula.eq_list)
 
-    current_formula_length = current_formula.eq_list_length
-    for i in range(total_eq_number):  # decide which one to delete
-        # delete i-th eq
-        unsatcore = Formula(current_formula.eq_list[:i] + current_formula.eq_list[i + 1:])
+    for _ in range(total_eq_number):
+        current_formula_length = current_formula.eq_list_length
+        for i in range(current_formula_length):
+            # delete i-th eq
+            unsatcore = Formula(current_formula.eq_list[:i] + current_formula.eq_list[i + 1:])
 
-        current_unsatcore_formula, current_unsatcore_eq_file = write_unsatcore_to_eq_file(unsatcore.eq_list, eq_file)
+            current_unsatcore_formula, current_unsatcore_eq_file = write_unsatcore_to_eq_file(unsatcore.eq_list, eq_file)
 
-        log_text = f"    current_core_eq_number:{current_unsatcore_formula.eq_list_length}"
-        print(log_text)
-        solvability_log += log_text + "\n"
+            log_text = f"    current_core_eq_number:{current_unsatcore_formula.eq_list_length}, delete {i}-th eq from {current_formula_length}"
+            print(log_text)
+            solvability_log += log_text + "\n"
 
-        # check whether it is an unsatcore
-        # solve the current unsatcore eq file by different solvers
-        satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log_from_differernt_solvers = solve_the_core_by_different_solver(
-            current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
-        solvability_log += log_from_differernt_solvers
+            # check whether it is an unsatcore
+            # solve the current unsatcore eq file by different solvers
+            satisfiability, first_solved_solver, unsatcore_smt2_file, solving_time, log_from_differernt_solvers = solve_the_core_by_different_solver(
+                current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
+            solvability_log += log_from_differernt_solvers
 
 
 
-        if satisfiability == "UNSAT":  # this eq can be deleted go to next
-            #record current best unsatcore
-            current_formula = unsatcore
-            unsatcore_summary_folder = create_folder(f"{strip_file_name_suffix(eq_file)}_non_minimum_unsatcore")
-            store_unsatcore_to_file(unsatcore_summary_folder, original_formula, current_unsatcore_formula,
-                                    satisfiability, first_solved_solver, solving_time, solvability_log,
-                                    current_unsatcore_eq_file, unsatcore_smt2_file)
+            if satisfiability == "UNSAT":  # this eq can be deleted go to next
+                #record current best unsatcore
+                current_formula = unsatcore
+                unsatcore_summary_folder = create_folder(f"{strip_file_name_suffix(eq_file)}_non_minimum_unsatcore")
+                store_unsatcore_to_file(unsatcore_summary_folder, original_formula, current_unsatcore_formula,
+                                        satisfiability, first_solved_solver, solving_time, solvability_log,
+                                        current_unsatcore_eq_file, unsatcore_smt2_file)
+                break
 
-        elif satisfiability == "SAT":
-            pass
-        else:
-            pass
+            elif satisfiability == "SAT": #cannot be deleted
+                pass
+            else: #unknown, cannot be deleted
+                pass
 
+    # clean temp current eq and smt unsat core files
+    if os.path.exists(current_unsatcore_eq_file):
+        os.remove(current_unsatcore_eq_file)
+    if os.path.exists(unsatcore_smt2_file):
+        os.remove(unsatcore_smt2_file)
+    if os.path.exists(current_unsatcore_eq_file + ".answer"):
+        os.remove(current_unsatcore_eq_file + ".answer")
 
 
 

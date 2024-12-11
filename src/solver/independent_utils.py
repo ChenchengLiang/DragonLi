@@ -4,7 +4,6 @@ import json
 import re
 import os
 import shutil
-import psutil
 import zipfile
 import pickle
 import time
@@ -88,24 +87,6 @@ def check_list_consistence(target_list):
         consitence_list.append(all(element == one_answer for element in target_list))
     return all(consitence_list)
 
-def get_memory_usage():
-    process = psutil.Process(os.getpid())
-    memory_usage_bytes = process.memory_info().rss
-
-    # Convert bytes to KB, MB, and GB
-    memory_usage_kb = memory_usage_bytes / 1024
-    memory_usage_mb = memory_usage_kb / 1024
-    memory_usage_gb = memory_usage_mb / 1024
-
-    if memory_usage_gb >= 1:
-        # Format as GB + MB + KB
-        return f"{memory_usage_gb:.2f} GB, {memory_usage_mb % 1024:.2f} MB, {memory_usage_kb % 1024:.2f} KB",memory_usage_gb
-    elif memory_usage_mb >= 1:
-        # Format as MB + KB
-        return f"{memory_usage_mb:.2f} MB, {memory_usage_kb % 1024:.2f} KB",memory_usage_gb
-    else:
-        # Format as KB
-        return f"{memory_usage_kb:.2f} KB",memory_usage_gb
 
 def remove_duplicates(lst:Iterable)->List:
     seen = set()
