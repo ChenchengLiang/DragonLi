@@ -24,15 +24,18 @@ import json
 def main():
     # generate track
     start_idx = 1
-    end_idx = 10000
+    end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
+    #track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
+    track_name = f"Benchmark_D_eval_{start_idx}_{end_idx}" #generate_one_track_4_v4
     track_folder = bench_folder + "/" + track_name
-    file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
+    #file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
     #file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
     #save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)
+    save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v4)
+
 
     print("data generating finished")
 
@@ -160,7 +163,7 @@ def replace_one_side_by_substring_map_v1(one_side, substring, substring_variable
 
         for i in range(number_of_substring):
             if random.random() < 0.5:
-                one_side = _random_replace(one_side, substring, substring_variable_map[substring], 1)
+                one_side,s_list= _random_replace(one_side, substring, substring_variable_map[substring], 1)
 
 
     elif number_of_substring == 1:
@@ -177,7 +180,7 @@ def replace_one_side_by_substring_map(one_side, substring, substring_variable_ma
         number_of_substring = one_side.count(substring)
         if number_of_substring > 1:
             replace_time = random.randint(1, number_of_substring)
-            one_side = _random_replace(one_side, substring, substring_variable_map[substring], replace_time)
+            one_side,s_list = _random_replace(one_side, substring, substring_variable_map[substring], replace_time)
         elif number_of_substring == 1:
             one_side = one_side.replace(substring, substring_variable_map[substring])
         else:
@@ -231,7 +234,7 @@ def _random_replace(s, target, replacement, n):
         s_list[index:index + len(target)] = list(replacement)
 
     # Convert the list back to a string
-    return ''.join(s_list)
+    return ''.join(s_list),s_list
 
 
 def generate_one_track_1_woorpje(file_name, index, max_variables=15,
@@ -504,13 +507,110 @@ def generate_random_substring(s):
         return s
 
 
-def generate_one_benchmark_D(file_name, index):
-    '''
-    control single variable occurrences in the equation
-    '''
-    #todo
 
 
+def generate_one_track_4_v4(file_name, index):
+    log = True
+    min_eq = 1
+    max_eq = 100
+    eq_number = random.randint(min_eq, max_eq)
+    max_variables = 26
+    max_terminals = 26
+    one_side_max_length = 60
+    fixed_one_side_length = random.randint(2, one_side_max_length)
+
+    terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
+    variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
+
+
+
+    # generate each eq string
+    eq_string_list = []
+    for i in range(eq_number):
+        random_string = generate_random_string(fixed_one_side_length, terminal_pool)
+        eq_string_list.append((random_string, random_string))
+
+
+    # decide replacement substring
+    substring_variable_map = {}
+    for i, v in enumerate(variable_pool):
+        # select one side from an eq string
+        eq_sample = random.choice(eq_string_list)
+        one_side_of_eq_sample = random.choice(eq_sample)
+        # select a random substring from one_side_of_eq_sample
+        substring_to_be_replaced = generate_random_substring(one_side_of_eq_sample)
+        substring_variable_map[substring_to_be_replaced] = v
+        replaced_eq_string_list = []
+        for eq in eq_string_list:
+            left_string=deepcopy(eq[0])
+            right_string=deepcopy(eq[1])
+
+            if left_string.count(substring_to_be_replaced) >= 1 and right_string.count(substring_to_be_replaced) >= 1:
+                #choose one side
+                if random.random() < 0.5:
+                    #replace substring in left side once
+                    one_side=deepcopy(eq[0])
+                    number_of_substring = one_side.count(substring_to_be_replaced)
+                    if number_of_substring >= 1:
+                        left_string,s_list = _random_replace(one_side, substring_to_be_replaced, substring_variable_map[substring_to_be_replaced], 1)
+                else:
+                    #replace substring in right side once
+                    one_side=deepcopy(eq[1])
+                    number_of_substring = one_side.count(substring_to_be_replaced)
+                    if number_of_substring >= 1:
+                        right_string,s_list = _random_replace(one_side, substring_to_be_replaced, substring_variable_map[substring_to_be_replaced], 1)
+            elif left_string.count(substring_to_be_replaced) >= 1:
+                #replace substring in left side once
+                one_side=deepcopy(eq[0])
+                number_of_substring = one_side.count(substring_to_be_replaced)
+                if number_of_substring >= 1:
+                    left_string,s_list = _random_replace(one_side, substring_to_be_replaced, substring_variable_map[substring_to_be_replaced], 1)
+            elif right_string.count(substring_to_be_replaced) >= 1:
+                #replace substring in right side once
+                one_side=deepcopy(eq[1])
+                number_of_substring = one_side.count(substring_to_be_replaced)
+                if number_of_substring >= 1:
+                    right_string,s_list = _random_replace(one_side, substring_to_be_replaced, substring_variable_map[substring_to_be_replaced], 1)
+
+
+            replaced_eq_string_list.append((left_string, right_string))
+
+        eq_string_list = replaced_eq_string_list
+
+    # formatting the result
+    variable_list = []
+    terminal_list = []
+    eq_list = []
+    for eq in eq_string_list:
+        variable_list.extend([v for v in variable_pool if v in eq[0] + eq[1]])
+        terminal_list.extend([t for t in terminal_pool if t in eq[0] + eq[1]])
+        eq_list.append((eq[0], eq[1]))
+
+    variable_list = remove_duplicates(variable_list)
+    terminal_list = remove_duplicates(terminal_list)
+
+    result = formatting_results_v2(variable_list, terminal_list, eq_list)
+
+    # output track_info_file
+    track_info_file = f"{os.path.dirname(os.path.dirname(file_name))}/track_info.txt"
+    if not os.path.exists(track_info_file):
+        track_info_str = (
+            f"min_eq={min_eq}\nmax_eq={max_eq}\nmax_variables={max_variables}\nmax_terminals={max_terminals}\nmax_length={one_side_max_length}")
+        # output track_info_str to file
+
+        with open(track_info_file, 'w') as file:
+            file.write(track_info_str)
+
+    if log == True:
+        # output substring_variable_map to file
+        substring_variable_map_file_name = f"{strip_file_name_suffix(file_name)}.json"
+        reversed_substring_variable_map = {v: k for k, v in substring_variable_map.items()}
+        with open(substring_variable_map_file_name, 'w') as file:
+            json.dump(reversed_substring_variable_map, file, indent=4)
+
+
+
+    return result, variable_list, terminal_list, eq_list
 
 def generate_one_track_4_v3(file_name, index):
     log = True
@@ -699,7 +799,7 @@ def generate_one_track_4_v2(file_name, index):
 def generate_one_track_4(file_name, index):
     # "01_track_multi_word_equations_generated_eval_1001_2000"
     min_eq = 1
-    max_eq = 200
+    max_eq = 100
     max_variables = 10
     max_terminals = 6
     one_side_max_length = 60

@@ -16,9 +16,10 @@ import shutil
 
 def main():
     # generate track
-    track_name="eval_unsatcore_04_track_DragonLi_eval_1_1000"
-    file_folder="ALL"
-    nested_folder=""
+    track_name="unsatcores_Benchmark_C_train_eq_1_100_1_10000"
+    file_folder="UNSAT"
+
+    nested_folder="UNSAT"
     track_folder = bench_folder + "/"+track_name
     print(track_folder)
 

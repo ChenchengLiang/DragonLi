@@ -18,6 +18,7 @@ def one_eq_file_to_smt2(file_path):
     variable_list = []
     for eq in parsed_content["equation_list"]:
         variable_list.extend(eq.variable_list)
+
     variable_list = remove_duplicates(variable_list)
     for v in variable_list:
         smt_str += f"(declare-fun {v.value} () String) \n"

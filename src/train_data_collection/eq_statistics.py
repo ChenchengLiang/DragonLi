@@ -45,11 +45,11 @@ def main():
     # folder = f"{bench_folder}/{benchmark_1}/ALL/ALL"
     # final_statistic_file_1 = statistics_for_one_folder(folder, model_dict_1)
     #
-    benchmark_2 = "04_track_DragonLi_eval_1_1000"
-    model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
-                    "run_id": "ec25835b29c948769d3a913783865d3d"}
-    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
-    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+    # benchmark_2 = "04_track_DragonLi_eval_1_1000"
+    # model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+    #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
+    # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
     # benchmark_1 = "unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_valid"
     # model_dict_1 = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
@@ -62,6 +62,14 @@ def main():
     #                 "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
     # folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+
+
+    benchmark_2 = "Benchmark_D_eval_1_1000"
+    model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+                    "run_id": "ec25835b29c948769d3a913783865d3d"}
+    folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
+    final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
+
     #
     # final_statistic_file_1 = f"{bench_folder}/{benchmark_1}/final_statistic.json"
     # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
@@ -287,6 +295,7 @@ def statistics_for_one_folder(folder, model_dict):
                 f" terminal_occurrence: {terminal_occurrence},"
                 f" variable_occurrence_ratio: {viariable_occurrences / eq_length},"
                 f" terminal_occurrence_ratio: {terminal_occurrence / eq_length},")
+
 
 
         # get statistics

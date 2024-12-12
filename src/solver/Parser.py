@@ -29,6 +29,8 @@ class EqParser(AbstractParser):
             return Term(Variable(c))
         elif c in self.terminal_values:
             return Term(Terminal(c))
+        else:
+            raise Exception(f"Invalid character {c}")
 
     def parse(self, content: Dict) -> Dict:
         '''
@@ -46,6 +48,7 @@ class EqParser(AbstractParser):
 
         self.variable_str = content["variables_str"]
         self.terminal_str = content["terminals_str"]
+
 
         # handle two differernt input format {ABCDE} and {A B C D E}
         if " " in self.variable_str: #multiple variable separated by space
