@@ -214,8 +214,6 @@ class SplitEquations(AbstractAlgorithm):
         else:
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
 
-            #todo output predicted rank
-
             current_eq, separated_formula = self.get_first_eq(current_formula)
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
@@ -229,11 +227,13 @@ class SplitEquations(AbstractAlgorithm):
             self.fresh_variable_counter = fresh_variable_counter
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
+            #print(current_eq.eq_str)
             unknown_flag = 0
             for c_index, child in enumerate(children):
                 (c_eq, c_formula, edge_label) = child
                 satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_eq_node,
                                                             edge_label)
+                #print(c_index,satisfiability, c_eq.eq_str)
                 if satisfiability == SAT:
                     current_node[1]["status"] = SAT
                     current_eq_node[1]["status"] = SAT

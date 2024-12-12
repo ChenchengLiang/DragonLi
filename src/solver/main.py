@@ -56,7 +56,7 @@ def main():
     number of X in right side >= number of X in left side
     """
     #conjunctive 03 track
-    file_path = bench_folder + "/conjunctive_03_track_eval_eq_1_100_1_1000/ALL/ALL/g_conjunctive_03_track_eval_eq_1_100_1_1000_4.eq"
+    file_path = bench_folder + "/Benchmark_C_eval_eq_1_100_1_1000/ALL/ALL/g_Benchmark_C_eval_eq_1_100_1_1000_69.eq"
 
 
     # gnn test
@@ -137,7 +137,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category_random",
+                                           "order_equations_method": "category",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}

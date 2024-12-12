@@ -24,9 +24,9 @@ import json
 def main():
     # generate track
     start_idx = 1
-    end_idx = 1000
+    end_idx = 10000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
-    track_name = f"Benchmark_C_eval_eq_1_100_{start_idx}_{end_idx}"
+    track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
     track_folder = bench_folder + "/" + track_name
     file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
     #file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -502,6 +502,14 @@ def generate_random_substring(s):
         return s[start_index:start_index + length]  # Extract the substring
     else:
         return s
+
+
+def generate_one_benchmark_D(file_name, index):
+    '''
+    control single variable occurrences in the equation
+    '''
+    #todo
+
 
 
 def generate_one_track_4_v3(file_name, index):

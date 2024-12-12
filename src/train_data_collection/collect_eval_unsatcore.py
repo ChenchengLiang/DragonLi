@@ -11,7 +11,7 @@ import json
 
 
 def main():
-    benchmark = "eval_gnn_prediction_test"
+    benchmark = "eval_unsatcore_04_track_DragonLi_eval_1_1000"
 
     folder_list = glob.glob(f"{bench_folder}/{benchmark}/divided_*")
     parser = Parser(EqParser())
@@ -151,7 +151,6 @@ def main():
                     non_minimum_unsatcore_summary_dict["satisfiability"])
                 non_minimum_unsatcore_solving_time_all_list.append(non_minimum_unsatcore_summary_dict["solving_time"])
 
-
             # differernces between unsatcore/non-minimum unsatcore and predicted_unsatcore
             predicted_unsatcore_size_unsatcore_size_diff_list = [
                 predicted_unsatcore_size_common_list[i] - unsatcore_size_common_list[i] for i
@@ -159,7 +158,6 @@ def main():
             predicted_unsatcore_size_non_minimum_unsatcore_size_diff_list = [
                 predicted_unsatcore_size_common_list[i] - non_minimum_unsatcore_size_common_list[i] for i
                 in range(len(original_problem_size_common_list))]
-
 
             # unsatcore size / predicted unsatcore size
             unsatcore_size_predicted_unsatcore_size_ratio = sum(unsatcore_size_common_list) / sum(
@@ -169,7 +167,8 @@ def main():
                 i in range(len(original_problem_size_common_list))]
 
             # non-minimum unsatcore size / predicted unsatcore size
-            non_minimum_unsatcore_size_predicted_unsatcore_size_ratio = sum(non_minimum_unsatcore_size_common_list) / sum(
+            non_minimum_unsatcore_size_predicted_unsatcore_size_ratio = sum(
+                non_minimum_unsatcore_size_common_list) / sum(
                 predicted_unsatcore_size_common_list)
             non_minimum_unsatcore_size_predicted_unsatcore_size_ratio_list = [
                 non_minimum_unsatcore_size_common_list[i] / predicted_unsatcore_size_common_list[i] for
@@ -188,7 +187,6 @@ def main():
             non_minimum_unsatcore_size_original_problem_size_ratio_list = [
                 non_minimum_unsatcore_size_common_list[i] / original_problem_size_common_list[i] for i in
                 range(len(original_problem_size_common_list))]
-
 
             # predicted unsatcore size / original problem size
             predicted_unsatcore_size_original_problem_size_ratio = sum(predicted_unsatcore_size_common_list) / sum(
@@ -235,7 +233,8 @@ def main():
                 "woorpje": non_minimum_unsatcore_solver_common_list.count(
                     "woorpje"),
                 "this": non_minimum_unsatcore_solver_common_list.count(
-                    "this"), }
+                    "this"),
+                "this:category_random": non_minimum_unsatcore_solver_common_list.count("this:category_random"), }
             non_minimum_unsatcore_solver_count_common_dict["total_verify"] = sum(
                 non_minimum_unsatcore_solver_count_common_dict.values())
 
@@ -358,7 +357,6 @@ def main():
                 "predicted_unsatcore_non_minimum_unsatcore_size_diff_stdev": custom_stdev(
                     predicted_unsatcore_size_non_minimum_unsatcore_size_diff_list),
 
-
                 "unsatcore_size/predicted_unsatcore_size_total_ratio": unsatcore_size_predicted_unsatcore_size_ratio,
                 "unsatcore_size/predicted_unsatcore_size_ratio_min": min(
                     unsatcore_size_predicted_unsatcore_size_ratio_list),
@@ -372,7 +370,6 @@ def main():
                     non_minimum_unsatcore_size_predicted_unsatcore_size_ratio_list),
                 "non_minimum_unsatcore_size/predicted_unsatcore_size_ratio_max": max(
                     non_minimum_unsatcore_size_predicted_unsatcore_size_ratio_list),
-
 
                 "predicted_unsatcore_size/original_problem_size_total_ratio": predicted_unsatcore_size_original_problem_size_ratio,
                 "predicted_unsatcore_size/original_problem_size_ratio_min": min(
@@ -399,31 +396,46 @@ def main():
                 "non_minimum_unsatcore_solving_time_common_stdev": custom_stdev(
                     non_minimum_unsatcore_solving_time_common_list),
 
-
                 "total_summarized_files_predicted_unsatcore": len(predicted_unsatcore_size_all_list),
                 "predicted_solver_count_all_dict": predicted_solver_count_all_dict,
                 "predicted_unsatcore_satisfiability_all_dict": predicted_unsatcore_satisfiability_all_dict,
-                "predicted_unsatcore_solving_time_all_min": min(predicted_unsatcore_solving_time_all_list),
-                "predicted_unsatcore_solving_time_all_max": max(predicted_unsatcore_solving_time_all_list),
-                "predicted_unsatcore_solving_time_all_mean": statistics.mean(predicted_unsatcore_solving_time_all_list),
-                "predicted_unsatcore_solving_time_all_stdev": custom_stdev(predicted_unsatcore_solving_time_all_list),
+                "predicted_unsatcore_size_all_min": min(predicted_unsatcore_size_all_list),
+                "predicted_unsatcore_size_all_max": max(predicted_unsatcore_size_all_list),
+                "predicted_unsatcore_size_all_mean": statistics.mean(predicted_unsatcore_size_all_list),
+                "predicted_unsatcore_size_all_stdev": custom_stdev(predicted_unsatcore_size_all_list),
+
+                # "predicted_unsatcore_solving_time_all_min": min(predicted_unsatcore_solving_time_all_list),
+                # "predicted_unsatcore_solving_time_all_max": max(predicted_unsatcore_solving_time_all_list),
+                # "predicted_unsatcore_solving_time_all_mean": statistics.mean(predicted_unsatcore_solving_time_all_list),
+                # "predicted_unsatcore_solving_time_all_stdev": custom_stdev(predicted_unsatcore_solving_time_all_list),
 
                 "total_summarized_files_unsatcore": len(unsatcore_size_all_list),
                 "unsatcore_solver_count_all_dict": unsatcore_solver_count_all_dict,
                 "unsatcore_satisfiability_all_dict": unsatcore_satisfiability_all_dict,
-                "unsatcore_solving_time_all_min": min(unsatcore_solving_time_all_list),
-                "unsatcore_solving_time_all_max": max(unsatcore_solving_time_all_list),
-                "unsatcore_solving_time_all_mean": statistics.mean(unsatcore_solving_time_all_list),
-                "unsatcore_solving_time_all_stdev": custom_stdev(unsatcore_solving_time_all_list),
+                "unsatcore_size_all_min": min(unsatcore_size_all_list),
+                "unsatcore_size_all_max": max(unsatcore_size_all_list),
+                "unsatcore_size_all_mean": statistics.mean(unsatcore_size_all_list),
+                "unsatcore_size_all_stdev": custom_stdev(unsatcore_size_all_list),
+                #
+                # "unsatcore_solving_time_all_min": min(unsatcore_solving_time_all_list),
+                # "unsatcore_solving_time_all_max": max(unsatcore_solving_time_all_list),
+                # "unsatcore_solving_time_all_mean": statistics.mean(unsatcore_solving_time_all_list),
+                # "unsatcore_solving_time_all_stdev": custom_stdev(unsatcore_solving_time_all_list),
 
                 "total_summarized_files_non_minimum_unsatcore": len(non_minimum_unsatcore_size_all_list),
                 "non_minimum_unsatcore_solver_count_all_dict": non_minimum_unsatcore_solver_count_all_dict,
                 "non_minimum_unsatcore_satisfiability_all_dict": non_minimum_unsatcore_satisfiability_all_dict,
-                "non_minimum_unsatcore_solving_time_all_min": min(non_minimum_unsatcore_solving_time_all_list),
-                "non_minimum_unsatcore_solving_time_all_max": max(non_minimum_unsatcore_solving_time_all_list),
-                "non_minimum_unsatcore_solving_time_all_mean": statistics.mean(non_minimum_unsatcore_solving_time_all_list),
-                "non_minimum_unsatcore_solving_time_all_stdev": custom_stdev(non_minimum_unsatcore_solving_time_all_list),
+                "non_minimum_unsatcore_size_all_min": min(non_minimum_unsatcore_size_all_list),
+                "non_minimum_unsatcore_size_all_max": max(non_minimum_unsatcore_size_all_list),
+                "non_minimum_unsatcore_size_all_mean": statistics.mean(non_minimum_unsatcore_size_all_list),
+                "non_minimum_unsatcore_size_all_stdev": custom_stdev(non_minimum_unsatcore_size_all_list),
 
+                # "non_minimum_unsatcore_solving_time_all_min": min(non_minimum_unsatcore_solving_time_all_list),
+                # "non_minimum_unsatcore_solving_time_all_max": max(non_minimum_unsatcore_solving_time_all_list),
+                # "non_minimum_unsatcore_solving_time_all_mean": statistics.mean(
+                #     non_minimum_unsatcore_solving_time_all_list),
+                # "non_minimum_unsatcore_solving_time_all_stdev": custom_stdev(
+                #     non_minimum_unsatcore_solving_time_all_list),
 
             }
 
