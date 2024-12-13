@@ -531,25 +531,26 @@ def generate_one_track_4_v5(file_name, index):
     replaced_eq_stinrg_list = []
     for eq in eq_string_list:
         variable_map_for_one_eq = {}
+        left_side = eq[0]
         for i in range(random.randint(1,max_replace_time)):
-            left_side = eq[0]
             substring_to_be_replaced = generate_random_substring(left_side)
-            # choose a random variable from variable_pool
-            available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
-            random_variable = random.choice(available_variables)
-            variable_map_for_one_eq[substring_to_be_replaced] = random_variable
+            if substring_to_be_replaced not in variable_map_for_one_eq.keys():
+                # choose a random variable from variable_pool
+                available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
+                random_variable = random.choice(available_variables)
+                variable_map_for_one_eq[substring_to_be_replaced] = random_variable
+                left_side=left_side.replace(substring_to_be_replaced, random_variable,1)
 
-            left_side=left_side.replace(substring_to_be_replaced, random_variable,1)
 
+        right_side = eq[1]
         for i in range(random.randint(1,max_replace_time)):
-            right_side = eq[1]
             substring_to_be_replaced = generate_random_substring(right_side)
-            # choose a random variable from variable_pool
-            available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
-            random_variable = random.choice(available_variables)
-            variable_map_for_one_eq[substring_to_be_replaced] = random_variable
-
-            right_side=right_side.replace(substring_to_be_replaced, random_variable, 1)
+            if substring_to_be_replaced not in variable_map_for_one_eq.keys():
+                # choose a random variable from variable_pool
+                available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
+                random_variable = random.choice(available_variables)
+                variable_map_for_one_eq[substring_to_be_replaced] = random_variable
+                right_side=right_side.replace(substring_to_be_replaced, random_variable, 1)
 
         replaced_eq_stinrg_list.append((left_side, right_side))
 
