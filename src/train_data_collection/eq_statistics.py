@@ -272,6 +272,8 @@ def statistics_for_one_folder(folder, model_dict):
                 single_variable_max_occurrence_list.append(0)
             else:
                 single_variable_max_occurrence_list.append(max(list_variable_occurrence_map_values))
+            # if max(list_variable_occurrence_map_values) > 1:
+            #     color_print(f"{eq.eq_str}", "blue")
 
             # get terminal occurrence
             terminal_occurrence_map = {t: 0 for t in terminal_list}

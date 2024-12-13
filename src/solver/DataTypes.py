@@ -920,3 +920,17 @@ def formatting_results_v2(variables: List[str], terminals: List[str],
         result += f"Equation: {joint_space.join(eq[0])} = {joint_space.join(eq[1])}\n"
     result += "SatGlucose(100)"
     return result
+
+def formatting_variable_and_terminal_list(eq_string_list,variable_pool,terminal_pool):
+    variable_list = []
+    terminal_list = []
+    eq_list = []
+    for eq in eq_string_list:
+        variable_list.extend([v for v in variable_pool if v in eq[0] + eq[1]])
+        terminal_list.extend([t for t in terminal_pool if t in eq[0] + eq[1]])
+        eq_list.append((eq[0], eq[1]))
+
+    variable_list = remove_duplicates(variable_list)
+    terminal_list = remove_duplicates(terminal_list)
+
+    return variable_list, terminal_list, eq_list

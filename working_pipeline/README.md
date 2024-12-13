@@ -96,6 +96,7 @@ The folder should looks like benchmark/z3/UNSAT/*.eq, benchmark/ostrich/UNSAT/*.
 
 4. Extract unsatcores
 Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
+This will run get_unsatcore_from_one_solver.py in cluster to get minimum unsatcores
 
 5. Merge extracted unsatcores and divided to extract training data
 Local: set parameter and run collect_unsatcores.py

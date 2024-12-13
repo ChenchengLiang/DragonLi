@@ -46,22 +46,19 @@ def main():
     get_unsatcore_func = get_non_minimum_unsatcore
 
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
-                                 "ostrich": [], "woorpje": [], "this:category_random": ["fixed",
-                                                                                        f"--termination_condition termination_condition_0",
-                                                                                        f"--algorithm SplitEquations",
-                                                                                        f"--graph_type graph_1",
-                                                                                        f"--order_equations_method category_random", ]}
+                                 "ostrich": [],
+                                 # "woorpje": [],
+                                 # "this:category_random": ["fixed",
+                                 #                                                        f"--termination_condition termination_condition_0",
+                                 #                                                        f"--algorithm SplitEquations",
+                                 #                                                        f"--graph_type graph_1",
+                                 #                                                        f"--order_equations_method category_random", ]
+                                 }
     shell_timeout_for_one_run = 20
 
     benchmark_folder = f"{working_folder}/{folder}"
-    resolved_path_benchmark_folder = os.path.realpath(benchmark_folder)
-    print(glob.glob("/*"))
-    print(glob.glob("/cfs/*"))
-    print(glob.glob("/cfs/klemming/*"))
-    print(os.listdir(resolved_path_benchmark_folder))
 
-
-    file_list = glob.glob(f"{resolved_path_benchmark_folder}/*.eq")
+    file_list = glob.glob(f"{benchmark_folder}/*.eq")
     print(f"file_list:{file_list}")
     for eq_file in tqdm(file_list, desc="file_list processing progress"):
         # parse .predicted_unsatcore file
