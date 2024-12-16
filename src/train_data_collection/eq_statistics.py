@@ -64,7 +64,7 @@ def main():
     # final_statistic_file_2 = statistics_for_one_folder(folder, model_dict_2)
 
 
-    benchmark_2 = "Benchmark_D_eval_1_1000"
+    benchmark_2 = "04_track_DragonLi_eval_1_1000"
     model_dict_2 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
                     "run_id": "ec25835b29c948769d3a913783865d3d"}
     folder = f"{bench_folder}/{benchmark_2}/ALL/ALL"
@@ -230,14 +230,14 @@ def statistics_for_one_folder(folder, model_dict):
                 # get variable occurrence
                 variable_occurrence_map = {v: 0 for v in variable_list}
                 for v in variable_list:
-                    variable_occurrence_map[v] += (eq.eq_str).count(v)
+                    variable_occurrence_map[v] += (eq.term_list_string_format).count(v)
                 unsatcore_variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
                 unsatcore_single_variable_max_occurrence_list.append(max(list(variable_occurrence_map.values())))
 
                 # get terminal occurrence
                 terminal_occurrence_map = {t: 0 for t in terminal_list}
                 for t in terminal_list:
-                    terminal_occurrence_map[t] += (eq.eq_str).count(t)
+                    terminal_occurrence_map[t] += (eq.term_list_string_format).count(t)
                 unsatcore_terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
 
                 # get number of variables and terminals
@@ -265,7 +265,7 @@ def statistics_for_one_folder(folder, model_dict):
             # get variable occurrence
             variable_occurrence_map = {v: 0 for v in variable_list}
             for v in variable_list:
-                variable_occurrence_map[v] += (eq.eq_str).count(v)
+                variable_occurrence_map[v] += (eq.term_list_string_format).count(v)
             variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
             list_variable_occurrence_map_values=list(variable_occurrence_map.values())
             if len(list_variable_occurrence_map_values) == 0:
@@ -278,7 +278,7 @@ def statistics_for_one_folder(folder, model_dict):
             # get terminal occurrence
             terminal_occurrence_map = {t: 0 for t in terminal_list}
             for t in terminal_list:
-                terminal_occurrence_map[t] += (eq.eq_str).count(t)
+                terminal_occurrence_map[t] += (eq.term_list_string_format).count(t)
             terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
 
             # get number of variables and terminals
@@ -475,9 +475,9 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "average_terminal_number_of_equation": 0,
                             "stdev_terminal_number_of_equation": 0,
 
-                            "equation_number:number_of_problems": {i: 0 for i in range(1, 101)},
-                            "variable_number:number_of_problems": {i: 0 for i in range(0, 27)},
-                            "terminal_number:number_of_problems": {i: 0 for i in range(0, 27)},
+                            "equation_number:number_of_problems": {i: 0 for i in range(1, 201)},
+                            "variable_number:number_of_problems": {i: 0 for i in range(0, 200)},
+                            "terminal_number:number_of_problems": {i: 0 for i in range(0, 200)},
 
                             "GNN_embedding_list": []
                             }

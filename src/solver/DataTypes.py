@@ -188,6 +188,11 @@ class Equation:
         return self.left_terms + self.right_terms
 
     @property
+    def term_list_string_format(self) -> List[str]:
+        return [term.get_value_str for term in self.term_list]
+
+
+    @property
     def term_length(self):
         return len(self.term_list)
 
@@ -908,10 +913,11 @@ def formatting_results(variables: List[str], terminals: List[str], eq_list: List
 
 def formatting_results_v2(variables: List[str], terminals: List[str],
                           eq_list: List[Tuple[List[str], List[str]]]) -> str:
-    if len(variables) > 26 or len(terminals) > 26:
-        joint_space = " "
-    else:
-        joint_space = ""
+    joint_space = " "
+    # if len(variables) > 26 or len(terminals) > 26:
+    #     joint_space = " "
+    # else:
+    #     joint_space = ""
 
     # Format the result
     result = f"Variables {{{joint_space.join(variables)}}}\n"
@@ -929,6 +935,7 @@ def formatting_variable_and_terminal_list(eq_string_list,variable_pool,terminal_
         variable_list.extend([v for v in variable_pool if v in eq[0] + eq[1]])
         terminal_list.extend([t for t in terminal_pool if t in eq[0] + eq[1]])
         eq_list.append((eq[0], eq[1]))
+
 
     variable_list = remove_duplicates(variable_list)
     terminal_list = remove_duplicates(terminal_list)

@@ -42,19 +42,19 @@ def main():
     parser = Parser(EqParser())
     solver_log = False
 
-    # get_unsatcore_func = get_minimum_unsatcore
-    get_unsatcore_func = get_non_minimum_unsatcore
+    get_unsatcore_func = get_minimum_unsatcore
+    # get_unsatcore_func = get_non_minimum_unsatcore
 
     solver_parameter_list_map = {"z3": [], "z3-noodler": ["smt.string_solver=\"noodler\""], "cvc5": [],
                                  "ostrich": [],
-                                 # "woorpje": [],
-                                 # "this:category_random": ["fixed",
-                                 #                                                        f"--termination_condition termination_condition_0",
-                                 #                                                        f"--algorithm SplitEquations",
-                                 #                                                        f"--graph_type graph_1",
-                                 #                                                        f"--order_equations_method category_random", ]
+                                 "this:category_random": ["fixed",
+                                                          f"--termination_condition termination_condition_0",
+                                                          f"--algorithm SplitEquations",
+                                                          f"--graph_type graph_1",
+                                                          f"--order_equations_method category_random", ]
                                  }
-    shell_timeout_for_one_run = 20
+    shell_timeout_for_check_satisfiability_run = 20
+    shell_timeout_factor_for_unsatcore = 10
 
     benchmark_folder = f"{working_folder}/{folder}"
 
@@ -67,8 +67,11 @@ def main():
         ranked_formula = Formula(parsed_content["equation_list"])
 
         # check the satisfiability first.
+        start_time = time.time()
         solver_list, satisfiability_list = check_satisfiability(solver_parameter_list_map, eq_file, solver_log,
-                                                                shell_timeout_for_one_run)
+                                                                shell_timeout_for_check_satisfiability_run)
+        check_satisfiability_time = time.time() - start_time
+
         for s, sat in zip(solver_list, satisfiability_list):
             print(f"{s}:{sat}")
 
@@ -83,7 +86,7 @@ def main():
 
             print("--- extract unsatcore ---")
             get_unsatcore_func(eq_file, ranked_formula, solver_parameter_list_map, solver_log,
-                               shell_timeout_for_one_run)
+                               check_satisfiability_time * shell_timeout_factor_for_unsatcore)
 
 
 def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_map, solver_log,
@@ -99,7 +102,8 @@ def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_m
             # delete i-th eq
             unsatcore = Formula(current_formula.eq_list[:i] + current_formula.eq_list[i + 1:])
 
-            current_unsatcore_formula, current_unsatcore_eq_file = write_unsatcore_to_eq_file(unsatcore.eq_list, eq_file)
+            current_unsatcore_formula, current_unsatcore_eq_file = write_unsatcore_to_eq_file(unsatcore.eq_list,
+                                                                                              eq_file)
 
             log_text = f"    current_core_eq_number:{current_unsatcore_formula.eq_list_length}, delete {i}-th eq from {current_formula_length}"
             print(log_text)
@@ -111,10 +115,8 @@ def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_m
                 current_unsatcore_eq_file, solver_parameter_list_map, solver_log, shell_timeout_for_one_run)
             solvability_log += log_from_differernt_solvers
 
-
-
             if satisfiability == "UNSAT":  # this eq can be deleted go to next
-                #record current best unsatcore
+                # record current best unsatcore
                 current_formula = unsatcore
                 unsatcore_summary_folder = create_folder(f"{strip_file_name_suffix(eq_file)}_non_minimum_unsatcore")
                 store_unsatcore_to_file(unsatcore_summary_folder, original_formula, current_unsatcore_formula,
@@ -122,9 +124,9 @@ def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_m
                                         current_unsatcore_eq_file, unsatcore_smt2_file)
                 break
 
-            elif satisfiability == "SAT": #cannot be deleted
+            elif satisfiability == "SAT":  # cannot be deleted
                 pass
-            else: #unknown, cannot be deleted
+            else:  # unknown, cannot be deleted
                 pass
 
     # clean temp current eq and smt unsat core files
@@ -134,7 +136,6 @@ def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_m
         os.remove(unsatcore_smt2_file)
     if os.path.exists(current_unsatcore_eq_file + ".answer"):
         os.remove(current_unsatcore_eq_file + ".answer")
-
 
 
 def get_minimum_unsatcore(eq_file, ranked_formula, solver_parameter_list_map, solver_log,

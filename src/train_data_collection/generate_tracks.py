@@ -27,7 +27,7 @@ def main():
     end_idx = 1000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
     # track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
-    track_name = f"Benchmark_D_eval_{start_idx}_{end_idx}"  # generate_one_track_4_v4
+    track_name = f"Benchmark_D_max_replace_length_bounded_16_eval_{start_idx}_{end_idx}"  # generate_one_track_4_v4
     track_folder = bench_folder + "/" + track_name
     # file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
     # file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
@@ -62,8 +62,9 @@ def save_equations(start_index, end_index, folder, track_name, equation_generato
         print("---", str(i), "----")
         filename = os.path.join(all_folder, f"g_{track_name}_{i}.eq")
         equation_str, variable_list, terminal_list, eq_list = equation_generator(filename, i)
+
         # generate eq file
-        if len(variable_list) > 26 or len(terminal_list) > 26:
+        if isinstance(eq_list[0][0],list):
             pass
         else:
             equation_str = formatting_results(variable_list, terminal_list, eq_list)
@@ -497,13 +498,15 @@ def generate_random_string(length, pool):
     return ''.join(random.choice(pool) for _ in range(length))
 
 
-def generate_random_substring(s):
+def generate_random_substring(s,max_length):
     if len(s) > 1:
-        length = random.randint(1, len(s) - 1)  # Randomly select a length between 1 and the length of the string
+        length = random.randint(1, max_length)  # Randomly select a length between 1 and the length of the string
         start_index = random.randint(0, len(s) - length)  # Randomly select a starting index
         return s[start_index:start_index + length]  # Extract the substring
     else:
         return s
+
+
 
 
 def generate_one_track_4_v5(file_name, index):
@@ -511,12 +514,13 @@ def generate_one_track_4_v5(file_name, index):
     min_eq = 1
     max_eq = 100
     eq_number = random.randint(min_eq, max_eq)
-    max_variables = 26
+    max_variables = 100
     max_terminals = 26
     one_side_max_length = 60
     #fixed_one_side_length = random.randint(2, one_side_max_length)
     fixed_one_side_length = one_side_max_length
-    max_replace_time = 5
+    max_replace_time = 16
+    max_replace_length = int(fixed_one_side_length/max_replace_time)
 
     terminal_pool = generate_letter_pool(max_terminals, use_uppercase=False)
     variable_pool = generate_letter_pool(max_variables, use_uppercase=True)
@@ -526,36 +530,49 @@ def generate_one_track_4_v5(file_name, index):
     for i in range(eq_number):
         random_string_1 = generate_random_string(fixed_one_side_length, terminal_pool)
         random_string_2 = generate_random_string(fixed_one_side_length, terminal_pool)
-        eq_string_list.append((random_string_1, random_string_1))
+        random_string_1_list = list(random_string_1)
+        random_string_2_list = list(random_string_2)
+        eq_string_list.append((random_string_1_list, random_string_1_list))
 
     replaced_eq_stinrg_list = []
     for eq in eq_string_list:
         variable_map_for_one_eq = {}
         left_side = eq[0]
         for i in range(random.randint(1,max_replace_time)):
-            substring_to_be_replaced = generate_random_substring(left_side)
-            if substring_to_be_replaced not in variable_map_for_one_eq.keys():
+            substring_to_be_replaced = generate_random_substring(left_side,max_replace_length)
+            #print("substring_to_be_replaced",substring_to_be_replaced)
+            if ''.join(substring_to_be_replaced) not in variable_map_for_one_eq.keys():
                 # choose a random variable from variable_pool
                 available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
                 random_variable = random.choice(available_variables)
-                variable_map_for_one_eq[substring_to_be_replaced] = random_variable
-                left_side=left_side.replace(substring_to_be_replaced, random_variable,1)
+                variable_map_for_one_eq[''.join(substring_to_be_replaced)] = random_variable
+                left_side=replace_sublist_one_side(main_list=left_side,old_sublist=substring_to_be_replaced,new_sublist=[random_variable])
+                #left_side=''.join(left_side).replace(''.join(substring_to_be_replaced), random_variable,1)
+
+
 
 
         right_side = eq[1]
         for i in range(random.randint(1,max_replace_time)):
-            substring_to_be_replaced = generate_random_substring(right_side)
-            if substring_to_be_replaced not in variable_map_for_one_eq.keys():
+            substring_to_be_replaced = generate_random_substring(right_side,max_replace_length)
+            if ''.join(substring_to_be_replaced) not in variable_map_for_one_eq.keys():
                 # choose a random variable from variable_pool
                 available_variables = [v for v in variable_pool if v not in variable_map_for_one_eq.values()]
                 random_variable = random.choice(available_variables)
-                variable_map_for_one_eq[substring_to_be_replaced] = random_variable
-                right_side=right_side.replace(substring_to_be_replaced, random_variable, 1)
+                variable_map_for_one_eq[''.join(substring_to_be_replaced)] = random_variable
+                right_side=replace_sublist_one_side(main_list=right_side,old_sublist=substring_to_be_replaced,new_sublist=[random_variable])
+                #right_side=''.join(right_side).replace(''.join(substring_to_be_replaced), random_variable, 1)
+
 
         replaced_eq_stinrg_list.append((left_side, right_side))
 
+
+
+
     variable_list, terminal_list, eq_list = formatting_variable_and_terminal_list(replaced_eq_stinrg_list, variable_pool,
                                                                                   terminal_pool)
+
+
     result = formatting_results_v2(variable_list, terminal_list, eq_list)
 
     output_track_info(file_name, min_eq, max_eq, max_variables, max_terminals, one_side_max_length)
@@ -590,7 +607,7 @@ def generate_one_track_4_v4(file_name, index):
         eq_sample = random.choice(eq_string_list)
         one_side_of_eq_sample = random.choice(eq_sample)
         # select a random substring from one_side_of_eq_sample
-        substring_to_be_replaced = generate_random_substring(one_side_of_eq_sample)
+        substring_to_be_replaced = generate_random_substring(one_side_of_eq_sample,len(one_side_of_eq_sample)-1)
         substring_variable_map[substring_to_be_replaced] = v
         replaced_eq_string_list = []
         for eq in eq_string_list:
@@ -677,7 +694,7 @@ def generate_one_track_4_v3(file_name, index):
         eq_sample = random.choice(eq_string_list)
         one_side_of_eq_sample = random.choice(eq_sample)
         # select a random substring from one_side_of_eq_sample
-        substring_to_be_replaced = generate_random_substring(one_side_of_eq_sample)
+        substring_to_be_replaced = generate_random_substring(one_side_of_eq_sample,len(one_side_of_eq_sample)-1)
         substring_variable_map[substring_to_be_replaced] = v
         replaced_eq_string_list = []
         for eq in eq_string_list:
@@ -775,7 +792,7 @@ def generate_one_track_4_v2(file_name, index):
     eq_sample = random.sample(eq_string_list, eq_sample_size)
     for i, v in enumerate(variable_pool):
         # select a random substring from the eq string
-        substring_to_be_replaced = generate_random_substring(eq_sample[i % eq_sample_size])
+        substring_to_be_replaced = generate_random_substring(eq_sample[i % eq_sample_size],len(eq_sample[i % eq_sample_size])-1)
         substring_variable_map[substring_to_be_replaced] = v
 
     track_1_func = generate_one_track_1_woorpje
@@ -945,6 +962,16 @@ def output_track_info(file_name,min_eq,max_eq,max_variables,max_terminals,one_si
         with open(track_info_file, 'w') as file:
             file.write(track_info_str)
 
+def replace_sublist_one_side(main_list, old_sublist, new_sublist):
+    # Find the start index of the old sublist
+    for i in range(len(main_list) - len(old_sublist) + 1):
+        # Check if the slice matches the old_sublist
+        if main_list[i:i + len(old_sublist)] == old_sublist:
+            # Replace the sublist using slicing
+
+            return main_list[:i] + new_sublist + main_list[i + len(old_sublist):]
+    # If the old_sublist is not found, return the original list
+    return main_list
 
 if __name__ == '__main__':
     main()
