@@ -54,7 +54,8 @@ def main():
                                                           f"--order_equations_method category_random", ]
                                  }
     shell_timeout_for_check_satisfiability_run = 20
-    shell_timeout_factor_for_unsatcore = 10
+    shell_timeout_for_finding_unsatcore_run = 10
+
 
     benchmark_folder = f"{working_folder}/{folder}"
 
@@ -67,10 +68,9 @@ def main():
         ranked_formula = Formula(parsed_content["equation_list"])
 
         # check the satisfiability first.
-        start_time = time.time()
         solver_list, satisfiability_list = check_satisfiability(solver_parameter_list_map, eq_file, solver_log,
                                                                 shell_timeout_for_check_satisfiability_run)
-        check_satisfiability_time = time.time() - start_time
+
 
         for s, sat in zip(solver_list, satisfiability_list):
             print(f"{s}:{sat}")
@@ -86,7 +86,7 @@ def main():
 
             print("--- extract unsatcore ---")
             get_unsatcore_func(eq_file, ranked_formula, solver_parameter_list_map, solver_log,
-                               check_satisfiability_time * shell_timeout_factor_for_unsatcore)
+                               shell_timeout_for_finding_unsatcore_run)
 
 
 def get_non_minimum_unsatcore(eq_file, original_formula, solver_parameter_list_map, solver_log,
@@ -176,8 +176,33 @@ def get_minimum_unsatcore(eq_file, ranked_formula, solver_parameter_list_map, so
                                         satisfiability, first_solved_solver, solving_time, solvability_log,
                                         current_unsatcore_eq_file, unsatcore_smt2_file)
 
-                found_unsatcore = True
+                # check weather useful to DragonLi, run DragonLi with the unsatcore
+                print("run this solver")
+                parameter_list = ["fixed",
+                                  f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
+                                  f"--graph_type graph_1",
+                                  f"--order_equations_method unsatcore_shortest_first_n_iterations_category",
+                                  # unsatcore_shortest
+                                  f"--unsat_core_file {current_unsatcore_eq_file}"]
 
+                solver = "this"
+
+                result_dict = run_on_one_problem(eq_file, parameter_list, solver,
+                                                 solver_log=solver_log, shell_timeout=20)
+                satisfiability_this_solver = result_dict["result"]
+                # print(result_dict["result"])
+                # print(result_dict["raw"])
+                if satisfiability_this_solver == "UNSAT":
+                    print("Found an available unsatcore")
+                    shutil.copy(current_unsatcore_eq_file, strip_file_name_suffix(eq_file) + ".unsatcore")
+                    # found_unsatcore = True
+                    # break
+                else:
+                    print("this solver cannot solve it with the unsatcore")
+                    # clean temp current eq and smt unsat core files
+                clean_temp_files_while_extract_unsatcore(current_unsatcore_eq_file, unsatcore_smt2_file)
+
+                found_unsatcore = True
                 break
 
             else:

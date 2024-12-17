@@ -820,7 +820,7 @@ def _update_formula(f: Formula, old_term: Term, new_term: List[Term]) -> Formula
 
 
 def _create_fresh_variables(fresh_variable_counter) -> Tuple[Term, int]:
-    fresh_variable_term = Term(Variable(f"V{fresh_variable_counter}"))  # V1, V2, V3, ...
+    fresh_variable_term = Term(Variable(f"V_{fresh_variable_counter}"))  # V1, V2, V3, ...
     fresh_variable_counter += 1
     return fresh_variable_term, fresh_variable_counter
 

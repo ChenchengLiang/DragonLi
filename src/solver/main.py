@@ -56,8 +56,15 @@ def main():
     number of X in right side >= number of X in left side
     """
     #conjunctive 03 track
-    file_path = bench_folder + "/Benchmark_C_eval_eq_1_100_1_1000/ALL/ALL/g_Benchmark_C_eval_eq_1_100_1_1000_69.eq"
+    #file_path = bench_folder + "/Benchmark_C_eval_eq_1_100_1_1000/ALL/ALL/g_Benchmark_C_eval_eq_1_100_1_1000_69.eq"
 
+    # inconsistent check
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_1047.eq"
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_1789.eq"
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_6520.eq"
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8681.eq"
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8765.eq"
+    file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8808.eq"
 
     # gnn test
     #file_path = bench_folder + "/examples_choose_eq/gnn-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_690.eq"
@@ -137,7 +144,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category",
+                                           "order_equations_method": "category_random",
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}

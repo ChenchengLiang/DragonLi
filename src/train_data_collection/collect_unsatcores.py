@@ -20,7 +20,7 @@ def main():
     one unsatcore is stored in the folder *_unsat_cores, use generate_train_data_from_unsatcores.py to generate train data
     :return:
     '''
-    benchmark_name="unsatcores_Benchmark_C_train_eq_1_100_1_10000"
+    benchmark_name="unsatcore_extraction_test_2"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")
@@ -50,6 +50,18 @@ def main():
                     shutil.copy(smallest_unsatcore_file,f"{merged_unsatcores_folder}/{os.path.basename(file_name)}.unsatcore")
                 else:
                     pass
+
+            elif os.path.exists(f"{file_name}_unsatcore") and glob.glob(f"{file_name}_unsatcore/*")!=[]:
+                copy_relative_files(prefix=file_name, target_folder=merged_unsatcores_folder)
+                for file in glob.glob(f"{file_name}_unsatcore/{os.path.basename(file_name)}*"):
+                    shutil.copy(file,merged_unsatcores_folder)
+                    unsatcore_eq=f"{merged_unsatcores_folder}/{os.path.basename(file_name)}.current_unsatcore"
+                    unsatcore_smt2=f"{merged_unsatcores_folder}/{os.path.basename(file_name)}.current_unsatcore.smt2"
+                if os.path.exists(unsatcore_eq):
+                    os.rename(unsatcore_eq,unsatcore_eq.replace(".current_unsatcore",".unsatcore"))
+                if os.path.exists(unsatcore_smt2):
+                    os.rename(unsatcore_smt2,unsatcore_smt2.replace(".current_unsatcore.smt2",".unsatcore.smt2"))
+
             else:
                 no_unsatcore_file_list.append(eq_file)
                 print(os.path.basename(eq_file),"don't have unsatcore")

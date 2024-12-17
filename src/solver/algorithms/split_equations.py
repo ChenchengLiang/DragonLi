@@ -227,13 +227,11 @@ class SplitEquations(AbstractAlgorithm):
             self.fresh_variable_counter = fresh_variable_counter
             children: List[Tuple[Equation, Formula, str]] = self.order_branches_func(children)
 
-            #print(current_eq.eq_str)
             unknown_flag = 0
             for c_index, child in enumerate(children):
                 (c_eq, c_formula, edge_label) = child
                 satisfiability, res_formula = self.split_eq(c_formula, current_depth + 1, current_eq_node,
                                                             edge_label)
-                #print(c_index,satisfiability, c_eq.eq_str)
                 if satisfiability == SAT:
                     current_node[1]["status"] = SAT
                     current_eq_node[1]["status"] = SAT
