@@ -918,10 +918,10 @@ def _update_formula(f: Formula, old_term: Term, new_term: List[Term]) -> Formula
 
 def _encode_non_linear_to_linear_formula(current_eq: Equation, rest_formula: Formula, fresh_variable_counter: int) -> \
         Tuple[Equation, Formula, int]:
-    print("---")
-    print("before encoding")
-    print("eq",current_eq.eq_str)
-    print("rest_formula",rest_formula.eq_list_str)
+    # print("---")
+    # print("before encoding")
+    # print("eq",current_eq.eq_str)
+    # print("rest_formula",rest_formula.eq_list_str)
 
     # detect repeatative variables
     empty_variable_set = set()
@@ -949,9 +949,9 @@ def _encode_non_linear_to_linear_formula(current_eq: Equation, rest_formula: For
 
     new_eq = Equation(new_left_terms, new_right_terms)
 
-    print("after encoding")
-    print("eq",new_eq.eq_str)
-    print("rest_formula",rest_formula.eq_list_str)
+    # print("after encoding")
+    # print("eq",new_eq.eq_str)
+    # print("rest_formula",rest_formula.eq_list_str)
 
     return new_eq, rest_formula, fresh_variable_counter
 
