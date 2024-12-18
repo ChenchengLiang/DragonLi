@@ -19,7 +19,7 @@ from src.solver.utils_parser import perse_eq_file
 import os
 
 def main():
-    benchmark_name="unsatcores_04_track_DragonLi_train_40001_80000_onecore"
+    benchmark_name="unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore"
     for fo in os.listdir(bench_folder + "/" + benchmark_name):
         folder_basename=os.path.basename(fo)
         if "divided" in folder_basename:
@@ -32,6 +32,7 @@ def main():
             create_folder(train_folder)
 
             for eq_file in glob.glob(f"{all_eq_folder}/*.eq"):
+                print(eq_file)
                 file_name=strip_file_name_suffix(eq_file)
                 unsatcore_file=f"{file_name}.unsatcore"
 

@@ -13,7 +13,7 @@ from src.solver.independent_utils import get_folders
 from src.train_data_collection.utils import generate_train_data_in_one_folder
 
 def main():
-    benchmark = "01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_for_UNSAT_data_extraction"#"choose_eq_train"
+    benchmark = "unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_proof_tree"#"choose_eq_train"
 
     # algorithm = ElimilateVariablesRecursive
     # algorithm_parameters = {"branch_method": "extract_branching_data_task_3", "extract_algorithm": "fixed",
@@ -21,7 +21,7 @@ def main():
 
     algorithm = "SplitEquationsExtractData"
     algorithm_parameters = {"branch_method": "fixed",
-                            "order_equations_method": "hybrid_category_fixed_random",
+                            "order_equations_method": "unsatcore_shortest_first_n_iterations_category",
                             "termination_condition": "termination_condition_7",
                             "task": "dynamic_embedding"}
     train_data="UNSAT"

@@ -75,7 +75,7 @@ def main():
                   "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
     benchmark_model_map={#"Benchmark_D_max_replace_length_bounded_8_eval_1_1000":model_dict_linear,
                          #"Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_linear,
-                         "04_track_DragonLi_eval_1_1000":model_dict_linear,
+                         #"04_track_DragonLi_eval_1_1000":model_dict_linear,
                          "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000":model_dict_non_linear}
 
     for benchmark,model_dict in benchmark_model_map.items():
@@ -282,8 +282,9 @@ def statistics_for_one_folder(folder, model_dict):
                 single_variable_max_occurrence_list.append(0)
             else:
                 single_variable_max_occurrence_list.append(max(list_variable_occurrence_map_values))
-            if max(list_variable_occurrence_map_values) > 1:
-                color_print(f"{eq.eq_str}", "blue")
+
+                if max(list_variable_occurrence_map_values) > 1:
+                    color_print(f"{eq.eq_str}", "blue")
 
             # get terminal occurrence
             terminal_occurrence_map = {t: 0 for t in terminal_list}
@@ -295,7 +296,10 @@ def statistics_for_one_folder(folder, model_dict):
             number_of_vairables_each_eq_list.append(eq.variable_number)
             number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
 
-        single_variable_max_occurrence_of_problem = max(list(variable_occurrence_map_of_problem.values()))
+        if len(list(variable_occurrence_map_of_problem.values()))!=0:
+            single_variable_max_occurrence_of_problem = max(list(variable_occurrence_map_of_problem.values()))
+        else:
+            single_variable_max_occurrence_of_problem = 0
 
         # summary info
         line_offset = 3

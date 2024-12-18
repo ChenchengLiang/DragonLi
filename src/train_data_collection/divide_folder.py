@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000/merged_new_trainable_data"
+    track_name="unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000/merged_for_proof_tree"
     file_folder="UNSAT"
 
     nested_folder="UNSAT"

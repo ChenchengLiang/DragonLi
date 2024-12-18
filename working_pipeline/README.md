@@ -102,7 +102,15 @@ This will run get_unsatcore_from_one_solver.py in cluster to get minimum unsatco
 Local: set parameter and run collect_unsatcores.py
    get two sets, one for extract from proof tree, one from first unsatcore
 Local & Uppmax: set parameter and run divided_folder.py for the proof tree then use generate_train_data_from_solver_one_folder.py to generate data 
+Uppmax: word_equation_submit_generate_train_data_parallel.sh benchmark
 Local: set parameter and run generate_train_data_from_unsatcores.py to generate data from first unsatcore
+6. Local: Merge two files by give them differernt divided_i by calling merge_and_divide_train_valid_data.py
+7. Train the model
+Local:  Send to alvis and train the model (send_to_alvis_storage)
+Alvis:  sh word_equation_submit_prepare_train_data.sh benchmark
+Local: Set parameters in src/solver/model/generate_configurations.py
+Alvis: sh word_equation_submit_initialize_configurations.sh
+Alvis:  sh word_equation_submit_multiple_train_continuously.sh
 
 
 

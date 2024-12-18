@@ -20,7 +20,7 @@ def main():
     one unsatcore is stored in the folder *_unsat_cores, use generate_train_data_from_unsatcores.py to generate train data
     :return:
     '''
-    benchmark_name="unsatcore_extraction_test_2"
+    benchmark_name="unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000"
     divided_folder_list=[fo for fo in os.listdir(f"{bench_folder}/{benchmark_name}") if "divided" in os.path.basename(fo)]
 
     create_folder(f"{bench_folder}/{benchmark_name}/merged_for_proof_tree")
@@ -37,17 +37,27 @@ def main():
             file_name=strip_file_name_suffix(eq_file)
             #merged_folder_for_proof_tree
             if os.path.exists(f"{file_name}.unsatcore"):
+                with open(f"{file_name}.unsatcore", 'r') as f:
+                    lines = f.readlines()
+                if len(lines)>0:
+                    copy_relative_files(prefix=file_name,target_folder=merged_folder_for_proof_tree)
                 #copy_relative_files_and_directories(prefix=file_name,target_folder=merged_folder)
-                copy_relative_files(prefix=file_name,target_folder=merged_folder_for_proof_tree)
+                #copy_relative_files(prefix=file_name,target_folder=merged_folder_for_proof_tree)
+                else:
+                    print(os.path.basename(eq_file),"unsatcore empty")
             else:
                 print(os.path.basename(eq_file),"don't have .unsatcore")
             #merged_unsatcores_folder
             if os.path.exists(f"{file_name}_unsat_cores") and glob.glob(f"{file_name}_unsat_cores/*")!=[]:
-                copy_relative_files(prefix=file_name, target_folder=merged_unsatcores_folder)
+                #copy_relative_files(prefix=file_name, target_folder=merged_unsatcores_folder)
                 if not os.path.exists(f"{file_name}.unsatcore"):
                     # move smallest unsatecore to file .unsatcore
                     smallest_unsatcore_file=sorted(glob.glob(f"{file_name}_unsat_cores/*.eq"),reverse=True)[-1]
-                    shutil.copy(smallest_unsatcore_file,f"{merged_unsatcores_folder}/{os.path.basename(file_name)}.unsatcore")
+                    with open(smallest_unsatcore_file, 'r') as f:
+                        lines = f.readlines()
+                    if len(lines) > 0:
+                        copy_relative_files(prefix=file_name, target_folder=merged_unsatcores_folder)
+                        shutil.copy(smallest_unsatcore_file,f"{merged_unsatcores_folder}/{os.path.basename(file_name)}.unsatcore")
                 else:
                     pass
 
