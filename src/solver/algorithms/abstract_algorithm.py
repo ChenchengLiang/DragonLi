@@ -118,6 +118,7 @@ class AbstractAlgorithm(ABC):
     def get_first_eq(self, f: Formula) -> Tuple[Equation, Formula]:
         return f.eq_list[0], Formula(f.eq_list[1:])
 
+
     def _post_process_ordered_formula_verbose(self, f: Formula) -> Formula:
         #current_eq,_=self.get_first_eq(f)
         #print(current_eq.eq_str_pretty)

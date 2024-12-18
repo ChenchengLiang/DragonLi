@@ -83,11 +83,11 @@ def main():
         #           ]],
 
         #branch:fixed, order equations: category
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category"
-        #           ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category"
+                  ]],
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
         #           f"--algorithm {algorithm}",

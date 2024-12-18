@@ -221,6 +221,11 @@ class Equation:
         return [term.get_value_str for term in self.right_terms]
 
     @property
+    def is_linear(self):
+        duplicated_variable_list = [item.value for item in self.term_list if isinstance(item.value, Variable)]
+        return len(duplicated_variable_list) == len(set(duplicated_variable_list))
+
+    @property
     def variable_list(self) -> List[Variable]:
         return remove_duplicates([item.value for item in self.term_list if isinstance(item.value, Variable)])
 

@@ -14,7 +14,7 @@ from src.solver.algorithms.split_equation_utils import _category_formula_by_rule
     simplify_and_check_formula, order_equations_random, order_equations_category_random, run_summary, \
     _get_global_info, order_branches_fixed, order_branches_random, \
     order_branches_hybrid_fixed_random, order_equations_static_func_map, _get_unsatcore, apply_rules_prefix, \
-    apply_rules_suffix, order_equations_category
+    apply_rules_suffix, order_equations_category, _encode_non_linear_to_linear_formula
 from src.solver.models.utils import load_model
 from src.solver.visualize_util import visualize_path_html, visualize_path_png, draw_graph
 from . import graph_to_gnn_format
@@ -215,6 +215,15 @@ class SplitEquations(AbstractAlgorithm):
             current_formula = self.order_equations_func_wrapper(current_formula, current_node)
 
             current_eq, separated_formula = self.get_first_eq(current_formula)
+
+            # encode non-linear to linear
+            # if current_eq.is_linear == False:
+            #     # print("before encode current_eq", current_eq.eq_str)
+            #     # print("before encode separated_formula", separated_formula.eq_list_str)
+            #     current_eq, separated_formula,fresh_variable_counter=_encode_non_linear_to_linear_formula(current_eq, separated_formula,self.fresh_variable_counter)
+            #     self.fresh_variable_counter = fresh_variable_counter
+            #     # print("after encode current_eq", current_eq.eq_str)
+            #     # print("after encode separated_formula", separated_formula.eq_list_str)
 
             current_eq_node = self.record_eq_node_and_edges(current_eq, previous_node=current_node,
                                                             edge_label=f"eq:{0}: {current_eq.eq_str}")

@@ -36,6 +36,9 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/35/35.eq"  # trap prefix and suffix X a = b X Y
     #file_path = bench_folder + "/examples_choose_eq/36/36.eq"  # X = Y a X
     #file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
+    #file_path = bench_folder + "/examples_choose_eq/37/37-1.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
+    #file_path = bench_folder + "/examples_choose_eq/37/37-2.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
+    file_path = bench_folder + "/examples_choose_eq/37/37-3.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
     #file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
     #file_path = bench_folder + "/examples_choose_eq/39/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_329.eq"
     #file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
@@ -64,7 +67,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_6520.eq"
     #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8681.eq"
     #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8765.eq"
-    file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8808.eq"
+    #file_path = bench_folder + "/examples_choose_eq/inconsistent/1/g_Benchmark_D_max_replace_length_bounded_16_train_1_10000_8808.eq"
 
     # gnn test
     #file_path = bench_folder + "/examples_choose_eq/gnn-1/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_690.eq"
@@ -144,7 +147,7 @@ def main():
                                                         "label_size": label_size,"rank_task":rank_task}  # branch_method [extract_branching_data_task_2,random,fixed,gnn,gnn:fixed,gnn:random]
 
     algorithm_parameters_SplitEquations = {"branch_method": "fixed",
-                                           "order_equations_method": "category_random",
+                                           "order_equations_method": "category_random",  # "gnn_first_n_iterations_category"
                                            "termination_condition": "termination_condition_0",
                                            "graph_type": graph_type, "graph_func": graph_func_map[graph_type],
                                            "label_size": label_size,"rank_task":rank_task}
