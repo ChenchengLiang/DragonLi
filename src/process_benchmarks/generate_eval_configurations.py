@@ -47,7 +47,7 @@ def main():
         #benchmark_name = "04_track_DragonLi_train_40001_60000"
 
     rank_task = 1
-    graph_type = "graph_1"
+    graph_type = "graph_5"
     model_type = "GCNSplit"  # "GINSplit"
 
 

@@ -381,60 +381,60 @@ def apply_rules_prefix(eq: Equation, f: Formula, fresh_variable_counter) -> Tupl
         # split rules
         # left side is variable, right side is terminal, R_{8} prefix version in paper
         elif type(first_left_term.value) == Variable and type(first_right_term.value) == Terminal:
-            current_eq = Equation(eq.left_terms, eq.right_terms)
-            separated_formula = Formula(f.eq_list)
-            # encode non-linear to linear
-            if current_eq.is_linear == False:
-                current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
-                                                                                                             separated_formula,
-                                                                                                             fresh_variable_counter)
-            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
-                                         _left_variable_right_terminal_branch_2_prefix]
-            children, fresh_variable_counter = _get_split_children(current_eq, separated_formula, rule_list, fresh_variable_counter)
-
-
+            # current_eq = Equation(eq.left_terms, eq.right_terms)
+            # separated_formula = Formula(f.eq_list)
+            # # encode non-linear to linear
+            # if current_eq.is_linear == False:
+            #     current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
+            #                                                                                                  separated_formula,
+            #                                                                                                  fresh_variable_counter)
             # rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
             #                              _left_variable_right_terminal_branch_2_prefix]
-            # children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
+            # children, fresh_variable_counter = _get_split_children(current_eq, separated_formula, rule_list, fresh_variable_counter)
+
+
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
+                                         _left_variable_right_terminal_branch_2_prefix]
+            children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
 
         # left side is terminal, right side is variable, R_{8} prefix version in paper
         elif type(first_left_term.value) == Terminal and type(first_right_term.value) == Variable:
-            current_eq=Equation(eq.right_terms, eq.left_terms)
-            separated_formula = Formula(f.eq_list)
-            # encode non-linear to linear
-            if current_eq.is_linear == False:
-                current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
-                                                                                                             separated_formula,
-                                                                                                             fresh_variable_counter)
-
-            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
-                                         _left_variable_right_terminal_branch_2_prefix]
-            children, fresh_variable_counter = _get_split_children(current_eq, separated_formula,
-                                                                   rule_list, fresh_variable_counter)
+            # current_eq=Equation(eq.right_terms, eq.left_terms)
+            # separated_formula = Formula(f.eq_list)
+            # # encode non-linear to linear
+            # if current_eq.is_linear == False:
+            #     current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
+            #                                                                                                  separated_formula,
+            #                                                                                                  fresh_variable_counter)
             #
             # rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
             #                              _left_variable_right_terminal_branch_2_prefix]
-            # children, fresh_variable_counter = _get_split_children(Equation(eq.right_terms, eq.left_terms), f,
+            # children, fresh_variable_counter = _get_split_children(current_eq, separated_formula,
             #                                                        rule_list, fresh_variable_counter)
+
+            rule_list: List[Callable] = [_left_variable_right_terminal_branch_1_prefix,
+                                         _left_variable_right_terminal_branch_2_prefix]
+            children, fresh_variable_counter = _get_split_children(Equation(eq.right_terms, eq.left_terms), f,
+                                                                   rule_list, fresh_variable_counter)
 
         # both side are differernt variables, R_{9} prefix version in paper
         elif type(first_left_term.value) == Variable and type(first_right_term.value) == Variable:
-            current_eq=Equation(eq.left_terms, eq.right_terms)
-            separated_formula = Formula(f.eq_list)
+            # current_eq=Equation(eq.left_terms, eq.right_terms)
+            # separated_formula = Formula(f.eq_list)
             # encode non-linear to linear
-            if current_eq.is_linear == False:
-                current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
-                                                                                                             separated_formula,
-                                                                                                             fresh_variable_counter)
-            rule_list: List[Callable] = [_two_variables_branch_3_prefix, _two_variables_branch_1_prefix,
-                                         _two_variables_branch_2_prefix]
-            children, fresh_variable_counter = _get_split_children(current_eq, separated_formula, rule_list, fresh_variable_counter)
-
-
-
+            # if current_eq.is_linear == False:
+            #     current_eq, separated_formula, fresh_variable_counter = _encode_non_linear_to_linear_formula(current_eq,
+            #                                                                                                  separated_formula,
+            #                                                                                                  fresh_variable_counter)
             # rule_list: List[Callable] = [_two_variables_branch_3_prefix, _two_variables_branch_1_prefix,
             #                              _two_variables_branch_2_prefix]
-            # children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
+            # children, fresh_variable_counter = _get_split_children(current_eq, separated_formula, rule_list, fresh_variable_counter)
+
+
+
+            rule_list: List[Callable] = [_two_variables_branch_3_prefix, _two_variables_branch_1_prefix,
+                                         _two_variables_branch_2_prefix]
+            children, fresh_variable_counter = _get_split_children(eq, f, rule_list, fresh_variable_counter)
 
         else:
             children: List[Tuple[Equation, Formula, str]] = []

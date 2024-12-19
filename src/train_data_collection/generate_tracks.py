@@ -23,8 +23,8 @@ import json
 
 def main():
     # generate track
-    start_idx = 1
-    end_idx = 20000
+    start_idx = 20001
+    end_idx = 60000
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
     # track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
     track_name = f"Benchmark_D_max_replace_length_bounded_16_train_{start_idx}_{end_idx}"  # generate_one_track_4_v4
