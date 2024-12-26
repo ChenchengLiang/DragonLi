@@ -21,7 +21,7 @@ from tqdm import tqdm
 
 def main():
 
-    track_name = "unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree"
+    track_name = "unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree"
     track_folder = bench_folder + "/" + track_name
 
     satisfiability = "UNSAT"

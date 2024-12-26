@@ -19,7 +19,7 @@ from src.solver.utils_parser import perse_eq_file
 import os
 
 def main():
-    benchmark_name="unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore"
+    benchmark_name="unsatcores_Benchmark_D_max_replace_length_bounded_16_train_20001_60000_onecore"
     for fo in os.listdir(bench_folder + "/" + benchmark_name):
         folder_basename=os.path.basename(fo)
         if "divided" in folder_basename:

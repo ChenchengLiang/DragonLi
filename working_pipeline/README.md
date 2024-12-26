@@ -96,7 +96,7 @@ The folder should looks like benchmark/z3/UNSAT/*.eq, benchmark/ostrich/UNSAT/*.
 
 4. Extract unsatcores
 Uppmax: sh word_equation_submit_generate_unsatcore_parallel.sh benchmark
-This will run get_unsatcore_from_one_solver.py in cluster to get minimum unsatcores
+This will run get_unsatcore_from_other_solvers.py in cluster to get minimum unsatcores
 
 5. Merge extracted unsatcores and divided to extract training data
 Local: set parameter and run collect_unsatcores.py
@@ -105,6 +105,7 @@ Local & Uppmax: set parameter and run divided_folder.py for the proof tree then 
 Uppmax: word_equation_submit_generate_train_data_parallel.sh benchmark
 Local: set parameter and run generate_train_data_from_unsatcores.py to generate data from first unsatcore
 6. Local: Merge two files by give them differernt divided_i by calling merge_and_divide_train_valid_data.py
+   The directory should be benchmark/divided_i/USAT/*.eq
 7. Train the model
 Local:  Send to alvis and train the model (send_to_alvis_storage)
 Alvis:  sh word_equation_submit_prepare_train_data.sh benchmark
