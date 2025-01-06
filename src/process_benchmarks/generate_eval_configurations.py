@@ -46,7 +46,7 @@ def main():
         #benchmark_name = "04_track_woorpje_train_10001_30000"
         #benchmark_name = "04_track_DragonLi_train_40001_60000"
 
-    rank_task = 1
+    rank_task = 0
     graph_type = "graph_5"
     model_type = "GCNSplit"  # "GINSplit"
 
@@ -55,6 +55,82 @@ def main():
     task = "rank_task"  # "task_3"
     algorithm = "SplitEquations"
     solver_param_list = [
+
+        ############################
+        # No GNN DragonLi
+        ############################
+
+        # branch:fixed, order equations: unsatcores
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_first_n_iterations"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_first_n_iterations_category"
+        #           ]],
+        #
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_shortest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_shortest_first_n_iterations"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_shortest_category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_shortest_first_n_iterations_category"
+        #           ]],
+        #
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_longest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_longest_first_n_iterations"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_longest_category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method unsatcore_longest_first_n_iterations_category"
+        #           ]],
+        #
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_unsatcore"
+        #           ]],
+
+
         # branch:fixed, order equations: no category
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",
@@ -88,26 +164,26 @@ def main():
                   f"--algorithm {algorithm}",
                   f"--order_equations_method category"
                   ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_shortest"
-        #           ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method category_longest"
-        #           ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_shortest"
+                  ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method category_longest"
+                  ]],
         ["this", ["fixed", "--termination_condition termination_condition_0",
                   f"--graph_type {graph_type}",
                   f"--algorithm {algorithm}",
                   f"--order_equations_method category_random"
                   ]],
-        # ["this", ["fixed", "--termination_condition termination_condition_0",
-        #           f"--graph_type {graph_type}",
-        #           f"--algorithm {algorithm}",
-        #           f"--order_equations_method hybrid_category_fixed_random"
-        #           ]],
+        ["this", ["fixed", "--termination_condition termination_condition_0",
+                  f"--graph_type {graph_type}",
+                  f"--algorithm {algorithm}",
+                  f"--order_equations_method hybrid_category_fixed_random"
+                  ]],
 
         
         
@@ -219,12 +295,20 @@ def main():
         #           f"--order_equations_method hybrid_category_fixed_random"
         #           ]],
 
+        ############################
+        # other solvers
+        ############################
 
         ["z3", []],
         ["z3-noodler", ["smt.string_solver=\"noodler\""]],
         ["ostrich", []],
         ["cvc5", []],
         ["woorpje", []],
+
+        ############################
+        # GNN based
+        ############################
+
 
         # gnn based configurations, branch: fixed, order: no category
         # ["this", ["fixed", "--termination_condition termination_condition_0",
@@ -329,7 +413,7 @@ def main():
         #           f"--gnn_model_path " + model_folder + f"model_0_{graph_type}_{model_type}.pth",
         #           f"--gnn_task {task}",
         #           f"--rank_task {rank_task}"]],
-        #
+        # #
         # # gnn based configurations, branch: fixed, order: category, random process: yes
         # ["this", ["fixed", "--termination_condition termination_condition_0",
         #           f"--graph_type {graph_type}",

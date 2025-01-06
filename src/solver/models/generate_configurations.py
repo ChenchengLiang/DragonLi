@@ -16,7 +16,7 @@ def main():
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 1
+    rank_task = 0
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=500
@@ -40,8 +40,8 @@ def main():
     #for benchmark in ["unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree_rank_task_2"]:
 
-    #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_0"]:
-    for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_1"]:
+    for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_0"]:
+    #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_2"]:
 
     # for benchmark in ["04_track_woorpje_train_1_20000_unsatcores_train_rank_task_0"]:
