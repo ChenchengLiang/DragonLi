@@ -57,7 +57,7 @@ def main():
     solver_param_list = [
 
         ############################
-        # No GNN DragonLi
+        # No GNN DragonLi unsatcores
         ############################
 
         # branch:fixed, order equations: unsatcores
@@ -130,6 +130,9 @@ def main():
         #           f"--order_equations_method category_unsatcore"
         #           ]],
 
+        ############################
+        # No GNN DragonLi
+        ############################
 
         # branch:fixed, order equations: no category
         # ["this", ["fixed", "--termination_condition termination_condition_0",
@@ -159,31 +162,31 @@ def main():
         #           ]],
 
         #branch:fixed, order equations: category
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_shortest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_longest"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method category_random"
-                  ]],
-        ["this", ["fixed", "--termination_condition termination_condition_0",
-                  f"--graph_type {graph_type}",
-                  f"--algorithm {algorithm}",
-                  f"--order_equations_method hybrid_category_fixed_random"
-                  ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_shortest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_longest"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method category_random"
+        #           ]],
+        # ["this", ["fixed", "--termination_condition termination_condition_0",
+        #           f"--graph_type {graph_type}",
+        #           f"--algorithm {algorithm}",
+        #           f"--order_equations_method hybrid_category_fixed_random"
+        #           ]],
 
         
         
@@ -299,11 +302,11 @@ def main():
         # other solvers
         ############################
 
-        ["z3", []],
+        # ["z3", []],
         ["z3-noodler", ["smt.string_solver=\"noodler\""]],
-        ["ostrich", []],
-        ["cvc5", []],
-        ["woorpje", []],
+        # ["ostrich", []],
+        # ["cvc5", []],
+        # ["woorpje", []],
 
         ############################
         # GNN based

@@ -39,6 +39,9 @@ def main():
     # unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree
     # model_dict={"graph_type":"graph_1", "experiment_id":"510045020715475220", "run_id":"f04ef1f40ef446639e7e2983369dc3db"}
 
+    # unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree
+    # model_dict={"graph_type":"graph_1", "experiment_id":"709925022631336816", "run_id":"539fee8d740e46a2a635dbfa4d4ca67b"}
+
     # benchmark_1 = "unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_valid"
     # model_dict_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
     #                 "run_id": "ec25835b29c948769d3a913783865d3d"}
@@ -69,14 +72,17 @@ def main():
     # final_statistic_file_2 = f"{bench_folder}/{benchmark_2}/final_statistic.json"
     # compare_two_folders(final_statistic_file_1, final_statistic_file_2)
 
-    model_dict_linear = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
+    model_dict_benchmark_A_1 = {"graph_type": "graph_3", "experiment_id": "786449904194763400",
                   "run_id": "ec25835b29c948769d3a913783865d3d"}
-    model_dict_non_linear = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
+    model_dict_Benchmark_B = {"graph_type": "graph_1", "experiment_id": "510045020715475220",
                   "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
-    benchmark_model_map={#"Benchmark_D_max_replace_length_bounded_8_eval_1_1000":model_dict_linear,
-                         #"Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_linear,
-                         #"04_track_DragonLi_eval_1_1000":model_dict_linear,
-                         "01_track_multi_word_equations_eq_2_50_generated_eval_1_1000":model_dict_non_linear}
+    model_dict_Benchmark_A_2 = {"graph_type": "graph_1", "experiment_id": "709925022631336816",
+                              "run_id": "539fee8d740e46a2a635dbfa4d4ca67b"}
+    benchmark_model_map={#"Benchmark_D_max_replace_length_bounded_8_eval_1_1000":model_dict_benchmark_A_1,
+                         "Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_Benchmark_A_2,
+                         #"04_track_DragonLi_eval_1_1000":model_dict_benchmark_A_1,
+                         #"01_track_multi_word_equations_eq_2_50_generated_eval_1_1000":model_dict_Benchmark_B
+    }
 
     for benchmark,model_dict in benchmark_model_map.items():
         folder = f"{bench_folder}/{benchmark}/ALL/ALL"

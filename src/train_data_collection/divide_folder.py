@@ -16,7 +16,7 @@ import shutil
 
 def main():
     # generate track
-    track_name="unsatcore_Benchmark_B_train_1_20000_one_unsatcore"
+    track_name="unsatcores_04_track_DragonLi_train_80001_100000_onecore"
     file_folder="ALL"
 
     nested_folder=""
