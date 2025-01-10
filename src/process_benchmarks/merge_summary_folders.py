@@ -51,11 +51,13 @@ def main():
     merged_csv_file_dict={os.path.basename(csv_file).replace(os.path.basename(csv_file)[os.path.basename(csv_file).find("divided"):os.path.basename(csv_file).find("summary")],""):[] for csv_file in glob.glob(os.path.join(path,all_folders[0])+"/*")}
 
     for k,one_file in csv_file_dict.items():
-
+        #print(k)
         first_row = []
         second_rows=[]
         further_rows=[]
         for rows in one_file:
+            # print(rows[0])
+            # print(rows[1])
             first_row=rows[0]
             second_rows.append([rows[1]])
             further_rows.append(rows[2:])

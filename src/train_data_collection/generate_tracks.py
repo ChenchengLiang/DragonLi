@@ -23,15 +23,15 @@ import json
 
 def main():
     # generate track
-    start_idx = 80001
-    end_idx = 100000
-    track_name = f"04_track_DragonLi_train_{start_idx}_{end_idx}"
+    start_idx = 30001
+    end_idx = 60000
+    track_name = f"Benchmark_C_train_{start_idx}_{end_idx}"
     # track_name = f"01_track_multi_word_equations_eq_2_50_generated_train_{start_idx}_{end_idx}"
     # track_name = f"Benchmark_C_train_eq_1_100_{start_idx}_{end_idx}"
     #track_name = f"Benchmark_D_max_replace_length_bounded_16_train_{start_idx}_{end_idx}"  # generate_one_track_4_v4
     track_folder = bench_folder + "/" + track_name
-    # file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
-    file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
+    file_name_list = save_equations(start_idx, end_idx, track_folder, track_name, generate_conjunctive_track_03)
+    #file_name_list=save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4)
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v2)
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_4_v3)
     # save_equations(start_idx, end_idx, track_folder, track_name, generate_one_track_1_v2)

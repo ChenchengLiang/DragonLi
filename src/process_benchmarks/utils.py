@@ -866,12 +866,12 @@ def compute_measurement_for_common_solved_problems(first_summary_data_rows, firs
             common_unsat_problem_list.append(file_name)
 
     # write to summary 2 file
-    second_summary_title_row += ["common_sat_solved"]
-    for summary_row in second_summary_data_rows:
-        summary_row.append(len(common_sat_problem_list))
-    second_summary_title_row += ["common_unsat_solved"]
-    for summary_row in second_summary_data_rows:
-        summary_row.append(len(common_unsat_problem_list))
+    # second_summary_title_row += ["common_sat_solved"]
+    # for summary_row in second_summary_data_rows:
+    #     summary_row.append(len(common_sat_problem_list))
+    # second_summary_title_row += ["common_unsat_solved"]
+    # for summary_row in second_summary_data_rows:
+    #     summary_row.append(len(common_unsat_problem_list))
 
     # compute sat_average_split_number_common_solved
     sat_average_split_number_common_solved_dict = {solver_dict[0]: [] for solver_dict in second_summary_data_rows}

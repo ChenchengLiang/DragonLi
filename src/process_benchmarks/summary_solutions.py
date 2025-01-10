@@ -29,7 +29,8 @@ def main():
         bench_name="03_track_train_task_3_5001_10000"
 
     #main_key = "this:fixed_termination_condition_0_hybrid_category_fixed_random"# empty will output all pair combinations
-    main_key = "this:fixed_termination_condition_0_graph_1_category_gnn_first_n_iterations_GCNSplit"
+    #main_key = "this:fixed_termination_condition_0_graph_1_category_gnn_first_n_iterations_GCNSplit"
+    main_key = "this:fixed_termination_condition_0_category"
     summary_folder = project_folder+"/src/process_benchmarks/summary"
 
 
