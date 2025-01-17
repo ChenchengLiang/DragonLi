@@ -150,31 +150,31 @@ def extract_unsatcores(file,initial_run_time,solver,parameters_list,this_solver_
                     minimum_unsatcore_size=len(unsatcore)
 
                 # stop to check weather useful to DragonLi
-                # found_unsatcore=True
-                # break
+                found_unsatcore=True
+                break
 
                 # check weather useful to DragonLi, run DragonLi with the unsatcore
-                print("run this solver")
-                parameter_list = ["fixed",
-                                  f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
-                                  f"--graph_type graph_1",
-                                  f"--order_equations_method unsatcore_shortest_first_n_iterations_category",# unsatcore_shortest
-                                  f"--unsat_core_file {unsat_core_eq_file}"]
-
-                solver = "this"
-
-                result_dict = run_on_one_problem(file, parameter_list, solver,
-                                                 solver_log=solver_log, shell_timeout=this_solver_shell_timeout)
-                satisfiability_this_solver = result_dict["result"]
-                print(result_dict["result"])
-                print(result_dict["raw"])
-                if satisfiability_this_solver == "UNSAT":
-                    print("Found an available unsatcore")
-                    shutil.copy(unsat_core_eq_file, strip_file_name_suffix(file) + ".unsatcore")
-                    found_unsatcore = True
-                    break
-                else:
-                    print("this solver cannot solve it with the unsatcore")
+                # print("run this solver")
+                # parameter_list = ["fixed",
+                #                   f"--termination_condition termination_condition_0", f"--algorithm SplitEquations",
+                #                   f"--graph_type graph_1",
+                #                   f"--order_equations_method unsatcore_shortest_first_n_iterations_category",# unsatcore_shortest
+                #                   f"--unsat_core_file {unsat_core_eq_file}"]
+                #
+                # solver = "this"
+                #
+                # result_dict = run_on_one_problem(file, parameter_list, solver,
+                #                                  solver_log=solver_log, shell_timeout=this_solver_shell_timeout)
+                # satisfiability_this_solver = result_dict["result"]
+                # print(result_dict["result"])
+                # print(result_dict["raw"])
+                # if satisfiability_this_solver == "UNSAT":
+                #     print("Found an available unsatcore")
+                #     shutil.copy(unsat_core_eq_file, strip_file_name_suffix(file) + ".unsatcore")
+                #     found_unsatcore = True
+                #     break
+                # else:
+                #     print("this solver cannot solve it with the unsatcore")
 
             else:
                 print(f"{satisfiability}, delete relative files")

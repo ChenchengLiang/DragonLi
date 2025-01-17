@@ -29,18 +29,15 @@ def main():
 
 
 
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_0"]:
+    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_1"]:
-    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_treerank_task_2"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_2"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_0"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_2"]:
 
-    #for benchmark in ["unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree_rank_task_0"]:
-    #for benchmark in ["unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree_rank_task_1"]:
-    #for benchmark in ["unsatcore_Benchmark_D_max_replace_length_bounded_16_train_1_20000_onecore+proof_tree_rank_task_2"]:
 
-    for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_0"]:
+    #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_0"]:
     #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcores_Benchmark_D_max_replace_length_bounded_16_train_1_60000_onecore+proof_tree_rank_task_2"]:
 
