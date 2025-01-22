@@ -79,14 +79,20 @@ def main():
     model_dict_Benchmark_A_2 = {"graph_type": "graph_1", "experiment_id": "709925022631336816",
                               "run_id": "539fee8d740e46a2a635dbfa4d4ca67b"}
     benchmark_model_map={#"Benchmark_D_max_replace_length_bounded_8_eval_1_1000":model_dict_benchmark_A_1,
-                         "Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_Benchmark_A_2,
+                         #"Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_Benchmark_A_2,
                          #"04_track_DragonLi_eval_1_1000":model_dict_benchmark_A_1,
-                         #"01_track_multi_word_equations_eq_2_50_generated_eval_1_1000":model_dict_Benchmark_B
+                         #"01_track_multi_word_equations_eq_2_50_generated_eval_1_1000":model_dict_Benchmark_B,
+                        #"unsatcores_04_track_DragonLi_train_40001_100000":model_dict_benchmark_A_1,
+                        #"unsatcores_Benchmark_A_2_1_60000":model_dict_Benchmark_A_2,
+                        #"unsatcores_Benchmark_B_1_60000":model_dict_Benchmark_B
+                        "unsatcores_Benchmark_C_1_60000":model_dict_Benchmark_B
     }
 
     for benchmark,model_dict in benchmark_model_map.items():
         folder = f"{bench_folder}/{benchmark}/ALL/ALL"
-        final_statistic_file = statistics_for_one_folder(folder, model_dict)
+        temp_folder=create_folder(f"{bench_folder}/{benchmark}/ALL/temp")
+        final_statistic_file = statistics_for_one_folder(folder, model_dict,temp_folder)
+
 
 
 def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
@@ -147,7 +153,7 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
     return differences_of_two_dict_file
 
 
-def statistics_for_one_folder(folder, model_dict):
+def statistics_for_one_folder(folder, model_dict,temp_folder):
     # load gnn model
     gnn_rank_model = load_gnn_model(model_dict)
 
@@ -244,14 +250,37 @@ def statistics_for_one_folder(folder, model_dict):
                 variable_occurrence_map = {v: 0 for v in variable_list}
                 for v in variable_list:
                     variable_occurrence_map[v] += (eq.term_list_string_format).count(v)
-                unsatcore_variable_occurrence_list.append(sum(list(variable_occurrence_map.values())))
+                variable_occurence=sum(list(variable_occurrence_map.values()))
+                if variable_occurence==0:
+                    print("unsatcore variable_occurence = 0",eq_file)
+                    if os.path.exists(f"{folder}/{eq_file}"):
+                        shutil.move(f"{folder}/{eq_file}", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".smt2", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".answer", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".unsatcore", temp_folder)
+                        if os.path.exists(strip_file_name_suffix(eq_file) + "_statistics.json"):
+                            shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + "_statistics.json", temp_folder)
+
+
+                unsatcore_variable_occurrence_list.append(variable_occurence)
                 unsatcore_single_variable_max_occurrence_list.append(max(list(variable_occurrence_map.values())))
 
                 # get terminal occurrence
                 terminal_occurrence_map = {t: 0 for t in terminal_list}
                 for t in terminal_list:
                     terminal_occurrence_map[t] += (eq.term_list_string_format).count(t)
-                unsatcore_terminal_occurrence_list.append(sum(list(terminal_occurrence_map.values())))
+                terminal_occurrence=sum(list(terminal_occurrence_map.values()))
+                if terminal_occurrence==0:
+                    print("unsatcore terminal_occurrence = 0",eq_file)
+                    if os.path.exists(f"{folder}/{eq_file}"):
+                        shutil.move(f"{folder}/{eq_file}", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".smt2", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".answer", temp_folder)
+                        shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".unsatcore", temp_folder)
+                        if os.path.exists(strip_file_name_suffix(eq_file) + "_statistics.json"):
+                            shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + "_statistics.json", temp_folder)
+
+                unsatcore_terminal_occurrence_list.append(terminal_occurrence)
 
                 # get number of variables and terminals
                 unsatcore_number_of_vairables_each_eq_list.append(eq.variable_number)
@@ -289,8 +318,9 @@ def statistics_for_one_folder(folder, model_dict):
             else:
                 single_variable_max_occurrence_list.append(max(list_variable_occurrence_map_values))
 
-                if max(list_variable_occurrence_map_values) > 1:
-                    color_print(f"{eq.eq_str}", "blue")
+                # if max(list_variable_occurrence_map_values) > 1:
+                #     print("list_variable_occurrence_map_values > 1")
+                #     color_print(f"{eq.eq_str}", "blue")
 
             # get terminal occurrence
             terminal_occurrence_map = {t: 0 for t in terminal_list}
@@ -353,6 +383,10 @@ def statistics_for_one_folder(folder, model_dict):
                           "eq_number_included_in_unsatcore": eq_number_included_in_unsatcore,
                           "residual_eq_number_included_in_unsatcore": residual_eq_number_included_in_unsatcore,
                           "predicted_unsatcore_radundant_ratio": predicted_unsatcore_radundant_ratio,
+
+
+                          "unsatcore_variable_ratio": sum(unsatcore_variable_occurrence_list) / sum(unsatcore_eq_length_list),
+                          "unsatcore_terminal_ratio": sum(unsatcore_terminal_occurrence_list) / sum(unsatcore_eq_length_list),
 
                           "unsatcore_min_eq_length_of": min(unsatcore_eq_length_list),
                           "unsatcore_max_eq_length_of": max(unsatcore_eq_length_list),
@@ -446,6 +480,10 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "residual_eq_number_included_in_unsatcore_average": 0,
                             "residual_eq_number_included_in_unsatcore_stdev": 0,
 
+                            "total_unsatcore_symbol": 0,
+                            "unsatcore_variable_ratio": 0,
+                            "unsatcore_terminal_ratio": 0,
+
                             "unsatcore_min_eq_number_of_problems": 0,
                             "unsatcore_max_eq_number_of_problems": 0,
                             "unsatcore_average_eq_number_of_problems": 0,
@@ -471,6 +509,16 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "unsatcore_max_terminal_occurrence_of_problem": 0,
                             "unsatcore_average_terminal_occurrence_of_problem": 0,
                             "unsatcore_stdev_terminal_occurrence_of_problem": 0,
+
+                            "unsatcore_min_variable_occurrence_of_equation": 0,
+                            "unsatcore_max_variable_occurrence_of_equation": 0,
+                            "unsatcore_average_variable_occurrence_of_equation": 0,
+                            "unsatcore_stdev_variable_occurrence_of_equation": 0,
+
+                            "unsatcore_min_terminal_occurrence_of_equation": 0,
+                            "unsatcore_max_terminal_occurrence_of_equation": 0,
+                            "unsatcore_average_terminal_occurrence_of_equation": 0,
+                            "unsatcore_stdev_terminal_occurrence_of_equation": 0,
 
                             "min_single_variable_max_occurrence_of_equation": 0,
                             "max_single_variable_max_occurrence_of_equation": 0,
@@ -523,6 +571,8 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     unsatcore_single_variable_max_occurrence_of_problems = []
     unsatcore_variable_occurrence_list_of_problems = []
     unsatcore_terminal_occurrence_list_of_problems = []
+    unsatcore_variable_occurrence_list_of_all_equations=[]
+    unsatcore_terminal_occurrence_list_of_all_equations=[]
     eq_number_included_in_unsatcore_list = []
     residual_eq_number_included_in_unsatcore_list = []
     for statistic_file_name in statistic_file_name_list:
@@ -550,6 +600,8 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             residual_eq_number_included_in_unsatcore_list.append(statistic["residual_eq_number_included_in_unsatcore"])
             unsatcore_variable_occurrence_list_of_problems.append(sum(statistic["unsatcore_variable_occurrence_list"]))
             unsatcore_terminal_occurrence_list_of_problems.append(sum(statistic["unsatcore_terminal_occurrence_list"]))
+            unsatcore_variable_occurrence_list_of_all_equations.extend(statistic["unsatcore_variable_occurrence_list"])
+            unsatcore_terminal_occurrence_list_of_all_equations.extend(statistic["unsatcore_terminal_occurrence_list"])
 
             single_variable_max_occurrence_of_all_equations.extend(statistic["single_variable_max_occurrence_list"])
             variable_occurrence_list_of_all_equations.extend(statistic["variable_occurrence_list"])
@@ -603,6 +655,14 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
         terminal_occurrence_list_of_problems)
     final_statistic_dict["stdev_terminal_occurrence_of_problem"] = custom_stdev(terminal_occurrence_list_of_problems)
 
+    final_statistic_dict["total_unsatcore_symbol"] = sum(unsatcore_eq_length_list_of_problems)
+    final_statistic_dict["total_unsatcore_variable_occurrence"] = sum(unsatcore_variable_occurrence_list_of_problems)
+    final_statistic_dict["total_unsatcore_terminal_occurrence"] = sum(unsatcore_terminal_occurrence_list_of_problems)
+    final_statistic_dict["unsatcore_variable_ratio"] = final_statistic_dict["total_unsatcore_variable_occurrence"] / \
+                                                         final_statistic_dict["total_unsatcore_symbol"]
+    final_statistic_dict["unsatcore_terminal_ratio"] = final_statistic_dict["total_unsatcore_terminal_occurrence"] / \
+                                                            final_statistic_dict["total_unsatcore_symbol"]
+
     final_statistic_dict["unsatcore_min_single_variable_max_occurrence_of_problem"] = min(
         unsatcore_single_variable_max_occurrence_of_problems)
     final_statistic_dict["unsatcore_max_single_variable_max_occurrence_of_problem"] = max(
@@ -619,6 +679,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["unsatcore_stdev_eq_number_of_problems"] = custom_stdev(unsatcore_eq_number_list_of_problems)
     final_statistic_dict["unsatcore_eq_number_ratio"] = sum(unsatcore_eq_number_list_of_problems) / sum(
         eq_number_list_of_problems)
+
 
     final_statistic_dict["eq_number_included_in_unsatcore_min"] = min(eq_number_included_in_unsatcore_list)
     final_statistic_dict["eq_number_included_in_unsatcore_max"] = max(eq_number_included_in_unsatcore_list)
@@ -657,6 +718,16 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
         unsatcore_terminal_occurrence_list_of_problems)
     final_statistic_dict["unsatcore_stdev_terminal_occurrence_of_problem"] = custom_stdev(
         unsatcore_terminal_occurrence_list_of_problems)
+
+    final_statistic_dict["unsatcore_min_variable_occurrence_of_equation"] = min(unsatcore_variable_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_max_variable_occurrence_of_equation"] = max(unsatcore_variable_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_average_variable_occurrence_of_equation"] = statistics.mean(unsatcore_variable_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_stdev_variable_occurrence_of_equation"] = custom_stdev(unsatcore_variable_occurrence_list_of_all_equations)
+
+    final_statistic_dict["unsatcore_min_terminal_occurrence_of_equation"] = min(unsatcore_terminal_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_max_terminal_occurrence_of_equation"] = max(unsatcore_terminal_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_average_terminal_occurrence_of_equation"] = statistics.mean(unsatcore_terminal_occurrence_list_of_all_equations)
+    final_statistic_dict["unsatcore_stdev_terminal_occurrence_of_equation"] = custom_stdev(unsatcore_terminal_occurrence_list_of_all_equations)
 
     final_statistic_dict["min_single_variable_max_occurrence_of_equation"] = min(
         single_variable_max_occurrence_of_all_equations)
