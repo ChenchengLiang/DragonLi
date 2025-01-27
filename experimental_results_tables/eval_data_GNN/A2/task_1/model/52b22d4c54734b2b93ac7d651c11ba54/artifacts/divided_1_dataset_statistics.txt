@@ -1,0 +1,7 @@
+label size: 2, split_number: 1026, 
+sat_label_number: 0, unsat_label_number: 2896, unknown_label_number: 23918 
+label distribution: {(1, 0): 1026, (0, 1): 25788} 
+dominate accuracy: 0.9617364063548892 
+max node number: 373 
+min node number: 146 
+average node number: 256.3829342880585

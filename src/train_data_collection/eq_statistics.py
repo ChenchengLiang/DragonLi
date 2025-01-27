@@ -78,6 +78,7 @@ def main():
                   "run_id": "f04ef1f40ef446639e7e2983369dc3db"}
     model_dict_Benchmark_A_2 = {"graph_type": "graph_1", "experiment_id": "709925022631336816",
                               "run_id": "539fee8d740e46a2a635dbfa4d4ca67b"}
+
     benchmark_model_map={#"Benchmark_D_max_replace_length_bounded_8_eval_1_1000":model_dict_benchmark_A_1,
                          #"Benchmark_D_max_replace_length_bounded_16_eval_1_1000":model_dict_Benchmark_A_2,
                          #"04_track_DragonLi_eval_1_1000":model_dict_benchmark_A_1,
@@ -85,7 +86,7 @@ def main():
                         #"unsatcores_04_track_DragonLi_train_40001_100000":model_dict_benchmark_A_1,
                         #"unsatcores_Benchmark_A_2_1_60000":model_dict_Benchmark_A_2,
                         #"unsatcores_Benchmark_B_1_60000":model_dict_Benchmark_B
-                        "unsatcores_Benchmark_C_1_60000":model_dict_Benchmark_B
+                        "unsatcores_Benchmark_C_1_60000":None
     }
 
     for benchmark,model_dict in benchmark_model_map.items():
@@ -155,7 +156,7 @@ def compare_two_folders(final_statistic_file_1, final_statistic_file_2):
 
 def statistics_for_one_folder(folder, model_dict,temp_folder):
     # load gnn model
-    gnn_rank_model = load_gnn_model(model_dict)
+    gnn_rank_model = load_gnn_model(model_dict) if model_dict!=None else None
 
     # get parser
     parser = Parser(EqParser())
@@ -167,11 +168,13 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
         if file.is_file() and file.name.endswith(".eq"):
             eq_file_list.append(file.name)
 
+    eq_file_list_generator = (x for x in eq_file_list)
+
     # get statistics for each eq file
     statistic_file_name_list = []
     global_dgl_hash_table = {}
     global_dgl_hash_table_hit = 0
-    for eq_file in tqdm(eq_file_list, total=len(eq_file_list), desc="Processing eq files"):
+    for eq_file in tqdm(eq_file_list_generator, total=len(eq_file_list), desc="Processing eq files"):
         eq_file_path = os.path.join(folder, eq_file)
 
         # read one eq file
@@ -189,50 +192,65 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
         else:
             unsatcore_eq_list = []
 
-        # get graph embedding for formula
-        graph_func = graph_func_map[model_dict["graph_type"]]
-        G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
-                                                                         dgl_hash_table=global_dgl_hash_table,
-                                                                         dgl_hash_table_hit=global_dgl_hash_table_hit)
-        global_dgl_hash_table = dgl_hash_table
-        global_dgl_hash_table_hit = dgl_hash_table_hit
+        if model_dict!=None:
+        #----------------compute model prediction begin----------------
+            # get graph embedding for formula
+            graph_func = graph_func_map[model_dict["graph_type"]]
+            G_list_dgl, dgl_hash_table, dgl_hash_table_hit = _get_G_list_dgl(Formula(eq_list), graph_func,
+                                                                             dgl_hash_table=global_dgl_hash_table,
+                                                                             dgl_hash_table_hit=global_dgl_hash_table_hit)
+            global_dgl_hash_table = dgl_hash_table
+            global_dgl_hash_table_hit = dgl_hash_table_hit
 
-        with no_grad():
-            # embedding output [n,1,128]
-            G_list_embeddings = gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))
+            with no_grad():
+                # embedding output [n,1,128]
+                G_list_embeddings = gnn_rank_model.shared_gnn.embedding(batch(G_list_dgl))
 
-            # concat target output [n,1,256]
-            mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
-            G_embedding = mean_tensor.squeeze(0).tolist()
+                # concat target output [n,1,256]
+                mean_tensor = mean(G_list_embeddings, dim=0)  # [1,128]
+                G_embedding = mean_tensor.squeeze(0).tolist()
 
-            G_list_embeddings_length = G_list_embeddings.shape[0]
-            mean_tensor_expanded = mean_tensor.squeeze(0).expand(G_list_embeddings_length, -1)  # Shape: [n, 128]
-            input_eq_embeddings_list = cat([G_list_embeddings, mean_tensor_expanded], dim=1)
+                G_list_embeddings_length = G_list_embeddings.shape[0]
+                mean_tensor_expanded = mean_tensor.squeeze(0).expand(G_list_embeddings_length, -1)  # Shape: [n, 128]
+                input_eq_embeddings_list = cat([G_list_embeddings, mean_tensor_expanded], dim=1)
 
-            # classifier
-            classifier_output = gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
+                # classifier
+                classifier_output = gnn_rank_model.classifier(input_eq_embeddings_list)  # [n,2]
 
-            rank_list = softmax(classifier_output, dim=1)[:, 0].tolist()
+                rank_list = softmax(classifier_output, dim=1)[:, 0].tolist()
 
-            prediction_list = []
-            for pred, split_eq in zip(rank_list, eq_list):
-                prediction_list.append([pred, split_eq])
+                prediction_list = []
+                for pred, split_eq in zip(rank_list, eq_list):
+                    prediction_list.append([pred, split_eq])
 
-            sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)  # decending order
+                sorted_prediction_list = sorted(prediction_list, key=lambda x: x[0], reverse=True)  # decending order
 
-            formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
+                formula_with_sorted_eq_list = Formula([x[1] for x in sorted_prediction_list])
 
-        # compute adjacent matrix and eigenvalues
-        adjacent_matrix_eigenvalues_list = []
-        # adjacent_matrix_eigenvalues_list = get_adjacent_matrix_eigenvalues(f,graph_func)
+            # compute adjacent matrix and eigenvalues
+            adjacent_matrix_eigenvalues_list = []
+            # adjacent_matrix_eigenvalues_list = get_adjacent_matrix_eigenvalues(f,graph_func)
 
-        # compute unsatcore prediction accuracy
-        offset_window = 0
-        unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),
-                                                           offset_window)
+            # compute unsatcore prediction accuracy
+            offset_window = 0
+            unsatcore_accuracy = unsatcore_prediction_accuracy(formula_with_sorted_eq_list, Formula(unsatcore_eq_list),
+                                                               offset_window)
 
-        eq_number_included_in_unsatcore, residual_eq_number_included_in_unsatcore, predicted_unsatcore_radundant_ratio = unsatcore_prediction_eval(
-            formula_with_sorted_eq_list, Formula(unsatcore_eq_list), offset_window)
+            eq_number_included_in_unsatcore, residual_eq_number_included_in_unsatcore, predicted_unsatcore_radundant_ratio = unsatcore_prediction_eval(
+                formula_with_sorted_eq_list, Formula(unsatcore_eq_list), offset_window)
+
+        #----------------compute model prediction end----------------
+        else:
+
+            unsatcore_accuracy=0
+            eq_number_included_in_unsatcore=0
+            residual_eq_number_included_in_unsatcore=0
+            predicted_unsatcore_radundant_ratio=0
+            G_embedding=0
+            G_list_embeddings=np.array([0])
+            adjacent_matrix_eigenvalues_list=[0]
+
+
 
         # get statistics for each usnatcore equation
         if len(unsatcore_eq_list) > 0:
@@ -286,6 +304,16 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
                 unsatcore_number_of_vairables_each_eq_list.append(eq.variable_number)
                 unsatcore_number_of_terminals_each_eq_list.append(eq.terminal_numbers_without_empty_terminal)
         else:
+            if os.path.exists(f"{folder}/{eq_file}"):
+                shutil.move(f"{folder}/{eq_file}", temp_folder)
+                if os.path.exists(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".smt2"):
+                    shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".smt2", temp_folder)
+                if os.path.exists(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".answer"):
+                    shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".answer", temp_folder)
+                if os.path.exists(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".unsatcore"):
+                    shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + ".unsatcore", temp_folder)
+                if os.path.exists(strip_file_name_suffix(eq_file) + "_statistics.json"):
+                    shutil.move(f"{folder}/{strip_file_name_suffix(eq_file)}" + "_statistics.json", temp_folder)
             unsatcore_eq_length_list = [0]
             unsatcore_variable_occurrence_list = [0]
             unsatcore_terminal_occurrence_list = [0]
@@ -350,6 +378,7 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
                 f" variable_occurrence_ratio: {viariable_occurrences / eq_length},"
                 f" terminal_occurrence_ratio: {terminal_occurrence / eq_length},")
 
+
         # get statistics
         statistic_dict = {"number_of_equations": len(eq_list),
                           "number_of_unsatcore_equations": len(unsatcore_eq_list),
@@ -385,8 +414,8 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
                           "predicted_unsatcore_radundant_ratio": predicted_unsatcore_radundant_ratio,
 
 
-                          "unsatcore_variable_ratio": sum(unsatcore_variable_occurrence_list) / sum(unsatcore_eq_length_list),
-                          "unsatcore_terminal_ratio": sum(unsatcore_terminal_occurrence_list) / sum(unsatcore_eq_length_list),
+                          "unsatcore_variable_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_variable_occurrence_list) / sum(unsatcore_eq_length_list),
+                          "unsatcore_terminal_ratio": 0 if sum(unsatcore_eq_length_list) == 0 else sum(unsatcore_terminal_occurrence_list) / sum(unsatcore_eq_length_list),
 
                           "unsatcore_min_eq_length_of": min(unsatcore_eq_length_list),
                           "unsatcore_max_eq_length_of": max(unsatcore_eq_length_list),
@@ -432,10 +461,10 @@ def statistics_for_one_folder(folder, model_dict,temp_folder):
         with open(statistic_file_name, 'w') as file:
             json.dump(statistic_dict, file, indent=4)
 
-    return benchmark_level_statistics(folder, statistic_file_name_list)
+    return benchmark_level_statistics(folder, statistic_file_name_list,model_dict)
 
 
-def benchmark_level_statistics(folder, statistic_file_name_list):
+def benchmark_level_statistics(folder, statistic_file_name_list,model_dict):
     # get final_statistic_dict
     final_statistic_dict = {"total_variable_occurrence": 0,
                             "total_terminal_occurrence": 0,
@@ -520,6 +549,11 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
                             "unsatcore_average_terminal_occurrence_of_equation": 0,
                             "unsatcore_stdev_terminal_occurrence_of_equation": 0,
 
+                            "unsatcore_min_single_variable_max_occurrence_of_equation":0,
+                            "unsatcore_max_single_variable_max_occurrence_of_equation":0,
+                            "unsatcore_average_single_variable_max_occurrence_of_equation":0,
+                            "unsatcore_stdev_single_variable_max_occurrence_of_equation":0,
+
                             "min_single_variable_max_occurrence_of_equation": 0,
                             "max_single_variable_max_occurrence_of_equation": 0,
                             "average_single_variable_max_occurrence_of_equation": 0,
@@ -573,6 +607,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     unsatcore_terminal_occurrence_list_of_problems = []
     unsatcore_variable_occurrence_list_of_all_equations=[]
     unsatcore_terminal_occurrence_list_of_all_equations=[]
+    unsatcore_single_variable_max_occurrence_of_all_equations=[]
     eq_number_included_in_unsatcore_list = []
     residual_eq_number_included_in_unsatcore_list = []
     for statistic_file_name in statistic_file_name_list:
@@ -602,6 +637,7 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             unsatcore_terminal_occurrence_list_of_problems.append(sum(statistic["unsatcore_terminal_occurrence_list"]))
             unsatcore_variable_occurrence_list_of_all_equations.extend(statistic["unsatcore_variable_occurrence_list"])
             unsatcore_terminal_occurrence_list_of_all_equations.extend(statistic["unsatcore_terminal_occurrence_list"])
+            unsatcore_single_variable_max_occurrence_of_all_equations.extend(statistic["unsatcore_single_variable_max_occurrence_list"])
 
             single_variable_max_occurrence_of_all_equations.extend(statistic["single_variable_max_occurrence_list"])
             variable_occurrence_list_of_all_equations.extend(statistic["variable_occurrence_list"])
@@ -613,8 +649,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
             unsatcore_accuracy_list.append(statistic["unsatcore_accuracy"])
             predicted_unsatcore_radundant_ratio_list.append(statistic["predicted_unsatcore_radundant_ratio"])
 
+
     html_directory = os.path.dirname(os.path.dirname(folder))
-    get_one_PCA(GNN_embedding_list, html_directory)
+
+    if model_dict!=None:
+        get_one_PCA(GNN_embedding_list, html_directory)
+
 
     final_statistic_dict["total_unsatcore_accuracy"] = statistics.mean(unsatcore_accuracy_list)
     final_statistic_dict["predicted_unsatcore_radundant_ratio"] = statistics.mean(
@@ -728,6 +768,12 @@ def benchmark_level_statistics(folder, statistic_file_name_list):
     final_statistic_dict["unsatcore_max_terminal_occurrence_of_equation"] = max(unsatcore_terminal_occurrence_list_of_all_equations)
     final_statistic_dict["unsatcore_average_terminal_occurrence_of_equation"] = statistics.mean(unsatcore_terminal_occurrence_list_of_all_equations)
     final_statistic_dict["unsatcore_stdev_terminal_occurrence_of_equation"] = custom_stdev(unsatcore_terminal_occurrence_list_of_all_equations)
+
+    final_statistic_dict["unsatcore_min_single_variable_max_occurrence_of_equation"] = min(unsatcore_single_variable_max_occurrence_of_all_equations)
+    final_statistic_dict["unsatcore_max_single_variable_max_occurrence_of_equation"] = max(unsatcore_single_variable_max_occurrence_of_all_equations)
+    final_statistic_dict["unsatcore_average_single_variable_max_occurrence_of_equation"] = statistics.mean(unsatcore_single_variable_max_occurrence_of_all_equations)
+    final_statistic_dict["unsatcore_stdev_single_variable_max_occurrence_of_equation"] = custom_stdev(unsatcore_single_variable_max_occurrence_of_all_equations)
+
 
     final_statistic_dict["min_single_variable_max_occurrence_of_equation"] = min(
         single_variable_max_occurrence_of_all_equations)
