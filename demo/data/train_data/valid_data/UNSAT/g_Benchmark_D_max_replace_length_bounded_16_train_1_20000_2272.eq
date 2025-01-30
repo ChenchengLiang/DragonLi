@@ -1,0 +1,19 @@
+Variables {M N P Z D1 H1 N1 S1 I2 V2 C3 D3 G3 M3 V3 A A1 I1 O2 P2 C E Q1 W1 Y1 A2 H2 W2 J3 O3 I E1 G1 L1 R1 M2 N2 U2 X2 H3 G H O Q X V1 D2 E2 F2 L2 Q2 Y2 S3 T3 U3 B1 G2 S2 B3 B F K1 T1 N3 Q3 U Y J1 J2 T2 U1 R2 P3 R3 V W E3 L3 D L S J K M1 P1 K2 Z2 F3 C2 B2 A3}
+Terminals {a b c d e f g i j l m n o p q r s t u v w y z h k x}
+Equation: z d r m p m s v r V2 N1 q f v j g G3 H1 z i p n i w u c m b r r o f e y o t d q n a v j f d w l f o N i s g = z d Z p M V3 w q D1 M3 g y f P I2 n i w u c m b C3 r D3 y o t S1 n a v j f d w l f o j v a i s g
+Equation: v i b f d c m o q y a r k b e r r t k s h q O2 z k c b t t u n j h i k v e h o g y e m y c k f j x b h c w n q b o e a = v i A1 c m o q y a r k b e r r t k s h q q c z k I1 t u n j h i k v e h o g y e m y c A j x b h c w P2 a
+Equation: h b c p s k j z n s o s o v n z j l E r a l g a c a a j p w y k h Q1 s l x g d r o n z m f d q i H2 i d m r b v y h = h b c p s k W2 z A2 s o s O3 z j l i r a l g a c a a j C k h Y1 c s l x g d r o n z m f d q i W1 d m r J3 y h
+Equation: R1 G1 h H3 p Z p f N1 a x r w o n i p k X2 e x t b r i o V2 c o b o i k I d b r w a o E1 f s v m o j A1 p t i q n = w i h r p j r W1 b a M2 r w o n i p I2 v e N2 U2 o v r i c o b o L1 x d b r w a o k f f s v m o j b t p p t i q n
+Equation: G c O p m X d H o x o b k x d g V1 q E k p n w b Q r y u r w l J3 x h c c h z m y k T3 q v = D2 L2 p m w H1 F2 A1 b k x d Y2 o b c q w v t D1 w b z f u r Q2 w l l y x h c c G3 m U3 z f E2 S3 v
+Equation: S2 q x m H3 p v m e v p w a k r h p w l n t h p j z i h v c v n o g m t d w t b s g s t q n j d q r d k i a j w l b k u = k q x m B1 e G2 V2 p w l C B3 L2 T3 n o g m t d w t S1 g s t q n H2 A2 i a j w l b k u
+Equation: O3 n G N3 u F p W2 Q3 g Y1 z q b G1 o E2 p q p m r y o f p B s l z a r f m b B1 x v j x y = U2 z H n w f r Q u b u i t N2 h d a g a u g b i S1 k p q L2 r y o M y r K1 z a r V3 b k T1 V2 x y
+Equation: u J1 t q W1 g m T2 c l g o B1 e e u z l Y s q c t J3 x t v s k b d w r j A2 r k P2 v y p n t r u o = u n e X S1 Q1 N3 q y M3 Z g E g o c s e e U l O3 c t h W2 s k Y2 w r j t x r J2 v y p n O2 u o
+Equation: n g u Y1 L2 p l e h k k x U1 h g u m s v j f T3 u w q d H t x G3 n h l k c x z a l s a y P o g j p d = n U2 Y W2 P3 p R2 e h M k x m d q u h g u R3 j f m y f u w q d D1 t t n h l k c x z a l s a y k v s o g j p d
+Equation: l N2 V I1 y y w s A s c I y L3 r n w j r v i i E3 p g p n g W2 y t T1 n o f A1 p y d g Q1 z m z p = l u s n t v r j y y w s h z c s c d u m y g r n w j r v i i t b z f p g p n g W t i i z n o f n q p y d g a z m z p
+Equation: W2 p T3 S1 V1 h k z t c w H3 n o n d L e r m V g R3 W r u u x a x y f k E f o r o i j i w = a p D A2 s w h k z t c w s y h b a e T2 o n d n k p b r e r I1 g z n a a w r u u O3 y f k c p s f S o i j i w
+Equation: G E3 o r s m Y2 z i q c M x i e h h E1 l U3 r b M3 K l h h x v b k U t b u P3 m k l N3 B d = d z t o w o J1 z z Q2 U2 M1 a x i e h h J a d l v u r b r o u g u l h h x v b k o j t b u o i Q3 f j b p d
+Equation: o i w L L3 E3 a y C a L1 n s j u p k j H2 U r c g d P3 w h q r c w a h n V u e Z2 o F3 d q o w r i = o i w m m P1 d K1 x a y j w e a n n s j u p k j x f M2 r c g X2 O3 R1 q r c w a h n u h h u e o j l o b c d d q o w K2
+Equation: H2 z q u N2 p b m H A2 g d d j c O2 K2 o v g b w t t h y d h C2 s e t m y u d q I1 f C i i y c g c I e h g m = f c z q Q b m t a g d d j c f s m i o v g b w t t h y d h n c g s e t m y u d q k f t g g i i y c g c w u w e h g m
+Equation: u g w e f d r i b C y p r t h V y N r t p g m c a e h w f x v d s U1 I t f r u q v y j t y t d z y h b n = u g Z2 L3 r i b h y J1 r y b b r L p g m c a e h w f x D d s d h m B2 t o A3 u q v y j t y Q3 h b n
+Equation: o A2 g o z o a o y n k y M3 w u p v P1 H2 l m e y r g w h d n q b N3 b s b s e m a k L2 w v k k k J2 w b c e u Q3 T2 = o b g o z o a o y n R3 a r B2 p v o Q l m e y r g w h d n q b b t b s b s e m Y R2 w v k k k c w b I1 u t s i
+SatGlucose(100)

@@ -1,0 +1,8 @@
+Variables {T1 Z1 C G R1 O3 M L3 I3 V Z2 Z R3 E1 X K B1 P2 P M1 M3 L N3 W S W1 Q1 I F I2 J3 J2 Q A1 T3 A Q2 V2 A3 N1 L2 E3 P3 U2 C1}
+Terminals {i p b m d g f z u r e h v j l k o t q a x n y w c s}
+Equation: i p T1 Z1 b m b d d g d f z u r e h e i v j l g C e k k b o t r i q G l r a R1 l x t z v k n y O3 w k m m i = i p z d b m b d d g d f z u r M h L3 j l g b u e k k b o t r I3 z l l r a u d a b z l x t z v k n y z c w k m m i
+Equation: m o m m l v t V O3 f Z2 b o i x k k n x u f p u z Z m q j n g f q c d u R3 h p i b f k w m f l b g l E1 z i r d = X m l v t d i f g K o i x B1 k n P2 p u P z e m q j M1 u M3 L f k w m f l b g l q q G r d
+Equation: N3 u w W u S s W1 Q1 i I3 u t e d y g o d o b d c b k I p e z r w v x n v o m F j f j q v c x Z1 = m u I2 x J3 f l L3 s y f o m i v u t e d y g o K d c b k k m p m p e J2 w v x n Q A1 d u j f j q v T3 w
+Equation: f i o l r d d q d i A j n b s s s y a w r e q r f e h a d W1 g a r s f w x d t r p p z v C t f F j h c m z t v c r = f i o Q2 d d q d i b j n b V2 s s y a w r I2 A3 a d k g a r s f w x d N1 p p z v n L2 E3 c m z t A1 r
+Equation: p J2 c n i P3 k k U2 o q d k v N3 b k s l y k w Q j g r h c R3 t m v d t f v r h x e k q v e r g h g z l j u h a e = p p a b c n i b k k m o q d k v f h b k s l y k w n N1 r h c u d t m v d t f v r h x e k q v e r C1 g z l j u h a e
+SatGlucose(100)

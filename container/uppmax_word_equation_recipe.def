@@ -14,6 +14,8 @@ From: continuumio/miniconda3:latest
 %post
     # Update conda
     conda update -n base -c defaults conda
+    apt-get update
+    
 
     # Install Python (if not already included in your base image)
     #conda install -y python=3.8
@@ -35,6 +37,9 @@ From: continuumio/miniconda3:latest
 
     # Any additional setup can go here
      pip install -r requirement/requirements.txt
+
+
+
      pip install mlflow torch
      pip install lightning
      pip install torchmetrics
@@ -55,11 +60,10 @@ From: continuumio/miniconda3:latest
     cd ../..
 
 
-    # Install z3 Noodler
-    apt-get -y update
-    apt-get -y install git build-essential cmake  # Add cmake here
 
     # Install z3 Noodler dependencies
+    apt-get -y update
+    apt-get -y install git build-essential cmake  # Add cmake here
     git clone 'https://github.com/VeriFIT/mata.git'
     cd mata
     make release

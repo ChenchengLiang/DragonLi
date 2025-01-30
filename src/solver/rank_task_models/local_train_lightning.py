@@ -17,7 +17,7 @@ import json
 import datetime
 import subprocess
 from src.solver.independent_utils import color_print, load_from_pickle_within_zip
-from src.solver.Constants import project_folder, bench_folder, RED
+from src.solver.Constants import project_folder, bench_folder, RED, rank_task_label_size_map
 import signal
 from src.solver.rank_task_models.Dataset import WordEquationDatasetMultiClassificationRankTask1, read_dataset_from_zip, \
     DGLDataModuleRank1, DGLDataModuleRank0
@@ -80,7 +80,7 @@ def train_wrapper(parameters):
     parameters["gnn_layer_num"] = 2
     parameters["gnn_dropout_rate"] = dropout_rate
 
-    parameters["label_size"] = 2
+    parameters["label_size"] = rank_task_label_size_map[parameters["rank_task"] ]
     parameters["gnn_num_filters"]=1
     parameters["classifier_num_filter"]=1
     parameters["classifier_pool_type"]="concat"

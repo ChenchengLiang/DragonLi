@@ -1,0 +1,5 @@
+Variables {Q2 I3 O H3 D3 Y L3 I2 E3 T1 O2 K1 G1 S1 J1 I1 Q P2 J3 F1 B2}
+Terminals {b v n t d m o r s z u w f p q k h i a c e y j x g l}
+Equation: b b v Q2 I3 O n v t d m o H3 r s s z D3 u w f o p q p m v w k v q h i s a n c Y o i e q u s o d y v r v L3 k = I2 v j s E3 v t d m o x r s s z v h u w f o p q p m v w k v q h T1 a n O2 e z b e q o i K1 s o d y v r v y h k
+Equation: t w f f b w n n b w f a z s G1 a f o j x s p d g m o j h o i v z o t x d i i k o l n i b w i w o q g w b u v x d i i = S1 f b w J1 n b w f H3 z s I1 Q f o j x s p P2 J3 h o F1 z o B2 d i i k o l n i b w i w o q g w b u L3 i i
+SatGlucose(100)
