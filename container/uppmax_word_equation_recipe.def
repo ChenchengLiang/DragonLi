@@ -1,13 +1,14 @@
 # build image command: apptainer build image.sif my_recipe.def
 Bootstrap: docker
-From: continuumio/miniconda3
+#From: continuumio/miniconda3
+From: continuumio/miniconda3:latest
 
 %setup
     mkdir ${APPTAINER_ROOTFS}/requirement
 
 %files
-    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/src .
-    /home/cheli243/Desktop/CodeToGit/string-equation-solver/boosting-string-equation-solving-by-GNNs/requirements.txt requirement
+    ../src .
+    ../requirements.txt requirement
 
 
 %post
@@ -15,7 +16,8 @@ From: continuumio/miniconda3
     conda update -n base -c defaults conda
 
     # Install Python (if not already included in your base image)
-    conda install -y python=3.8
+    #conda install -y python=3.8
+    conda install -y python=3.10
 
 
     # Explicitly set environment variables to avoid GPU usage
@@ -106,4 +108,3 @@ From: continuumio/miniconda3
 
 %runscript
     exec python "$@"
-

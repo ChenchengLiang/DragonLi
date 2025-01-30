@@ -16,6 +16,10 @@ Go to the container folder, build an image by:
 
     apptainer build eval_image.sif uppmax_word_equation_recipe.def
 
+#### Path configuration
+Change the paths in file `config.ini` to make it run correctly.
+The train, valid, test data are exactly the same problems. So in this example as long as we train enough epochs, it will solve all problems.
+
 ## Reproduce Instruction
 
 
@@ -44,9 +48,7 @@ By default, we run the five configurations (fixed, random, GNN, GNN+fixed, GNN+r
 
 Meanwhile, this code also runs Z3 on the same problems. Thus, you can find a comparison and consistency check in both files `results.csv` and `summary.csv`.
 
-#### Notice
-You may need to change the paths in file `config.ini` to make it run correctly.
-The train, valid, test data are exactly the same problems. So in this example as long as we train enough epochs, it will solve all problems.
+
 
 
 
