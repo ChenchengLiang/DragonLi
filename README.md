@@ -18,7 +18,7 @@ Go to the container folder, build an image by:
 
 #### Path configuration
 Change the paths in file `config.ini` to make it run correctly.
-The train, valid, test data are exactly the same problems. So in this example as long as we train enough epochs, it will solve all problems.
+
 
 ## Reproduce Instruction
 
@@ -54,3 +54,6 @@ Meanwhile, this code also runs Z3 on the same problems. Thus, you can find a com
 
 
 
+### Note
+This demo is used to show the training process, so it only contain a few word equations for traaining and validation and they are the same set of problems. 
+The trained models that used in the evaluation shown in the paper can be found in the folder experimental_results_tables

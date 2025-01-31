@@ -11,12 +11,26 @@ sys.path.append(path)
 from src.solver.Constants import project_folder, rank_task_label_size_map, rank_task_node_type_map
 from src.solver.independent_utils import write_configurations_to_json_file
 
+import argparse
 
 def main():
+    arg_parser = argparse.ArgumentParser(description='Process command line arguments.')
+    arg_parser.add_argument('rank_task', type=str, help='rank_task')
+    arg_parser.add_argument('benchmark_name', type=str, help='benchmark_name')
+    arg_parser.add_argument('port', type=str, help='port')
+
+    args = arg_parser.parse_args()
+
+    rank_task = int(args.rank_task)
+    #rank_task = 1
+    benchmark_name = args.benchmark_name
+    port = int(args.port)
+
+
     num_epochs = 100
     train_step = 10
     task = "rank_task"  # "task_3"
-    rank_task = 2
+
     multi_classification_pooling_type = "concat"  # conat, mean
     learning_rate = 0.001
     train_batch_size=500
@@ -27,11 +41,10 @@ def main():
     configurations = []
 
 
-
-
+    for benchmark in [benchmark_name]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_0"]:
     #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_1"]:
-    for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_2"]:
+    #for benchmark in ["unsatcores_01_track_multi_word_equations_eq_2_50_generated_train_1_20000_one_core+proof_tree_rank_task_2"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_0"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_1"]:
     #for benchmark in ["unsatcores_04_track_DragonLi_train_40001_80000_onecore+proof_tree_rank_task_2"]:
@@ -53,8 +66,8 @@ def main():
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_0"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_1"]:
     #for benchmark in ["01_track_multi_word_equations_eq_2_50_generated_train_1_10000_UNSAT_data_extraction-part_1_rank_task_2"]:
-        #for graph_type in ["graph_1"]:
-        for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
+        for graph_type in ["graph_1"]:
+        #for graph_type in ["graph_1","graph_2","graph_3","graph_4","graph_5"]:
             for classifier_pool_type in ["concat"]:#["concat","max","min"]:
                 for classifier_num_filter in [1]:#[1, 2, 4]:
                     for gnn_num_filters in [1]:#[1,2,4]:
@@ -69,6 +82,7 @@ def main():
                                                     for share_gnn in [False]:
                                                         configurations.append({
                                                             "benchmark": benchmark, "graph_type": graph_type,
+                                                            "port":port,
                                                             "model_type": model_type, "task": task, "rank_task": rank_task,
                                                             "num_epochs": num_epochs,
                                                             "learning_rate": learning_rate,

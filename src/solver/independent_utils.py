@@ -155,7 +155,7 @@ def write_configurations_to_json_file(configuration_folder,configurations):
 
     for i, config in enumerate(configurations):
         file_name = configuration_folder + "/config_" + str(i) + ".json"
-        config["port"]=str(12000+i)
+        config["port"]=str(configurations["port"]+i)
         with open(file_name, 'w') as f:
             json.dump(config, f, indent=4)
 

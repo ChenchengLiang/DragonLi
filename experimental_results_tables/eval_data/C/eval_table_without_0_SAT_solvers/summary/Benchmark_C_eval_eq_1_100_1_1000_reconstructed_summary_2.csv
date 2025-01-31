@@ -1,0 +1,4 @@
+solver,SAT,UNSAT,UNKNOWN,Total,sat_average_split_number,unsat_average_split_number,sat_average_solving_time,unsat_average_solving_time,sat_average_split_number_common_solved 1,sat_average_solving_time_common_solved 1,unsat_average_split_number_common_solved 42,unsat_average_solving_time_common_solved 42,sat_unique_solved,unsat_unique_solved
+z3-noodler,7,657,336,1000,0,0,0.17816335814339773,94.06694121774473,0.0,0.0799260139465332,0.0,87.72624395574842,4,79
+woorpje,3,62,935,1000,0,0,64.98670363426208,28.366349216430418,0.0,0.18097496032714844,0.0,27.33284712973095,0,0
+z3,1,821,178,1000,0,0,0.7562768459320068,1.722626569645704,0.0,0.7562768459320068,0.0,1.5976599909010387,0,225
