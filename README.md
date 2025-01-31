@@ -8,9 +8,9 @@ If you don't use containers, you can also follow the commands in the `eval_recip
 
 
 Go to the `container` folder, build an image by:
-
-    apptainer build eval_image.sif eval_recipe.def
-
+```
+apptainer build eval_image.sif eval_recipe.def
+```
 
 #### Path Configuration
 Adapt the paths in the file `config.ini` to make it run correctly.
@@ -22,9 +22,9 @@ Adapt the paths in the file `config.ini` to make it run correctly.
 #### Prepare Data for Training
 
 Go to the folder `demo/script` and run:
-
-    sh prepare_train_data_and_configurations.sh
-
+```sh
+sh prepare_train_data_and_configurations.sh
+```
 This will perform the following tasks:
 
 1. The `.eq` files represent word equation problems, and each corresponding `.unsatcore` file is one minimal unsatisfiable subset.
@@ -77,28 +77,21 @@ sh train_continuously.sh
 
 This command will continue training for 10 more epochs. You can control the number of training sessions by modifying the `train_n_times` parameter in `train_continuously.sh` or by executing the script multiple times.
 
-To adjust the number of epochs per session and the maximum number of training epochs, modify the relevant parameters in:
-
-```
-src/solver/models/generate_configurations.py
-```
+To adjust the number of epochs per session and the maximum number of training epochs, modify the relevant parameters in:`src/solver/models/generate_configurations.py`
 
 This design enables controlled and resumable training across distributed systems.
+
+Whenever training stops, the model with the best validation accuracy is saved in `Models/*.pth`.
 
 
 
 
 #### Evaluation
-In the project root folder, run:
-
-    apptainer exec --nv container/eval_image.sif python3 src/example/branch_eval.py
-
-This will evaluate the problems in the folder `benchmarks_and_experimental_results/example/01_track_eval/ALL`. The experimental results will be stored in files `results.csv` and `summary.csv` under `benchmarks_and_experimental_results/example/01_track_eval`.
-
-By default, we run the five configurations (fixed, random, GNN, GNN+fixed, GNN+random) of DragonLi. They are named this:EliminateVariablesRecursive-config_i where $i\in \{1,2,3,4,5\}$ representing fixed, random, GNN, GNN+fixed, and GNN+random, respectively in `results.csv` and `summary.csv`.
-
-Meanwhile, this code also runs Z3 on the same problems. Thus, you can find a comparison and consistency check in both files `results.csv` and `summary.csv`.
-
+Navigate to the `demo/script` folder and run:
+```sh
+sh run_solver.sh
+```
+This command runs the solver with the trained model to solve the problem located at `demo/data/eval_data/test.eq`. You can modify the parameters in `run_solver.sh` to specify a different problem to solve and select different models to use.
 
 
 
@@ -106,4 +99,4 @@ Meanwhile, this code also runs Z3 on the same problems. Thus, you can find a com
 
 
 ### Note
-This demo provides a small set of word equations for both training and validation (the same set of problems is used for both). For the fully trained models used in the paper's evaluation, see the `experimental_results_tables/eval_data_GNN/*/*/model/*/artifacts` directory
+This demo provides a small set of word equations for both training and validation (the same set of problems is used for both). You can find the fully trained models for each benchmark and task used in the paper's evaluation in the folder `experimental_results_tables/eval_data_GNN/*/*/model/*/artifacts`.
