@@ -51,7 +51,11 @@ First, go to the `demo/script` folder and run the mlflow server by
 
 This will create a `mlruns` folder in the root path of this project to monitor and store all information while training. The terminal to run this command should not be closed until the training finished.
 
+Then, we initialize the training by
 
+    sh train_initial.sh
+
+This 
 
 
 
