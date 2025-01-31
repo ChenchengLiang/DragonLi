@@ -1,4 +1,4 @@
-import os
+
 import sys
 import configparser
 
@@ -81,11 +81,13 @@ def main(args):
                             "rank_task": rank_task,"eq_satisfiability":eq_satisfiability,
                             "unsat_core_file":unsat_core_file}  # branch_method [gnn,random,fixed]
 
+
     solver = Solver(algorithm=algorithm, algorithm_parameters=algorithm_parameters)
 
     result_dict = solver.solve(parsed_content, visualize=False, output_train_data=output_train_data)
 
-    print_results(result_dict)
+
+    print_results(result_dict, output_answer_file=True)
 
 
 if __name__ == '__main__':

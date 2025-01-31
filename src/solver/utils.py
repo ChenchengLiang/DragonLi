@@ -10,9 +10,11 @@ graph_func_map = {None: get_eq_graph_1, "graph_1": get_eq_graph_1,
 
 
 
-def print_results(result: Dict):
+def print_results(result: Dict,output_answer_file=False):
+
     if result["result"] == None:
-        print("result: "+INTERNAL_TIMEOUT)
+        answer="result: "+INTERNAL_TIMEOUT
+        print(answer)
     else:
         print("-" * 10, "Problem", "-" * 10)
         print("recursion limit number", sys.getrecursionlimit())
@@ -44,8 +46,16 @@ def print_results(result: Dict):
             print(f'Total explore_paths call: {result["total_explore_paths_call"]}')
         if "explored_deep" in result:
             print(f'Deep: {result["explored_deep"]}')
+        answer = "result: " + satisfiability
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
+
+    print("output_answer_file,", output_answer_file)
+    if output_answer_file==True:
+        print("debug: output answer file")
+        with open("webapp/answer.txt", "w") as f:
+            f.write(answer)
+
 
 
 def assemble_parsed_content(result: Dict, assignment: Assignment = Assignment()):

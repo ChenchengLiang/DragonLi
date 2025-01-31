@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DragonLi Web Interface</title>
+</head>
+<body>
+  <h1>DragonLi</h1>
+  <p>A word equation solver</p>
+
+  <form onsubmit="return sendForm(event)">
+    <label for="userInput">Enter a word equation problem:</label><br /><br />
+    <textarea
+      id="userInput"
+      name="userInput"
+      rows="30"
+      cols="140"
+    ></textarea>
+    <br /><br />
+    <button type="submit">Submit</button>
+  </form>
+
+  <script>
+    // 1. On page load, fetch the file contents from /load-eq
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('/load-eq');
+        if (!response.ok) {
+          throw new Error('Error fetching EQ file');
+        }
+        const fileContents = await response.text();
+        document.getElementById('userInput').value = fileContents;
+      } catch (error) {
+        console.error('Could not load file:', error);
+      }
+    });
+
+    // 2. On submit, POST the user’s text to /process
+    async function sendForm(event) {
+      event.preventDefault();
+      const input = document.getElementById('userInput').value;
+
+      try {
+        const response = await fetch('/process', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ userInput: input })
+        });
+
+        // If you want to handle the server response, do so silently:
+        const result = await response.json();
+        console.log('Server responded:', result.message);
+
+      } catch (error) {
+        console.error(error);
+      }
+      // Return false to prevent page reload.
+      return false;
+    }
+  </script>
+</body>
+</html>
