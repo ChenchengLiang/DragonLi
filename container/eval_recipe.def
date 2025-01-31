@@ -1,7 +1,8 @@
 # build image command: apptainer build image.sif my_recipe.def
 Bootstrap: docker
 #From: continuumio/miniconda3
-From: continuumio/miniconda3:latest
+#From: continuumio/miniconda3:latest
+From: python:3.8-slim
 
 %setup
     mkdir ${APPTAINER_ROOTFS}/requirement
@@ -12,14 +13,18 @@ From: continuumio/miniconda3:latest
 
 
 %post
+    pip install --upgrade pip
     # Update conda
-    conda update -n base -c defaults conda
-    apt-get update
+    #conda update -n base -c defaults conda -y
+    #apt-get update
     
 
     # Install Python (if not already included in your base image)
     #conda install -y python=3.8
-    conda install -y python=3.10
+    #conda install -y python=3.9
+    #conda install -y python=3.10
+    
+
 
 
     # Explicitly set environment variables to avoid GPU usage
@@ -42,55 +47,11 @@ From: continuumio/miniconda3:latest
 
      pip install mlflow torch
      pip install lightning
-     pip install colorama
      pip install torchmetrics
      pip install deepspeed
+     pip install colorama
+     pip install entrypoints
 
-
-    #install z3
-    apt-get -y update
-    apt-get install -y build-essential git python3 python3-dev python3-setuptools python3-pip
-
-    #apt-get install -y build-essential python python-dev python-setuptools git
-    git clone https://github.com/Z3Prover/z3.git
-    cd z3
-    python3 scripts/mk_make.py
-    cd build
-    make
-    make install
-    cd ../..
-
-
-
-    # Install z3 Noodler dependencies
-    apt-get -y update
-    apt-get -y install git build-essential cmake  # Add cmake here
-    git clone 'https://github.com/VeriFIT/mata.git'
-    cd mata
-    make release
-    make install
-    cd ..
-
-    # Install z3 Noodler
-    git clone 'https://github.com/VeriFIT/z3-noodler.git'
-    mkdir z3-noodler/build
-    cd z3-noodler/build
-    cmake -DCMAKE_BUILD_TYPE=Release ..
-    make
-
-
-    #ostrich environment
-    apt-get install libgmp-dev -y
-    apt-get update
-    apt-get install unzip
-    apt-get install apt-transport-https curl gnupg -yqq
-    echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | tee /etc/apt/sources.list.d/sbt.list
-    echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | tee /etc/apt/sources.list.d/sbt_old.list
-    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
-    chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
-    apt-get update
-    apt-get install sbt -y
-    apt-get install default-jdk -y
 
 
 
