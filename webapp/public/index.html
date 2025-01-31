@@ -19,6 +19,12 @@
     <button type="submit">Submit</button>
   </form>
 
+  <!-- The solver's output or status messages go here -->
+  <div id="solverOutput"
+       style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+    <!-- Will be filled in by JavaScript -->
+  </div>
+
   <script>
     // 1. On page load, fetch the file contents from /load-eq
     document.addEventListener('DOMContentLoaded', async () => {
@@ -34,28 +40,38 @@
       }
     });
 
-    // 2. On submit, POST the user’s text to /process
+    // 2. On submit, POST the user’s text to /process, run solver, and get answer
     async function sendForm(event) {
       event.preventDefault();
+      const solverOutputDiv = document.getElementById('solverOutput');
+
+      // Immediately show "processing..." so user knows something is happening
+      solverOutputDiv.textContent = 'Processing...';
+
       const input = document.getElementById('userInput').value;
 
       try {
         const response = await fetch('/process', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userInput: input })
         });
 
-        // If you want to handle the server response, do so silently:
+        // Parse JSON response
         const result = await response.json();
-        console.log('Server responded:', result.message);
-
+        if (response.ok) {
+          // If everything went well, show the solver output
+          solverOutputDiv.textContent = result.solverOutput;
+        } else {
+          // If the server returned an error, show that message
+          solverOutputDiv.textContent =
+            'Solver Error: ' + (result.message || 'Unknown error');
+        }
       } catch (error) {
-        console.error(error);
+        console.error('Network or server error:', error);
+        solverOutputDiv.textContent =
+          'An error occurred. Check the console for details.';
       }
-      // Return false to prevent page reload.
       return false;
     }
   </script>

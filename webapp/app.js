@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');  // <-- Import spawn
 
 const app = express();
 const port = 3000;
@@ -23,31 +24,57 @@ app.get('/load-eq', (req, res) => {
   }
 });
 
-// ================== MODIFY THIS ROUTE ==================
+// POST /process route
 app.post('/process', (req, res) => {
   let userInput = req.body.userInput || "";
 
   // Trim trailing whitespace
   userInput = userInput.trimEnd();
 
-  // Check if userInput ends with "SatGlucose(100)"
+  // Ensure ends with "SatGlucose(100)"
   if (!userInput.endsWith("SatGlucose(100)")) {
-    // If not, add a new line plus "SatGlucose(100)"
     userInput += "\nSatGlucose(100)";
   }
 
+  // 1) Write user input to user-input.eq
   try {
-    // Write the user input to user-input.eq
     fs.writeFileSync("user-input.eq", userInput, "utf8");
-
-    // Respond with a success message
-    res.json({
-      message: `Successfully stored input to user-input.eq.\nFinal text:\n${userInput}`
-    });
   } catch (error) {
     console.error("Error writing to user-input.eq:", error);
-    res.status(500).json({ message: "Error saving input to file." });
+    return res.status(500).json({ message: "Error saving input to file." });
   }
+
+  // 2) Run shell script (sh run_solver.sh)
+  const solverProcess = spawn('sh', ['run_solver.sh']);
+
+  let stderrData = '';
+
+  solverProcess.stderr.on('data', (data) => {
+    stderrData += data.toString();
+  });
+
+  solverProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`Solver script exited with code ${code}`);
+      console.error(`Error output: ${stderrData}`);
+      return res
+        .status(500)
+        .json({ message: 'Error running solver script.\n' + stderrData });
+    }
+
+    // 3) Read answer.txt after the solver finishes
+    try {
+      const answer = fs.readFileSync('answer.txt', 'utf8');
+      // 4) Send answer back to client
+      res.json({
+        message: 'Solver finished successfully.',
+        solverOutput: answer
+      });
+    } catch (err) {
+      console.error("Error reading answer.txt:", err);
+      res.status(500).json({ message: "Could not read answer.txt" });
+    }
+  });
 });
 
 // Start the server

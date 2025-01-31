@@ -2,7 +2,7 @@ from .DataTypes import Variable, Terminal, Term, Assignment,Equation,get_eq_grap
 from typing import Dict, List
 from .Constants import INTERNAL_TIMEOUT
 import sys
-
+import os
 
 graph_func_map = {None: get_eq_graph_1, "graph_1": get_eq_graph_1,
                       "graph_2": get_eq_graph_2, "graph_3":get_eq_graph_3, "graph_4":get_eq_graph_4,
@@ -50,11 +50,10 @@ def print_results(result: Dict,output_answer_file=False):
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 
-    print("output_answer_file,", output_answer_file)
     if output_answer_file==True:
-        print("debug: output answer file")
-        with open("webapp/answer.txt", "w") as f:
-            f.write(answer)
+        if os.path.exists("webapp"):
+            with open("webapp/answer.txt", "w") as f:
+                f.write(answer)
 
 
 
