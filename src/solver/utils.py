@@ -13,7 +13,7 @@ graph_func_map = {None: get_eq_graph_1, "graph_1": get_eq_graph_1,
 def print_results(result: Dict,output_answer_file=False):
 
     if result["result"] == None:
-        answer="result: "+INTERNAL_TIMEOUT
+        answer=INTERNAL_TIMEOUT
         print(answer)
     else:
         print("-" * 10, "Problem", "-" * 10)
@@ -46,7 +46,7 @@ def print_results(result: Dict,output_answer_file=False):
             print(f'Total explore_paths call: {result["total_explore_paths_call"]}')
         if "explored_deep" in result:
             print(f'Deep: {result["explored_deep"]}')
-        answer = "result: " + satisfiability
+        answer = satisfiability
 
     print(f'Algorithm runtime in seconds: {result["running_time"]}')
 

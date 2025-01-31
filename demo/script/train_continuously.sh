@@ -10,6 +10,6 @@ for i in $(seq 0 $train_n_times)
 do
 
 
-apptainer exec --nv container/eval_image.sif python3 /src/solver/rank_task_models/cluster_train_lightning.py --configuration_file Models/configurations/config_$config_index.json
+apptainer exec --nv container/eval_image.sif python3 src/solver/rank_task_models/cluster_train_lightning.py --configuration_file Models/configurations/config_$config_index.json
 
 done
