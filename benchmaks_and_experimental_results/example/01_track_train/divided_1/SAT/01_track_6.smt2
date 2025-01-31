@@ -1,6 +1,0 @@
-(set-logic QF_S) 
-(declare-fun A () String) 
-(declare-fun C () String) 
-(assert (= (str.++ "a" "a" "a" "d" "b" "c" "b" A "c" "c" "d" "c" "c" "c" "d" "e" "b" "b" "c" "f" "f" "c" "b" "b" "a" "d" A "f" "a" "f" "c" "b" "c" "c" "b" A "e" "d" "f" "a" A "c" "c" "a" "a" "c" "f" "f" "a" "a" A "f" "e" "a" "f" "a" "c" "d" "c" "c" "a" "d" "a" "b" "b" "d" "b" A "e" "c" "c" "b" "c" "b" "c" "d" "e" "d" "e" "c" "a" "a" "d" "d" "a" "e" "b" "f" "d" "d" "b" "a" "a" "b" "c" "a" "b" "f" "f" "a" "d" "c" "a" "e" A "a" "a" "b" "a" "b" "f" "a" "e" "e" "d") (str.++ "a" "a" "a" "d" "b" "c" "b" "f" "c" "c" "d" "c" "c" "c" "d" "e" "b" "b" "c" A A "c" "b" "b" "a" "d" A "f" "a" A "c" "b" "c" "c" C "d" "a" "b" "b" "d" "b" A "e" "c" "c" "b" "c" "b" "c" "d" "e" "d" "e" "c" "a" "a" "d" "d" "a" "e" "b" A "d" "d" "b" "a" "a" "b" "c" "a" "b" A A "a" "d" "c" "a" "e" "f" "a" "a" "b" "a" "b" "f" "a" "e" "e" "d")))
-(check-sat) 
-(get-model)

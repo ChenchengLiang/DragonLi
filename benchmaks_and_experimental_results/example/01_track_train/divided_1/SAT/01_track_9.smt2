@@ -1,6 +1,0 @@
-(set-logic QF_S) 
-(declare-fun A () String) 
-(declare-fun B () String) 
-(assert (= (str.++ "a" "a" "b" "c" "b" "c" "b" "a" "b" "a" "a" "a" "b" "b" "b" "c" "a" "c" "b" "b" "c" "c" "c" "b" "c" "b" "b" "c" "a" "a" "b" "b" "a" "b" "c" "a" "c" "c" "c" "b" A "a" "a" "c" "c" "c" "a" "a" "a" "a" "c" "b" "b" "a" "b" "c" "c" "c") (str.++ "a" "a" "b" "c" "b" "c" "b" "a" "b" B "a" "a" "b" "c" "a" "c" "c" "c" "a" "a" "a" "a" "a" "c" "c" "c" "a" "a" "a" "a" "c" "b" "b" "a" "b" "c" "c" "c")))
-(check-sat) 
-(get-model)

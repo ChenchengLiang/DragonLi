@@ -1,6 +1,0 @@
-(set-logic QF_S) 
-(declare-fun A () String) 
-(declare-fun C () String) 
-(assert (= A C))
-(check-sat) 
-(get-model)

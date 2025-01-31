@@ -1,6 +1,7 @@
 {
     "benchmark": "train_data",
     "graph_type": "graph_1",
+    "port": "12001",
     "model_type": "GCNSplit",
     "task": "rank_task",
     "rank_task": 1,
@@ -25,6 +26,5 @@
     "classifier_pool_type": "concat",
     "classifier_num_filter": 1,
     "gnn_num_filters": 1,
-    "gnn_pool_type": "concat",
-    "port": "12001"
+    "gnn_pool_type": "concat"
 }

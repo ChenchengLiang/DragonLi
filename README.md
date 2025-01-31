@@ -1,39 +1,57 @@
 ## Build Environment
 
-We first build [Apptainer](https://apptainer.org/docs/admin/main/index.html) images (similar to docker) to serve as our environment.
+We first build a [Apptainer](https://apptainer.org/docs/admin/main/index.html) image (similar to docker) to serve as our environment.
 Apptainer installation instructions can be found [here](https://apptainer.org/docs/admin/main/installation.html).
 
-If you don't use containers, you can also follow the commands in .def files mentioned below to install everything.
+If you don't use containers, you can also follow the commands in the `eval_recipe.def` file mentioned below to install everything.
 
 
-#### For training
-Go to the container folder, build an image by:
 
-    apptainer build train_image.sif alvis_word_equation_recipe-A100.def
+Go to the `container` folder, build an image by:
 
-#### For evaluation
-Go to the container folder, build an image by:
+    apptainer build eval_image.sif eval_recipe.def
 
-    apptainer build eval_image.sif uppmax_word_equation_recipe.def
 
-#### Path configuration
-Change the paths in file `config.ini` to make it run correctly.
+#### Path Configuration
+Adapt the paths in the file `config.ini` to make it run correctly.
 
 
 ## Reproduce Instruction
 
 
-#### Train a Model
+#### Prepare Data for Training
 
-Go to the project root folder and run:
+Go to the folder `demo/script` and run:
 
-    apptainer exec --nv container/train_image.sif python3 src/example/branch_train.py
+    sh prepare_train_data_and_configurations.sh
 
 This will perform the following tasks:
 
-1. Generate training data (split points) in the file `benchmarks_and_experimental_results/example/01_track_train/divided_1/train.zip` for training and `benchmarks_and_experimental_results/example/01_track_train/valid_data/train.zip` for validation.
-2. Generate graph files `graph_1.zip` for each split point and store them in the folders `divided_1` and `valid_data` under `benchmarks_and_experimental_results/example/01_track_train` for training and validation respectively.
-3. Train two GNN models for 2- and 3-category classification for Rule 7 and 8, respectively. These will be stored in `Models/model_2_graph_1_GCNSplit.pth` and `Models/model_3_graph_1_GCNSplit.pth` respectively.
+1. The `.eq` files represent word equation problems, and each corresponding `.unsatcore` file is one minimal unsatisfiable subset.
+
+   For each pair of `.eq` and `.unsatcore` files found in:
+   - `demo/data/train_data/divided_1/UNSAT`
+   - `demo/data/train_data/valid_data/UNSAT`
+
+   Generate the labeled training data. The output is stored in `train.zip`.
+
+
+2. Draw graph representations of the training data and store them in `graph_1.zip`. Each `.graph.json` file represents a single training example.  
+To improve loading performance, these graphs are also serialized in pickle format and stored in `pkl.zip`.
+
+
+3. A set of training parameters and all necessary information are generated and stored in `Model/configurations/config_0.json`.
+
+
+#### Train a Model
+
+First, go to the `demo/script` folder and run the mlflow server by 
+
+    sh run_server.sh
+
+This will create a `mlruns` folder in the root path of this project to monitor and store all information while training. The terminal to run this command should not be closed until the training finished.
+
+
 
 
 
@@ -55,5 +73,4 @@ Meanwhile, this code also runs Z3 on the same problems. Thus, you can find a com
 
 
 ### Note
-This demo is used to show the training process, so it only contain a few word equations for traaining and validation and they are the same set of problems. 
-The trained models that used in the evaluation shown in the paper can be found in the folder experimental_results_tables
+This demo provides a small set of word equations for both training and validation (the same set of problems is used for both). For the fully trained models used in the paper's evaluation, see the experimental_results_tables/eval_data_GNN/*/*/model/*/artifacts directory
