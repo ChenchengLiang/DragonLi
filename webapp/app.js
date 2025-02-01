@@ -30,8 +30,10 @@ app.post('/process', (req, res) => {
   // Extract data from the request body
   let userInput = req.body.userInput || "";
   const solverType = req.body.solverType || "";
-
   console.log("Received solverType:", solverType);
+
+  const rankTask = req.body.rankTask || "";
+  console.log("Received rankTask:", rankTask);
 
   // Trim trailing whitespace
   userInput = userInput.trimEnd();
@@ -53,7 +55,7 @@ app.post('/process', (req, res) => {
   //    If your script is bash-based, "sh" is fine. If it’s a different shell or
   //    you have it as executable with a shebang, you might do:
   //    spawn('./run_solver.sh', [solverType])
-  const solverProcess = spawn('sh', ['run_solver.sh', solverType]);
+  const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask]);
 
   let stderrData = '';
 
@@ -81,7 +83,8 @@ app.post('/process', (req, res) => {
       });
     } catch (err) {
       console.error("Error reading answer.txt:", err);
-      res.status(500).json({ message: "Could not read answer.txt" });
+      //res.status(500).json({ message: "Could not read answer.txt" });
+      res.status(500).json({ message: "Wrong model" });
     }
   });
 });

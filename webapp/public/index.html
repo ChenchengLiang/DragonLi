@@ -11,9 +11,18 @@
 <!-- select sorteq function -->
   <label for="solverType">SortEqs function:</label>
   <select id="solverType" name="solverType">
-    <option value="category_gnn">baseline</option>
-    <option value="hybrid_category_gnn_random">random</option>
+    <option value="category">Baseline</option>
+    <option value="hybrid_category_gnn_random">Random</option>
     <option value="category_gnn_first_n_iterations">GNN</option>
+  </select>
+  <br /><br />
+
+  <!-- select sorteq function -->
+  <label for="rankTask">Rank task:</label>
+  <select id="rankTask" name="rankTask">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
   </select>
   <br /><br />
 
@@ -58,6 +67,7 @@
   // Extract values from the form
   const input = document.getElementById('userInput').value;
   const solverType = document.getElementById('solverType').value;  // <--- get solverType
+  const rankTask = document.getElementById('rankTask').value;  // <--- get rankTask
 
   try {
     const response = await fetch('/process', {
@@ -66,7 +76,8 @@
       // Now send *both* userInput and solverType in the JSON body
       body: JSON.stringify({
         userInput: input,
-        solverType: solverType
+        solverType: solverType,
+        rankTask: rankTask
       })
     });
 
