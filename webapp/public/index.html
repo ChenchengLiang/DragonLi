@@ -7,17 +7,25 @@
   <h1>DragonLi</h1>
   <p>A word equation solver</p>
 
-  <form onsubmit="return sendForm(event)">
-    <label for="userInput">Enter a word equation problem:</label><br /><br />
-    <textarea
-      id="userInput"
-      name="userInput"
-      rows="30"
-      cols="140"
-    ></textarea>
-    <br /><br />
-    <button type="submit">Submit</button>
-  </form>
+<form onsubmit="return sendForm(event)">
+<!-- select sorteq function -->
+  <label for="solverType">SortEqs function:</label>
+  <select id="solverType" name="solverType">
+    <option value="category_gnn">baseline</option>
+    <option value="hybrid_category_gnn_random">random</option>
+    <option value="category_gnn_first_n_iterations">GNN</option>
+  </select>
+  <br /><br />
+
+  <label for="userInput">Enter a word equation problem:</label><br /><br />
+  <textarea id="userInput" name="userInput" rows="30" cols="140"></textarea>
+  <br /><br />
+
+
+
+  <button type="submit">Submit</button>
+</form>
+
 
   <!-- The solver's output or status messages go here -->
   <div id="solverOutput"
@@ -41,39 +49,41 @@
     });
 
     // 2. On submit, POST the user’s text to /process, run solver, and get answer
-    async function sendForm(event) {
-      event.preventDefault();
-      const solverOutputDiv = document.getElementById('solverOutput');
+  async function sendForm(event) {
+  event.preventDefault();
+  const solverOutputDiv = document.getElementById('solverOutput');
 
-      // Immediately show "processing..." so user knows something is happening
-      solverOutputDiv.textContent = 'Processing...';
+  solverOutputDiv.textContent = 'Processing...';
 
-      const input = document.getElementById('userInput').value;
+  // Extract values from the form
+  const input = document.getElementById('userInput').value;
+  const solverType = document.getElementById('solverType').value;  // <--- get solverType
 
-      try {
-        const response = await fetch('/process', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userInput: input })
-        });
+  try {
+    const response = await fetch('/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      // Now send *both* userInput and solverType in the JSON body
+      body: JSON.stringify({
+        userInput: input,
+        solverType: solverType
+      })
+    });
 
-        // Parse JSON response
-        const result = await response.json();
-        if (response.ok) {
-          // If everything went well, show the solver output
-          solverOutputDiv.textContent = result.solverOutput;
-        } else {
-          // If the server returned an error, show that message
-          solverOutputDiv.textContent =
-            'Solver Error: ' + (result.message || 'Unknown error');
-        }
-      } catch (error) {
-        console.error('Network or server error:', error);
-        solverOutputDiv.textContent =
-          'An error occurred. Check the console for details.';
-      }
-      return false;
+    const result = await response.json();
+    if (response.ok) {
+      solverOutputDiv.textContent = result.solverOutput;
+    } else {
+      solverOutputDiv.textContent =
+        'Solver Error: ' + (result.message || 'Unknown error');
     }
+  } catch (error) {
+    console.error('Network or server error:', error);
+    solverOutputDiv.textContent =
+      'An error occurred. Check the console for details.';
+  }
+  return false;
+}
   </script>
 </body>
 </html>
