@@ -1,6 +1,6 @@
 #!/bin/bash
 
-timeout_in_second=10
+timeout_in_second=$4
 
 cd ..
 
@@ -14,7 +14,13 @@ eq_file="webapp/user-input.eq"
 order_equations_method=$1
 rank_task=$(( $2 - 1 )) # -1 to match the code task enumerate from 0 to 2
 benchmark=$3
-model_path="experimental_results_tables/eval_data_GNN/$benchmark/$2/model/artifacts/model_2_graph_1_GCNSplit.pth"
+# map task number to label size
+if [ "$rank_task" -eq "2" ]; then
+    label_size=50
+else
+    label_size=2
+fi
+model_path="experimental_results_tables/eval_data_GNN/$benchmark/task_$2/model/artifacts/model_"$label_size"_graph_1_GCNSplit.pth"
 
 
 
@@ -24,17 +30,9 @@ case "$order_equations_method" in
         timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --termination_condition "termination_condition_0" --order_equations_method $order_equations_method --algorithm "SplitEquations"
         status=$?
         ;;
-    "hybrid_category_gnn_random")
-        echo "Command for b"
-        timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --gnn_model_path $model_path --gnn_task "rank_task" --rank_task "$rank_task" --termination_condition "termination_condition_0" --order_equations_method $order_equations_method --algorithm "SplitEquations"
-	status=$?
-        ;;
-    "category_gnn_first_n_iterations")
-        timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --gnn_model_path $model_path --gnn_task "rank_task" --rank_task "$rank_task" --termination_condition "termination_condition_0" --order_equations_method $order_equations_method --algorithm "SplitEquations"
-	status=$?
-        ;;
     *)
-        echo "No matching command for: $x"
+        timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --gnn_model_path $model_path --gnn_task "rank_task" --rank_task "$rank_task" --termination_condition "termination_condition_0" --order_equations_method $order_equations_method --algorithm "SplitEquations"
+	status=$?
         ;;
 esac
 
@@ -48,8 +46,8 @@ if [ $status -eq 124 ]; then
 fi
 
 
-
+# verify input from front end
 #echo "$3" >> webapp/answer.txt
-#echo "$rank_task" >> webapp/answer.txt
+#echo " $model_path " >> webapp/answer.txt
 
 

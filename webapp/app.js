@@ -38,6 +38,9 @@ app.post('/process', (req, res) => {
   const benchmark = req.body.benchmark || "";
   console.log("Received benchmark:", benchmark);
 
+  const timeout_in_second = req.body.timeout_in_second || "";
+  console.log("Received timeout_in_second:", timeout_in_second);
+
   // Trim trailing whitespace
   userInput = userInput.trimEnd();
 
@@ -58,7 +61,7 @@ app.post('/process', (req, res) => {
   //    If your script is bash-based, "sh" is fine. If it’s a different shell or
   //    you have it as executable with a shebang, you might do:
   //    spawn('./run_solver.sh', [solverType])
-  const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask, benchmark]);
+  const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask, benchmark, timeout_in_second]);
 
   let stderrData = '';
 
@@ -87,7 +90,7 @@ app.post('/process', (req, res) => {
     } catch (err) {
       console.error("Error reading answer.txt:", err);
       //res.status(500).json({ message: "Could not read answer.txt" });
-      res.status(500).json({ message: "Wrong model" });
+      res.status(500).json({ message: "Syntax error" });
     }
   });
 });

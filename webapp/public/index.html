@@ -35,6 +35,17 @@
   </select>
   <br /><br />
 
+   <!-- select timeout_in_second -->
+  <label for="timeout_in_second">Timeout in second:</label>
+  <select id="timeout_in_second" name="timeout_in_second">
+    <option value="5">5</option>
+    <option value="10">10</option>
+    <option value="30">30</option>
+    <option value="60">60</option>
+    <option value="300">300</option>
+  </select>
+  <br /><br />
+
   <label for="userInput">Enter a word equation problem:</label><br /><br />
   <textarea id="userInput" name="userInput" rows="30" cols="140"></textarea>
   <br /><br />
@@ -78,6 +89,7 @@
   const solverType = document.getElementById('solverType').value;  // <--- get solverType
   const rankTask = document.getElementById('rankTask').value;  // <--- get rankTask
   const benchmark = document.getElementById('benchmark').value;  // <--- get benchmark
+  const timeout_in_second = document.getElementById('timeout_in_second').value;  // <--- get timeout_in_second
 
   try {
     const response = await fetch('/process', {
@@ -88,7 +100,8 @@
         userInput: input,
         solverType: solverType,
         rankTask: rankTask,
-        benchmark: benchmark
+        benchmark: benchmark,
+        timeout_in_second: timeout_in_second
       })
     });
 
