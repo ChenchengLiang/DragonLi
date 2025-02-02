@@ -24,10 +24,15 @@ model_path="experimental_results_tables/eval_data_GNN/$benchmark/task_$2/model/a
 
 
 
+
+# Check if benchmark equals "C"
+if [ "$benchmark" = "C" ]; then # if it is C, then No GNN is called
+    timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --termination_condition "termination_condition_0" --order_equations_method "category" --algorithm "SplitEquations"
+    status=$?
+else
 case "$order_equations_method" in
     "category")
-        echo "Command for a"
-        timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --termination_condition "termination_condition_0" --order_equations_method $order_equations_method --algorithm "SplitEquations"
+        timeout $timeout_in_second apptainer exec --nv container/eval_image.sif python3 src/process_benchmarks/main_parameter.py $eq_file "fixed" --graph_type "graph_1" --termination_condition "termination_condition_0" --order_equations_method "category" --algorithm "SplitEquations"
         status=$?
         ;;
     *)
@@ -35,6 +40,9 @@ case "$order_equations_method" in
 	status=$?
         ;;
 esac
+fi
+
+
 
 
 
@@ -48,6 +56,6 @@ fi
 
 # verify input from front end
 #echo "$3" >> webapp/answer.txt
-#echo " $model_path " >> webapp/answer.txt
+#echo " $test, $benchmark " >> webapp/answer.txt
 
 

@@ -1,4 +1,3 @@
-// app.js
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -14,20 +13,27 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from the "public" directory (including index.html, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// GET /load-eq: read example.eq and return its content
+// 1) Change the /load-eq route to read from "user-input.eq" by default:
 app.get('/load-eq', (req, res) => {
   try {
-    const data = fs.readFileSync('example.eq', 'utf8');
+    // First try reading user-input.eq
+    const data = fs.readFileSync('user-input.eq', 'utf8');
     res.send(data);
   } catch (err) {
-    console.error(err);
-    res.status(500).send('Error reading the .eq file.');
+    console.error('Could not read user-input.eq. Falling back to example.eq:', err);
+    // If "user-input.eq" doesn’t exist or can’t be read, optionally fall back to example.eq
+    try {
+      const fallbackData = fs.readFileSync('example.eq', 'utf8');
+      res.send(fallbackData);
+    } catch (fallbackErr) {
+      console.error('Could not read example.eq either:', fallbackErr);
+      res.status(500).send('Error reading input files.');
+    }
   }
 });
 
-// POST /process: write user input, run shell script, read solver output
+// POST /process: write user input, run solver, read solver output
 app.post('/process', (req, res) => {
-  // Extract data from the request body
   let userInput = req.body.userInput || "";
   const solverType = req.body.solverType || "";
   console.log("Received solverType:", solverType);
@@ -57,10 +63,7 @@ app.post('/process', (req, res) => {
     return res.status(500).json({ message: "Error saving input to file." });
   }
 
-  // 2) Run the shell script, passing solverType as an argument
-  //    If your script is bash-based, "sh" is fine. If it’s a different shell or
-  //    you have it as executable with a shebang, you might do:
-  //    spawn('./run_solver.sh', [solverType])
+  // 2) Run the shell script, passing solverType, rankTask, benchmark, etc.
   const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask, benchmark, timeout_in_second]);
 
   let stderrData = '';
@@ -92,6 +95,30 @@ app.post('/process', (req, res) => {
       //res.status(500).json({ message: "Could not read answer.txt" });
       res.status(500).json({ message: "Syntax error" });
     }
+  });
+});
+
+// POST /generate-benchmark
+app.post('/generate-benchmark', (req, res) => {
+  const benchmark = req.body.benchmark || "";
+  console.log("Generating benchmark for:", benchmark);
+
+  const generatorProcess = spawn('sh', ['run_generator.sh', benchmark]);
+  let stderrData = '';
+
+  generatorProcess.stderr.on('data', (data) => {
+    stderrData += data.toString();
+  });
+
+  generatorProcess.on('close', (code) => {
+    if (code !== 0) {
+      console.error(`Generator script exited with code ${code}`);
+      console.error(`Error output: ${stderrData}`);
+      return res.status(500).json({ message: 'Error running generator script.\n' + stderrData });
+    }
+
+    // Successfully generated user-input.eq
+    res.status(200).json({ message: 'Benchmark generated successfully.' });
   });
 });
 

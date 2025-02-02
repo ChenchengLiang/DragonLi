@@ -32,7 +32,7 @@ def main():
     index=1
     record_track_info=False
     equation_str, variable_list, terminal_list, eq_list=benchmark_generator_map[benchmark](file_name,index,record_track_info=record_track_info)
-
+    print(equation_str)
 
     with open(file_name, 'w') as file:
         file.write(equation_str)

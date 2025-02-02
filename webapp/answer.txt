@@ -1,1 +1,1 @@
-Timeout 10 s
+UNSAT
