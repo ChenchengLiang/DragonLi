@@ -8,6 +8,15 @@
   <p>A word equation solver</p>
 
 <form onsubmit="return sendForm(event)">
+  <!-- select benchmark -->
+  <label for="benchmark">Benchmark:</label>
+  <select id="benchmark" name="benchmark">
+    <option value="A1">A1</option>
+    <option value="A2">A2</option>
+    <option value="B">B</option>
+  </select>
+  <br /><br />
+
 <!-- select sorteq function -->
   <label for="solverType">SortEqs function:</label>
   <select id="solverType" name="solverType">
@@ -17,7 +26,7 @@
   </select>
   <br /><br />
 
-  <!-- select sorteq function -->
+  <!-- select task -->
   <label for="rankTask">Rank task:</label>
   <select id="rankTask" name="rankTask">
     <option value="1">1</option>
@@ -68,16 +77,18 @@
   const input = document.getElementById('userInput').value;
   const solverType = document.getElementById('solverType').value;  // <--- get solverType
   const rankTask = document.getElementById('rankTask').value;  // <--- get rankTask
+  const benchmark = document.getElementById('benchmark').value;  // <--- get benchmark
 
   try {
     const response = await fetch('/process', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      // Now send *both* userInput and solverType in the JSON body
+      // Now send received inputs in the JSON body
       body: JSON.stringify({
         userInput: input,
         solverType: solverType,
-        rankTask: rankTask
+        rankTask: rankTask,
+        benchmark: benchmark
       })
     });
 

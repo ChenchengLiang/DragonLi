@@ -35,6 +35,9 @@ app.post('/process', (req, res) => {
   const rankTask = req.body.rankTask || "";
   console.log("Received rankTask:", rankTask);
 
+  const benchmark = req.body.benchmark || "";
+  console.log("Received benchmark:", benchmark);
+
   // Trim trailing whitespace
   userInput = userInput.trimEnd();
 
@@ -55,7 +58,7 @@ app.post('/process', (req, res) => {
   //    If your script is bash-based, "sh" is fine. If it’s a different shell or
   //    you have it as executable with a shebang, you might do:
   //    spawn('./run_solver.sh', [solverType])
-  const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask]);
+  const solverProcess = spawn('sh', ['run_solver.sh', solverType, rankTask, benchmark]);
 
   let stderrData = '';
 

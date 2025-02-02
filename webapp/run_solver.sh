@@ -13,7 +13,8 @@ fi
 eq_file="webapp/user-input.eq"
 order_equations_method=$1
 rank_task=$(( $2 - 1 )) # -1 to match the code task enumerate from 0 to 2
-model_path="Models/model_2_graph_1_GCNSplit.pth"
+benchmark=$3
+model_path="experimental_results_tables/eval_data_GNN/$benchmark/$2/model/artifacts/model_2_graph_1_GCNSplit.pth"
 
 
 
@@ -48,7 +49,7 @@ fi
 
 
 
-#echo "$2" >> webapp/answer.txt
+#echo "$3" >> webapp/answer.txt
 #echo "$rank_task" >> webapp/answer.txt
 
 
