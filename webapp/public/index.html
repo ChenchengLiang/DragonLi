@@ -66,9 +66,16 @@
 
   <!-- Output area for solver messages -->
   <div id="solverOutput"
-       style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
-    <!-- Will be filled in by JavaScript -->
+     style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+  <!-- Will be filled in by JavaScript -->
   </div>
+
+  <!-- Output area for solver time messages -->
+<div id="solverOutputTime"
+     style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+  <!-- Will be filled in by JavaScript -->
+</div>
+
 
 
 
@@ -96,9 +103,13 @@
 
     // 2. On submit, POST the user’s text to /process, run solver, and get answer
     async function sendForm(event) {
+
       event.preventDefault();
       const solverOutputDiv = document.getElementById('solverOutput');
       solverOutputDiv.textContent = 'Processing...';
+
+      const solverOutputTimeDiv = document.getElementById('solverOutputTime');
+      solverOutputTimeDiv.textContent = '...';
 
       // Extract values from the form
       const input = document.getElementById('userInput').value;
@@ -123,6 +134,7 @@
         const result = await response.json();
         if (response.ok) {
           solverOutputDiv.textContent = result.solverOutput;
+          solverOutputTimeDiv.textContent = result.solverOutputTime;
         } else {
           solverOutputDiv.textContent =
             'Solver Error: ' + (result.message || 'Unknown error');
@@ -137,7 +149,9 @@
 
     // 3. Generate Benchmark function
       async function generateBenchmark() {
+
     const solverOutputDiv = document.getElementById('solverOutput');
+
     solverOutputDiv.textContent = 'Generating benchmark...';
 
     const benchmark = document.getElementById('benchmark').value;
@@ -178,14 +192,12 @@
 // 1. Our Markdown text:
 const markdownText = `
 \`\`\`markdown
-<formula>  ::= <equation> ( "∧" <equation> )*
+<formula>  ::= <equation> ( "\n" <equation> )*
 <equation> ::= <word> "=" <word>
 <word>     ::= <symbol>*
 <symbol>   ::= <variable> | <terminal>
-<variable> ::= (any string identifier)
-             | "A" | "X" | ...
-<terminal> ::= (any string identifier)
-             | "a" | "b" | ...
+<variables> and <terminals> can be any string identifier without space, for instance "X", "Y", "var_0", "const_1", etc.
+Identifiers should be unique strings.
 \`\`\`
 `;
 

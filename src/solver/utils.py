@@ -54,6 +54,8 @@ def print_results(result: Dict,output_answer_file=False):
         if os.path.exists("webapp"):
             with open("webapp/answer.txt", "w") as f:
                 f.write(answer)
+            with open("webapp/answer_time.txt", "w") as f:
+                f.write(str(result["running_time"]))
 
 
 

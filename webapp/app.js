@@ -84,17 +84,23 @@ app.post('/process', (req, res) => {
 
     // 3) If the script was successful, read the output file (answer.txt)
     try {
-      const answer = fs.readFileSync('answer.txt', 'utf8');
-      // 4) Return the solver result
-      res.json({
-        message: 'Solver finished successfully.',
-        solverOutput: answer
-      });
-    } catch (err) {
-      console.error("Error reading answer.txt:", err);
-      //res.status(500).json({ message: "Could not read answer.txt" });
-      res.status(500).json({ message: "Syntax error" });
-    }
+          // Read the main answer file
+          const answer = fs.readFileSync('answer.txt', 'utf8');
+          // Read the additional answer_time file
+          const answerTime = fs.readFileSync('answer_time.txt', 'utf8');
+
+
+          // Return the combined result in the response
+          res.json({
+            message: 'Solver finished successfully.',
+            solverOutput: answer,
+            solverOutputTime: "Time consumption of solver: " + answerTime + " seconds"
+          });
+        } catch (err) {
+          console.error("Error reading one of the files:", err);
+          res.status(500).json({ message: "Syntax error" });
+        }
+
   });
 });
 

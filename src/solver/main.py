@@ -38,7 +38,7 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/37/37.eq"  # X = Y X b # trap prefix and suffix
     #file_path = bench_folder + "/examples_choose_eq/37/37-1.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
     #file_path = bench_folder + "/examples_choose_eq/37/37-2.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
-    file_path = bench_folder + "/examples_choose_eq/37/37-3.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
+    #file_path = bench_folder + "/examples_choose_eq/37/37-3.eq"  # rewrite X = Y X b to X = Y Z b \wedge X=Z
     #file_path = bench_folder + "/examples_choose_eq/38/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_124.eq"
     #file_path = bench_folder + "/examples_choose_eq/39/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_329.eq"
     #file_path = bench_folder + "/examples_choose_eq/40/g_01_track_multi_word_equations_eq_2_50_generated_bootstrapping_1_10000_5307.eq"
@@ -51,6 +51,8 @@ def main():
     #file_path = bench_folder + "/examples_choose_eq/suffix-5/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_103.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-6/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_104.eq"
     #file_path = bench_folder + "/examples_choose_eq/suffix-7/g_01_track_multi_word_equations_eq_2_50_generated_train_1_1000_106.eq"
+    file_path = "webapp/example.eq"
+
 
     #file_path = bench_folder + "/examples_choose_eq/extract_unsatcore_proof_tree/g_01_track_multi_word_equations_eq_2_50_generated_train_1_10000_3689.eq"
 
