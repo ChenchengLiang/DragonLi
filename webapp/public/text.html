@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <title>Render Markdown in Browser</title>
+
+</head>
+
+<body>
+
+
+
+<div id="markdown-content"></div>
+
+
+
+<!-- Load the Marked library (CDN link) -->
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script>
+
+  // This is your markdown text as a JavaScript string
+
+  const markdownText = `
+
+\`\`\`markdown
+
+<equation> ::= <word> "=" <word>
+
+
+
+<word>     ::= <symbol>*
+
+<symbol>   ::= <variable> | <terminal>
+
+
+
+<variable> ::= (any uppercase identifier)
+
+             | "B" | "P" | ...
+
+<terminal> ::= (any lowercase identifier)
+
+             | "e" | "v" | ...
+
+\`\`\`
+
+`;
+
+
+
+  // Convert Markdown to HTML
+
+  const renderedHtml = marked.parse(markdownText);
+
+
+
+  // Inject the rendered HTML into the page
+
+  document.getElementById('markdown-content').innerHTML = renderedHtml;
+
+</script>
+
+
+
+</body>
+
+</html>
+

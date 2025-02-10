@@ -2,9 +2,17 @@
 <html>
 <head>
   <title>DragonLi Web Interface</title>
+  <style>
+    #markdown-content {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
   <h1>DragonLi</h1>
+   <!-- <p> <del>A cat</del> A word equation solver</p>-->
   <p>A word equation solver</p>
 
   <form onsubmit="return sendForm(event)">
@@ -21,14 +29,13 @@
     <button type="button" onclick="generateBenchmark()">Generate one example</button>
     <br /><br />
 
-    <!-- select sorteq function -->
-    <label for="solverType">SortEqs function:</label>
+    <!-- select rank function -->
+    <label for="solverType">RankEqs function:</label>
     <select id="solverType" name="solverType">
       <option value="category">Baseline</option>
       <option value="hybrid_category_gnn_random">Random</option>
       <option value="category_gnn_first_n_iterations">GNN</option>
     </select>
-    <br /><br />
 
     <!-- select task -->
     <label for="rankTask">Rank task:</label>
@@ -62,6 +69,15 @@
        style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
     <!-- Will be filled in by JavaScript -->
   </div>
+
+
+
+  <!-- "Span button" to toggle the markdown -->
+<span id="toggle-span">[+]</span>
+<span>Click to show/hide the grammar</span>
+
+<!-- Hidden container for rendered markdown -->
+<div id="markdown-content" style="display: none; margin-top: 10px;"></div>
 
   <script>
     // 1. On page load, fetch the file contents from /load-eq
@@ -153,5 +169,45 @@
     }
   }
   </script>
+
+
+<!-- Load the Marked library (CDN link) -->
+<script src="https://cdn.jsdelivr.net/npm/marked@4.2.12/marked.min.js"></script>
+
+<script>
+// 1. Our Markdown text:
+const markdownText = `
+\`\`\`markdown
+<formula>  ::= <equation> ( "∧" <equation> )*
+<equation> ::= <word> "=" <word>
+<word>     ::= <symbol>*
+<symbol>   ::= <variable> | <terminal>
+<variable> ::= (any string identifier)
+             | "A" | "X" | ...
+<terminal> ::= (any string identifier)
+             | "a" | "b" | ...
+\`\`\`
+`;
+
+// 2. Convert to HTML:
+const renderedHtml = marked.parse(markdownText);
+
+// 3. Inject into the page (but keep hidden by default)
+document.getElementById('markdown-content').innerHTML = renderedHtml;
+
+// 4. Simple toggle function
+document.getElementById('toggle-span').addEventListener('click', () => {
+  const content = document.getElementById('markdown-content');
+  const toggle = document.getElementById('toggle-span');
+
+  if (content.style.display === 'none') {
+    content.style.display = 'block';
+    toggle.textContent = '[-]';
+  } else {
+    content.style.display = 'none';
+    toggle.textContent = '[+]';
+  }
+});
+</script>
 </body>
 </html>
