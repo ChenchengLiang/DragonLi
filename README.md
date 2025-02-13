@@ -57,6 +57,23 @@ You may need to change the paths in file `config.ini` to make it run correctly.
 The train, valid, test data are exactly the same problems. So in this example as long as we train enough epochs, it will solve all problems.
 
 
+## Citation of This Work
 
-
-
+```bibtex
+@InProceedings{10.1007/978-3-031-78709-6_14,
+  author    = "Abdulla, Parosh Aziz
+               and Atig, Mohamed Faouzi
+               and Cailler, Julie
+               and Liang, Chencheng
+               and R{\"u}mmer, Philipp",
+  editor    = "Akshay, S.
+               and Niemetz, Aina
+               and Sankaranarayanan, Sriram",
+  title     = "Guiding Word Equation Solving Using Graph Neural Networks",
+  booktitle = "Automated Technology for Verification and Analysis",
+  year      = "2025",
+  publisher = "Springer Nature Switzerland",
+  address   = "Cham",
+  pages     = "279--301",
+  isbn      = "978-3-031-78709-6"
+}
