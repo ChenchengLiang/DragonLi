@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picture Voting</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .image-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .image-container {
+            text-align: center;
+        }
+        img {
+            max-width: 50%;
+            height: auto;
+            border-radius: 10px;
+        }
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        #prev {
+            left: 10px;
+        }
+        #next {
+            right: 10px;
+        }
+        #voteButton {
+            margin-top: 10px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+        }
+        #voteButton:disabled {
+            background-color: gray;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DragonLi Art Collection</h1>
+        <h2>Click picture to zoom up</h2>
+        <div class="image-wrapper">
+            <button id="prev" class="nav-button">◀</button>
+            <div class="image-container" id="imageContainer"></div>
+            <button id="next" class="nav-button">▶</button>
+        </div>
+        <!-- <p>Likes: <span id="voteCount">0</span></p> -->
+        <!-- <button id="voteButton">Vote</button> -->
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            let pictures = [];
+            let currentIndex = 0;
+            let votedPictures = JSON.parse(localStorage.getItem('votedPictures')) || {}; // Store votes locally
+
+            function loadPictures() {
+                $.get('/vote-data', function (data) {
+                    pictures = data;
+                    showPicture();
+                });
+            }
+
+            function showPicture() {
+                if (pictures.length > 0) {
+                    let picture = pictures[currentIndex];
+                    $('#imageContainer').html(
+                        `<a href="${picture.url}" target="_blank">
+                            <img src="${picture.url}" alt="Picture ${picture.id}">
+                        </a>`
+                    );
+                    $('#voteCount').text(picture.votes);
+                    updateNavigation();
+                    updateVoteButton();
+                }
+            }
+
+            function updateNavigation() {
+                $('#prev').prop('disabled', currentIndex === 0);
+                $('#next').prop('disabled', currentIndex === pictures.length - 1);
+            }
+
+            function updateVoteButton() {
+                let picture = pictures[currentIndex];
+                if (votedPictures[picture.id]) {
+                    $('#voteButton').prop('disabled', true).text('Already Voted');
+                } else {
+                    $('#voteButton').prop('disabled', false).text('Vote');
+                }
+            }
+
+            $('#prev').click(function () {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    showPicture();
+                }
+            });
+
+            $('#next').click(function () {
+                if (currentIndex < pictures.length - 1) {
+                    currentIndex++;
+                    showPicture();
+                }
+            });
+
+            $('#voteButton').click(function () {
+                let picture = pictures[currentIndex];
+                if (!votedPictures[picture.id]) {
+                    $.ajax({
+                        url: '/vote',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ id: picture.id }),
+                        success: function (response) {
+                            picture.votes += 1;
+                            $('#voteCount').text(picture.votes);
+                            votedPictures[picture.id] = true;
+                            localStorage.setItem('votedPictures', JSON.stringify(votedPictures)); // Store vote in localStorage
+                            updateVoteButton();
+                        },
+                        error: function () {
+                            alert('Error casting vote');
+                        }
+                    });
+                }
+            });
+
+            loadPictures();
+        });
+    </script>
+</body>
+</html>
