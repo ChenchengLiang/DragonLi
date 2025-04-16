@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/240738274922406966/01fb6beb28944aa8b23d3dec5d612804/artifacts
+end_time: 1737139941633
+entry_point_name: ''
+experiment_id: '240738274922406966'
+lifecycle_stage: active
+run_id: 01fb6beb28944aa8b23d3dec5d612804
+run_name: brawny-ape-679
+run_uuid: 01fb6beb28944aa8b23d3dec5d612804
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1737137143881
+status: 3
+tags: []
+user_id: liangch

@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/547733547362732356/48ce533d6ad84d69a51c7ddfae6eaeba/artifacts
+end_time: 1737136063324
+entry_point_name: ''
+experiment_id: '547733547362732356'
+lifecycle_stage: active
+run_id: 48ce533d6ad84d69a51c7ddfae6eaeba
+run_name: redolent-steed-55
+run_uuid: 48ce533d6ad84d69a51c7ddfae6eaeba
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1737133436632
+status: 3
+tags: []
+user_id: liangch

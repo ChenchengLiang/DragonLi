@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/124694917155287240/f6002f8f3b8e4d65a9f8b5bbe605afe8/artifacts
+end_time: 1735317673336
+entry_point_name: ''
+experiment_id: '124694917155287240'
+lifecycle_stage: active
+run_id: f6002f8f3b8e4d65a9f8b5bbe605afe8
+run_name: rare-whale-590
+run_uuid: f6002f8f3b8e4d65a9f8b5bbe605afe8
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1735314767973
+status: 3
+tags: []
+user_id: liangch

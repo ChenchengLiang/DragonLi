@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/325177406143584482/52b22d4c54734b2b93ac7d651c11ba54/artifacts
+end_time: 1735333156090
+entry_point_name: ''
+experiment_id: '325177406143584482'
+lifecycle_stage: active
+run_id: 52b22d4c54734b2b93ac7d651c11ba54
+run_name: auspicious-dog-615
+run_uuid: 52b22d4c54734b2b93ac7d651c11ba54
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1735330464396
+status: 3
+tags: []
+user_id: liangch

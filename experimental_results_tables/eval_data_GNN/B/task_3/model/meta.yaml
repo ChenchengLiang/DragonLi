@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/687055202638734501/2a3b9c869848430895c676c5961f95f7/artifacts
+end_time: 1737339515735
+entry_point_name: ''
+experiment_id: '687055202638734501'
+lifecycle_stage: active
+run_id: 2a3b9c869848430895c676c5961f95f7
+run_name: spiffy-trout-164
+run_uuid: 2a3b9c869848430895c676c5961f95f7
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1737335211939
+status: 3
+tags: []
+user_id: liangch

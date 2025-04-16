@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/510045020715475220/f04ef1f40ef446639e7e2983369dc3db/artifacts
+end_time: 1731997434636
+entry_point_name: ''
+experiment_id: '510045020715475220'
+lifecycle_stage: active
+run_id: f04ef1f40ef446639e7e2983369dc3db
+run_name: fortunate-dolphin-14
+run_uuid: f04ef1f40ef446639e7e2983369dc3db
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1731944325467
+status: 3
+tags: []
+user_id: liangch

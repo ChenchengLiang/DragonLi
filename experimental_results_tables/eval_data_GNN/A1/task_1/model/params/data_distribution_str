@@ -1,0 +1,4 @@
+Training label distribution: {(1, 0): 2490, (0, 1): 20277}
+Base accuracy: 0.890631176703123
+Validation label distribution: {(1, 0): 612, (0, 1): 5324}
+Base accuracy: 0.8969002695417789

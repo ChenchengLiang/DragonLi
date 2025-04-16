@@ -1,0 +1,15 @@
+artifact_uri: mlflow-artifacts:/786449904194763400/55cfa647bdc0428298ce79821d1c54fc/artifacts
+end_time: 1732205112234
+entry_point_name: ''
+experiment_id: '786449904194763400'
+lifecycle_stage: active
+run_id: 55cfa647bdc0428298ce79821d1c54fc
+run_name: classy-crow-584
+run_uuid: 55cfa647bdc0428298ce79821d1c54fc
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1732193849094
+status: 3
+tags: []
+user_id: liangch
