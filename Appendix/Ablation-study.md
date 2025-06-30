@@ -47,8 +47,8 @@ This observation held across all tested GNNs and their variants: **none outperfo
 
 ### Ranking Options
 
-We tested several hand-crafted ranking options, including ordering equations by size in both ascending and descending order.  
-Across most benchmarks, these heuristics performed no better—and often worse—than a random order. Consequently, we report only the two simplest baselines: the **predefined order** (which saves reordering time) and the **random order**.
+We tested several hand‑crafted ranking options, including ordering equations by size in both ascending and descending order.
+Across most benchmarks, these heuristics performed no better, and often worse, than a random order. Consequently, we report only the two simplest baselines: the predefined order (which saves reordering time) and the random order.
 
 ---
 
