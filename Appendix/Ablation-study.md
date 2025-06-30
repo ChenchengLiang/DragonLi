@@ -35,51 +35,71 @@ We experimented with all combinations of these sources and ultimately reported o
 
 ### GNN Model
 
-We experimented with various GNN architectures, including **GCN**, **Graph Attention Networks (GAT)**, and **Graph Isomorphism Networks (GIN)**. We also tested variants with different aggregation functions (e.g., mean, max, min), and even hybrid models that combined outputs from multiple GNNs.
+We experimented with various GNN architectures, including **GCN**, **Graph Attention Networks (GAT)** [Velickovic et al., 2018], and **Graph Isomorphism Network (GIN)** [Xu et al., 2019]. Variants were also tested, such as changing the node aggregation function from mean to max or min. Additionally, we explored combining multiple GNNs by feeding the same input graph into different models, concatenating their outputs, and passing the result to a classifier.
 
-In some cases, especially for longer equations, GAT achieved slightly better validation accuracy (by ~2%). However, this improvement did not translate into more solved problems due to the high runtime cost.
+In some cases, particularly when the word equations are long, GAT achieved slightly better validation accuracy during training, with an improvement of about two percentage points. However, when integrating the trained models into the solver, the number of solved problems remained similar to that of GCN.
 
-Ultimately, no GNN model outperformed GCN in solving problems. Hence, our reported results use GCN throughout.
+We attribute this to the higher computational cost of GNNs like GAT and GIN. Although they may offer marginally better performance during training, the gain has limited impact on the final evaluation due to runtime constraints.
+
+This observation held across all tested GNNs and their variants: **none outperformed GCN** in terms of the number of solved problems. Therefore, we report only the results using GCN in our paper.
 
 ---
 
 ### Ranking Options
 
-We evaluated several hand-crafted ranking heuristics, such as ordering equations by size (ascending or descending). These methods often performed no better—and sometimes worse—than a random order. Therefore, we only report two baseline strategies: **predefined order** and **random order**.
+We tested several hand-crafted ranking options, including ordering equations by size in both ascending and descending order.  
+Across most benchmarks, these heuristics performed no better—and often worse—than a random order. Consequently, we report only the two simplest baselines: the **predefined order** (which saves reordering time) and the **random order**.
 
 ---
 
 ### Experimental Results for Tasks and Integrating Options
 
-**Table 4** presents the number of solved **SAT** and **UNSAT** problems across different training tasks and GNN options used in the `RankEqs` function. Benchmark C is excluded because its high non-linearity makes the ranking process ineffective, yielding insufficient data to train a model.
+**Table 4** presents the number of solved **SAT** and **UNSAT** problems across different training tasks and GNN options for implementing `RankEqs`. **Benchmark C** is excluded from evaluation because the ranking process has no significant impact on performance when non-linearity is high, resulting in insufficient data to train the GNN models.
 
-The differences in solved **SAT** problems are minor, due to two factors:
+The differences in the number of solved **SAT** problems across various configurations are relatively small. This can be attributed to two primary reasons:
 
-1. If conjuncts are independent, their order doesn’t affect the outcome.
-2. If they share variables, the order still influences solving time, but less so than in **UNSAT** cases.
+1. If each conjunct in a conjunctive formula is independent, the ordering would not impact the outcome for **SAT** problems, as all conjuncts must independently satisfy the formula.
+2. Conjuncts in conjunctive word equations are usually not fully independent, as they often share variables. Consequently, the sequence in which the conjuncts are processed influences the solving time for **SAT** problems.
 
-Thus, we focus our discussion on **UNSAT** performance.
+Conversely, for **UNSAT** problems, the sequence of the conjuncts affects performance more, regardless of the independence of individual conjuncts.
 
----
-
-#### Computational Overhead by Task:
-
-- **Task 2**: Computes each graph representation $H_{G_i}$, then aggregates into a global vector $H_G$. Ranking requires `n` forward passes of $H_{G_i} || H_G$.
-- **Task 1**: Computes only individual $H_{G_i}$ and uses them directly — no aggregation.
-- **Task 3**: One-shot forward pass over all $(H_{G_1}, ..., H_{G_n})$.
-
-**Task 2 > Task 1 > Task 3** in computational cost.
+Therefore, the following discussion primarily focuses on the **UNSAT** problems.
 
 ---
 
-#### GNN Option Comparisons:
+#### Computational Overhead of Training Tasks
 
-- **RE3**: Most GNN calls → worst overall due to high overhead.
-- **RE4**: Introduces randomness; harms performance in A1/A2, but performs best in B for Tasks 1 & 3 by helping escape non-termination caused by non-linear equations.
-- **RE5**: Fewest GNN calls. Performs best in A1 and A2, average in B.
-- **RE6/RE7**: Consistently good, but not clearly better than RE5.
+The computational overhead follows the order:  
+**Task 2 > Task 1 > Task 3**
+
+- **Task 2**: This task first computes the graph representation for each word equation, \( H_{G_i} \), and then aggregates these into a global feature representation using  
+  \( H_G = \sum (H_{G_1}, \dots, H_{G_n}) \).  
+  To compute the ranking score of each conjunct, forward propagation must be performed \( n \) times with the concatenated input \( H_{G_i} \| H_G \) for each GNN layer.
+
+- **Task 1**: This task requires forward propagation \( n \) times using the individual graph representations \( H_{G_i} \), but it does not involve computing or concatenating the global feature representation \( H_G \).
+
+- **Task 3**: This task only requires a single forward propagation step using the set of individual graph representations  
+  \( (H_{G_1}, \dots, H_{G_n}) \).
+
+The numbers of solved **UNSAT** problems in columns **RE3** and **RE4** for Benchmarks A2 and B support these observations.  
+For Benchmark A1, it is not sensitive to GNN call overhead because the overall number of iterations required to solve the problems is low.
 
 ---
 
-<!-- Insert Table 1 here -->
+#### GNN Option Comparisons
+
+- **RE3** involves the most calls to the GNN model. It is generally outperformed by other options across all tasks and benchmarks due to its overhead.
+
+- **RE4** introduces a random process. Its performance is below average for Benchmarks A1 and A2 because it disrupts GNN predictions.  
+  However, in **Benchmark B**, it achieves the best performance for **Tasks 1 and 3**. This is because Benchmark B is non-linear; repeatedly applying inference rules to the same non-linear equation can increase its length and potentially cause non-termination.  
+  The randomness helps escape such situations.  
+  However, for Task 3, the GNN overhead reduces this advantage.
+
+- **RE5** has the least overhead from GNN model calls. For Benchmarks A1 and A2, it outperforms most other options. For Benchmark B, it performs at an average level.
+
+- **RE6** and **RE7** maintain high performance across all benchmarks but do not consistently outperform **RE5**.
+
+---
+
+<!-- Insert Table 4 here -->
 ![GNN Evaluation Table](tables/eval-data-gnn.jpg)
