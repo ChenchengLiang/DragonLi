@@ -6,15 +6,15 @@ For simplicity, we also call a set of conjunctive word equations *a word equatio
 ### Word Equation Graph Encoding
 <a name="appendix:word-equation-graph-encoding"></a>
 
-Before proposing the word equation graph encoding with global information (see **Figure 1**), we initially adopted the graph encoding method introduced in [reference]. However, this approach yielded low accuracy during training and did not improve solver performance when the trained model was integrated.
+Before proposing the word equation graph encoding with global information (see **Figure 2** in the paper), we initially adopted the graph encoding method introduced in [reference]. However, this approach yielded low accuracy during training and did not improve solver performance when the trained model was integrated.
 
-We then explored encoding the entire word equation system as a single graph, as illustrated in **Figure 2**. Several variations were tested, including adding abstract nodes to aggregate all word equations and modifying edge directions. However, these changes did not enhance the final performance in terms of newly solved problems. Difficult instances often involve a large number of equations, making the graph too large and computationally expensive for encoding and GNNs to process. This significantly slows down the solver.
+We then explored encoding the entire word equation system as a single graph, as illustrated in **Figure 3**. Several variations were tested, including adding abstract nodes to aggregate all word equations and modifying edge directions. However, these changes did not enhance the final performance in terms of newly solved problems. Difficult instances often involve a large number of equations, making the graph too large and computationally expensive for encoding and GNNs to process. This significantly slows down the solver.
 
-In contrast, using an encoding that represents individual word equations while sharing global information (Figure 1) allows the solver to cache GNN embeddings of unchanged equations during the search. This caching mechanism greatly improves overall efficiency. Such caching is not possible in the design where the entire equation system is encoded as one graph (Figure 2), leading to inferior performance.
+In contrast, using an encoding that represents individual word equations while sharing global information (Figure 2 in the paper) allows the solver to cache GNN embeddings of unchanged equations during the search. This caching mechanism greatly improves overall efficiency. Such caching is not possible in the design where the entire equation system is encoded as one graph (Figure 3), leading to inferior performance.
 
-**Figure 2:**
+**Figure 3:**
 
-![Encode as One Graph](figures/word-equation-global-one-graph.pdf)
+![Encode as One Graph](figures/word-equation-global-one-graph.png)
 
 > *Encode the conjunctive word equations XaX = Y ∧ aaa = XaY as one graph where X, Y are variables and a is a letter.*
 
