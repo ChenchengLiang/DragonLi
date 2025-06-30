@@ -82,4 +82,4 @@ Thus, we focus our discussion on **UNSAT** performance.
 ---
 
 <!-- Insert Table 1 here -->
-![GNN Evaluation Table](tables/eval-data-gnn.png)
+![GNN Evaluation Table](tables/eval-data-gnn.jpg)
