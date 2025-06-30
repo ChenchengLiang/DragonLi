@@ -16,4 +16,4 @@ The number of equations in problems for **Benchmark B** is set to 50, differing 
 <!-- Insert Table 1 here -->
 <!-- Replace the line below with a direct Markdown table or an image if applicable -->
 
-![Evaluation Data Statistics Table](tables/eval-data-statistics.png)
+![Evaluation Data Statistics Table](tables/eval-data-statistics.jpg)
