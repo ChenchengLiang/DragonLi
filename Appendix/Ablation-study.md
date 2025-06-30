@@ -22,14 +22,14 @@ In contrast, using an encoding that represents individual word equations while s
 
 ### Training Data Collection
 
-As described in [Section: Training Data Collection](#section:training_data_collection), we ultimately used two sources of training data. However, our initial collection included four:
+As described in Section 4.1, we mention only two sources of training data. However, our initial data collection included four sources:
 
 1. Shortest paths from SAT and UNSAT problems solved by our solver.
 2. MUSes extracted by our solver.
 3. MUSes provided by other solvers.
 4. Shortest paths from UNSAT problems solved by our solver, guided by MUSes from other solvers.
 
-We experimented with all combinations of these sources and found the best-performing combination to be: **MUSes from other solvers** + **shortest paths from UNSAT problems guided by these MUSes**.
+We experimented with all combinations of these sources and ultimately reported only the most effective one inSection 4.1. The best-performing combination includes MUSes from other solvers and shortest paths from UNSAT problems solved by our solver guided by these MUSes.
 
 ---
 
