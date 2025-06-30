@@ -29,7 +29,7 @@ As described in Section 4.1, we mention only two sources of training data. Howev
 3. MUSes provided by other solvers.
 4. Shortest paths from UNSAT problems solved by our solver, guided by MUSes from other solvers.
 
-We experimented with all combinations of these sources and ultimately reported only the most effective one inSection 4.1. The best-performing combination includes MUSes from other solvers and shortest paths from UNSAT problems solved by our solver guided by these MUSes.
+We experimented with all combinations of these sources and ultimately reported only the most effective one in Section 4.1. The best-performing combination includes MUSes from other solvers and shortest paths from UNSAT problems solved by our solver guided by these MUSes.
 
 ---
 
