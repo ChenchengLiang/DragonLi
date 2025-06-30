@@ -39,7 +39,7 @@ We experimented with various GNN architectures, including **GCN**, **Graph Atten
 
 In some cases, especially for longer equations, GAT achieved slightly better validation accuracy (by ~2%). However, this improvement did not translate into more solved problems due to the high runtime cost.
 
-Ultimately, no GNN model outperformed **GCN** in solving problems. Hence, our reported results use GCN throughout.
+Ultimately, no GNN model outperformed GCN in solving problems. Hence, our reported results use GCN throughout.
 
 ---
 
@@ -51,7 +51,7 @@ We evaluated several hand-crafted ranking heuristics, such as ordering equations
 
 ### Experimental Results for Tasks and Integrating Options
 
-**Table 1** presents the number of solved **SAT** and **UNSAT** problems across different training tasks and GNN options used in the `RankEqs` function. Benchmark C is excluded because its high non-linearity makes the ranking process ineffective, yielding insufficient data to train a model.
+**Table 4** presents the number of solved **SAT** and **UNSAT** problems across different training tasks and GNN options used in the `RankEqs` function. Benchmark C is excluded because its high non-linearity makes the ranking process ineffective, yielding insufficient data to train a model.
 
 The differences in solved **SAT** problems are minor, due to two factors:
 
