@@ -1,7 +1,7 @@
 ## Statistics of Evaluation Data
 <a name="appendix:statistics-of-evaluation-data"></a>
 
-**Table 1** presents the statistics of the evaluation data for each benchmark.  
+**Table 3** presents the statistics of the evaluation data for each benchmark.  
 For each benchmark, we generate a total of 1000 problems for evaluation.  
 The total variable and letter occurrence ratios are computed by counting the total occurrences of variables and letters across all problems in a benchmark and dividing by the total number of terms.  
 
