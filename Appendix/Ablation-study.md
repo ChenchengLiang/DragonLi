@@ -74,7 +74,7 @@ The computational overhead follows the order:
 
 - **Task 2**: This task first computes the graph representation for each word equation, $H_{G_i}$, and then aggregates these into a global feature representation using  
   $H_G = \sum (H_{G_1}, \dots, H_{G_n})$.  
-  To compute the ranking score of each conjunct, forward propagation must be performed $ n $ times with the concatenated input $H_{G_i} \| H_G$ for each GNN layer.
+  To compute the ranking score of each conjunct, forward propagation must be performed $n$ times with the concatenated input $H_{G_i} \| H_G$ for each GNN layer.
 
 - **Task 1**: This task requires forward propagation $n$ times using the individual graph representations $H_{G_i}$, but it does not involve computing or concatenating the global feature representation $H_G$.
 
