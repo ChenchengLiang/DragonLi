@@ -6,4 +6,4 @@
 <!-- Insert Table 1 here -->
 <!-- Replace the line below with a direct Markdown table or an image if applicable -->
 
-![MUS Statistics Table](tables/MUS-statistics.png)
+![MUS Statistics Table](tables/MUS-statistics.jpg)
