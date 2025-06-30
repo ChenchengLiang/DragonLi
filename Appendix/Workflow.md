@@ -12,7 +12,7 @@ For the **UNKNOWN** set, the problems are passed to other solvers, such as `z3` 
 
 We use the MUSes to rank and sort conjunctive word equations unsolvable by the split algorithm, then reprocess the sorted equations with it. This allows the split algorithm to solve some problems and construct proof trees.
 
-Then, we can extract the labeled data from both the AND-OR tree and MUSes. The labeling process is described in Section 4.
+Then, we can extract the labeled data from both the AND-OR tree and MUSes. The labeling process is described in Section 4 of the paper.
 
 Next, we convert the labeled conjunctive word equations from textual to graph format, enabling the model with GNN layers to process them. The model takes a **rank point** (i.e., a conjunction of word equations) as input and outputs corresponding scores that indicate the priority of the conjuncts.
 
