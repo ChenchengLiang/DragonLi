@@ -24,6 +24,6 @@ In the prediction phase, during the step where inference rules are applied, the 
 
 ### Figure 1: Workflow Diagram
 
-![Workflow Diagram](https://github.com/ChenchengLiang/DragonLi/blob/rank/Appendix/figures/workflow-diagram.pdf)
+![Workflow Diagram](figures/workflow-diagram.png)
 
 > *The workflow diagram for the training and prediction phase.*
