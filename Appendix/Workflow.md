@@ -2,7 +2,7 @@
 ## Workflow
 <a name="appendix:workflow"></a>
 
-The workflow of our framework is illustrated in **Figure 1**. For a benchmark, we begin by randomly splitting the dataset into training and evaluation subsets.
+The workflow of our framework is illustrated in **Figure 5**. For a benchmark, we begin by randomly splitting the dataset into training and evaluation subsets.
 
 ### Training Phase
 
@@ -22,7 +22,7 @@ In the prediction phase, during the step where inference rules are applied, the 
 
 ---
 
-### Figure 1: Workflow Diagram
+### Figure 5: Workflow Diagram
 
 ![Workflow Diagram](figures/workflow-diagram.png)
 
